@@ -1,14 +1,16 @@
 CREATE TABLE profile(
     profile_id UUID PRIMARY KEY,
+    name VARCHAR(30),
     colour INTEGER,
     guild_id BIGINT NOT NULL,
-    verification_channel BIGINT,
+    verification_channel_id BIGINT,
 );
 -- A table to describe a profile in its entirety
--- uuid - the general ID of the profile
+-- profile_id - the general ID of the profile
+-- name - the name of the profile used in commands
 -- colour - the colour of the embed field
 -- guild_id - the guild that the profile is made for
--- verification_channel - the channel that profiles are sent to for approval; if null then no approval needed
+-- verification_channel_id - the channel that profiles are sent to for approval; if null then no approval needed
 
 
 CREATE TYPE FIELDTYPE AS ENUM(
@@ -24,18 +26,22 @@ CREATE TYPE FIELDTYPE AS ENUM(
 
 CREATE TABLE field(
     field_id UUID PRIMARY KEY,
+    name VARCHAR(30),
     index SMALLINT,
     prompt TEXT,
     timeout SMALLINT,
-    type FIELDTYPE,
+    field_type FIELDTYPE,
+    optional BOOLEAN DEFAULT FALSE,
     profile_id UUID REFERENCES profile(profile_id)
 );
 -- A table to describe each individual field in a profile
--- uuid - general ID of the field 
+-- field_id - general ID of the field 
+-- name - the name of the field to show in the embed
 -- index - the index of the field in the profile to be used
 -- prompt - the prompt given to the user when filling out this field
 -- timeout - the timeout that will be given to the user when filling in this field
--- type - the datatype of the field to be converted to
+-- field_type - the datatype of the field to be converted to
+-- optional - whether or not the field is optional
 -- profile - the profile that this field is a part of 
 
 

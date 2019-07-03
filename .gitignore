@@ -1,0 +1,7 @@
+__pycache__/*
+*.pyc
+config/*.json
+*sublime*
+_*
+!__*
+*.code*

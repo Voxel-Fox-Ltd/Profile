@@ -202,5 +202,6 @@ class ProfileModeration(Cog):
         )
 
             
-
-
+def setup(bot:CustomBot):
+    x = ProfileModeration(bot)
+    bot.add_cog(x)

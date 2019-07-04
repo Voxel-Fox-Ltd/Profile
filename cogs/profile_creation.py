@@ -1,7 +1,7 @@
 from asyncio import TimeoutError as AsyncTimeoutError
 
 from discord import DMChannel
-from discord.ext.commands import CommandError, Context, CommandNotFound
+from discord.ext.commands import CommandError, Context, CommandNotFound, MemberConverter
 
 from cogs.utils.custom_bot import CustomBot
 from cogs.utils.custom_cog import Cog
@@ -31,6 +31,7 @@ class ProfileCreation(Cog):
         if command_operator not in ['SET', 'GET']:
             return
         profile_name = command_name[3:]
+        args = ctx.message.content[len(ctx.prefix) + len(ctx.invoked_with):].strip().split()
 
         # See if the command exists on their server
         guild_commands = Profile.all_guilds[ctx.guild.id]
@@ -42,6 +43,17 @@ class ProfileCreation(Cog):
         if command_operator == 'SET':
             await self.set_profile(ctx, profile)
             return
+
+        # Get the profile of the user
+        try:
+            user = await MemberConverter().convert(ctx, args[0])
+        except IndexError:
+            user = ctx.author
+        user_profile = UserProfile.all_profiles.get((user.id, ctx.guild.id, profile.name))
+        if user_profile is None:
+            await ctx.send(f"`{user!s}` don't have a profile for `{profile.name}`.")
+            return 
+        await ctx.send(embed=user_profile.build_embed())
 
 
     async def set_profile(self, ctx:Context, profile:Profile):

@@ -5,9 +5,9 @@ from discord.ext.commands import Context
 from discord.ext.commands import MissingRequiredArgument, BadArgument, CommandNotFound, CheckFailure, CommandInvokeError, CommandOnCooldown, NotOwner, MissingPermissions
 
 from cogs.utils.custom_bot import CustomBot
+from cogs.utils.custom_cog import Cog
 
-
-class ErrorEvent(object):
+class ErrorEvent(Cog):
 
     def __init__(self, bot:CustomBot):
         super().__init__(self.__class__.__name__)

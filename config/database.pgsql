@@ -60,7 +60,7 @@ CREATE TABLE created_profile(
 CREATE TABLE filled_field(
     user_id BIGINT,
     field_id UUID REFERENCES field(field_id),
-    value TEXT,
+    value VARCHAR(1000),
     PRIMARY KEY (user_id, field_id)
 );
 -- A table for stored field data for a user

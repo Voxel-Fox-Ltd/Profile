@@ -10,6 +10,10 @@ from discord import Game, Message, Permissions
 from discord.ext.commands import AutoShardedBot, when_mentioned_or
 
 from cogs.utils.database import DatabaseConnection
+from cogs.utils.profiles.field import Field 
+from cogs.utils.profiles.filled_field import FilledField
+from cogs.utils.profiles.profile import Profile
+from cogs.utils.profiles.user_profile import UserProfile
 
 
 LOGGER = getLogger('profilebot')
@@ -52,6 +56,27 @@ class CustomBot(AutoShardedBot):
 
         # Remove caches
         LOGGER.debug("Clearing caches")
+        # TODO
+
+        # Fill caches
+        async with self.database() as db:
+            fields = await db('SELECT * FROM field')
+            filled_fields = await db('SELECT * FROM filled_field')
+            profiles = await db('SELECT * FROM profile')
+            user_profiles = await db('SELECT * FROM created_profile')
+
+        if fields:
+            for i in fields:
+                Field(**i)
+        if filled_fields:
+            for i in filled_fields:
+                FilledField(**i)
+        if profiles:
+            for i in profiles:
+                Profile(**i)
+        if user_profiles:
+            for i in user_profiles:
+                UserProfile(**i)
 
         # Wait for the bot to cache users before continuing
         LOGGER.debug("Waiting until ready before completing startup method.")
@@ -66,6 +91,11 @@ class CustomBot(AutoShardedBot):
         extensions = [i.replace('\\', '.').replace('/', '.')[:-3] for i in ext + rand]
         LOGGER.debug("Getting all extensions: " + str(extensions))
         return extensions
+
+
+    async def on_command_error(self, context, exception):
+        await self.get_cog('ProfileCreation').on_command_error(context, exception)
+        # return super().on_command_error(context, exception)
 
 
     def load_all_extensions(self):

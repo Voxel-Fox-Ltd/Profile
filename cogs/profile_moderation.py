@@ -24,7 +24,7 @@ class ProfileModeration(Cog):
     async def cog_command_error(self, ctx, error):
         '''Handles errors for the cog'''
 
-        if ctx.author.id in self.bot.config['owners'] and not isinstance(error, None):
+        if ctx.author.id in self.bot.config['owners'] and not isinstance(error, MissingPermissions):
             text = f'```py\n{error}```'
             await ctx.send(text)
             raise error

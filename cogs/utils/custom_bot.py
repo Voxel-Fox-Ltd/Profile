@@ -20,7 +20,7 @@ def get_prefix(bot, message:Message):
     Gives the prefix for the given guild
     '''
 
-    return when_mentioned_or([','])(bot, message)
+    return when_mentioned_or(*[','])(bot, message)
 
 
 class CustomBot(AutoShardedBot):

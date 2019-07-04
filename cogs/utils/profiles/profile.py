@@ -21,7 +21,7 @@ class Profile(object):
     def fields(self) -> List[Field]:
         '''Returns a list of cogs.utils.profiles.fields.Field objects for this particular profile'''
 
-        return sorted(Field.all_profile_fields.get(self.id), lambda x: x.index)
+        return sorted(Field.all_profile_fields.get(self.id), key=lambda x: x.index)
 
 
     def build_embed(self, *fields) -> Embed:

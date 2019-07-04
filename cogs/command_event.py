@@ -18,7 +18,7 @@ class CommandEvent(Cog):
 
     def cog_unload(self):
         self.logger.cancel()
-        self.bot.loop.run_until_complete(self.empty_cache())
+        self.bot.loop.run_until_complete(self.log_cache())
 
 
     @Cog.listener()

@@ -10,6 +10,7 @@ from cogs.utils.custom_bot import CustomBot
 class ErrorEvent(object):
 
     def __init__(self, bot:CustomBot):
+        super().__init__(self.__class__.__name__)
         self.bot = bot
 
 

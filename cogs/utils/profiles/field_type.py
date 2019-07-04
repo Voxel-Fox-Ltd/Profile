@@ -27,10 +27,11 @@ The available types:
 
 
 class TextField(FieldType):
-    pass
+    name = '1000-CHAR'
 
 
 class NumberField(FieldType):
+    name = 'INT'
 
     @classmethod
     def convert_to_python(self, value):
@@ -38,10 +39,11 @@ class NumberField(FieldType):
 
 
 class ImageField(FieldType):
-    pass 
+    name = 'IMAGE'
 
 
 class BooleanField(FieldType):
+    name = 'BOOLEAN'
 
     @classmethod
     def convert_to_python(self, value):

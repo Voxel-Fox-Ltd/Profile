@@ -14,7 +14,7 @@ CREATE TABLE profile(
 
 
 CREATE TYPE FIELDTYPE AS ENUM(
-    '2000-CHAR',
+    '1000-CHAR',
     '200-CHAR',
     '50-CHAR',
     'INT',
@@ -26,7 +26,7 @@ CREATE TYPE FIELDTYPE AS ENUM(
 
 CREATE TABLE field(
     field_id UUID PRIMARY KEY,
-    name VARCHAR(30),
+    name VARCHAR(256),
     index SMALLINT,
     prompt TEXT,
     timeout SMALLINT,

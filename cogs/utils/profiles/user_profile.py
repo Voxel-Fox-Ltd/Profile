@@ -5,7 +5,7 @@ from cogs.utils.profiles.profile import Profile
 from cogs.utils.profiles.field import Field
 
 
-class CreatedProfile(object):
+class UserProfile(object):
 
     def __init__(self, user_id:int, profile_id:UUID, verified:bool):
         self.user_id = user_id 

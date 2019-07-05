@@ -5,6 +5,7 @@ from discord.ext.commands import Context, Group, command
 
 from cogs.utils.custom_bot import CustomBot
 from cogs.utils.custom_cog import Cog
+from cogs.utils.profiles.profile import Profile
 
 
 class Help(Cog):
@@ -86,6 +87,13 @@ class Help(Cog):
                 name=cog_commands[0].cog_name,
                 value=value
             )
+        if ctx.guild:
+            profiles = list(Profile.all_guilds[ctx.guild.id].keys())
+            if command_name is None and profiles:
+                help_embed.add_field(
+                    name="Available Profiles",
+                    value=', '.join(profiles)
+                )
         
         # Send it to the user
         try:

@@ -85,7 +85,7 @@ class ProfileModeration(Cog):
 
         # Get an ID for the profile
         profile = Profile(
-            id=generate_id(),
+            profile_id=generate_id(),
             colour=colour,
             guild_id=ctx.guild.id,
             verification_channel_id=verification_channel_id,
@@ -96,14 +96,14 @@ class ProfileModeration(Cog):
         index = 0
         field = True
         while field:
-            field = await self.create_new_field(ctx, profile.id, index)
+            field = await self.create_new_field(ctx, profile.profile_id, index)
             index += 1
 
         # Save it all to database
         async with self.bot.database() as db:
-            await db('INSERT INTO profile (profile_id, name, colour, guild_id, verification_channel_id) VALUES ($1, $2, $3, $4, $5)', profile.id, profile.name, profile.colour, profile.guild_id, profile.verification_channel_id)
+            await db('INSERT INTO profile (profile_id, name, colour, guild_id, verification_channel_id) VALUES ($1, $2, $3, $4, $5)', profile.profile_id, profile.name, profile.colour, profile.guild_id, profile.verification_channel_id)
             for field in profile.fields:
-                await db('INSERT INTO field (field_id, name, index, prompt, timeout, field_type, optional, profile_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)', field.id, field.name, field.index, field.prompt, field.timeout, field.field_type.name, field.optional, field.profile_id)
+                await db('INSERT INTO field (field_id, name, index, prompt, timeout, field_type, optional, profile_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)', field.field_id, field.name, field.index, field.prompt, field.timeout, field.field_type.name, field.optional, field.profile_id)
 
         # Output to user
         await ctx.send(f"Your profile has been created with {len(profile.fields)} fields.")
@@ -201,7 +201,7 @@ class ProfileModeration(Cog):
 
         # Make the field that'll be used 
         return Field(
-            id=generate_id(),
+            field_id=generate_id(),
             name=field_name,
             index=index,
             prompt=field_prompt,

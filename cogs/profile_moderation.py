@@ -160,8 +160,18 @@ class ProfileModeration(Cog):
         field_prompt = field_prompt_message.content
 
         # Get timeout
-        # TODO 
-        field_timeout = 120
+        await ctx.send("How many seconds should I wait for people to fill out this field (I recommend 120 seconds)?")
+        while True:
+            try:
+                field_timeout_message = await self.bot.wait_for('message', check=message_check, timeout=120)
+            except AsyncTimeoutError:
+                await ctx.send("Creating a new field has timed out. The profile is being created with the fields currently added.")
+                return None
+            try:
+                timeout = int(field_timeout_message.content)
+            except ValueError:
+                await ctx.send("I couldn't convert your message into a number. Please try again.")
+        field_timeout = timeout
 
         # Get field type 
         NUMBERS = '\U00000031\U000020e3'

@@ -26,4 +26,7 @@ class Profile(object):
     def fields(self) -> List[Field]:
         '''Returns a list of cogs.utils.profiles.fields.Field objects for this particular profile'''
 
-        return sorted(Field.all_profile_fields.get(self.profile_id), key=lambda x: x.index)
+        try:
+            return sorted(Field.all_profile_fields.get(self.profile_id), key=lambda x: x.index)
+        except TypeError:
+            return list()

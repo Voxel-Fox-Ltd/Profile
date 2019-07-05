@@ -56,7 +56,12 @@ class CustomBot(AutoShardedBot):
 
         # Remove caches
         LOGGER.debug("Clearing caches")
-        # TODO
+        Field.all_fields.clear()
+        Field.all_profile_fields.clear()
+        FilledField.all_filled_fields.clear()
+        Profile.all_guilds.clear()
+        Profile.all_profiles.clear()
+        UserProfile.all_profiles.clear()
 
         # Fill caches
         async with self.database() as db:

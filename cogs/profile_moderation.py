@@ -169,6 +169,7 @@ class ProfileModeration(Cog):
                 return None
             try:
                 timeout = int(field_timeout_message.content)
+                break
             except ValueError:
                 await ctx.send("I couldn't convert your message into a number. Please try again.")
         field_timeout = timeout

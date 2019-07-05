@@ -39,17 +39,22 @@ class ProfileCreation(Cog):
         if not profile:
             return 
 
-        # Invoke the commandnddndn
-        if command_operator == 'SET':
-            await self.set_profile(ctx, profile)
-            return
-
-        # Get the profile of the user
+        # Convert some params
         try:
             user = await MemberConverter().convert(ctx, args[0])
         except IndexError:
             user = ctx.author
         user_profile = UserProfile.all_profiles.get((user.id, ctx.guild.id, profile.name))
+
+        # Invoke the commandnddndn
+        if command_operator == 'SET' and user_profile is None:
+            await self.set_profile(ctx, profile)
+            return
+        elif command_operator == 'SET': 
+            await ctx.send(f"You already have a profile set for `{profile.name}`.")
+            return 
+
+        # Get the profile
         if user_profile is None:
             await ctx.send(f"`{user!s}` don't have a profile for `{profile.name}`.")
             return 
@@ -62,8 +67,6 @@ class ProfileCreation(Cog):
         # Set up some variaballlales
         user = ctx.author 
         fields = profile.fields 
-
-        # TODO check they don't have a profile already
 
         # See if you we can send them the PM
         try:

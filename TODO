@@ -15,8 +15,8 @@
     [ ] Profiles are sent to a verification channel
 
 [ ] See profiles 
-    [ ] Your own
-    [ ] Others
+    [x] Your own
+    [x] Others
     [ ] Don't show if not verified
 
 [ ] Verification 

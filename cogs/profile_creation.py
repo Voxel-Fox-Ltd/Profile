@@ -47,7 +47,10 @@ class ProfileCreation(Cog):
         user_profile = UserProfile.all_profiles.get((user.id, ctx.guild.id, profile.name))
 
         # Invoke the commandnddndn
-        if command_operator == 'SET' and user_profile is None:
+        if command_operator == 'SET' and user != ctx.author:
+            await ctx.send("You can't set someone else's profile.")
+            return
+        elif command_operator == 'SET' and user_profile is None:
             await self.set_profile(ctx, profile)
             return
         elif command_operator == 'SET': 

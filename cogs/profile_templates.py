@@ -2,7 +2,7 @@ from asyncio import TimeoutError as AsyncTimeoutError
 from string import ascii_lowercase as ASCII_LOWERCASE, digits as DIGITS
 from uuid import UUID, uuid4 as generate_id
 
-from discord.ext.commands import command, Context, MissingPermissions
+from discord.ext.commands import command, Context, MissingRole, has_role
 
 from cogs.utils.custom_cog import Cog
 from cogs.utils.custom_bot import CustomBot
@@ -24,19 +24,22 @@ class ProfileTemplates(Cog):
     async def cog_command_error(self, ctx, error):
         '''Handles errors for the cog'''
 
-        if ctx.author.id in self.bot.config['owners'] and not isinstance(error, MissingPermissions):
+        if ctx.author.id in self.bot.config['owners'] and not isinstance(error, MissingRole):
             text = f'```py\n{error}```'
             await ctx.send(text)
             raise error
 
-        if isinstance(error, MissingPermissions):
+        if isinstance(error, MissingRole):
             if ctx.author.id in self.bot.config['owners']:
                 return await ctx.reinvoke()
-            await ctx.send(f"You need the `{error.missing_perms[0]}` permission to run this command.")
+            if ctx.guild and ctx.author == ctx.guild.owner:
+                return await ctx.invoke()
+            await ctx.send(f"You need the `{error.missing_role}` permission to run this command.")
             return
 
 
     @command()
+    @has_role('ProfileBot Admin')
     async def createprofile(self, ctx:Context):
         '''Creates a new profile for your guild'''
 
@@ -98,6 +101,8 @@ class ProfileTemplates(Cog):
         while field:
             field = await self.create_new_field(ctx, profile.profile_id, index)
             index += 1
+            if index == 20:
+                break
 
         # Save it all to database
         async with self.bot.database() as db:

@@ -1,5 +1,5 @@
 [ ] Creating profile templates
-    [ ] Approved users can create profile templates
+    [x] Approved users can create profile templates
     [ ] Add fields
         [ ] Types:
             [x] Text

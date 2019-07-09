@@ -6,10 +6,13 @@
             [ ] Image
             [x] Number
             [ ] Boolean
-    [ ] Set verification channel
+        [ ] Allow optional fields
+    [x] Set verification channel
 
 [ ] Fill in profiles
+    [ ] Profiles can be filled in with the fields given
     [ ] Error message for trying to make a profile that doesn't exist
+    [ ] Profiles are sent to a verification channel
 
 [ ] See profiles 
     [ ] Your own

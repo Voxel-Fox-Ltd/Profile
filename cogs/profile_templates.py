@@ -83,7 +83,14 @@ class ProfileTemplates(Cog):
         colour = 0x000000
 
         # Get verification channel
-        # TODO
+        await ctx.send("What channel would you like the the verification process to happen in? If you want profiles to be verified automatically, just say `continue`.")
+        try:
+            verification_message = await self.bot.wait_for('message', check=lambda m: m.author == ctx.author and m.channel == ctx.channel, timeout=120)
+        except AsyncTimeoutError:
+            await ctx.send(f"{ctx.author.mention}, because of your 2 minutes of inactivity, profiles have been set to automatic approval.")
+        else:
+            if verification_message.channel_mentions:
+                verification_channel_id = verification_message.channel_mentions[0].id 
         verification_channel_id = None
 
         # Get an ID for the profile

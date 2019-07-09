@@ -1,17 +1,21 @@
+KEY:
+    [ ] Feature critical
+    < > Feature optional
+
 [ ] Creating profile templates
     [x] Approved users can create profile templates
     [ ] Add fields
         [ ] Types:
             [x] Text
-            [ ] Image
+            < > Image
             [x] Number
-            [ ] Boolean
-        [ ] Allow optional fields
+            < > Boolean
+        < > Allow optional fields
     [x] Set verification channel
 
 [ ] Fill in profiles
-    [ ] Profiles can be filled in with the fields given
-    [ ] Error message for trying to make a profile that doesn't exist
+    [x] Profiles can be filled in with the fields given
+    [x] Error message for trying to make a profile that doesn't exist
     [ ] Profiles are sent to a verification channel
 
 [x] See profiles 
@@ -22,12 +26,15 @@
 [ ] Verification 
     [ ] Allow a simple reaction ticker for approved users to approve/deny profiles 
 
-[ ] Edit profiles 
-    [ ] Approved users can edit other people's profiles 
-    [ ] You can edit your own profile 
+< > Edit profiles 
+    < > Approved users can edit other people's profiles 
+    < > You can edit your own profile 
     [ ] Edited profiles are marked as not verified 
 
 [ ] Delete profiles 
-    [ ] Approved users can delete other people's profiles 
+    < > Approved users can delete other people's profiles 
     [ ] You can delete your own profile 
-    [ ] Approved users can delete profile templates
+    < > Approved users can delete profile templates
+
+< > Edit profile templates
+    [ ] Approved users can edit profile templates

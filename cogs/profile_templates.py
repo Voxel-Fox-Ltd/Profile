@@ -11,7 +11,7 @@ from cogs.utils.profiles.profile import Profile
 from cogs.utils.profiles.field_type import TextField, NumberField, BooleanField
 
 
-class ProfileModeration(Cog):
+class ProfileTemplates(Cog):
 
     TICK_EMOJI = "<:tickYes:596096897995899097>"
     CROSS_EMOJI = "<:crossNo:596096897769275402>"
@@ -214,5 +214,5 @@ class ProfileModeration(Cog):
 
             
 def setup(bot:CustomBot):
-    x = ProfileModeration(bot)
+    x = ProfileTemplates(bot)
     bot.add_cog(x)

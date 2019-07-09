@@ -1,0 +1,30 @@
+[ ] Creating profile templates
+    [ ] Approved users can create profile templates
+    [ ] Add fields
+        [ ] Types:
+            [x] Text
+            [ ] Image
+            [x] Number
+            [ ] Boolean
+    [ ] Set verification channel
+
+[ ] Fill in profiles
+    [ ] Error message for trying to make a profile that doesn't exist
+
+[ ] See profiles 
+    [ ] Your own
+    [ ] Others
+    [ ] Don't show if not verified
+
+[ ] Verification 
+    [ ] Allow a simple reaction ticker for approved users to approve/deny profiles 
+
+[ ] Edit profiles 
+    [ ] Approved users can edit other people's profiles 
+    [ ] You can edit your own profile 
+    [ ] Edited profiles are marked as not verified 
+
+[ ] Delete profiles 
+    [ ] Approved users can delete other people's profiles 
+    [ ] You can delete your own profile 
+    [ ] Approved users can delete profile templates

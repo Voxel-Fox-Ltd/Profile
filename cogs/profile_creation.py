@@ -61,7 +61,14 @@ class ProfileCreation(Cog):
         if user_profile is None:
             await ctx.send(f"`{user!s}` don't have a profile for `{profile.name}`.")
             return 
-        await ctx.send(embed=user_profile.build_embed())
+
+        # Don't show if not verified
+        if user_profile.verified:
+            await ctx.send(embed=user_profile.build_embed())
+            return
+        else:
+            await ctx.send("That profile hasn't yet been verified.")
+            return
 
 
     async def set_profile(self, ctx:Context, profile:Profile):

@@ -14,10 +14,10 @@
     [ ] Error message for trying to make a profile that doesn't exist
     [ ] Profiles are sent to a verification channel
 
-[ ] See profiles 
+[x] See profiles 
     [x] Your own
     [x] Others
-    [ ] Don't show if not verified
+    [x] Don't show if not verified
 
 [ ] Verification 
     [ ] Allow a simple reaction ticker for approved users to approve/deny profiles 

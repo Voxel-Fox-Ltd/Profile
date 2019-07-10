@@ -13,6 +13,9 @@ from cogs.utils.profiles.user_profile import UserProfile
 
 class ProfileCreation(Cog):
 
+    TICK_EMOJI = "<:tickYes:596096897995899097>"
+    CROSS_EMOJI = "<:crossNo:596096897769275402>"
+
     def __init__(self, bot:CustomBot):
         super().__init__(self.__class__.__name__)
         self.bot = bot 
@@ -129,7 +132,9 @@ class ProfileCreation(Cog):
         if profile.verification_channel_id:
             try:
                 channel = await self.bot.fetch_channel(profile.verification_channel_id)
-                await channel.send(f"{user.id}/{profile.profile_id}", embed=up.build_embed())
+                v = await channel.send(f"**{profile.name}** submission from {user.mention}\n{user.id}/{profile.profile_id}", embed=up.build_embed())
+                await v.add_reaction(self.TICK_EMOJI)
+                await v.add_reaction(self.CROSS_EMOJI)
             except Exception as e:
                 await user.send(f"Your profile couldn't be send to the verification channel? `{e}`.")
                 return

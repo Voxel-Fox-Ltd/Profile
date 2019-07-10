@@ -52,9 +52,6 @@ async def on_ready():
     logger.info('Bot connected:')
     logger.info(f'\t{bot.user}')
     logger.info(f'\t{bot.user.id}')
-
-    logger.info('Loading extensions... ')
-    bot.load_all_extensions()
     
     logger.info("Setting activity to default")
     await bot.set_default_presence()

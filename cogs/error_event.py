@@ -41,13 +41,13 @@ class ErrorEvent(Cog):
                     # Couldn't send them a PM
                     pass
                 return
-            elif 'oserror' in str(error).lower():
-                number = collect()
-                print(f'Deleted `{number}` unreachable objects from memory, <@141231597155385344>')
-                await ctx.send('I was unable to run that command properly - try again in a moment.')
-                return
-            await ctx.author.send(f"Error encountered running that command: `{error!s}`")
-            return
+            # elif 'oserror' in str(error).lower():
+            #     number = collect()
+            #     # print(f'Deleted `{number}` unreachable objects from memory, <@141231597155385344>')
+            #     await ctx.send('I was unable to run that command properly - try again in a moment.')
+            #     return
+            # await ctx.author.send(f"Error encountered running that command: `{error!s}`")
+            # return
         elif isinstance(error, CommandOnCooldown):
             # Ratelimited user so no error text
             return

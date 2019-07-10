@@ -38,5 +38,5 @@ class UserProfile(object):
         embed.title = f"{self.profile.name.title()} profile"
         for f in fields:
             embed.add_field(name=f.field.name, value=f.value)
-        embed.set_footer(text=self.profile.name.upper())
+        # embed.set_footer(text=self.profile.name.upper())
         return embed

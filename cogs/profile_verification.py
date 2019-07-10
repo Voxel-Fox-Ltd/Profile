@@ -30,24 +30,20 @@ class ProfileVerification(Cog):
         # Get the message from the channel
         message: Message = await channel.fetch_message(payload.message_id)
 
-        print(0)
-
         # Check if we're the author
         if message.author.id != self.bot.user.id:
-            print(1)
             return
 
         # Check if there's an embed
         if not message.embeds:
-            print(2)
             return
 
         # Make sure it's the right kind of embed
         embed: Embed = message.embeds[0]
         if 'Verification Check' not in embed.footer.text:
-            print(3)
             return
-        profile_name = embed.footer.text.split('//')[0].strip().lower()
+        # profile_name = embed.footer.text.split('//')[0].strip().lower()
+        profile_name = embed.title.split(' ')[0].strip().lower()
 
         # It's a verification message! Now we wanna check the author to make sure they're approved
         # Get guild
@@ -61,18 +57,15 @@ class ProfileVerification(Cog):
 
         # Make sure they aren't a bot
         if member.bot:
-            print(4)
             return
 
         # Check their roles
         roles: List[Role] = member.roles
         if not [i for i in roles if i.name == 'ProfileBot Admin' or member.guild.owner == member or member.id in self.bot.config['owners']]:
-            print(5)
             return
 
         # And FINALLY we can check their emoji
         if payload.emoji.id and payload.emoji.id not in [self.TICK_EMOJI_ID, self.CROSS_EMOJI_ID]:
-            print(6)
             return
 
         # Check what they reacted with
@@ -97,7 +90,6 @@ class ProfileVerification(Cog):
         profile = UserProfile.all_profiles.get((profile_user_id, guild.id, profile_name))
         if profile is None:
             # Silently fail I guess
-            print(5)
             return
 
         # Remove them if necessary

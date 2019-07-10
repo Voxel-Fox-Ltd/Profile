@@ -10,5 +10,10 @@
         "host": "127.0.0.1"
     },
     "presence_text": "",
-    "default_prefix": ""
+    "default_prefix": "",
+    "dbl_vainity": null,
+    "github": null,
+    "guild_invite": null,
+    "patreon": null,
+    "paypal": null
 }

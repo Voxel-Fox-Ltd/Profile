@@ -2,10 +2,10 @@ KEY:
     [ ] Feature critical
     < > Feature optional
 
-[ ] Creating profile templates
+[x] Creating profile templates
     [x] Approved users can create profile templates
-    [ ] Add fields
-        [ ] Types:
+    [x] Add fields
+        [x] Types:
             [x] Text
             < > Image
             [x] Number
@@ -13,10 +13,10 @@ KEY:
         < > Allow optional fields
     [x] Set verification channel
 
-[ ] Fill in profiles
+[x] Fill in profiles
     [x] Profiles can be filled in with the fields given
     [x] Error message for trying to make a profile that doesn't exist
-    [ ] Profiles are sent to a verification channel
+    [x] Profiles are sent to a verification channel
 
 [x] See profiles 
     [x] Your own

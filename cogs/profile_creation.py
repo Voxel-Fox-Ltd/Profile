@@ -118,6 +118,21 @@ class ProfileCreation(Cog):
         # Make the UserProfile object
         up = UserProfile(user.id, profile.profile_id, profile.verification_channel_id == None)
 
+        # Make sure the bot can send the embed at all
+        try:
+            await user.send(embed=up.build_embed())
+        except Exception as e:
+            await user.send(f"Your profile couldn't be sent to you? `{e}`.")
+            return
+
+        # Make sure the bot can send the embed to the channel
+        try:
+            channel = await self.bot.fetch_channel(profile.verification_channel_id)
+            await channel.send(f"{user.id}/{profile.profile_id}", embed=up.build_embed())
+        except Exception as e:
+            await user.send(f"Your profile couldn't be send to the verification channel? `{e}`.")
+            return
+
         # Database me up daddy
         async with self.bot.database() as db:
             await db('INSERT INTO created_profile (user_id, profile_id, verified) VALUES ($1, $2, $3)', up.user_id, up.profile.profile_id, up.verified)
@@ -125,7 +140,7 @@ class ProfileCreation(Cog):
                 await db('INSERT INTO filled_field (user_id, field_id, value) VALUES ($1, $2, $3)', field.user_id, field.field_id, field.value)
         
         # Respond to user
-        await user.send("Your profile has been created.", embed=up.build_embed())
+        await user.send("Your profile has been created and saved.")
 
 
 def setup(bot:CustomBot):

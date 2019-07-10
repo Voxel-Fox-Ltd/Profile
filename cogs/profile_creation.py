@@ -31,9 +31,12 @@ class ProfileCreation(Cog):
         # Get the command
         command_name = ctx.invoked_with 
         command_operator = command_name[0:3].upper()
-        if command_operator not in ['SET', 'GET']:
-            return
-        profile_name = command_name[3:]
+        if command_operator in ['SET', 'GET']:
+            profile_name = command_name[3:]
+        elif command_operator == 'DEL':
+            profile_name = command_name[6:]
+        else:
+            return  # Silently fail if it's an invalid command
         args = ctx.message.content[len(ctx.prefix) + len(ctx.invoked_with):].strip().split()
 
         # See if the command exists on their server
@@ -49,7 +52,7 @@ class ProfileCreation(Cog):
             user = ctx.author
         user_profile = UserProfile.all_profiles.get((user.id, ctx.guild.id, profile.name))
 
-        # Invoke the commandnddndn
+        # Command invoke - SET
         if command_operator == 'SET' and user != ctx.author:
             await ctx.send("You can't set someone else's profile.")
             return
@@ -60,12 +63,31 @@ class ProfileCreation(Cog):
             await ctx.send(f"You already have a profile set for `{profile.name}`.")
             return 
 
-        # Get the profile
+        # Command invoke - DEL
+        if command_operator == 'DEL' and user != ctx.author:
+            # Check if they're a bot admin
+            # TODO make that a util ^^
+            if [i for i in ctx.author.roles if i.name == 'ProfileBot Admin']:
+                # Ya it's fine 
+                pass 
+            else:
+                await ctx.send("You can't delete someone else's profile.")
+                return 
+        if command_operator == 'DEL' and user_profile is None:
+            await ctx.send(f"You don't have a profile set for `{profile.name}`.")
+            return
+        elif command_operator == 'DEL':
+            async with self.bot.database() as db:
+                await db('DELETE FROM filled_field WHERE user_id=$1 AND field_id in (SELECT field_id FROM field WHERE profile_id=$2)', user.id, profile.profile_id)
+                await db('DELETE FROM created_profile WHERE user_id=$1 AND profile_id=$2', user.id, profile.profile_id)
+            del UserProfile.all_profiles[(user.id, ctx.guild.id, profile.name)]
+            await ctx.send("Profile deleted.")
+            return
+
+        # Command invoke - GET
         if user_profile is None:
             await ctx.send(f"`{user!s}` don't have a profile for `{profile.name}`.")
-            return 
-
-        # Don't show if not verified
+            return
         if user_profile.verified:
             await ctx.send(embed=user_profile.build_embed())
             return

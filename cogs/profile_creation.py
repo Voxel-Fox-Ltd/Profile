@@ -126,12 +126,13 @@ class ProfileCreation(Cog):
             return
 
         # Make sure the bot can send the embed to the channel
-        try:
-            channel = await self.bot.fetch_channel(profile.verification_channel_id)
-            await channel.send(f"{user.id}/{profile.profile_id}", embed=up.build_embed())
-        except Exception as e:
-            await user.send(f"Your profile couldn't be send to the verification channel? `{e}`.")
-            return
+        if profile.verification_channel_id:
+            try:
+                channel = await self.bot.fetch_channel(profile.verification_channel_id)
+                await channel.send(f"{user.id}/{profile.profile_id}", embed=up.build_embed())
+            except Exception as e:
+                await user.send(f"Your profile couldn't be send to the verification channel? `{e}`.")
+                return
 
         # Database me up daddy
         async with self.bot.database() as db:

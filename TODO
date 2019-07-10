@@ -2,7 +2,7 @@ KEY:
     [ ] Feature critical
     < > Feature optional
 
-[x] Creating profile templates
+[] Creating profile templates
     [x] Approved users can create profile templates
     [x] Add fields
         [x] Types:
@@ -12,11 +12,13 @@ KEY:
             < > Boolean
         < > Allow optional fields
     [x] Set verification channel
+    [ ] Check that the name you pick is unique
 
 [x] Fill in profiles
     [x] Profiles can be filled in with the fields given
     [x] Error message for trying to make a profile that doesn't exist
     [x] Profiles are sent to a verification channel
+    [x] Only allow one profile per user
 
 [x] See profiles 
     [x] Your own

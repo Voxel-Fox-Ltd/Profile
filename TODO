@@ -25,8 +25,8 @@ KEY:
     [x] Others
     [x] Don't show if not verified
 
-[ ] Verification 
-    [ ] Allow a simple reaction ticker for approved users to approve/deny profiles 
+[x] Verification 
+    [x] Allow a simple reaction ticker for approved users to approve/deny profiles 
 
 < > Edit profiles 
     < > Approved users can edit other people's profiles 

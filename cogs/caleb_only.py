@@ -5,9 +5,10 @@ from contextlib import redirect_stdout
 
 from aiohttp import ClientSession
 from discord import Activity, ActivityType, User, Status, File
-from discord.ext.commands import command, Context, group, NotOwner, Cog, CommandOnCooldown, ExtensionAlreadyLoaded
+from discord.ext.commands import command, Context, group, NotOwner, CommandOnCooldown, ExtensionAlreadyLoaded
 
 from cogs.utils.custom_bot import CustomBot
+from cogs.utils.custom_cog import Cog
 
 
 class CalebOnly(Cog):

@@ -72,10 +72,15 @@ class ProfileTemplates(Cog):
 
             # Check name for length
             if 30 >= len(profile_name) >= 1:
-                pass 
+                pass
             else:
                 await ctx.send("The maximum length of a profile name is 30 characters. Please give another name.")
                 continue 
+
+            # Check name is unique
+            if Profile.all_guilds[ctx.guild.id].get(profile_name):
+                await ctx.send(f"This server already has a profile with name `{profile_name}`. Please provide another one.")
+                continue
             break
 
         # Get colour

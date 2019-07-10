@@ -33,9 +33,9 @@ KEY:
     < > You can edit your own profile 
     [ ] Edited profiles are marked as not verified 
 
-[ ] Delete profiles 
-    < > Approved users can delete other people's profiles 
-    [ ] You can delete your own profile 
+[x] Delete profiles 
+    <x> Approved users can delete other people's profiles 
+    [x] You can delete your own profile 
     < > Approved users can delete profile templates
 
 < > Edit profile templates

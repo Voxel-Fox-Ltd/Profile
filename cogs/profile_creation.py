@@ -9,6 +9,7 @@ from cogs.utils.profiles.profile import Profile
 from cogs.utils.profiles.filled_field import FilledField
 from cogs.utils.profiles.field_type import TextField, BooleanField, NumberField, ImageField, FieldCheckFailure
 from cogs.utils.profiles.user_profile import UserProfile
+from cogs.utils.checks import member_is_moderator
 
 
 class ProfileCreation(Cog):
@@ -67,7 +68,7 @@ class ProfileCreation(Cog):
         if command_operator == 'DEL' and user != ctx.author:
             # Check if they're a bot admin
             # TODO make that a util ^^
-            if [i for i in ctx.author.roles if i.name == 'ProfileBot Admin']:
+            if member_is_moderator(self.bot, ctx.author):
                 # Ya it's fine 
                 pass 
             else:

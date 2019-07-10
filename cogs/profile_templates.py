@@ -2,7 +2,7 @@ from asyncio import TimeoutError as AsyncTimeoutError
 from string import ascii_lowercase as ASCII_LOWERCASE, digits as DIGITS
 from uuid import UUID, uuid4 as generate_id
 
-from discord.ext.commands import command, Context, MissingRole, has_role
+from discord.ext.commands import command, Context, MissingPermissions, has_permissions
 
 from cogs.utils.custom_cog import Cog
 from cogs.utils.custom_bot import CustomBot
@@ -29,17 +29,17 @@ class ProfileTemplates(Cog):
             await ctx.send(text)
             raise error
 
-        if isinstance(error, MissingRole):
+        if isinstance(error, MissingPermissions):
             if ctx.author.id in self.bot.config['owners']:
                 return await ctx.reinvoke()
             if ctx.guild and ctx.author == ctx.guild.owner:
                 return await ctx.invoke()
-            await ctx.send(f"You need the `{error.missing_role}` permission to run this command.")
+            await ctx.send(f"You need the `{error.missing_perms[0]}` permission to run this command.")
             return
 
 
     @command()
-    @has_role('ProfileBot Admin')
+    @has_permissions(manage_roles=True)
     async def createtemplate(self, ctx:Context):
         '''Creates a new template for your guild'''
 

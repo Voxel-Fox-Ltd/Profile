@@ -6,6 +6,7 @@ from discord import (Guild, TextChannel, Reaction, Member, User,
 from cogs.utils.custom_bot import CustomBot
 from cogs.utils.custom_cog import Cog 
 from cogs.utils.profiles.user_profile import UserProfile
+from cogs.utils.checks import member_is_moderator
 
 
 class ProfileVerification(Cog):
@@ -59,9 +60,8 @@ class ProfileVerification(Cog):
         if member.bot:
             return
 
-        # Check their roles
-        roles: List[Role] = member.roles
-        if not [i for i in roles if i.name == 'ProfileBot Admin' or member.guild.owner == member or member.id in self.bot.config['owners']]:
+        # Check their permissions
+        if not member_is_moderator(self.bot, member):
             return
 
         # And FINALLY we can check their emoji

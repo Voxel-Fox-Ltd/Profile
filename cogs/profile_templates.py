@@ -40,16 +40,16 @@ class ProfileTemplates(Cog):
 
     @command()
     @has_role('ProfileBot Admin')
-    async def createprofile(self, ctx:Context):
-        '''Creates a new profile for your guild'''
+    async def createtemplate(self, ctx:Context):
+        '''Creates a new template for your guild'''
 
-        # Send the flavour text behind getting a profile name
+        # Send the flavour text behind getting a template name
         clean_prefix = ctx.prefix if '<@' not in ctx.prefix else str(self.bot.get_user(int(''.join([i for i in ctx.prefix if i.isdigit()]))))
-        await ctx.send(''.join(["What name do you want to give this profile? ",
+        await ctx.send(''.join(["What name do you want to give this template? ",
             "This will be used for the set and get commands, eg if the name of your ",
-            f"profile is `test`, the commands generated will be `{clean_prefix}settest` ",
-            f"to set a user's profile, `{clean_prefix}gettest` to get a user's profile, ",
-            f"and `{clean_prefix}deletetest` to delete a user's profile. ",
+            f"template is `test`, the commands generated will be `{clean_prefix}settest` ",
+            f"to set a profile, `{clean_prefix}gettest` to get a profile, ",
+            f"and `{clean_prefix}deletetest` to delete a profile. ",
             "A profile name is case insensitive.",
         ]))
 
@@ -61,7 +61,7 @@ class ProfileTemplates(Cog):
 
             # Catch timeout
             except AsyncTimeoutError:
-                await ctx.send(f"{ctx.author.mention}, your profile creation has timed out after 2 minutes of inactivity.")
+                await ctx.send(f"{ctx.author.mention}, your template creation has timed out after 2 minutes of inactivity.")
                 return
 
             # Check name for characters
@@ -79,7 +79,7 @@ class ProfileTemplates(Cog):
 
             # Check name is unique
             if Profile.all_guilds[ctx.guild.id].get(profile_name):
-                await ctx.send(f"This server already has a profile with name `{profile_name}`. Please provide another one.")
+                await ctx.send(f"This server already has a template with name `{profile_name}`. Please provide another one.")
                 continue
             break
 

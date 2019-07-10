@@ -107,7 +107,7 @@ class ProfileVerification(Cog):
                 await user.send(f"Your profile for `{profile.profile.name}` on `{guild.name}` has been verified.", embed=profile.build_embed())
             else:
                 await user.send(f"Your profile for `{profile.profile.name}` on `{guild.name}` has been denied.", embed=profile.build_embed())
-        except Exception as e:
+        except Exception:
             # Issues sending info to the user, just fail silently
             # raise e 
             pass

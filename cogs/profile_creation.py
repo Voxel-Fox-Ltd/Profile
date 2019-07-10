@@ -106,7 +106,7 @@ class ProfileCreation(Cog):
         # See if you we can send them the PM
         try:
             await user.send(f"Now talking you through setting up a `{profile.name}` profile.")
-            await ctx.send("Send you a PM!")
+            await ctx.send("Sent you a PM!")
         except Exception:
             await ctx.send("I'm unable to send you PMs to set up your profile :/")
             return
@@ -156,7 +156,7 @@ class ProfileCreation(Cog):
                 channel = await self.bot.fetch_channel(profile.verification_channel_id)
                 embed = up.build_embed()
                 embed.set_footer(text=f'{profile.name.upper()} // Verification Check')
-                v = await channel.send(f"**{profile.name}** submission from {user.mention}\n{user.id}/{profile.profile_id}", embed=embed)
+                v = await channel.send(f"New **{profile.name}** submission from {user.mention}\n{user.id}/{profile.profile_id}", embed=embed)
                 await v.add_reaction(self.TICK_EMOJI)
                 await v.add_reaction(self.CROSS_EMOJI)
             except Exception as e:

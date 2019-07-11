@@ -89,8 +89,7 @@ class Misc(Cog):
         '''Gives you an invite link for the bot'''
 
         await ctx.send(
-            f"<https://discordapp.com/oauth2/authorize?client_id={self.bot.user.id}&scope=bot&permissions=314432>",
-            embeddify=False
+            f"<https://discordapp.com/oauth2/authorize?client_id={self.bot.user.id}&scope=bot&permissions=314432>"
         )
 
 

@@ -166,10 +166,13 @@ class Misc(Cog):
         embed.set_footer(text=str(self.bot.user), icon_url=self.bot.user.avatar_url)
         embed.add_field(name="ProfileBot", value="A bot to make the process of filling out forms fun.")
         creator_id = self.bot.config["owners"][0]
-        creator = await self.bot.get_name(creator_id)
-        embed.add_field(name="Creator", value=f"{creator}\n{creator_id}")
+        creator = await self.bot.fetch_user(creator_id)
+        embed.add_field(name="Creator", value=f"{creator!s}\n{creator_id}")
         embed.add_field(name="Library", value=f"Discord.py {dpy_version}")
-        embed.add_field(name="Average Guild Count", value=int((len(self.bot.guilds) / len(self.bot.shard_ids)) * self.bot.shard_count))
+        try:
+            embed.add_field(name="Average Guild Count", value=int((len(self.bot.guilds) / len(self.bot.shard_ids)) * self.bot.shard_count))
+        except TypeError:
+            embed.add_field(name="Guild Count", value=len(self.bot.guilds))
         embed.add_field(name="Shard Count", value=self.bot.shard_count)
         embed.add_field(name="Average WS Latency", value=f"{(self.bot.latency * 1000):.2f}ms")
         embed.add_field(name="Coroutines", value=f"{len([i for i in Task.all_tasks() if not i.done()])} running, {len(Task.all_tasks())} total.")

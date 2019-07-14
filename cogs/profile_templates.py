@@ -1,6 +1,7 @@
 from asyncio import TimeoutError as AsyncTimeoutError
 from string import ascii_lowercase as ASCII_LOWERCASE, digits as DIGITS
 from uuid import UUID, uuid4 as generate_id
+from typing import List
 
 from discord.ext.commands import command, Context, MissingPermissions, has_permissions, MissingRole
 
@@ -8,6 +9,8 @@ from cogs.utils.custom_cog import Cog
 from cogs.utils.custom_bot import CustomBot
 from cogs.utils.profiles.field import Field
 from cogs.utils.profiles.profile import Profile
+from cogs.utils.profiles.user_profile import UserProfile
+from cogs.utils.profiles.filled_field import FilledField
 from cogs.utils.profiles.field_type import TextField, NumberField, BooleanField
 
 
@@ -36,6 +39,83 @@ class ProfileTemplates(Cog):
                 return await ctx.invoke()
             await ctx.send(f"You need the `{error.missing_perms[0]}` permission to run this command.")
             return
+
+
+    @command()
+    @has_permissions(manage_roles=True)
+    async def deletetemplate(self, ctx:Context, template_name:str):
+        '''Deletes a template for your guild'''
+
+        # Grab template object
+        template: Profile = Profile.all_guilds[ctx.guild.id].get(template_name.lower())
+        if template is None:
+            await ctx.send(f"There's no template with the name `{template_name}` on this guild. Please see `{ctx.prefix}help` to see all the created templates.")
+            return
+
+        # Ask for confirmation
+        template_profiles: List[UserProfile] = [i for i in UserProfile.all_profiles.values() if i.profile_id == template.profile_id]
+        m = await ctx.send(f"By doing this, you'll delete `{len(template_profiles)}` of the created profiles under this template as well. Would you like to proceed?")
+        await m.add_reaction(self.TICK_EMOJI)
+        await m.add_reaction(self.CROSS_EMOJI)
+        check = lambda r, u: r.message.id == m.id and str(r.emoji) in [self.TICK_EMOJI, self.CROSS_EMOJI] and u.id == ctx.author.id
+        try:
+            r, _ = await self.bot.wait_for('reaction_add', check=check, timeout=120)
+        except AsyncTimeoutError:
+            await ctx.send("No response recieved in 120 seconds, cancelling template delete.")
+            return
+        
+        # Check if they said no
+        if str(r.emoji) == self.CROSS_EMOJI:
+            await ctx.send("Got it, cancelling template delete.")
+            return
+
+        # Make sure the emoji is actually valid
+        elif str(r.emoji) == self.TICK_EMOJI:
+            pass 
+        else:
+            raise Exception("Bot made a fucky wucky")
+
+        # Okay time to delete from the database
+        async with self.bot.database() as db:
+            await db('DELETE FROM filled_field WHERE field_id IN (SELECT field_id FROM field WHERE profile_id=$1)', template.profile_id)
+            await db('DELETE FROM created_profile WHERE profile_id=$1', template.profile_id)
+            await db('DELETE FROM field WHERE profile_id=$1', template.profile_id)
+            await db('DELETE FROM profile WHERE profile_id=$1', template.profile_id)
+        
+        # And I'll just try to delete things from cache as best I can
+        # First grab all the fields and filled fields - I grabbed the created profiles earlier
+        fields: List[Field] = []
+        filled_fields: List[FilledField] = []
+        for t in template_profiles:
+            for f in t.filled_fields:
+                fields.append(f.field)
+                filled_fields.append(f) 
+
+        # Loop over the fields and delete em
+        for f in fields:
+            try: del f.all_fields[f.field_id]
+            except KeyError: pass
+            try: del f.all_profile_fields[f.profile_id]
+            except KeyError: pass
+
+        # Loop over the filled fields
+        for f in filled_fields:
+            try: del f.all_filled_fields[(f.user_id, f.field_id)]
+            except KeyError: pass 
+        
+        # Loop over the created profiles 
+        for c in template_profiles:
+            try: del c.all_profiles[(c.user_id, ctx.guild.id, template_name)]
+            except KeyError: pass 
+        
+        # Delete the profile
+        try: del template.all_profiles[template.profile_id]
+        except KeyError: pass 
+        try: del template.all_guilds[ctx.guild.id][template.name]
+        except KeyError: pass
+
+        # Wew all deleted
+        await ctx.send("Template, fields, and all created profiles have been deleted from the database and cache.")
 
 
     @command()
@@ -79,8 +159,8 @@ class ProfileTemplates(Cog):
 
             # Check name is unique
             if Profile.all_guilds[ctx.guild.id].get(profile_name):
-                await ctx.send(f"This server already has a template with name `{profile_name}`. Please provide another one.")
-                continue
+                await ctx.send(f"This server already has a template with name `{profile_name}`. Please run this command again to provide another one.")
+                return
             break
 
         # Get colour
@@ -177,19 +257,20 @@ class ProfileTemplates(Cog):
         field_prompt = field_prompt_message.content
 
         # Get timeout
-        await ctx.send("How many seconds should I wait for people to fill out this field (I recommend 120 seconds)?")
-        while True:
-            try:
-                field_timeout_message = await self.bot.wait_for('message', check=message_check, timeout=120)
-            except AsyncTimeoutError:
-                await ctx.send("Creating a new field has timed out. The profile is being created with the fields currently added.")
-                return None
-            try:
-                timeout = int(field_timeout_message.content)
-                break
-            except ValueError:
-                await ctx.send("I couldn't convert your message into a number. Please try again.")
-        field_timeout = timeout
+        # await ctx.send("How many seconds should I wait for people to fill out this field (I recommend 120 seconds)?")
+        # while True:
+        #     try:
+        #         field_timeout_message = await self.bot.wait_for('message', check=message_check, timeout=120)
+        #     except AsyncTimeoutError:
+        #         await ctx.send("Creating a new field has timed out. The profile is being created with the fields currently added.")
+        #         return None
+        #     try:
+        #         timeout = int(field_timeout_message.content)
+        #         break
+        #     except ValueError:
+        #         await ctx.send("I couldn't convert your message into a number. Please try again.")
+        # field_timeout = timeout
+        field_timeout = 120
 
         # Get field type 
         NUMBERS = '\U00000031\U000020e3'

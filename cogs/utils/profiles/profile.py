@@ -1,4 +1,4 @@
-from typing import List
+from typing import Dict, List
 from uuid import UUID
 from collections import defaultdict
 
@@ -9,8 +9,8 @@ from cogs.utils.profiles.field import Field
 
 class Profile(object):
 
-    all_profiles = {}
-    all_guilds = defaultdict(dict)
+    all_profiles: Dict['profile_id', 'Profile'] = {}
+    all_guilds: Dict['guild_id', Dict['name', 'Profile']] = defaultdict(dict)
 
     def __init__(self, profile_id:UUID, colour:int, guild_id:int, verification_channel_id:int, name:str):
         self.profile_id = profile_id 

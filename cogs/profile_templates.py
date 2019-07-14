@@ -2,7 +2,7 @@ from asyncio import TimeoutError as AsyncTimeoutError
 from string import ascii_lowercase as ASCII_LOWERCASE, digits as DIGITS
 from uuid import UUID, uuid4 as generate_id
 
-from discord.ext.commands import command, Context, MissingPermissions, has_permissions
+from discord.ext.commands import command, Context, MissingPermissions, has_permissions, MissingRole
 
 from cogs.utils.custom_cog import Cog
 from cogs.utils.custom_bot import CustomBot
@@ -194,23 +194,26 @@ class ProfileTemplates(Cog):
         # Get field type 
         NUMBERS = '\U00000031\U000020e3'
         LETTERS = '\U0001f1e6'
-        # PICTURE = '\U0001f5bc'  TODO make this work or something
-        TICK = '\U00002705'
-        field_type_message = await ctx.send(f"What TYPE is this field? Will you be getting numbers ({NUMBERS}), text ({LETTERS}), or a yes/no ({TICK})?")
+        PICTURE = '\U0001f5bc'  # TODO make this work or something
+        TICK = '\U00002705'  # TODO make this work or something
+        field_type_message = await ctx.send(f"What TYPE is this field? Will you be getting numbers ({NUMBERS}), or text ({LETTERS})?")  #, or a yes/no ({TICK})?")
         await field_type_message.add_reaction(NUMBERS)
         await field_type_message.add_reaction(LETTERS)
-        await field_type_message.add_reaction(TICK)
-        field_type_check = lambda r, u: str(r.emoji) in [NUMBERS, LETTERS, TICK] and u == ctx.author
+        # await field_type_message.add_reaction(TICK)
+        field_type_check = lambda r, u: str(r.emoji) in [NUMBERS, LETTERS, TICK, PICTURE] and u == ctx.author
         try:
             reaction, _ = await self.bot.wait_for('reaction_add', check=field_type_check, timeout=120)
             emoji = str(reaction.emoji)
         except AsyncTimeoutError:
             await ctx.send("Picking a field type has timed out - defaulting to text.") 
             emoji = LETTERS
-        if emoji == NUMBERS: field_type = NumberField() 
-        elif emoji == LETTERS: field_type = TextField()
-        elif emoji == TICK: field_type = BooleanField()
-        else: raise Exception("Shouldn't be reached")
+
+        field_type = {
+            NUMBERS: NumberField,
+            LETTERS: TextField,
+            TICK: BooleanField,
+            PICTURE: None,  # TODO
+        }.get(emoji, Exception("Shouldn't be reached."))()
 
 
         # Get whether the field is optional

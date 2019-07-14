@@ -67,7 +67,6 @@ class ProfileCreation(Cog):
         # Command invoke - DEL
         if command_operator == 'DEL' and user != ctx.author:
             # Check if they're a bot admin
-            # TODO make that a util ^^
             if member_is_moderator(self.bot, ctx.author):
                 # Ya it's fine 
                 pass 

@@ -81,6 +81,7 @@ class ProfileTemplates(Cog):
             await db('DELETE FROM created_profile WHERE profile_id=$1', template.profile_id)
             await db('DELETE FROM field WHERE profile_id=$1', template.profile_id)
             await db('DELETE FROM profile WHERE profile_id=$1', template.profile_id)
+        self.log_handler.info(f"Template '{template.name}' deleted on guild {ctx.guild.id}")
         
         # And I'll just try to delete things from cache as best I can
         # First grab all the fields and filled fields - I grabbed the created profiles earlier
@@ -206,7 +207,8 @@ class ProfileTemplates(Cog):
                 await db('INSERT INTO field (field_id, name, index, prompt, timeout, field_type, optional, profile_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)', field.field_id, field.name, field.index, field.prompt, field.timeout, field.field_type.name, field.optional, field.profile_id)
 
         # Output to user
-        await ctx.send(f"Your profile has been created with {len(profile.fields)} fields.")
+        self.log_handler.info(f"New template '{profile.name}' created on guild {ctx.guild.id}")
+        await ctx.send(f"Your template has been created with {len(profile.fields)} fields.")
 
 
     async def create_new_field(self, ctx:Context, profile_id:UUID, index:int, image_set:bool=False) -> Field:

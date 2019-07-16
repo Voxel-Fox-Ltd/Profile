@@ -38,6 +38,10 @@ class ProfileCreation(Cog):
             profile_name = command_name[6:]
         else:
             return  # Silently fail if it's an invalid command
+        if ctx.guild:
+            self.log_handler.debug(f"Command '{command_name} {profile_name}' run by {ctx.author.id} on {ctx.guild.id}/{ctx.channel.id}")
+        else:
+            self.log_handler.debug(f"Command '{command_name} {profile_name}' run by {ctx.author.id} on PMs/{ctx.channel.id}")
         args = ctx.message.content[len(ctx.prefix) + len(ctx.invoked_with):].strip().split()
 
         # See if the command exists on their server

@@ -208,7 +208,7 @@ class ProfileTemplates(Cog):
 
         # Output to user
         self.log_handler.info(f"New template '{profile.name}' created on guild {ctx.guild.id}")
-        await ctx.send(f"Your template has been created with {len(profile.fields)} fields.")
+        await ctx.send(f"Your template has been created with {len(profile.fields)} fields. Users can now run `{ctx.prefix}set{profile.name.lower()}` to set a profile, or `{ctx.prefix}get{profile.name.lower()} @User` to get the profile of another user.")
 
 
     async def create_new_field(self, ctx:Context, profile_id:UUID, index:int, image_set:bool=False) -> Field:
@@ -279,7 +279,7 @@ class ProfileTemplates(Cog):
 
         # Get field type 
         NUMBERS = '\U00000031\U000020e3'
-        LETTERS = '\U0001f1e6'
+        LETTERS = '\U0001F170'
         PICTURE = '\U0001f5bc'  # TODO make this work or something
         TICK = '\U00002705'  # TODO make this work or something
         if image_set:

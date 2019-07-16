@@ -38,7 +38,7 @@ class UserProfile(object):
         embed.colour = self.profile.colour 
         embed.title = f"{self.profile.name.title()} profile"
         for f in fields:
-            if isinstance(f.field.field_type, ImageField):
+            if isinstance(f.field.field_type, ImageField) or f.field.field_type == ImageField:
                 embed.set_image(url=f.value)
             else:
                 embed.add_field(name=f.field.name, value=f.value)

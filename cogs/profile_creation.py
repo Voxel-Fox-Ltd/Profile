@@ -118,13 +118,13 @@ class ProfileCreation(Cog):
             await user.send(field.prompt)
 
             # User text input
-            if isinstance(field.field_type, (TextField, NumberField, ImageField)):
+            if isinstance(field.field_type, (TextField, NumberField)) or field.field_type in [TextField, NumberField]:
                 check = lambda m: m.author == user and isinstance(m.channel, DMChannel)
                 while True:
                     try:
                         m = await self.bot.wait_for('message', check=check, timeout=field.timeout)
                     except AsyncTimeoutError:
-                        await ctx.send(f"Your input for this field has timed out. Please try running `set{profile.name}` on your server again.")
+                        await user.send(f"Your input for this field has timed out. Please try running `set{profile.name}` on your server again.")
                         return
                     try:
                         field.field_type.check(m.content)
@@ -134,24 +134,21 @@ class ProfileCreation(Cog):
                         await user.send(e.message)
 
             # Image input
-            elif isinstance(field.field_type, ImageField):
+            elif isinstance(field.field_type, ImageField) or field.field_type == ImageField:
                 check = lambda m: m.author == user and isinstance(m.channel, DMChannel)
                 while True:
                     try:
                         m = await self.bot.wait_for('message', check=check, timeout=field.timeout)
                     except AsyncTimeoutError:
-                        await ctx.send(f"Your input for this field has timed out. Please try running `set{profile.name}` on your server again.")
+                        await user.send(f"Your input for this field has timed out. Please try running `set{profile.name}` on your server again.")
                         return
                     try:
                         if m.attachments:
-                            try:
-                                m.attachments[0].height
-                                field_content = m.attachments[0].url
-                                break
-                            except AttributeError:
-                                pass
-                        field.field_type.check(m.content)
-                        field_content = m.content
+                            content = m.attachments[0].url
+                        else:
+                            content = m.content
+                        field.field_type.check(content)
+                        field_content = content
                         break
                     except FieldCheckFailure as e:
                         await user.send(e.message)
@@ -160,6 +157,11 @@ class ProfileCreation(Cog):
             elif isinstance(field.field_type, BooleanField):
                 # TODO
                 pass
+
+            else:
+                # print(field.field_type)
+                # print(ImageField)
+                raise Exception(f"Field type {field.field_type} is not catered for")
 
             # Add field to list
             filled_fields.append(FilledField(user.id, field.field_id, field_content))

@@ -11,7 +11,7 @@ from cogs.utils.profiles.field import Field
 from cogs.utils.profiles.profile import Profile
 from cogs.utils.profiles.user_profile import UserProfile
 from cogs.utils.profiles.filled_field import FilledField
-from cogs.utils.profiles.field_type import TextField, NumberField, BooleanField
+from cogs.utils.profiles.field_type import TextField, NumberField, BooleanField, ImageField
 
 
 class ProfileTemplates(Cog):
@@ -190,8 +190,11 @@ class ProfileTemplates(Cog):
         # Now we start the field loop
         index = 0
         field = True
+        image_set = False
         while field:
-            field = await self.create_new_field(ctx, profile.profile_id, index)
+            field = await self.create_new_field(ctx, profile.profile_id, index, image_set)
+            if field:
+                image_set = isinstance(field.field_type, ImageField) or image_set
             index += 1
             if index == 20:
                 break
@@ -206,7 +209,7 @@ class ProfileTemplates(Cog):
         await ctx.send(f"Your profile has been created with {len(profile.fields)} fields.")
 
 
-    async def create_new_field(self, ctx:Context, profile_id:UUID, index:int) -> Field:
+    async def create_new_field(self, ctx:Context, profile_id:UUID, index:int, image_set:bool=False) -> Field:
         '''Lets a user create a new field in their profile'''
 
         # Ask if they want a new field
@@ -277,10 +280,15 @@ class ProfileTemplates(Cog):
         LETTERS = '\U0001f1e6'
         PICTURE = '\U0001f5bc'  # TODO make this work or something
         TICK = '\U00002705'  # TODO make this work or something
-        field_type_message = await ctx.send(f"What TYPE is this field? Will you be getting numbers ({NUMBERS}), or text ({LETTERS})?")  #, or a yes/no ({TICK})?")
+        if image_set:
+            text = f"What TYPE is this field? Will you be getting numbers ({NUMBERS}), or text ({LETTERS})?"
+        else:
+            text = f"What TYPE is this field? Will you be getting numbers ({NUMBERS}), text ({LETTERS}), or an image ({PICTURE})?"
+        field_type_message = await ctx.send(text)
         await field_type_message.add_reaction(NUMBERS)
         await field_type_message.add_reaction(LETTERS)
-        # await field_type_message.add_reaction(TICK)
+        if not image_set:
+            await field_type_message.add_reaction(PICTURE)
         field_type_check = lambda r, u: str(r.emoji) in [NUMBERS, LETTERS, TICK, PICTURE] and u == ctx.author
         try:
             reaction, _ = await self.bot.wait_for('reaction_add', check=field_type_check, timeout=120)
@@ -293,8 +301,10 @@ class ProfileTemplates(Cog):
             NUMBERS: NumberField,
             LETTERS: TextField,
             TICK: BooleanField,
-            PICTURE: None,  # TODO
+            PICTURE: ImageField,  # TODO
         }.get(emoji, Exception("Shouldn't be reached."))()
+        if isinstance(field_type, ImageField) and image_set:
+            raise Exception("You lil shit")
 
 
         # Get whether the field is optional

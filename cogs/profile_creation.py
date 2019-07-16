@@ -128,6 +128,30 @@ class ProfileCreation(Cog):
                         return
                     try:
                         field.field_type.check(m.content)
+                        field_content = m.content
+                        break
+                    except FieldCheckFailure as e:
+                        await user.send(e.message)
+
+            # Image input
+            elif isinstance(field.field_type, ImageField):
+                check = lambda m: m.author == user and isinstance(m.channel, DMChannel)
+                while True:
+                    try:
+                        m = await self.bot.wait_for('message', check=check, timeout=field.timeout)
+                    except AsyncTimeoutError:
+                        await ctx.send(f"Your input for this field has timed out. Please try running `set{profile.name}` on your server again.")
+                        return
+                    try:
+                        if m.attachments:
+                            try:
+                                m.attachments[0].height
+                                field_content = m.attachments[0].url
+                                break
+                            except AttributeError:
+                                pass
+                        field.field_type.check(m.content)
+                        field_content = m.content
                         break
                     except FieldCheckFailure as e:
                         await user.send(e.message)
@@ -138,7 +162,7 @@ class ProfileCreation(Cog):
                 pass
 
             # Add field to list
-            filled_fields.append(FilledField(user.id, field.field_id, m.content))
+            filled_fields.append(FilledField(user.id, field.field_id, field_content))
 
         # Make the UserProfile object
         up = UserProfile(user.id, profile.profile_id, profile.verification_channel_id == None)

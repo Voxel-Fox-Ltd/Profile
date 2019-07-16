@@ -1,3 +1,6 @@
+import re
+
+
 class FieldCheckFailure(Exception):
     def __init__(self, message):
         self.message = message
@@ -61,6 +64,13 @@ class NumberField(FieldType):
 
 class ImageField(FieldType):
     name = 'IMAGE'
+    matcher = re.compile(r"(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png|jpeg|gif)")
+
+    @classmethod
+    def check(self, value):
+        if self.matcher.search(value):
+            return True
+        raise FieldCheckFailure("No valid image URL found.")
 
 
 class BooleanField(FieldType):
@@ -73,3 +83,9 @@ class BooleanField(FieldType):
     @classmethod
     def convert_to_database(self, value):
         return str(int(value))
+
+
+# FieldType.TEXTFIELD = TextField
+# FieldType.NUMBERFIELD = NumberField
+# FieldType.IMAGEFIELD = ImageField
+# FieldType.BOOLEANFIELD = BooleanField

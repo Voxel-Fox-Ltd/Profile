@@ -6,6 +6,7 @@ from discord import Embed
 from cogs.utils.profiles.profile import Profile
 from cogs.utils.profiles.field import Field
 from cogs.utils.profiles.filled_field import FilledField
+from cogs.utils.profiles.field_type import ImageField
 
 
 class UserProfile(object):
@@ -37,6 +38,9 @@ class UserProfile(object):
         embed.colour = self.profile.colour 
         embed.title = f"{self.profile.name.title()} profile"
         for f in fields:
-            embed.add_field(name=f.field.name, value=f.value)
+            if isinstance(f.field.field_type, ImageField):
+                embed.set_image(url=f.value)
+            else:
+                embed.add_field(name=f.field.name, value=f.value)
         # embed.set_footer(text=self.profile.name.upper())
         return embed

@@ -149,8 +149,8 @@ class ProfileTemplates(Cog):
             # Check name for characters
             profile_name = name_message.content.lower()
             if [i for i in profile_name if i not in ASCII_LOWERCASE + DIGITS]:
-                await ctx.send("You can only use normal lettering and digits in your command name. Please give another name.")
-                continue 
+                await ctx.send("You can only use normal lettering and digits in your command name. Please run this command again to set a new one.")
+                return
 
             # Check name for length
             if 30 >= len(profile_name) >= 1:
@@ -290,7 +290,7 @@ class ProfileTemplates(Cog):
         # Get field type 
         NUMBERS = '\U00000031\U000020e3'
         LETTERS = '\U0001F170'
-        PICTURE = '\U0001f5bc'  # TODO make this work or something
+        PICTURE = '\U0001f5bc'
         TICK = '\U00002705'  # TODO make this work or something
         if image_set:
             text = f"What TYPE is this field? Will you be getting numbers ({NUMBERS}), or text ({LETTERS})?"
@@ -312,8 +312,8 @@ class ProfileTemplates(Cog):
         field_type = {
             NUMBERS: NumberField,
             LETTERS: TextField,
-            TICK: BooleanField,
-            PICTURE: ImageField,  # TODO
+            TICK: BooleanField,  # TODO
+            PICTURE: ImageField,
         }.get(emoji, Exception("Shouldn't be reached."))()
         if isinstance(field_type, ImageField) and image_set:
             raise Exception("You lil shit")

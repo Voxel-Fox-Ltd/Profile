@@ -7,12 +7,13 @@ KEY:
     [x] Add fields
         [x] Types:
             [x] Text
-            < > Image
+            <x> Image
             [x] Number
             < > Boolean
         < > Allow optional fields
     [x] Set verification channel
     [x] Check that the name you pick is unique
+    < > Allow users to set a colour for their template
 
 [x] Fill in profiles
     [x] Profiles can be filled in with the fields given
@@ -36,7 +37,15 @@ KEY:
 [x] Delete profiles 
     <x> Approved users can delete other people's profiles 
     [x] You can delete your own profile 
-    < > Approved users can delete profile templates
+    <x> Approved users can delete profile templates
 
 < > Edit profile templates
     [ ] Approved users can edit profile templates
+
+< > Multiple profiles 
+    < > Allow a user to make multiple profiles
+    < > Allow a user to see a profile of theirs by a reaction menu on getprofile
+
+< > Role management 
+    < > Have PB add or remove a role on profile verification
+    < > Allow users to set a role to be added or removed

@@ -11,7 +11,11 @@ from cogs.utils.profiles.profile import Profile
 HELP_TEXT = '''
 ProfileBot is a bot which allows you to set profiles for users to fill in. These profiles could be things like character sheets, game tags, etc.
 
-Below you can see all of the commands I have available, but I'll briefly take you through some more general usage of how to set up a profile. Firstly you'd want to run `createtemplate` on your server, which starts the template creation process. From there, you can follow the prompts in order to set up a template that other users can fill in. Let's say, for example, you set up a template called `character`. From there, users can set up their own profiles with that template by running the `setcharacter` command (note that it's "set__character__"), where the bot will PM them and take them through filling out the template you set for them. After that you can run `getcharacter` (or `getcharacter @User`; note "get__character__") to see what they filled in.
+Below you can see all of the commands I have available, but I'll briefly take you through some more general usage of how to set up a profile. 
+
+Firstly you'd want to run `createtemplate` on your server, which starts the template creation process. From there, you can follow the prompts in order to set up a template that other users can fill in. Let's say, for example, you set up a template called `character`. 
+
+Following that, users can set up their own profiles with that template by running the `setcharacter` command (note that it's "set__character__"), where the bot will PM them and take them through filling out the template you set for them. After that you can run `getcharacter` (or `getcharacter @User`; note "get__character__") to see what they filled in.
 '''
 
 
@@ -98,8 +102,8 @@ class Help(Cog):
             profiles = list(Profile.all_guilds[ctx.guild.id].keys())
             if command_name is None and profiles:
                 help_embed.add_field(
-                    name="Available Profiles",
-                    value=', '.join(profiles)
+                    name=f"Profile Commands for {ctx.guild.name}",
+                    value='\n'.join([f"{ctx.prefix}set{i}, {ctx.prefix}get{i}, {ctx.prefix}delete{i}" for i in profiles])
                 )
         
         # Send it to the user

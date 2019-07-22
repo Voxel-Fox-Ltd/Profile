@@ -1,7 +1,7 @@
 from asyncio import TimeoutError as AsyncTimeoutError
 
 from discord import DMChannel
-from discord.ext.commands import CommandError, Context, CommandNotFound, MemberConverter
+from discord.ext.commands import CommandError, Context, CommandNotFound, MemberConverter, guild_only, NoPrivateMessage
 
 from cogs.utils.custom_bot import CustomBot
 from cogs.utils.custom_cog import Cog
@@ -41,7 +41,9 @@ class ProfileCreation(Cog):
         if ctx.guild:
             self.log_handler.debug(f"Command '{command_name} {profile_name}' run by {ctx.author.id} on {ctx.guild.id}/{ctx.channel.id}")
         else:
+            await ctx.send("You can't run this command in PMs - please try again in your server.")
             self.log_handler.debug(f"Command '{command_name} {profile_name}' run by {ctx.author.id} on PMs/{ctx.channel.id}")
+            return
         args = ctx.message.content[len(ctx.prefix) + len(ctx.invoked_with):].strip().split()
 
         # See if the command exists on their server

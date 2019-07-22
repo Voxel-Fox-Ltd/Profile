@@ -4,7 +4,7 @@ from uuid import UUID, uuid4 as generate_id
 from typing import List
 
 from discord import Permissions
-from discord.ext.commands import command, Context, MissingPermissions, has_permissions, MissingRole
+from discord.ext.commands import command, Context, MissingPermissions, has_permissions, MissingRole, guild_only, NoPrivateMessage
 
 from cogs.utils.custom_cog import Cog
 from cogs.utils.custom_bot import CustomBot
@@ -41,8 +41,13 @@ class ProfileTemplates(Cog):
             await ctx.send(f"You need the `{error.missing_perms[0]}` permission to run this command.")
             return
 
+        elif isinstance(error, NoPrivateMessage):
+            await ctx.send("You can't run this command in PMs - please try again in your server.")
+            return
+
 
     @command()
+    @guild_only()
     @has_permissions(manage_roles=True)
     async def deletetemplate(self, ctx:Context, template_name:str):
         '''Deletes a template for your guild'''
@@ -121,6 +126,7 @@ class ProfileTemplates(Cog):
 
 
     @command()
+    @guild_only()
     @has_permissions(manage_roles=True)
     async def createtemplate(self, ctx:Context):
         '''Creates a new template for your guild'''

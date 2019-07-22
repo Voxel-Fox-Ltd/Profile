@@ -1,7 +1,7 @@
 from asyncio import TimeoutError as AsyncTimeoutError
 
 from discord import DMChannel
-from discord.ext.commands import CommandError, Context, CommandNotFound, MemberConverter, guild_only, NoPrivateMessage
+from discord.ext.commands import CommandError, Context, CommandNotFound, MemberConverter, guild_only, NoPrivateMessage, BadArgument
 from asyncpg.exceptions import UniqueViolationError
 
 from cogs.utils.custom_bot import CustomBot
@@ -45,7 +45,7 @@ class ProfileCreation(Cog):
             await ctx.send("You can't run this command in PMs - please try again in your server.")
             self.log_handler.debug(f"Command '{command_name} {profile_name}' run by {ctx.author.id} on PMs/{ctx.channel.id}")
             return
-        args = ctx.message.content[len(ctx.prefix) + len(ctx.invoked_with):].strip().split()
+        args = ctx.message.content[len(ctx.prefix) + len(ctx.invoked_with):].strip()
 
         # See if the command exists on their server
         guild_commands = Profile.all_guilds[ctx.guild.id]
@@ -55,9 +55,12 @@ class ProfileCreation(Cog):
 
         # Convert some params
         try:
-            user = await MemberConverter().convert(ctx, args[0])
+            user = await MemberConverter().convert(ctx, args)
         except IndexError:
             user = ctx.author
+        except BadArgument:
+            await ctx.send(f"User `{args}` could not be found.")
+            return
         user_profile = UserProfile.all_profiles.get((user.id, ctx.guild.id, profile.name))
 
         # Command invoke - SET
@@ -93,7 +96,7 @@ class ProfileCreation(Cog):
 
         # Command invoke - GET
         if user_profile is None:
-            await ctx.send(f"`{user!s}` don't have a profile for `{profile.name}`.")
+            await ctx.send(f"`{user!s}` doesn't have a profile for `{profile.name}`.")
             return
         if user_profile.verified:
             await ctx.send(embed=user_profile.build_embed())

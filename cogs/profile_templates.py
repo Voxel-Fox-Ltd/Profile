@@ -241,7 +241,7 @@ class ProfileTemplates(Cog):
             return None 
     
         # Get a name for the new field
-        await ctx.send("What name should this field have?")
+        await ctx.send("What name should this field have (eg: `Name`, `Age`, `Image`, etc - this is what shows on the embed)?")
         while True:
             try:
                 field_name_message = await self.bot.wait_for('message', check=message_check, timeout=120)
@@ -253,11 +253,11 @@ class ProfileTemplates(Cog):
             if 256 >= len(field_name_message.content) >= 1:
                 break 
             else:
-                await ctx.send("The maximum length of a field name is 256 characters. Please give another name.")
+                await ctx.send("The maximum length of a field name is 256 characters. Please provide another name.")
         field_name = field_name_message.content 
 
         # Get a prompt for the field 
-        await ctx.send("What prompt should I send when I ask people to fill out this field?")
+        await ctx.send(f"What message should I send when I'm asking people to fill out this field (eg: `What is your {field_name.lower()}?`)?")
         while True:
             try:
                 field_prompt_message = await self.bot.wait_for('message', check=message_check, timeout=120)
@@ -268,7 +268,7 @@ class ProfileTemplates(Cog):
             if len(field_prompt_message.content) >= 1:
                 break
             else:
-                await ctx.send("You need to actually give text for the prompt.")
+                await ctx.send("You need to actually give text for the prompt :/")
         field_prompt = field_prompt_message.content
 
         # Get timeout

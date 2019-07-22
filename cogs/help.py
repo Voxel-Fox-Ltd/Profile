@@ -8,6 +8,13 @@ from cogs.utils.custom_cog import Cog
 from cogs.utils.profiles.profile import Profile
 
 
+HELP_TEXT = '''
+ProfileBot is a bot which allows you to set profiles for users to fill in. These profiles could be things like character sheets, game tags, etc.
+
+Below you can see all of the commands I have available, but I'll briefly take you through some more general usage of how to set up a profile. Firstly you'd want to run `createtemplate` on your server, which starts the template creation process. From there, you can follow the prompts in order to set up a template that other users can fill in. Let's say, for example, you set up a template called `character`. From there, users can set up their own profiles with that template by running the `setcharacter` command (note that it's "set__character__"), where the bot will PM them and take them through filling out the template you set for them. After that you can run `getcharacter` (or `getcharacter @User`; note "get__character__") to see what they filled in.
+'''
+
+
 class Help(Cog):
 
     def __init__(self, bot:CustomBot):
@@ -97,7 +104,7 @@ class Help(Cog):
         
         # Send it to the user
         try:
-            await ctx.author.send(embed=help_embed)
+            await ctx.author.send(HELP_TEXT, embed=help_embed)
             if ctx.guild:
                 await ctx.send('Sent you a PM!')
         except Exception:

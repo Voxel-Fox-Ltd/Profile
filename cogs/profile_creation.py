@@ -2,6 +2,7 @@ from asyncio import TimeoutError as AsyncTimeoutError
 
 from discord import DMChannel
 from discord.ext.commands import CommandError, Context, CommandNotFound, MemberConverter, guild_only, NoPrivateMessage
+from asyncpg.exceptions import UniqueViolationError
 
 from cogs.utils.custom_bot import CustomBot
 from cogs.utils.custom_cog import Cog
@@ -197,7 +198,12 @@ class ProfileCreation(Cog):
 
         # Database me up daddy
         async with self.bot.database() as db:
-            await db('INSERT INTO created_profile (user_id, profile_id, verified) VALUES ($1, $2, $3)', up.user_id, up.profile.profile_id, up.verified)
+            try:
+                await db('INSERT INTO created_profile (user_id, profile_id, verified) VALUES ($1, $2, $3)', up.user_id, up.profile.profile_id, up.verified)
+            except UniqueViolationError:
+                await db('UPDATE created_profile SET verified=$3 WHERE user_id=$1 AND profile_id=$2', up.user_id, up.profile.profile_id, up.verified)
+                await db('DELETE FROM filled_field WHERE user_id=$1 AND field_id in (SELECT field_id FROM field WHERE profile_id=$2)', up.user_id, up.profile.profile_id)
+                self.log_handler.warn(f"Deleted profile for {up.user_id} on UniqueViolationError")
             for field in filled_fields:
                 await db('INSERT INTO filled_field (user_id, field_id, value) VALUES ($1, $2, $3)', field.user_id, field.field_id, field.value)
         

@@ -49,3 +49,5 @@ KEY:
 < > Role management 
     < > Have PB add or remove a role on profile verification
     < > Allow users to set a role to be added or removed
+
+< > Allow guilds to configure their bot prefix

@@ -54,13 +54,14 @@ class ProfileCreation(Cog):
             return 
 
         # Convert some params
-        try:
-            user = await MemberConverter().convert(ctx, args)
-        except IndexError:
+        if args:
+            try:
+                user = await MemberConverter().convert(ctx, args)
+            except BadArgument:
+                await ctx.send(f"User `{args}` could not be found.")
+                return
+        else:
             user = ctx.author
-        except BadArgument:
-            await ctx.send(f"User `{args}` could not be found.")
-            return
         user_profile = UserProfile.all_profiles.get((user.id, ctx.guild.id, profile.name))
 
         # Command invoke - SET

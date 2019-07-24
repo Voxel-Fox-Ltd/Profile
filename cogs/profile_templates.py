@@ -177,7 +177,7 @@ class ProfileTemplates(Cog):
 
         # Get verification channel
         await ctx.send("What channel would you like the the verification process to happen in? If you want profiles to be verified automatically, just say `continue`.")
-        verification_channel = None
+        verification_channel_id = None
         try:
             verification_message = await self.bot.wait_for('message', check=lambda m: m.author == ctx.author and m.channel == ctx.channel, timeout=120)
         except AsyncTimeoutError:
@@ -188,6 +188,7 @@ class ProfileTemplates(Cog):
                 proper_permissions = Permissions()
                 proper_permissions.update(read_messages=True, add_external_emojis=True, send_messages=True, add_reactions=True, embed_links=True)
                 if verification_channel.permissions_for(ctx.guild.me).is_superset(proper_permissions):
+                    verification_channel_id = verification_channel.id
                     pass 
                 else:
                     await ctx.send("I don't have all the permissions I need to be able to send messages to that channel. I need `read messages`, `send messages`, `add external emojis`, `add reactions`, and `embed links`. Please update the channel permissions, and run this command again.")
@@ -200,7 +201,7 @@ class ProfileTemplates(Cog):
             profile_id=generate_id(),
             colour=colour,
             guild_id=ctx.guild.id,
-            verification_channel_id=verification_channel.id,
+            verification_channel_id=verification_channel_id,
             name=profile_name,
         )
 

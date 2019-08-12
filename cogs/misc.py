@@ -48,7 +48,7 @@ class Misc(Cog):
             return
 
 
-    @command(aliases=['upvote'])
+    @command(enabled=False, aliases=['upvote'])
     @cooldown(1, 5, BucketType.user)
     async def vote(self, ctx:Context):
         '''Gives you a link to upvote the bot'''

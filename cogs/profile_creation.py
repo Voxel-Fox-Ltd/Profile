@@ -99,7 +99,7 @@ class ProfileCreation(Cog):
         if user_profile is None:
             await ctx.send(f"`{user!s}` doesn't have a profile for `{profile.name}`.")
             return
-        if user_profile.verified:
+        if user_profile.verified or member_is_moderator(ctx.bot, ctx.author):
             await ctx.send(embed=user_profile.build_embed())
             return
         else:

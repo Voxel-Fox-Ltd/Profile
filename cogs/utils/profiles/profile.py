@@ -10,7 +10,7 @@ from cogs.utils.profiles.field import Field
 class Profile(object):
 
     all_profiles: typing.Dict['profile_id', 'Profile'] = {}
-    all_guilds: typing.Dict['guild_id', Dict['name', 'Profile']] = defaultdict(dict)
+    all_guilds: typing.Dict['guild_id', typing.Dict['name', 'Profile']] = defaultdict(dict)
 
     def __init__(self, profile_id:UUID, colour:int, guild_id:int, verification_channel_id:int, name:str):
         self.profile_id = profile_id 

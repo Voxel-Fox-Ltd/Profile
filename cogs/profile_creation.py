@@ -18,7 +18,7 @@ class ProfileCreation(Cog):
 
     TICK_EMOJI = "<:tickYes:596096897995899097>"
     CROSS_EMOJI = "<:crossNo:596096897769275402>"
-    COMMAND_REGEX = re.compile(r"(set|get|delete|edit)(.{1,30})( .{1,})?", re.IGNORECASE)
+    COMMAND_REGEX = re.compile(r"(set|get|delete|edit)(\S{1,30})( .*)?", re.IGNORECASE)
 
     def __init__(self, bot:CustomBot):
         super().__init__(self.__class__.__name__)
@@ -38,8 +38,7 @@ class ProfileCreation(Cog):
             return
 
         # Get the command and used profile
-        command_name = ctx.invoked_with 
-        matches = self.COMMAND_REGEX.search(command_name)
+        matches = self.COMMAND_REGEX.search(ctx.message.content)
         if matches:
             command_operator = matches.group(1)
             profile_name = matches.group(2)
@@ -62,6 +61,7 @@ class ProfileCreation(Cog):
             return
 
         # Get the optional arg
+        print(args)
         if args:
             try:
                 args = await MemberConverter().convert(ctx, args)
@@ -84,7 +84,7 @@ class ProfileCreation(Cog):
         """
 
     @command(enabled=False)
-    async def setprofilemeta(self, ctx:Context, profile:Profile, target_user:Member=None):
+    async def setprofilemeta(self, ctx:Context, profile:Profile, target_user:Member):
         """Talks a user through setting up a profile on a given server"""
 
         # Set up some variaballlales
@@ -196,7 +196,7 @@ class ProfileCreation(Cog):
         await user.send("Your profile has been created and saved.")
 
     @command(enabled=False)
-    async def deleteprofilemeta(self, ctx:Context, profile:Profile, target_user:Member=None):
+    async def deleteprofilemeta(self, ctx:Context, profile:Profile, target_user:Member):
         """Handles deleting a profile"""
 
         # Handle permissions
@@ -219,14 +219,14 @@ class ProfileCreation(Cog):
         await ctx.send("Profile deleted.")
 
     @command(enabled=False)
-    async def getprofilemeta(self, ctx:Context, profile:Profile, target_user:Member=None):
+    async def getprofilemeta(self, ctx:Context, profile:Profile, target_user:Member):
         """Gets a profile for a given member"""
 
         # See if there's a set profile
         user_profile = profile.get_profile_for_member(target_user or ctx.author)
         if user_profile is None:
             if target_user:
-                await ctx.send(f"{user.mention} doesn't have a profile for `{profile.name}`.")
+                await ctx.send(f"{target_user.mention} doesn't have a profile for `{profile.name}`.")
             else:
                 await ctx.send(f"You don't have a profile for `{profile.name}`.")
             return

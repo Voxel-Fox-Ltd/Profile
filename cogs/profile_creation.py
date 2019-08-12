@@ -56,7 +56,6 @@ class ProfileCreation(Cog):
             return
 
         # Get the optional arg
-        print(args)
         if args:
             try:
                 args = await MemberConverter().convert(ctx, args)
@@ -239,6 +238,119 @@ class ProfileCreation(Cog):
         else:
             await ctx.send(f"Your profile hasn't been verified yet.")
         return
+
+    @command(enabled=False)
+    async def editprofilemeta(self, ctx:Context, profile:Profile, target_user:Member):
+        """Talks a user through setting up a profile on a given server"""
+
+        # Set up some variaballlales
+        user = ctx.author 
+        target_user = target_user or user
+        fields = profile.fields 
+
+        # Check if they're setting someone else's profile and they're not a mod
+        if target_user != ctx.author and not member_is_moderator(ctx.bot, ctx.author):
+            await ctx.send(f"You're missing the `manage_roles` permission required to do this.")
+            return
+
+        # Check if they already have a profile set
+        user_profile = profile.get_profile_for_member(target_user)
+        if user_profile is None:
+            await ctx.send(f"{'You' if target_user == user else target_user.mention} {'have' if target_user == user else 'has'} no profile set for `{profile.name}`.")
+            return 
+
+        # See if you we can send them the PM
+        try:
+            await user.send(f"Now talking you through editing a `{profile.name}` profile{' for ' + target_user.mention if target_user != user else ''}.")
+            await ctx.send("Sent you a PM!")
+        except Exception:
+            await ctx.send("I'm unable to send you PMs to set up the profile :/")
+            return
+
+        # Talk the user through each field
+        filled_fields = []
+        for field, current in zip(fields, user_profile.filled_fields):
+            await user.send(field.prompt + f"\nThe current value for this field is `{current.value}`. Type **pass** to leave the value as it currently is.")
+
+            # User text input
+            if isinstance(field.field_type, (TextField, NumberField)):
+                check = lambda m: m.author == user and isinstance(m.channel, DMChannel)
+                while True:
+                    try:
+                        m = await self.bot.wait_for('message', check=check, timeout=field.timeout)
+                    except AsyncTimeoutError:
+                        await user.send(f"Your input for this field has timed out. Please try running `set{profile.name}` on your server again.")
+                        return
+                    if m.content.lower() == 'pass':
+                        m.content = current.value
+                    try:
+                        field.field_type.check(m.content)
+                        field_content = m.content
+                        break
+                    except FieldCheckFailure as e:
+                        await user.send(e.message)
+
+            # Image input
+            elif isinstance(field.field_type, ImageField):
+                check = lambda m: m.author == user and isinstance(m.channel, DMChannel)
+                while True:
+                    try:
+                        m = await self.bot.wait_for('message', check=check, timeout=field.timeout)
+                    except AsyncTimeoutError:
+                        await user.send(f"Your input for this field has timed out. Please try running `set{profile.name}` on your server again.")
+                        return
+                    if m.content.lower() == 'pass':
+                        m.content = current.value
+                    try:
+                        if m.attachments:
+                            content = m.attachments[0].url
+                        else:
+                            content = m.content
+                        field.field_type.check(content)
+                        field_content = content
+                        break
+                    except FieldCheckFailure as e:
+                        await user.send(e.message)
+
+            # Invalid field type apparently
+            else:
+                raise Exception(f"Field type {field.field_type} is not catered for")
+
+            # Add field to list
+            filled_fields.append(FilledField(target_user.id, field.field_id, field_content))
+
+        # Make the UserProfile object
+        user_profile.verified = profile.verification_channel_id == None
+
+        # Make sure the bot can send the embed at all
+        try:
+            await user.send(embed=user_profile.build_embed())
+        except Exception as e:
+            await user.send(f"Your profile couldn't be sent to you - `{e}`.\nPlease try again later.")
+            return
+
+        # Make sure the bot can send the embed to the channel
+        if profile.verification_channel_id:
+            try:
+                channel = await self.bot.fetch_channel(profile.verification_channel_id)
+                embed = user_profile.build_embed()
+                embed.set_footer(text=f'{profile.name.upper()} // Verification Check')
+                v = await channel.send(f"Edited **{profile.name}** submission from {target_user.mention}\n{target_user.id}/{profile.profile_id}", embed=embed)
+                await v.add_reaction(self.TICK_EMOJI)
+                await v.add_reaction(self.CROSS_EMOJI)
+            except Exception as e:
+                await user.send(f"Your profile couldn't be send to the verification channel? - `{e}`.")
+                return
+
+        # Database me up daddy
+        async with self.bot.database() as db:
+            await db('UPDATE created_profile SET verified=$3 WHERE user_id=$1 AND profile_id=$2', user_profile.user_id, user_profile.profile.profile_id, user_profile.verified)
+            await db('DELETE FROM filled_field WHERE user_id=$1 AND field_id in (SELECT field_id FROM field WHERE profile_id=$2)', user_profile.user_id, user_profile.profile.profile_id)
+            for field in filled_fields:
+                await db('INSERT INTO filled_field (user_id, field_id, value) VALUES ($1, $2, $3)', field.user_id, field.field_id, field.value)
+        
+        # Respond to user
+        await user.send("Your profile has been edited and saved.")
 
 
 def setup(bot:CustomBot):

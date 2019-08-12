@@ -1,7 +1,8 @@
 from asyncio import TimeoutError as AsyncTimeoutError
+import re
 
-from discord import DMChannel
-from discord.ext.commands import CommandError, Context, CommandNotFound, MemberConverter, guild_only, NoPrivateMessage, BadArgument
+from discord import DMChannel, Member
+from discord.ext.commands import CommandError, Context, CommandNotFound, MemberConverter, guild_only, NoPrivateMessage, BadArgument, command, MissingPermissions
 from asyncpg.exceptions import UniqueViolationError
 
 from cogs.utils.custom_bot import CustomBot
@@ -17,119 +18,105 @@ class ProfileCreation(Cog):
 
     TICK_EMOJI = "<:tickYes:596096897995899097>"
     CROSS_EMOJI = "<:crossNo:596096897769275402>"
+    COMMAND_REGEX = re.compile(r"(set|get|delete|edit)(.{1,30})( .{1,})?", re.IGNORECASE)
 
     def __init__(self, bot:CustomBot):
         super().__init__(self.__class__.__name__)
         self.bot = bot 
 
-
     async def on_command_error(self, ctx:Context, error:CommandError):
         '''General error handler, but actually just handles listening for 
         CommandNotFound so the bot can search for that custom command'''
 
-        if not isinstance(error, CommandNotFound):
+        # Missing permissions
+        if isinstance(error, MissingPermissions):
+            await ctx.send(f"You're missing the {error.missing_perms[0]} permission required to do this.")
             return
 
-        # Get the command
+        # Handle commandnotfound which is really just handling the set/get/delete/etc commands
+        elif not isinstance(error, CommandNotFound):
+            return
+
+        # Get the command and used profile
         command_name = ctx.invoked_with 
-        command_operator = command_name[0:3].upper()
-        if command_operator in ['SET', 'GET']:
-            profile_name = command_name[3:]
-        elif command_operator == 'DEL':
-            profile_name = command_name[6:]
+        matches = self.COMMAND_REGEX.search(command_name)
+        if matches:
+            command_operator = matches.group(1)
+            profile_name = matches.group(2)
+            try:
+                args = matches.group(3).strip()
+            except AttributeError:
+                args = None
         else:
             return  # Silently fail if it's an invalid command
-        if ctx.guild:
+
+        # Filter out DMs
+        if isinstance(ctx.channel, DMChannel):
+            await ctx.send("You can't run this command in PMs - please try again in your server.")
+            return
+
+        # Find the profile they asked for on their server
+        guild_commands = Profile.all_guilds[ctx.guild.id]
+        profile = guild_commands.get(profile_name)
+        if not profile:
+            return
+
+        # Get the optional arg
+        if args:
+            try:
+                args = await MemberConverter().convert(ctx, args)
+            except BadArgument:
+                await ctx.send(f"Member `{args}` could not be found.")
+                return
+
+        # Get the relevant command
+        command_to_run = self.bot.get_command(f'{command_operator.lower()}profilemeta')
+
+        # Invoke it
+        await ctx.invoke(command_to_run, profile, args)
+
+        """
             self.log_handler.debug(f"Command '{command_name} {profile_name}' run by {ctx.author.id} on {ctx.guild.id}/{ctx.channel.id}")
         else:
             await ctx.send("You can't run this command in PMs - please try again in your server.")
             self.log_handler.debug(f"Command '{command_name} {profile_name}' run by {ctx.author.id} on PMs/{ctx.channel.id}")
             return
-        args = ctx.message.content[len(ctx.prefix) + len(ctx.invoked_with):].strip()
+        """
 
-        # See if the command exists on their server
-        guild_commands = Profile.all_guilds[ctx.guild.id]
-        profile = guild_commands.get(profile_name)
-        if not profile:
-            return 
-
-        # Convert some params
-        if args:
-            try:
-                user = await MemberConverter().convert(ctx, args)
-            except BadArgument:
-                await ctx.send(f"User `{args}` could not be found.")
-                return
-        else:
-            user = ctx.author
-        user_profile = UserProfile.all_profiles.get((user.id, ctx.guild.id, profile.name))
-
-        # Command invoke - SET
-        if command_operator == 'SET' and user != ctx.author:
-            await ctx.send("You can't set someone else's profile.")
-            return
-        elif command_operator == 'SET' and user_profile is None:
-            await self.set_profile(ctx, profile)
-            return
-        elif command_operator == 'SET': 
-            await ctx.send(f"You already have a profile set for `{profile.name}`.")
-            return 
-
-        # Command invoke - DEL
-        if command_operator == 'DEL' and user != ctx.author:
-            # Check if they're a bot admin
-            if member_is_moderator(self.bot, ctx.author):
-                # Ya it's fine 
-                pass 
-            else:
-                await ctx.send("You can't delete someone else's profile.")
-                return 
-        if command_operator == 'DEL' and user_profile is None:
-            await ctx.send(f"You don't have a profile set for `{profile.name}`.")
-            return
-        elif command_operator == 'DEL':
-            async with self.bot.database() as db:
-                await db('DELETE FROM filled_field WHERE user_id=$1 AND field_id in (SELECT field_id FROM field WHERE profile_id=$2)', user.id, profile.profile_id)
-                await db('DELETE FROM created_profile WHERE user_id=$1 AND profile_id=$2', user.id, profile.profile_id)
-            del UserProfile.all_profiles[(user.id, ctx.guild.id, profile.name)]
-            await ctx.send("Profile deleted.")
-            return
-
-        # Command invoke - GET
-        if user_profile is None:
-            await ctx.send(f"`{user!s}` doesn't have a profile for `{profile.name}`.")
-            return
-        if user_profile.verified or member_is_moderator(ctx.bot, ctx.author):
-            await ctx.send(embed=user_profile.build_embed())
-            return
-        else:
-            await ctx.send("That profile hasn't yet been verified.")
-            return
-
-
-    async def set_profile(self, ctx:Context, profile:Profile):
-        '''Talks a user through setting up a profile on a given server'''
+    @command(enabled=False)
+    async def setprofilemeta(self, ctx:Context, profile:Profile, target_user:Member=None):
+        """Talks a user through setting up a profile on a given server"""
 
         # Set up some variaballlales
         user = ctx.author 
+        target_user = target_user or user
         fields = profile.fields 
+
+        # Check if they're setting someone else's profile and they're not a mod
+        if target_user != ctx.author and not member_is_moderator(ctx.bot, ctx.author):
+            raise MissingPermissions(['manage_roles'])
+
+        # Check if they already have a profile set
+        user_profile = profile.get_profile_for_member(target_user)
+        if user_profile is not None:
+            await ctx.send(f"{'You' if target_user == user else target_user.mention} already {'have' if target_user == user else 'has'} a profile set for `{profile.name}`.")
+            return 
 
         # See if you we can send them the PM
         try:
-            await user.send(f"Now talking you through setting up a `{profile.name}` profile.")
+            await user.send(f"Now talking you through setting up a `{profile.name}` profile{' for ' + target_user.mention if target_user != user else ''}.")
             await ctx.send("Sent you a PM!")
         except Exception:
-            await ctx.send("I'm unable to send you PMs to set up your profile :/")
+            await ctx.send("I'm unable to send you PMs to set up the profile :/")
             return
 
         # Talk the user through each field
         filled_fields = []
         for field in fields:
-            # Send them the prompt
             await user.send(field.prompt)
 
             # User text input
-            if isinstance(field.field_type, (TextField, NumberField)) or field.field_type in [TextField, NumberField]:
+            if isinstance(field.field_type, (TextField, NumberField)):
                 check = lambda m: m.author == user and isinstance(m.channel, DMChannel)
                 while True:
                     try:
@@ -145,7 +132,7 @@ class ProfileCreation(Cog):
                         await user.send(e.message)
 
             # Image input
-            elif isinstance(field.field_type, ImageField) or field.field_type == ImageField:
+            elif isinstance(field.field_type, ImageField):
                 check = lambda m: m.author == user and isinstance(m.channel, DMChannel)
                 while True:
                     try:
@@ -164,27 +151,21 @@ class ProfileCreation(Cog):
                     except FieldCheckFailure as e:
                         await user.send(e.message)
 
-            # Reaction input
-            elif isinstance(field.field_type, BooleanField):
-                # TODO
-                pass
-
+            # Invalid field type apparently
             else:
-                # print(field.field_type)
-                # print(ImageField)
                 raise Exception(f"Field type {field.field_type} is not catered for")
 
             # Add field to list
-            filled_fields.append(FilledField(user.id, field.field_id, field_content))
+            filled_fields.append(FilledField(target_user.id, field.field_id, field_content))
 
         # Make the UserProfile object
-        up = UserProfile(user.id, profile.profile_id, profile.verification_channel_id == None)
+        up = UserProfile(target_user.id, profile.profile_id, profile.verification_channel_id == None)
 
         # Make sure the bot can send the embed at all
         try:
             await user.send(embed=up.build_embed())
         except Exception as e:
-            await user.send(f"Your profile couldn't be sent to you? `{e}`.")
+            await user.send(f"Your profile couldn't be sent to you - `{e}`.\nPlease try again later.")
             return
 
         # Make sure the bot can send the embed to the channel
@@ -193,11 +174,11 @@ class ProfileCreation(Cog):
                 channel = await self.bot.fetch_channel(profile.verification_channel_id)
                 embed = up.build_embed()
                 embed.set_footer(text=f'{profile.name.upper()} // Verification Check')
-                v = await channel.send(f"New **{profile.name}** submission from {user.mention}\n{user.id}/{profile.profile_id}", embed=embed)
+                v = await channel.send(f"New **{profile.name}** submission from {target_user.mention}\n{target_user.id}/{profile.profile_id}", embed=embed)
                 await v.add_reaction(self.TICK_EMOJI)
                 await v.add_reaction(self.CROSS_EMOJI)
             except Exception as e:
-                await user.send(f"Your profile couldn't be send to the verification channel? `{e}`.")
+                await user.send(f"Your profile couldn't be send to the verification channel? - `{e}`.")
                 return
 
         # Database me up daddy
@@ -213,6 +194,54 @@ class ProfileCreation(Cog):
         
         # Respond to user
         await user.send("Your profile has been created and saved.")
+
+    @command(enabled=False)
+    async def deleteprofilemeta(self, ctx:Context, profile:Profile, target_user:Member=None):
+        """Handles deleting a profile"""
+
+        # Handle permissions
+        if ctx.author != target_user and not member_is_moderator(self.bot, ctx.author):
+            raise MissingPermissions(['manage_roles'])
+
+        # Check it exists
+        if profile.get_profile_for_member(target_user or ctx.author) is None:
+            if target_user:
+                await ctx.send(f"{target_user.mention} doesn't have a profile set for `{profile.name}`.")
+            else:
+                await ctx.send(f"You don't have a profile set for `{profile.name}`.")
+            return
+
+        # Database it babey
+        async with self.bot.database() as db:
+            await db('DELETE FROM filled_field WHERE user_id=$1 AND field_id in (SELECT field_id FROM field WHERE profile_id=$2)', target_user.id, profile.profile_id)
+            await db('DELETE FROM created_profile WHERE user_id=$1 AND profile_id=$2', target_user.id, profile.profile_id)
+        del UserProfile.all_profiles[(target_user.id, ctx.guild.id, profile.name)]
+        await ctx.send("Profile deleted.")
+
+    @command(enabled=False)
+    async def getprofilemeta(self, ctx:Context, profile:Profile, target_user:Member=None):
+        """Gets a profile for a given member"""
+
+        # See if there's a set profile
+        user_profile = profile.get_profile_for_member(target_user or ctx.author)
+        if user_profile is None:
+            if target_user:
+                await ctx.send(f"{user.mention} doesn't have a profile for `{profile.name}`.")
+            else:
+                await ctx.send(f"You don't have a profile for `{profile.name}`.")
+            return
+
+        # See if verified
+        if user_profile.verified or member_is_moderator(ctx.bot, ctx.author):
+            await ctx.send(embed=user_profile.build_embed())
+            return
+    
+        # Not verified
+        if target_user:
+            await ctx.send(f"{target_user.mention}'s profile hasn't been verified yet.")
+        else:
+            await ctx.send(f"Your profile hasn't been verified yet.")
+        return
 
 
 def setup(bot:CustomBot):

@@ -28,13 +28,8 @@ class ProfileCreation(Cog):
         '''General error handler, but actually just handles listening for 
         CommandNotFound so the bot can search for that custom command'''
 
-        # Missing permissions
-        if isinstance(error, MissingPermissions):
-            await ctx.send(f"You're missing the {error.missing_perms[0]} permission required to do this.")
-            return
-
         # Handle commandnotfound which is really just handling the set/get/delete/etc commands
-        elif not isinstance(error, CommandNotFound):
+        if not isinstance(error, CommandNotFound):
             return
 
         # Get the command and used profile
@@ -94,7 +89,8 @@ class ProfileCreation(Cog):
 
         # Check if they're setting someone else's profile and they're not a mod
         if target_user != ctx.author and not member_is_moderator(ctx.bot, ctx.author):
-            raise MissingPermissions(['manage_roles'])
+            await ctx.send(f"You're missing the `manage_roles` permission required to do this.")
+            return
 
         # Check if they already have a profile set
         user_profile = profile.get_profile_for_member(target_user)
@@ -201,7 +197,8 @@ class ProfileCreation(Cog):
 
         # Handle permissions
         if ctx.author != target_user and not member_is_moderator(self.bot, ctx.author):
-            raise MissingPermissions(['manage_roles'])
+            await ctx.send(f"You're missing the `manage_roles` permission required to do this.")
+            return
 
         # Check it exists
         if profile.get_profile_for_member(target_user or ctx.author) is None:

@@ -29,6 +29,16 @@ CREATE TABLE profile(
 -- verification_channel_id - the channel that profiles are sent to for approval; if null then no approval needed
 
 
+CREATE TABLE guild_settings(
+    guild_id BIGINT NOT NULL,
+    prefix VARCHAN(30) DEFAULT ',',
+    PRIMARY KEY (guild_id)
+);
+-- A table to control a guild's specific settings
+-- prefix - the prefix of the bot for a specific server
+
+
+
 CREATE TYPE FIELDTYPE AS ENUM(
     '1000-CHAR',
     '200-CHAR',

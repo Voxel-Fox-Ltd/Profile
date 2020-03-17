@@ -1,4 +1,13 @@
-discord.py
-aioredis
+# Discord and config handling
+discord.py[voice]
+toml
+
+# Storage handling
 asyncpg
-psutil
+aioredis
+
+# Website handling
+aiohttp
+aiohttp_jinja2
+aiohttp_session
+jinja2

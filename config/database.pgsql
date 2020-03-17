@@ -1,3 +1,9 @@
+CREATE TABLE guild_settings(
+    guild_id BIGINT PRIMARY KEY,
+    prefix VARCHAR(30)
+);
+
+
 CREATE TABLE command_log(
     guild_id BIGINT,
     channel_id BIGINT,

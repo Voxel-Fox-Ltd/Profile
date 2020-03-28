@@ -1,21 +1,27 @@
-from uuid import UUID
-from collections import defaultdict
-from typing import Dict, List
+import uuid
+import collections
+import typing
 
 from cogs.utils.profiles.field_type import FieldType, TextField, ImageField, NumberField, BooleanField
 
 
 class Field(object):
+    """The abstract field object for a given template
+    This itself does not store any user information, but rather the meta information associated with
+    a field from a template
+    """
 
-    all_profile_fields: Dict['profile_id', List['Field']] = defaultdict(list)
-    all_fields: Dict['field_id', 'Field'] = {}
+    all_profile_fields: typing.Dict['profile_id', typing.List['Field']] = collections.defaultdict(list)
+    all_fields: typing.Dict['field_id', 'Field'] = {}
 
-    def __init__(self, field_id:UUID, name:str, index:int, prompt:str, timeout:int, field_type:FieldType, profile_id:UUID, optional:bool):
+    __slots__ = ("field_id", "index", "name", "prompt", "timeout", "field_type", "profile_id", "optional")
+
+    def __init__(self, field_id:uuid.UUID, name:str, index:int, prompt:str, timeout:int, field_type:FieldType, profile_id:uuid.UUID, optional:bool):
         self.field_id = field_id
-        self.index = index 
+        self.index = index
         self.name = name
-        self.prompt = prompt 
-        self.timeout = timeout 
+        self.prompt = prompt
+        self.timeout = timeout
         self.field_type = field_type if isinstance(field_type, FieldType) else {
             '1000-CHAR': TextField(),
             'INT': NumberField(),

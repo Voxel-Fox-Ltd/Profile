@@ -1,6 +1,6 @@
 import typing
-from uuid import UUID
-from collections import defaultdict
+import uuid
+import collections
 
 import discord
 
@@ -8,12 +8,17 @@ from cogs.utils.profiles.field import Field
 
 
 class Profile(object):
+    """A class for an abstract template object that's saved to guild
+    This contains no user data, but rather the metadata for the template itself
+    """
 
     all_profiles: typing.Dict['profile_id', 'Profile'] = {}
-    all_guilds: typing.Dict['guild_id', typing.Dict['name', 'Profile']] = defaultdict(dict)
+    all_guilds: typing.Dict['guild_id', typing.Dict['name', 'Profile']] = collections.defaultdict(dict)
 
-    def __init__(self, profile_id:UUID, colour:int, guild_id:int, verification_channel_id:int, name:str):
-        self.profile_id = profile_id 
+    __slots__ = ("profile_id", "colour", "guild_id", "verification_channel_id", "name")
+
+    def __init__(self, profile_id:uuid.UUID, colour:int, guild_id:int, verification_channel_id:int, name:str):
+        self.profile_id = profile_id
         self.colour = colour
         self.guild_id = guild_id
         self.verification_channel_id = verification_channel_id

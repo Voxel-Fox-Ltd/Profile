@@ -149,6 +149,10 @@ class ProfileTemplates(utils.Cog):
                     verification_channel_id = verification_channel.id
                 else:
                     return await ctx.send("I don't have all the permissions I need to be able to send messages to that channel. I need `read messages`, `send messages`, `add external emojis`, `add reactions`, and `embed links`. Please update the channel permissions, and run this command again.")
+            elif verification_message.content.lower() == "continue":
+                pass
+            else:
+                return await ctx.send(f"I couldn't quite work out what you were trying to say there - please mention the channel as a ping, eg {ctx.channel.mention}")
 
         # Get archive channel
         await ctx.send("Some servers want approved profiles to be sent automatically to a given channel - this is called archiving. What channel would you like verified profiles to be archived in? If you don't want to set up an archive channel, just say `continue`.")
@@ -166,6 +170,10 @@ class ProfileTemplates(utils.Cog):
                     archive_channel_id = archive_channel.id
                 else:
                     return await ctx.send("I don't have all the permissions I need to be able to send messages to that channel. I need `read messages`, `send messages`, `embed links`. Please update the channel permissions, and run this command again.")
+            elif verification_message.content.lower() == "continue":
+                pass
+            else:
+                return await ctx.send(f"I couldn't quite work out what you were trying to say there - please mention the channel as a ping, eg {ctx.channel.mention}")
 
         # Get an ID for the profile
         profile = utils.Profile(

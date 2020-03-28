@@ -1,8 +1,7 @@
-__pycache__/*
-*.pyc
-config/*.json
-*sublime*
+*.toml
+!*.example*
 _*
 !__*
-*.code*
-settings.json
+*.code-*
+.vscode
+__pycache__

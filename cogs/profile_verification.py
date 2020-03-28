@@ -22,7 +22,10 @@ class ProfileVerification(utils.Cog):
             channel: discord.TextChannel = await self.bot.fetch_channel(channel_id)
 
         # Get the message from the channel
-        message: discord.Message = await channel.fetch_message(payload.message_id)
+        try:
+            message: discord.Message = await channel.fetch_message(payload.message_id)
+        except discord.Forbidden:
+            return  # Can't read message history? We're probably not in the right channel
 
         # Check if we're the author
         if message.author.id != self.bot.user.id:

@@ -105,7 +105,7 @@ class ProfileCreation(utils.Cog):
                 try:
                     field_content = field.field_type.get_from_message(user_message)
                     break
-                except utils.FieldCheckFailure as e:
+                except utils.errors.FieldCheckFailure as e:
                     await user.send(e.message)
 
             # Add field to list
@@ -218,7 +218,7 @@ class ProfileCreation(utils.Cog):
                 try:
                     field_content = field.field_type.get_from_message(user_message)
                     break
-                except utils.FieldCheckFailure as e:
+                except utils.errors.FieldCheckFailure as e:
                     await user.send(e.message)
 
             # Add field to list

@@ -123,7 +123,7 @@ class ProfileCreation(utils.Cog):
         except discord.HTTPException as e:
             return await user.send(f"Your profile couldn't be sent to you, so the embed was probably hecked - `{e}`.\nPlease try again later.")
 
-        # Make sure the bot can send the embed to the channel
+        # Send the profile in for verification
         if profile.verification_channel_id:
             try:
                 channel = await self.bot.fetch_channel(profile.verification_channel_id)
@@ -133,9 +133,18 @@ class ProfileCreation(utils.Cog):
                 await v.add_reaction(self.TICK_EMOJI)
                 await v.add_reaction(self.CROSS_EMOJI)
             except discord.HTTPException as e:
-                return await user.send(f"Your profile couldn't be send to the verification channel? - `{e}`.")
+                return await user.send(f"Your profile couldn't be sent to the verification channel - `{e}`.")
             except AttributeError:
-                return await user.send(f"I don't think the verification channel exists - please tell an admin.")
+                return await user.send("The verification channel was deleted from the server - please tell an admin.")
+        elif profile.archive_channel_id:
+            try:
+                channel = self.bot.fetch_channel(profile.archive_channel_id)
+                embed = user_profile.build_embed()
+                await channel.send(embed=embed)
+            except discord.HTTPException as e:
+                return await user.send(f"Your profile couldn't be sent to the archive channel - `{e}`.")
+            except AttributeError:
+                pass  # The archive channel being deleted isn't too bad tbh
 
         # Database me up daddy
         async with self.bot.database() as db:
@@ -232,9 +241,18 @@ class ProfileCreation(utils.Cog):
                 await v.add_reaction(self.TICK_EMOJI)
                 await v.add_reaction(self.CROSS_EMOJI)
             except discord.HTTPException as e:
-                return await user.send(f"Your profile couldn't be send to the verification channel? - `{e}`.")
+                return await user.send(f"Your profile couldn't be sent to the verification channel - `{e}`.")
             except AttributeError:
-                return await user.send(f"I don't think the verification channel exists - please tell an admin.")
+                return await user.send("The verification channel was deleted from the server - please tell an admin.")
+        elif profile.archive_channel_id:
+            try:
+                channel = self.bot.fetch_channel(profile.archive_channel_id)
+                embed = user_profile.build_embed()
+                await channel.send(embed=embed)
+            except discord.HTTPException as e:
+                return await user.send(f"Your profile couldn't be sent to the archive channel - `{e}`.")
+            except AttributeError:
+                pass  # The archive channel being deleted isn't too bad tbh
 
         # Database me up daddy
         async with self.bot.database() as db:

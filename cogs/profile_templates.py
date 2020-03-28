@@ -134,7 +134,7 @@ class ProfileTemplates(utils.Cog):
         colour = 0x000000  # TODO
 
         # Get verification channel
-        await ctx.send("What channel would you like the the verification process to happen in? If you want profiles to be verified automatically, just say `continue`.")
+        await ctx.send("Sometimes you want to be able to make sure that your users are putting in relevant data before allowing their profiles to be seen on your server - this process is called verification. What channel would you like the the verification process to happen in? If you want profiles to be verified automatically (ie not verified by a mod team), just say `continue`.")
         verification_channel_id = None
         try:
             verification_message = await self.bot.wait_for('message', check=lambda m: m.author == ctx.author and m.channel == ctx.channel, timeout=120)
@@ -147,12 +147,25 @@ class ProfileTemplates(utils.Cog):
                 proper_permissions.update(read_messages=True, add_external_emojis=True, send_messages=True, add_reactions=True, embed_links=True)
                 if verification_channel.permissions_for(ctx.guild.me).is_superset(proper_permissions):
                     verification_channel_id = verification_channel.id
-                    pass
                 else:
-                    await ctx.send("I don't have all the permissions I need to be able to send messages to that channel. I need `read messages`, `send messages`, `add external emojis`, `add reactions`, and `embed links`. Please update the channel permissions, and run this command again.")
-                    return
-            # elif verification_message.content.lower() == 'continue':
-            #     pass
+                    return await ctx.send("I don't have all the permissions I need to be able to send messages to that channel. I need `read messages`, `send messages`, `add external emojis`, `add reactions`, and `embed links`. Please update the channel permissions, and run this command again.")
+
+        # Get archive channel
+        await ctx.send("Some servers want approved profiles to be sent automatically to a given channel - this is called archiving. What channel would you like verified profiles to be archived in? If you don't want to set up an archive channel, just say `continue`.")
+        archive_channel_id = None
+        try:
+            archive_message = await self.bot.wait_for('message', check=lambda m: m.author == ctx.author and m.channel == ctx.channel, timeout=120)
+        except asyncio.TimeoutError:
+            await ctx.send(f"{ctx.author.mention}, because of your 2 minutes of inactivity, profiles have been set to automatic approval.")
+        else:
+            if archive_message.channel_mentions:
+                archive_channel = archive_message.channel_mentions[0]
+                proper_permissions = discord.Permissions()
+                proper_permissions.update(read_messages=True, send_messages=True, embed_links=True)
+                if archive_channel.permissions_for(ctx.guild.me).is_superset(proper_permissions):
+                    archive_channel_id = archive_channel.id
+                else:
+                    return await ctx.send("I don't have all the permissions I need to be able to send messages to that channel. I need `read messages`, `send messages`, `embed links`. Please update the channel permissions, and run this command again.")
 
         # Get an ID for the profile
         profile = utils.Profile(
@@ -161,6 +174,7 @@ class ProfileTemplates(utils.Cog):
             guild_id=ctx.guild.id,
             verification_channel_id=verification_channel_id,
             name=profile_name,
+            archive_channel_id=archive_channel_id,
         )
 
         # Now we start the field loop

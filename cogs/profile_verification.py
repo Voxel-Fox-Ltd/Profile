@@ -78,15 +78,15 @@ class ProfileVerification(utils.Cog):
         await message.delete()
 
         # Get the profile
-        profile = utils.UserProfile.all_profiles.get((profile_user_id, guild.id, profile_name))
-        if profile is None:
+        user_profile: utils.UserProfile = utils.UserProfile.all_profiles.get((profile_user_id, guild.id, profile_name))
+        if user_profile is None:
             return  # Silently fail I guess
 
         # Remove them if necessary
         if verify is False:
             del utils.UserProfile.all_profiles[(profile_user_id, guild.id, profile_name)]
         else:
-            profile.verified = verify
+            user_profile.verified = verify
 
         # Tell the user about the decision
         user: discord.User = self.bot.get_user(profile_user_id)
@@ -94,11 +94,22 @@ class ProfileVerification(utils.Cog):
             user: discord.User = await self.bot.fetch_user(profile_user_id)
         try:
             if verify:
-                await user.send(f"Your profile for `{profile.profile.name}` on `{guild.name}` has been verified.", embed=profile.build_embed())
+                await user.send(f"Your profile for `{user_profile.profile.name}` on `{guild.name}` has been verified.", embed=user_profile.build_embed())
             else:
-                await user.send(f"Your profile for `{profile.profile.name}` on `{guild.name}` has been denied.", embed=profile.build_embed())
+                await user.send(f"Your profile for `{user_profile.profile.name}` on `{guild.name}` has been denied.", embed=user_profile.build_embed())
         except discord.Forbidden:
             pass  # Can't send the user a DM, let's just ignore it
+
+        # Send the profile off to the archive
+        if user_profile.profile.archive_channel_id:
+            try:
+                channel = self.bot.fetch_channel(user_profile.profile.archive_channel_id)
+                embed = user_profile.build_embed()
+                await channel.send(embed=embed)
+            except discord.HTTPException as e:
+                pass  # Couldn't be sent to the archive channel
+            except AttributeError:
+                pass  # The archive channel has been deleted
 
 
 def setup(bot:utils.Bot):

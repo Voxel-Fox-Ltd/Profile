@@ -44,6 +44,7 @@ class UserProfile(object):
         with Embed() as embed:
             embed.colour = self.profile.colour
             embed.title = self.profile.name.title()
+            embed.add_field(name="Discord User", value=f"<@{self.user_id}>")
             for f in fields:
                 if isinstance(f.field.field_type, ImageField) or f.field.field_type == ImageField:
                     embed.set_image(url=f.value)

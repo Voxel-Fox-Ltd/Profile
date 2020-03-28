@@ -15,6 +15,7 @@ class EmbedMaker(utils.Cog):
 
     @commands.command(cls=utils.Command)
     @commands.is_owner()
+    @commands.bot_has_permissions(send_messages=True)
     async def makeembed(self, ctx, *, data:str=None):
         """Run a command as another user optionally in another channel."""
 
@@ -218,7 +219,7 @@ class EmbedMaker(utils.Cog):
             return await user.send(f"Found an error sending that. Sorry about that. Cancelled.")
 
         # Send it out
-        if embed:
+        if embed and embed != {"fields": []}:
             embed_object = discord.Embed.from_dict(embed)
         else:
             embed_object = None

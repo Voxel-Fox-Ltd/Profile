@@ -1,3 +1,7 @@
+import io
+import traceback
+import typing
+
 import discord
 from discord.ext import commands
 
@@ -6,7 +10,7 @@ from cogs import utils
 
 class ErrorHandler(utils.Cog):
 
-    async def send_to_ctx_or_author(self, ctx:utils.Context, text:str, author_text:str=None):
+    async def send_to_ctx_or_author(self, ctx:utils.Context, text:str, author_text:str=None) -> typing.Optional[discord.Message]:
         """Tries to send the given text to ctx, but failing that, tries to send it to the author
         instead. If it fails that too, it just stays silent."""
 
@@ -43,6 +47,10 @@ class ErrorHandler(utils.Cog):
         # Missing argument (string)
         elif isinstance(error, utils.errors.MissingRequiredArgumentString):
             return await ctx.send(f"You're missing the `{error.param}` argument, which is required for this command to work properly.")
+
+        # Did the quotemarks wrong
+        elif isinstance(error, (commands.UnexpectedQuoteError, commands.InvalidEndOfQuotedStringError, commands.ExpectedClosingQuoteError)):
+            return await ctx.send(f"You've done your quote marks there wrong somewhere mate.")
 
         # Missing argument
         elif isinstance(error, commands.MissingRequiredArgument):
@@ -92,11 +100,36 @@ class ErrorHandler(utils.Cog):
         elif isinstance(error, commands.BadArgument):
             return await ctx.send(str(error))
 
+        # I'm trying to do something that doesn't exist
+        elif isinstance(error, discord.NotFound):
+            pass  # Gonna pass this so it's raised again
+
+        # Discord hecked up
+        elif isinstance(error, discord.HTTPException):
+            try:
+                return await ctx.send(f"Discord messed up there somewhere - do you mind trying again? I received a {error.status} error.")
+            except Exception:
+                return
+
         # Can't tell what it is? Ah well.
         try:
             await ctx.send(f'```py\n{error}```')
         except (discord.Forbidden, discord.NotFound):
             pass
+
+        # Can't tell what it is and we wanna DM the owner about it? Nice.
+        if self.bot.config['dm_uncaught_errors']:
+            try:
+                raise error
+            except Exception:
+                exc = traceback.format_exc()
+                data = io.StringIO(exc)
+                owner_id = self.bot.config['owners'][0]
+                owner = self.bot.get_user(owner_id) or await self.bot.fetch_user(owner_id)
+                text = f"Error found: Guild `{ctx.guild.id}`, channel `{ctx.channel.id}`, user `{ctx.author.id}` ```\n{ctx.message.content}\n```"
+                await owner.send(text, file=discord.File(data, filename="error_log.py"))
+
+        # And throw it into the console
         raise error
 
 

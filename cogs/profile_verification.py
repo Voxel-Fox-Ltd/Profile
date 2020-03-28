@@ -26,6 +26,8 @@ class ProfileVerification(utils.Cog):
             message: discord.Message = await channel.fetch_message(payload.message_id)
         except discord.Forbidden:
             return  # Can't read message history? We're probably not in the right channel
+        except discord.NotFound:
+            return  # Message doesn't exist? Wild but sure, why not
 
         # Check if we're the author
         if message.author.id != self.bot.user.id:

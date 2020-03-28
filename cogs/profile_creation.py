@@ -12,7 +12,7 @@ class ProfileCreation(utils.Cog):
 
     TICK_EMOJI = "<:tickYes:596096897995899097>"
     CROSS_EMOJI = "<:crossNo:596096897769275402>"
-    COMMAND_REGEX = re.compile(r"(set|get|delete|edit)(\S{1,30})( .*)?", re.IGNORECASE)
+    COMMAND_REGEX = re.compile(r"^(set|get|delete|edit)(\S{1,30})( .*)?", re.IGNORECASE)
 
     @utils.Cog.listener()
     async def on_command_error(self, ctx:utils.Context, error:commands.CommandError):
@@ -23,9 +23,7 @@ class ProfileCreation(utils.Cog):
             return
 
         # Get the command and used profile
-        matches = self.COMMAND_REGEX.search(ctx.message.content)
-        self.logger.info(ctx.message.content)
-        self.logger.info(matches)
+        matches = self.COMMAND_REGEX.search(ctx.message.content[len(ctx.prefix):])
         if not matches:
             return
         command_operator = matches.group(1)  # get/get/delete/edit
@@ -47,7 +45,6 @@ class ProfileCreation(utils.Cog):
         ctx.command = metacommand
         ctx.profile = profile
         ctx.invoke_meta = True
-        self.logger.info("Invoking")
         try:
             await metacommand.invoke(ctx)  # This converts the args for me, which is nice
         except commands.CommandError as e:
@@ -58,8 +55,6 @@ class ProfileCreation(utils.Cog):
     @commands.guild_only()
     async def set_profile_meta(self, ctx:utils.Context, target_user:discord.Member=None):
         """Talks a user through setting up a profile on a given server"""
-
-        self.logger.info("INMVOKED")
 
         # Set up some variables
         user = ctx.author
@@ -144,7 +139,7 @@ class ProfileCreation(utils.Cog):
                 return await user.send("The verification channel was deleted from the server - please tell an admin.")
         elif profile.archive_channel_id:
             try:
-                channel = self.bot.fetch_channel(profile.archive_channel_id)
+                channel = await self.bot.fetch_channel(profile.archive_channel_id)
                 embed = user_profile.build_embed()
                 await channel.send(embed=embed)
             except discord.HTTPException as e:
@@ -252,7 +247,7 @@ class ProfileCreation(utils.Cog):
                 return await user.send("The verification channel was deleted from the server - please tell an admin.")
         elif profile.archive_channel_id:
             try:
-                channel = self.bot.fetch_channel(profile.archive_channel_id)
+                channel = await self.bot.fetch_channel(profile.archive_channel_id)
                 embed = user_profile.build_embed()
                 await channel.send(embed=embed)
             except discord.HTTPException as e:

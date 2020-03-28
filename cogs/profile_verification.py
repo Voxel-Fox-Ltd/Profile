@@ -105,7 +105,7 @@ class ProfileVerification(utils.Cog):
         # Send the profile off to the archive
         if user_profile.profile.archive_channel_id:
             try:
-                channel = self.bot.fetch_channel(user_profile.profile.archive_channel_id)
+                channel = await self.bot.fetch_channel(user_profile.profile.archive_channel_id)
                 embed = user_profile.build_embed()
                 await channel.send(embed=embed)
             except discord.HTTPException as e:

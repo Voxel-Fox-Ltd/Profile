@@ -1,9 +1,4 @@
-import discord
-
-from cogs.utils.custom_bot import CustomBot
-
-
-def member_is_moderator(bot:CustomBot, member:discord.Member) -> bool:
+def member_is_moderator(bot, member) -> bool:
     """Returns whether or not a given discord.Member object is a moderator"""
 
     # Make sure they're an actual member

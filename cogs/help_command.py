@@ -7,6 +7,17 @@ from discord.ext import commands
 from cogs import utils
 
 
+HELP_TEXT = """
+ProfileBot is a bot which allows you to set profiles for users to fill in. These profiles could be things like character sheets, game tags, etc.
+
+Below you can see all of the commands I have available, but I'll briefly take you through some more general usage of how to set up a profile.
+
+Firstly you'd want to run `createtemplate` on your server, which starts the template creation process. From there, you can follow the prompts in order to set up a template that other users can fill in. Let's say, for example, you set up a template called `character`.
+
+Following that, users can set up their own profiles with that template by running the `setcharacter` command (note that it's "set__character__"), where the bot will PM them and take them through filling out the template you set for them. After that you can run `getcharacter` (or `getcharacter @User`; note "get__character__") to see what they filled in.
+""".strip()
+
+
 class CustomHelpCommand(commands.MinimalHelpCommand):
 
     def get_command_signature(self, command:commands.Command):
@@ -69,7 +80,7 @@ class CustomHelpCommand(commands.MinimalHelpCommand):
             )
 
         # Send it to the destination
-        await self.send_to_destination(embed=help_embed)
+        await self.send_to_destination(content=HELP_TEXT, embed=help_embed)
 
     async def send_to_destination(self, *args, **kwargs):
         """Sends content to the given destination"""

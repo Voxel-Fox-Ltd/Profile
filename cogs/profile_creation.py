@@ -24,6 +24,8 @@ class ProfileCreation(utils.Cog):
 
         # Get the command and used profile
         matches = self.COMMAND_REGEX.search(ctx.message.content)
+        self.logger.info(ctx.message.content)
+        self.logger.info(matches)
         if not matches:
             return
         command_operator = matches.group(1)  # get/get/delete/edit
@@ -37,6 +39,7 @@ class ProfileCreation(utils.Cog):
         guild_commands = utils.Profile.all_guilds[ctx.guild.id]
         profile = guild_commands.get(profile_name)
         if not profile:
+            self.logger.info(f"Failed at getting profile '{profile_name}' in guild {ctx.guild.id}")
             return  # Fail silently on profile doesn't exist
 
         # Invoke command
@@ -44,6 +47,7 @@ class ProfileCreation(utils.Cog):
         ctx.command = metacommand
         ctx.profile = profile
         ctx.invoke_meta = True
+        self.logger.info("Invoking")
         try:
             await metacommand.invoke(ctx)  # This converts the args for me, which is nice
         except commands.CommandError as e:
@@ -54,6 +58,8 @@ class ProfileCreation(utils.Cog):
     @commands.guild_only()
     async def set_profile_meta(self, ctx:utils.Context, target_user:discord.Member=None):
         """Talks a user through setting up a profile on a given server"""
+
+        self.logger.info("INMVOKED")
 
         # Set up some variables
         user = ctx.author

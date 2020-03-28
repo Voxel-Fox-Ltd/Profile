@@ -60,7 +60,7 @@ class ProfileVerification(utils.Cog):
             return
 
         # Check what they reacted with
-        verify = payload.emoji.id == self.TICK_EMOJI_ID
+        verify = str(payload.emoji) == self.TICK_EMOJI
 
         # Check whom and what we're updating
         profile_user_id, profile_id = message.content.split('\n')[-1].split('/')
@@ -80,6 +80,7 @@ class ProfileVerification(utils.Cog):
         # Get the profile
         user_profile: utils.UserProfile = utils.UserProfile.all_profiles.get((profile_user_id, guild.id, profile_name))
         if user_profile is None:
+            self.logger.warning(f"Couldn't get user {user_profile.user_id} '{user_profile.profile.name}' profile for verification on guild {guild.id}")
             return  # Silently fail I guess
 
         # Remove them if necessary
@@ -98,6 +99,7 @@ class ProfileVerification(utils.Cog):
             else:
                 await user.send(f"Your profile for `{user_profile.profile.name}` on `{guild.name}` has been denied.", embed=user_profile.build_embed())
         except discord.Forbidden:
+            self.logger.info(f"Couldn't DM user {user_profile.user_id} about their '{user_profile.profile.name}' profile verification on {guild.id}")
             pass  # Can't send the user a DM, let's just ignore it
 
         # Send the profile off to the archive
@@ -107,8 +109,10 @@ class ProfileVerification(utils.Cog):
                 embed = user_profile.build_embed()
                 await channel.send(embed=embed)
             except discord.HTTPException as e:
+                self.logger.info(f"Couldn't archive profile in guild {user_profile.profile.guild_id} - {e}")
                 pass  # Couldn't be sent to the archive channel
             except AttributeError:
+                self.logger.info(f"Couldn't archive profile in guild {user_profile.profile.guild_id} - AttributeError (probably channel deleted)")
                 pass  # The archive channel has been deleted
 
 

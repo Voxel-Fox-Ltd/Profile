@@ -199,7 +199,7 @@ class ProfileTemplates(utils.Cog):
 
         # Save it all to database
         async with self.bot.database() as db:
-            await db('INSERT INTO profile (profile_id, name, colour, guild_id, verification_channel_id) VALUES ($1, $2, $3, $4, $5)', profile.profile_id, profile.name, profile.colour, profile.guild_id, profile.verification_channel_id)
+            await db('INSERT INTO profile (profile_id, name, colour, guild_id, verification_channel_id, archive_channel_id) VALUES ($1, $2, $3, $4, $5, $6)', profile.profile_id, profile.name, profile.colour, profile.guild_id, profile.verification_channel_id, archive_channel_id)
             for field in profile.fields:
                 await db('INSERT INTO field (field_id, name, index, prompt, timeout, field_type, optional, profile_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)', field.field_id, field.name, field.index, field.prompt, field.timeout, field.field_type.name, field.optional, field.profile_id)
 

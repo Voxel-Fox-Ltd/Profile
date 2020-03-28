@@ -14,3 +14,4 @@ from cogs.utils.profiles.field import Field
 from cogs.utils.profiles.field_type import FieldType, TextField, NumberField, ImageField
 from cogs.utils.profiles.profile import Profile
 from cogs.utils.profiles.user_profile import UserProfile
+from cogs.utils.profiles.filled_field import FilledField

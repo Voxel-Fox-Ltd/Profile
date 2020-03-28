@@ -60,7 +60,7 @@ class ProfileTemplates(utils.Cog):
             await db('DELETE FROM created_profile WHERE profile_id=$1', template.profile_id)
             await db('DELETE FROM field WHERE profile_id=$1', template.profile_id)
             await db('DELETE FROM profile WHERE profile_id=$1', template.profile_id)
-        self.log_handler.info(f"Template '{template.name}' deleted on guild {ctx.guild.id}")
+        self.logger.info(f"Template '{template.name}' deleted on guild {ctx.guild.id}")
 
         # And I'll just try to delete things from cache as best I can
         # First grab all the fields and filled fields - I grabbed the created profiles earlier
@@ -131,8 +131,7 @@ class ProfileTemplates(utils.Cog):
             break
 
         # Get colour
-        # TODO
-        colour = 0x000000
+        colour = 0x000000  # TODO
 
         # Get verification channel
         await ctx.send("What channel would you like the the verification process to happen in? If you want profiles to be verified automatically, just say `continue`.")
@@ -174,7 +173,7 @@ class ProfileTemplates(utils.Cog):
                 image_set = isinstance(field.field_type, utils.ImageField) or image_set
             index += 1
             if index == 20:
-                break
+                break  # Set max field amount
 
         # Save it all to database
         async with self.bot.database() as db:
@@ -183,7 +182,7 @@ class ProfileTemplates(utils.Cog):
                 await db('INSERT INTO field (field_id, name, index, prompt, timeout, field_type, optional, profile_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)', field.field_id, field.name, field.index, field.prompt, field.timeout, field.field_type.name, field.optional, field.profile_id)
 
         # Output to user
-        self.log_handler.info(f"New template '{profile.name}' created on guild {ctx.guild.id}")
+        self.logger.info(f"New template '{profile.name}' created on guild {ctx.guild.id}")
         await ctx.send(f"Your template has been created with {len(profile.fields)} fields. Users can now run `{ctx.prefix}set{profile.name.lower()}` to set a profile, or `{ctx.prefix}get{profile.name.lower()} @User` to get the profile of another user.")
 
     async def create_new_field(self, ctx:utils.Context, profile_id:uuid.UUID, index:int, image_set:bool=False) -> utils.Field:

@@ -41,8 +41,8 @@ class UserProfile(object):
         """Converts the filled profile into an embed"""
 
         fields: typing.List[Field] = sorted(self.filled_fields, key=lambda x: x.field.index)
-        with Embed() as embed:
-            embed.colour = self.profile.colour
+        with Embed(use_random_colour=True) as embed:
+            # embed.colour = self.profile.colour
             embed.title = self.profile.name.title()
             embed.add_field(name="Discord User", value=f"<@{self.user_id}>")
             for f in fields:

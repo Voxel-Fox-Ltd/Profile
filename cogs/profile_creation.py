@@ -12,7 +12,7 @@ class ProfileCreation(utils.Cog):
 
     TICK_EMOJI = "<:tickYes:596096897995899097>"
     CROSS_EMOJI = "<:crossNo:596096897769275402>"
-    COMMAND_REGEX = re.compile(r"^(set|get|delete|edit)(\S{1,30})( .*)?", re.IGNORECASE)
+    COMMAND_REGEX = re.compile(r"^(set|get|delete|edit)(\S{1,30})( .*)?$", re.IGNORECASE)
 
     @utils.Cog.listener()
     async def on_command_error(self, ctx:utils.Context, error:commands.CommandError):
@@ -54,7 +54,7 @@ class ProfileCreation(utils.Cog):
     @commands.command(cls=utils.Command, hidden=True)
     @utils.checks.meta_command()
     @commands.guild_only()
-    async def set_profile_meta(self, ctx:utils.Context, target_user:discord.Member=None):
+    async def set_profile_meta(self, ctx:utils.Context, *, target_user:discord.Member=None):
         """Talks a user through setting up a profile on a given server"""
 
         # Set up some variables
@@ -165,7 +165,7 @@ class ProfileCreation(utils.Cog):
     @commands.command(cls=utils.Command, hidden=True)
     @utils.checks.meta_command()
     @commands.guild_only()
-    async def edit_profile_meta(self, ctx:utils.Context, target_user:discord.Member=None):
+    async def edit_profile_meta(self, ctx:utils.Context, *, target_user:discord.Member=None):
         """Talks a user through setting up a profile on a given server"""
 
         # Set up some variables
@@ -270,7 +270,7 @@ class ProfileCreation(utils.Cog):
     @commands.command(cls=utils.Command, hidden=True)
     @utils.checks.meta_command()
     @commands.guild_only()
-    async def delete_profile_meta(self, ctx:utils.Context, target_user:discord.Member=None):
+    async def delete_profile_meta(self, ctx:utils.Context, *, target_user:discord.Member=None):
         """Handles deleting a profile"""
 
         # You can only delete someone else's profile if you're a moderator
@@ -297,7 +297,7 @@ class ProfileCreation(utils.Cog):
     @commands.command(cls=utils.Command, hidden=True)
     @utils.checks.meta_command()
     @commands.guild_only()
-    async def get_profile_meta(self, ctx:utils.Context, target_user:discord.Member=None):
+    async def get_profile_meta(self, ctx:utils.Context, *, target_user:discord.Member=None):
         """Gets a profile for a given member"""
 
         # See if there's a set profile

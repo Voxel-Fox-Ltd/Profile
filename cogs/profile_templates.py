@@ -108,7 +108,10 @@ class ProfileTemplates(utils.Cog):
 
             # Catch timeout
             except asyncio.TimeoutError:
-                await ctx.send(f"{ctx.author.mention}, your template creation has timed out after 2 minutes of inactivity.")
+                try:
+                    await ctx.send(f"{ctx.author.mention}, your template creation has timed out after 2 minutes of inactivity.")
+                except (discord.Forbidden, discord.NotFound):
+                    return
                 return
 
             # Check name for characters
@@ -139,7 +142,10 @@ class ProfileTemplates(utils.Cog):
         try:
             verification_message = await self.bot.wait_for('message', check=lambda m: m.author == ctx.author and m.channel == ctx.channel, timeout=120)
         except asyncio.TimeoutError:
-            await ctx.send(f"{ctx.author.mention}, because of your 2 minutes of inactivity, profiles have been set to automatic approval.")
+            try:
+                await ctx.send(f"{ctx.author.mention}, because of your 2 minutes of inactivity, profiles have been set to automatic approval.")
+            except (discord.Forbidden, discord.NotFound):
+                return
         else:
             if verification_message.channel_mentions:
                 verification_channel = verification_message.channel_mentions[0]
@@ -160,7 +166,10 @@ class ProfileTemplates(utils.Cog):
         try:
             archive_message = await self.bot.wait_for('message', check=lambda m: m.author == ctx.author and m.channel == ctx.channel, timeout=120)
         except asyncio.TimeoutError:
-            await ctx.send(f"{ctx.author.mention}, because of your 2 minutes of inactivity, profiles have been set to automatic approval.")
+            try:
+                await ctx.send(f"{ctx.author.mention}, because of your 2 minutes of inactivity, profiles have been set to automatic approval.")
+            except (discord.Forbidden, discord.NotFound):
+                return
         else:
             if archive_message.channel_mentions:
                 archive_channel = archive_message.channel_mentions[0]
@@ -170,7 +179,7 @@ class ProfileTemplates(utils.Cog):
                     archive_channel_id = archive_channel.id
                 else:
                     return await ctx.send("I don't have all the permissions I need to be able to send messages to that channel. I need `read messages`, `send messages`, `embed links`. Please update the channel permissions, and run this command again.")
-            elif verification_message.content.lower() == "continue":
+            elif archive_message.content.lower() == "continue":
                 pass
             else:
                 return await ctx.send(f"I couldn't quite work out what you were trying to say there - please mention the channel as a ping, eg {ctx.channel.mention}. Please re-run the command to continue.")
@@ -205,7 +214,10 @@ class ProfileTemplates(utils.Cog):
 
         # Output to user
         self.logger.info(f"New template '{profile.name}' created on guild {ctx.guild.id}")
-        await ctx.send(f"Your template has been created with {len(profile.fields)} fields. Users can now run `{ctx.prefix}set{profile.name.lower()}` to set a profile, or `{ctx.prefix}get{profile.name.lower()} @User` to get the profile of another user.")
+        try:
+            await ctx.send(f"Your template has been created with {len(profile.fields)} fields. Users can now run `{ctx.prefix}set{profile.name.lower()}` to set a profile, or `{ctx.prefix}get{profile.name.lower()} @User` to get the profile of another user.")
+        except (discord.Forbidden, discord.NotFound):
+            return
 
     async def create_new_field(self, ctx:utils.Context, profile_id:uuid.UUID, index:int, image_set:bool=False) -> utils.Field:
         """Lets a user create a new field in their profile"""
@@ -219,7 +231,10 @@ class ProfileTemplates(utils.Cog):
         try:
             reaction, _ = await self.bot.wait_for('reaction_add', check=okay_reaction_check, timeout=120)
         except asyncio.TimeoutError:
-            await ctx.send("Creating a new field has timed out. The profile is being created with the fields currently added.")
+            try:
+                await ctx.send("Creating a new field has timed out. The profile is being created with the fields currently added.")
+            except (discord.Forbidden, discord.NotFound):
+                pass
             return None
 
         # See if they don't wanna continue
@@ -232,7 +247,10 @@ class ProfileTemplates(utils.Cog):
             try:
                 field_name_message = await self.bot.wait_for('message', check=message_check, timeout=120)
             except asyncio.TimeoutError:
-                await ctx.send("Creating a new field has timed out. The profile is being created with the fields currently added.")
+                try:
+                    await ctx.send("Creating a new field has timed out. The profile is being created with the fields currently added.")
+                except (discord.Forbidden, discord.NotFound):
+                    pass
                 return None
 
             # Check if if name is too long
@@ -248,7 +266,10 @@ class ProfileTemplates(utils.Cog):
             try:
                 field_prompt_message = await self.bot.wait_for('message', check=message_check, timeout=120)
             except asyncio.TimeoutError:
-                await ctx.send("Creating a new field has timed out. The profile is being created with the fields currently added.")
+                try:
+                    await ctx.send("Creating a new field has timed out. The profile is being created with the fields currently added.")
+                except (discord.Forbidden, discord.NotFound):
+                    pass
                 return None
 
             if len(field_prompt_message.content) >= 1:
@@ -293,7 +314,10 @@ class ProfileTemplates(utils.Cog):
             reaction, _ = await self.bot.wait_for('reaction_add', check=field_type_check, timeout=120)
             emoji = str(reaction.emoji)
         except asyncio.TimeoutError:
-            await ctx.send("Picking a field type has timed out - defaulting to text.")
+            try:
+                await ctx.send("Picking a field type has timed out - defaulting to text.")
+            except (discord.Forbidden, discord.NotFound):
+                pass
             emoji = self.LETTERS_EMOJI
 
         # Change that emoji into a datatype

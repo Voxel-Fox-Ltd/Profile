@@ -22,6 +22,7 @@ class ProfileTemplates(utils.Cog):
     @commands.command(cls=utils.Command)
     @commands.guild_only()
     @commands.has_permissions(manage_roles=True)
+    @commands.bot_has_permissions(external_emojis=True, add_reactions=True)
     async def deletetemplate(self, ctx:utils.Context, template_name:str):
         """Deletes a template for your guild"""
 
@@ -35,7 +36,14 @@ class ProfileTemplates(utils.Cog):
         delete_confirmation_message = await ctx.send(f"By doing this, you'll delete `{len(template_profiles)}` of the created profiles under this template as well. Would you like to proceed?")
         valid_reactions = [self.TICK_EMOJI, self.CROSS_EMOJI]
         for e in valid_reactions:
-            await delete_confirmation_message.add_reaction(e)
+            try:
+                await delete_confirmation_message.add_reaction(e)
+            except discord.Forbidden:
+                try:
+                    await delete_confirmation_message.delete()
+                except discord.NotFound:
+                    pass
+                return await ctx.send("I tried to add a reaction to my message, but I was unable to. Please update my permissions for this channel and try again.")
         try:
             r, _ = await self.bot.wait_for(
                 "reaction_add", timeout=120.0,
@@ -94,6 +102,7 @@ class ProfileTemplates(utils.Cog):
     @commands.command()
     @commands.guild_only()
     @commands.has_permissions(manage_roles=True)
+    @commands.bot_has_permissions(external_emojis=True, add_reactions=True)
     async def createtemplate(self, ctx:utils.Context):
         """Creates a new template for your guild"""
 

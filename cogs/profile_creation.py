@@ -160,7 +160,10 @@ class ProfileCreation(utils.Cog):
                 await db('INSERT INTO filled_field (user_id, field_id, value) VALUES ($1, $2, $3)', field.user_id, field.field_id, field.value)
 
         # Respond to user
-        await user.send("Your profile has been created and saved.")
+        if profile.verification_channel_id:
+            await user.send(f"Your profile has been sent to the **{ctx.guild.name}** staff team for verification - please hold tight!")
+        else:
+            await user.send("Your profile has been created and saved.")
 
     @commands.command(cls=utils.Command, hidden=True)
     @utils.checks.meta_command()

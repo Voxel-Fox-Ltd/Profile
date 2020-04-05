@@ -108,11 +108,11 @@ class ProfileVerification(utils.Cog):
             pass  # Can't send the user a DM, let's just ignore it
 
         # Send the profile off to the archive
-        if user_profile.profile.archive_channel_id:
+        if user_profile.profile.archive_channel_id and verify:
             try:
                 channel = await self.bot.fetch_channel(user_profile.profile.archive_channel_id)
                 embed = user_profile.build_embed()
-                await channel.send(embed=embed)
+                await channel.send(user.mention, embed=embed)
             except discord.HTTPException as e:
                 self.logger.info(f"Couldn't archive profile in guild {user_profile.profile.guild_id} - {e}")
                 pass  # Couldn't be sent to the archive channel

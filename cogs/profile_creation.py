@@ -174,7 +174,7 @@ class ProfileCreation(utils.Cog):
         profile = ctx.profile
 
         # You can only edit someone else's profile if you're a moderator
-        if target_user != ctx.author and not utils.checks.member_is_moderator(ctx.bot, ctx.author):
+        if target_user and target_user != ctx.author and not utils.checks.member_is_moderator(ctx.bot, ctx.author):
             return await ctx.send(f"You're missing the `manage_roles` permission required to do this.")
 
         # Check if they already have a profile set
@@ -274,7 +274,7 @@ class ProfileCreation(utils.Cog):
         """Handles deleting a profile"""
 
         # You can only delete someone else's profile if you're a moderator
-        if ctx.author != target_user and not utils.checks.member_is_moderator(self.bot, ctx.author):
+        if target_user and ctx.author != target_user and not utils.checks.member_is_moderator(self.bot, ctx.author):
             return await ctx.send(f"You're missing the `manage_roles` permission required to do this.")
 
         # Check it exists

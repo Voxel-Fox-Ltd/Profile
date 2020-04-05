@@ -233,8 +233,16 @@ class ProfileTemplates(utils.Cog):
 
         # Ask if they want a new field
         field_message = await ctx.send("Do you want to make a new field for your profile?")
-        await field_message.add_reaction(self.TICK_EMOJI)
-        await field_message.add_reaction(self.CROSS_EMOJI)
+        try:
+            await field_message.add_reaction(self.TICK_EMOJI)
+            await field_message.add_reaction(self.CROSS_EMOJI)
+        except discord.Forbidden:
+            try:
+                await field_message.delete()
+            except discord.NotFound:
+                pass
+            await ctx.send("I tried to add a reaction to my message, but I was unable to. Please update my permissions for this channel and try again.")
+            return None
         message_check = lambda m: m.author == ctx.author and m.channel == ctx.channel
         okay_reaction_check = lambda r, u: str(r.emoji) in [self.TICK_EMOJI, self.CROSS_EMOJI] and u == ctx.author
         try:

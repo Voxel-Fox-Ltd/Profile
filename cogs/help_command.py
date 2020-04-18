@@ -82,11 +82,13 @@ class CustomHelpCommand(commands.MinimalHelpCommand):
         # Grab the profiles in the server
         if self.context.guild:
             all_profiles_for_guild = utils.Profile.all_guilds[self.context.guild.id].keys()
-            help_embed.add_field(
-                name="Profiles",
-                value='\n'.join([f"{self.clean_prefix}get{name}, {self.clean_prefix}set{name}, {self.clean_prefix}edit{name}" for name in all_profiles_for_guild]),
-                inline=False,
-            )
+            profile_string = '\n'.join([f"{self.clean_prefix}get{name}, {self.clean_prefix}set{name}, {self.clean_prefix}edit{name}" for name in all_profiles_for_guild])
+            if profile_string:
+                help_embed.add_field(
+                    name="Profiles",
+                    value=profile_string,
+                    inline=False,
+                )
 
         # Send it to the destination
         await self.send_to_destination(content=HELP_TEXT, embed=help_embed)

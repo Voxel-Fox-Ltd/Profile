@@ -50,7 +50,10 @@ class ProfileTemplates(utils.Cog):
                 check=lambda r, u: r.message.id == delete_confirmation_message.id and str(r.emoji) in valid_reactions and u.id == ctx.author.id
             )
         except asyncio.TimeoutError:
-            return await ctx.send("Template delete timed out - please try again later.")
+            try:
+                return await ctx.send("Template delete timed out - please try again later.")
+            except discord.Forbidden:
+                return
 
         # Check if they said no
         if str(r.emoji) == self.CROSS_EMOJI:
@@ -118,10 +121,9 @@ class ProfileTemplates(utils.Cog):
             # Catch timeout
             except asyncio.TimeoutError:
                 try:
-                    await ctx.send(f"{ctx.author.mention}, your template creation has timed out after 2 minutes of inactivity.")
-                except (discord.Forbidden, discord.NotFound):
+                    return await ctx.send(f"{ctx.author.mention}, your template creation has timed out after 2 minutes of inactivity.")
+                except discord.Forbidden:
                     return
-                return
 
             # Check name for characters
             profile_name = name_message.content.lower()
@@ -152,7 +154,7 @@ class ProfileTemplates(utils.Cog):
             verification_message = await self.bot.wait_for('message', check=lambda m: m.author == ctx.author and m.channel == ctx.channel, timeout=120)
         except asyncio.TimeoutError:
             try:
-                await ctx.send(f"{ctx.author.mention}, because of your 2 minutes of inactivity, profiles have been set to automatic approval.")
+                return await ctx.send(f"{ctx.author.mention}, because of your 2 minutes of inactivity, profiles have been set to automatic approval.")
             except (discord.Forbidden, discord.NotFound):
                 return
         else:

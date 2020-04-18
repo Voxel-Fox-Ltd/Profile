@@ -101,7 +101,10 @@ class ProfileCreation(utils.Cog):
                         check=lambda m: m.author == user and isinstance(m.channel, discord.DMChannel)
                     )
                 except asyncio.TimeoutError:
-                    return await user.send(f"Your input for this field has timed out. Please try running `set{profile.name}` on your server again.")
+                    try:
+                        return await user.send(f"Your input for this field has timed out. Please try running `set{profile.name}` on your server again.")
+                    except discord.Forbidden:
+                        return
                 try:
                     field_content = field.field_type.get_from_message(user_message)
                     break
@@ -214,7 +217,10 @@ class ProfileCreation(utils.Cog):
                         check=lambda m: m.author == user and isinstance(m.channel, discord.DMChannel)
                     )
                 except asyncio.TimeoutError:
-                    return await user.send(f"Your input for this field has timed out. Please try running `set{profile.name}` on your server again.")
+                    try:
+                        return await user.send(f"Your input for this field has timed out. Please try running `set{profile.name}` on your server again.")
+                    except discord.Forbidden:
+                        return
                 if user_message.content.lower() == "pass":
                     field_content = current.value
                     break

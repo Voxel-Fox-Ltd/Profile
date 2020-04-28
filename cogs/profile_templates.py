@@ -298,20 +298,21 @@ class ProfileTemplates(utils.Cog):
         field_prompt = field_prompt_message.content
 
         # Get timeout
-        # await ctx.send("How many seconds should I wait for people to fill out this field (I recommend 120 seconds)?")
-        # while True:
-        #     try:
-        #         field_timeout_message = await self.bot.wait_for('message', check=message_check, timeout=120)
-        #     except asyncio.TimeoutError:
-        #         await ctx.send("Creating a new field has timed out. The profile is being created with the fields currently added.")
-        #         return None
-        #     try:
-        #         timeout = int(field_timeout_message.content)
-        #         break
-        #     except ValueError:
-        #         await ctx.send("I couldn't convert your message into a number. Please try again.")
-        # field_timeout = timeout
-        field_timeout = 120
+        await ctx.send("How many seconds should I wait for people to fill out this field (I recommend 120 - that's 2 minutes)? The minimum is 30, and the maximum is 600.")
+        while True:
+            try:
+                field_timeout_message = await self.bot.wait_for('message', check=message_check, timeout=120)
+            except asyncio.TimeoutError:
+                await ctx.send("Creating a new field has timed out. The profile is being created with the fields currently added.")
+                return None
+            try:
+                timeout = int(field_timeout_message.content)
+                if timeout < 30:
+                    raise ValueError()
+                break
+            except ValueError:
+                await ctx.send("I couldn't convert your message into a number - the minimum is 30 seconds. Please try again.")
+        field_timeout = min([timeout, 600])
 
         # Ask for field type
         if image_set:

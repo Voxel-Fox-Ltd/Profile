@@ -53,6 +53,7 @@ class ProfileCreation(utils.Cog):
 
     @commands.command(cls=utils.Command, hidden=True)
     @utils.checks.meta_command()
+    @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     async def set_profile_meta(self, ctx:utils.Context, *, target_user:discord.Member=None):
         """Talks a user through setting up a profile on a given server"""
@@ -170,6 +171,7 @@ class ProfileCreation(utils.Cog):
 
     @commands.command(cls=utils.Command, hidden=True)
     @utils.checks.meta_command()
+    @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     async def edit_profile_meta(self, ctx:utils.Context, *, target_user:discord.Member=None):
         """Talks a user through setting up a profile on a given server"""
@@ -278,6 +280,7 @@ class ProfileCreation(utils.Cog):
 
     @commands.command(cls=utils.Command, hidden=True)
     @utils.checks.meta_command()
+    @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     async def delete_profile_meta(self, ctx:utils.Context, *, target_user:discord.Member=None):
         """Handles deleting a profile"""
@@ -305,6 +308,7 @@ class ProfileCreation(utils.Cog):
 
     @commands.command(cls=utils.Command, hidden=True)
     @utils.checks.meta_command()
+    @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     async def get_profile_meta(self, ctx:utils.Context, *, target_user:discord.Member=None):
         """Gets a profile for a given member"""

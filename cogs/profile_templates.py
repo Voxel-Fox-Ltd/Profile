@@ -20,9 +20,9 @@ class ProfileTemplates(utils.Cog):
     # TICK_EMOJI = "\U00002705"  # TODO make this work or something
 
     @commands.command(cls=utils.Command)
-    @commands.guild_only()
     @commands.has_permissions(manage_roles=True)
-    @commands.bot_has_permissions(external_emojis=True, add_reactions=True)
+    @commands.bot_has_permissions(send_messages=True, external_emojis=True, add_reactions=True)
+    @commands.guild_only()
     async def deletetemplate(self, ctx:utils.Context, template_name:str):
         """Deletes a template for your guild"""
 
@@ -103,9 +103,9 @@ class ProfileTemplates(utils.Cog):
         await ctx.send("Template, fields, and all created profiles have been deleted from the database and cache.")
 
     @commands.command()
-    @commands.guild_only()
     @commands.has_permissions(manage_roles=True)
-    @commands.bot_has_permissions(external_emojis=True, add_reactions=True)
+    @commands.bot_has_permissions(send_messages=True, external_emojis=True, add_reactions=True)
+    @commands.guild_only()
     async def createtemplate(self, ctx:utils.Context):
         """Creates a new template for your guild"""
 

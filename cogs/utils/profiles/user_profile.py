@@ -40,14 +40,24 @@ class UserProfile(object):
     def build_embed(self) -> Embed:
         """Converts the filled profile into an embed"""
 
-        fields: typing.List[Field] = sorted(self.filled_fields, key=lambda x: x.field.index)
+        fields: typing.List[FilledField] = sorted(self.filled_fields, key=lambda x: x.field.index)
         with Embed(use_random_colour=True) as embed:
             # embed.colour = self.profile.colour
             embed.title = self.profile.name.title()
             embed.add_field(name="Discord User", value=f"<@{self.user_id}>")
             for f in fields:
+
+                # Filter deleted or unset data
+                if f.field.deleted:
+                    continue
+                if not f.value:
+                    continue
+
+                # Set data
                 if isinstance(f.field.field_type, ImageField) or f.field.field_type == ImageField:
                     embed.set_image(url=f.value)
                 else:
                     embed.add_field(name=f.field.name, value=f.value)
+
+        # Return embed
         return embed

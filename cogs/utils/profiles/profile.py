@@ -33,7 +33,7 @@ class Profile(object):
         """Returns a list of cogs.utils.profiles.fields.Field objects for this particular profile"""
 
         try:
-            return sorted(Field.all_profile_fields.get(self.profile_id), key=lambda x: x.index)
+            return [i for i in sorted(Field.all_profile_fields.get(self.profile_id), key=lambda x: x.index) if i.deleted is False]
         except TypeError:
             return list()
 

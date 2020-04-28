@@ -55,6 +55,7 @@ CREATE TABLE field(
     timeout SMALLINT,
     field_type FIELDTYPE,
     optional BOOLEAN DEFAULT FALSE,
+    deleted BOOLEAN DEFAULT FALSE,
     profile_id UUID REFERENCES profile(profile_id)
 );
 -- A table to describe each individual field in a profile

@@ -30,6 +30,7 @@ class Field(object):
         }[field_type]
         self.profile_id = profile_id
         self.optional = optional
+        self.deleted = False
 
         self.all_profile_fields[self.profile_id].append(self)
         self.all_fields[self.field_id] = self

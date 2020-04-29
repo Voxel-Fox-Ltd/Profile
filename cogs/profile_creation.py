@@ -59,10 +59,10 @@ class ProfileCreation(utils.Cog):
         """Talks a user through setting up a profile on a given server"""
 
         # Set up some variables
-        user = ctx.author
-        target_user = target_user or user
-        profile = ctx.profile
-        fields = profile.fields
+        user: discord.Member = ctx.author
+        target_user: discord.Member = target_user or user
+        profile: utils.Profile = ctx.profile
+        fields: typing.List[utils.Field] = profile.fields
 
         # Only mods can see other people's profiles
         if target_user != ctx.author and not utils.checks.member_is_moderator(ctx.bot, ctx.author):
@@ -107,7 +107,10 @@ class ProfileCreation(utils.Cog):
                     except discord.Forbidden:
                         return
                 try:
-                    field_content = field.field_type.get_from_message(user_message)
+                    if user_message.content.lower() == 'skip' and field.optional:
+                        field_content = None
+                    else:
+                        field_content = field.field_type.get_from_message(user_message)
                     break
                 except utils.errors.FieldCheckFailure as e:
                     await user.send(e.message)

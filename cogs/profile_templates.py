@@ -297,6 +297,23 @@ class ProfileTemplates(utils.Cog):
                 await ctx.send("You need to actually give text for the prompt :/")
         field_prompt = field_prompt_message.content
 
+        # Get field optional
+        await ctx.send(f"Is this field optional (no/yes)?")
+        while True:
+            try:
+                field_optional_message = await self.bot.wait_for('message', check=message_check, timeout=120)
+            except asyncio.TimeoutError:
+                try:
+                    await ctx.send("Creating a new field has timed out. The profile is being created with the fields currently added.")
+                except (discord.Forbidden, discord.NotFound):
+                    pass
+                return None
+            if len(field_optional_message.content) >= 1:
+                break
+            else:
+                await ctx.send("You need to actually give text for the prompt :/")
+        field_optional = field_optional_message.content[0].lower() == 'y'
+
         # Get timeout
         await ctx.send("How many seconds should I wait for people to fill out this field (I recommend 120 - that's 2 minutes)? The minimum is 30, and the maximum is 600.")
         while True:
@@ -349,9 +366,6 @@ class ProfileTemplates(utils.Cog):
         }.get(emoji, Exception("Shouldn't be reached."))()
         if isinstance(field_type, utils.ImageField) and image_set:
             raise Exception("You shouldn't be able to set two image fields.")
-
-        # Get whether the field is optional
-        field_optional = False  # TODO
 
         # Make the field object
         return utils.Field(

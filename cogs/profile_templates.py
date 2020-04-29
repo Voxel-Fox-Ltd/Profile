@@ -245,8 +245,12 @@ class ProfileTemplates(utils.Cog):
                 pass
             await ctx.send("I tried to add a reaction to my message, but I was unable to. Please update my permissions for this channel and try again.")
             return None
+
+        # Here are some checks we can use later
         message_check = lambda m: m.author == ctx.author and m.channel == ctx.channel
         okay_reaction_check = lambda r, u: str(r.emoji) in [self.TICK_EMOJI, self.CROSS_EMOJI] and u == ctx.author
+
+        # Here's us waiting for the "do you want to make a new field" reaction
         try:
             reaction, _ = await self.bot.wait_for('reaction_add', check=okay_reaction_check, timeout=120)
         except asyncio.TimeoutError:
@@ -298,21 +302,16 @@ class ProfileTemplates(utils.Cog):
         field_prompt = field_prompt_message.content
 
         # Get field optional
-        await ctx.send(f"Is this field optional (no/yes)?")
+        prompt_message = await ctx.send(f"Is this field optional?")
+        await prompt_message.add_reaction(self.TICK_EMOJI)
+        await prompt_message.add_reaction(self.CROSS_EMOJI)
         while True:
             try:
-                field_optional_message = await self.bot.wait_for('message', check=message_check, timeout=120)
+                field_optional_reaction, _ = await self.bot.wait_for('reaction_add', check=okay_reaction_check, timeout=120)
+                field_optional_emoji = str(field_optional_reaction.emoji)
             except asyncio.TimeoutError:
-                try:
-                    await ctx.send("Creating a new field has timed out. The profile is being created with the fields currently added.")
-                except (discord.Forbidden, discord.NotFound):
-                    pass
-                return None
-            if len(field_optional_message.content) >= 1:
-                break
-            else:
-                await ctx.send("You need to actually give text for the prompt :/")
-        field_optional = field_optional_message.content[0].lower() == 'y'
+                field_optional_emoji = self.CROSS_EMOJI
+        field_optional = field_optional_emoji == self.TICK_EMOJI
 
         # Get timeout
         await ctx.send("How many seconds should I wait for people to fill out this field (I recommend 120 - that's 2 minutes)? The minimum is 30, and the maximum is 600.")

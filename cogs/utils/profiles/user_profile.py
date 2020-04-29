@@ -2,7 +2,6 @@ import typing
 import uuid
 
 from cogs.utils.profiles.profile import Profile
-from cogs.utils.profiles.field import Field
 from cogs.utils.profiles.filled_field import FilledField
 from cogs.utils.profiles.field_type import ImageField
 from cogs.utils.context_embed import ContextEmbed as Embed
@@ -42,7 +41,6 @@ class UserProfile(object):
 
         fields: typing.List[FilledField] = sorted(self.filled_fields, key=lambda x: x.field.index)
         with Embed(use_random_colour=True) as embed:
-            # embed.colour = self.profile.colour
             embed.title = self.profile.name.title()
             embed.add_field(name="Discord User", value=f"<@{self.user_id}>")
             for f in fields:

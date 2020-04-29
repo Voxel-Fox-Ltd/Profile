@@ -377,6 +377,7 @@ class ProfileTemplates(utils.Cog):
             field_type=field_type,
             profile_id=profile_id,
             optional=field_optional,
+            deleted=False,
         )
 
 

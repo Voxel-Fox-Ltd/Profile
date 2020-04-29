@@ -92,7 +92,10 @@ class ProfileCreation(utils.Cog):
         for field in fields:
 
             # Send the user the prompt
-            await user.send(field.prompt)
+            if field.optional:
+                await user.send(field.prompt + " (send `skip` to skip this field.)")
+            else:
+                await user.send(field.prompt)
 
             # Get user input
             while True:

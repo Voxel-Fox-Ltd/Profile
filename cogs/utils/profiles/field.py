@@ -14,9 +14,9 @@ class Field(object):
     all_profile_fields: typing.Dict['profile_id', typing.List['Field']] = collections.defaultdict(list)
     all_fields: typing.Dict['field_id', 'Field'] = {}
 
-    __slots__ = ("field_id", "index", "name", "prompt", "timeout", "field_type", "profile_id", "optional")
+    __slots__ = ("field_id", "index", "name", "prompt", "timeout", "field_type", "profile_id", "optional", "deleted")
 
-    def __init__(self, field_id:uuid.UUID, name:str, index:int, prompt:str, timeout:int, field_type:FieldType, profile_id:uuid.UUID, optional:bool):
+    def __init__(self, field_id:uuid.UUID, name:str, index:int, prompt:str, timeout:int, field_type:FieldType, profile_id:uuid.UUID, optional:bool, deleted:bool):
         self.field_id = field_id
         self.index = index
         self.name = name
@@ -30,7 +30,7 @@ class Field(object):
         }[field_type]
         self.profile_id = profile_id
         self.optional = optional
-        self.deleted = False
+        self.deleted = deleted
 
         self.all_profile_fields[self.profile_id].append(self)
         self.all_fields[self.field_id] = self

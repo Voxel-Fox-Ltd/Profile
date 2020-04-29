@@ -248,7 +248,7 @@ class ProfileTemplates(utils.Cog):
 
         # Here are some checks we can use later
         message_check = lambda m: m.author == ctx.author and m.channel == ctx.channel
-        okay_reaction_check = lambda r, u: str(r.emoji) in [self.TICK_EMOJI, self.CROSS_EMOJI] and u == ctx.author
+        okay_reaction_check = lambda r, u: str(r.emoji) in [self.TICK_EMOJI, self.CROSS_EMOJI] and u.id == ctx.author.id
 
         # Here's us waiting for the "do you want to make a new field" reaction
         try:
@@ -305,12 +305,11 @@ class ProfileTemplates(utils.Cog):
         prompt_message = await ctx.send(f"Is this field optional?")
         await prompt_message.add_reaction(self.TICK_EMOJI)
         await prompt_message.add_reaction(self.CROSS_EMOJI)
-        while True:
-            try:
-                field_optional_reaction, _ = await self.bot.wait_for('reaction_add', check=okay_reaction_check, timeout=120)
-                field_optional_emoji = str(field_optional_reaction.emoji)
-            except asyncio.TimeoutError:
-                field_optional_emoji = self.CROSS_EMOJI
+        try:
+            field_optional_reaction, _ = await self.bot.wait_for('reaction_add', check=okay_reaction_check, timeout=120)
+            field_optional_emoji = str(field_optional_reaction.emoji)
+        except asyncio.TimeoutError:
+            field_optional_emoji = self.CROSS_EMOJI
         field_optional = field_optional_emoji == self.TICK_EMOJI
 
         # Get timeout

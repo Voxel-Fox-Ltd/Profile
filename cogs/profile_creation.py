@@ -168,7 +168,7 @@ class ProfileCreation(utils.Cog):
                 await db('DELETE FROM filled_field WHERE user_id=$1 AND field_id in (SELECT field_id FROM field WHERE profile_id=$2)', user_profile.user_id, user_profile.profile.profile_id)
                 self.logger.info(f"Deleted profile for {user_profile.user_id} on UniqueViolationError")
             for field in filled_field_list:
-                await db('INSERT INTO filled_field (user_id, field_id, value) VALUES ($1, $2, $3)', field.user_id, field.field_id, field.value)
+                await db('INSERT INTO filled_field (user_id, field_id, value) VALUES ($1, $2, $3) ON CONFLICT (user_id, field_id) DO UPDATE SET value=excluded.value', field.user_id, field.field_id, field.value)
 
         # Respond to user
         if profile.verification_channel_id:

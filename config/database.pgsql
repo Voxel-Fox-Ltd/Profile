@@ -4,6 +4,29 @@ CREATE TABLE guild_settings(
 );
 
 
+CREATE TABLE user_settings(
+    user_id BIGINT PRIMARY KEY
+);
+
+
+CREATE TABLE role_list(
+    guild_id BIGINT,
+    role_id BIGINT,
+    key VARCHAR(50),
+    value VARCHAR(50),
+    PRIMARY KEY (guild_id, role_id, key)
+);
+
+
+CREATE TABLE channel_list(
+    guild_id BIGINT,
+    channel_id BIGINT,
+    key VARCHAR(50),
+    value VARCHAR(50),
+    PRIMARY KEY (guild_id, channel_id, key)
+);
+
+
 CREATE TABLE command_log(
     guild_id BIGINT,
     channel_id BIGINT,

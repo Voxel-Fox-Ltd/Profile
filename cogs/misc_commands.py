@@ -34,20 +34,24 @@ class MiscCommands(utils.Cog):
 
     @commands.command(cls=utils.Command)
     @commands.bot_has_permissions(send_messages=True)
+    @utils.checks.is_config_set('command_data', 'invite_command_enabled')
     async def invite(self, ctx:utils.Context):
         """Gives you the bot's invite link"""
 
         await ctx.send(f"<{self.bot.get_invite_link(add_reactions=True, external_emojis=True, read_messages=True, send_messages=True, embed_links=True)}>")
 
     @commands.command(cls=utils.Command)
+    @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(send_messages=True)
-    async def echo(self, ctx:utils.Context, *, content:utils.converters.CleanContent):
+    @utils.checks.is_config_set('command_data', 'echo_command_enabled')
+    async def echo(self, ctx:utils.Context, *, content:str):
         """Echos the given content into the channel"""
 
-        await ctx.send(content)
+        await ctx.send(content, allowed_mentions=discord.AllowedMentions(everyone=False, users=False, roles=False))
 
     @commands.command(aliases=['status'])
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
+    @utils.checks.is_config_set('command_data', 'stats_command_enabled')
     async def stats(self, ctx:utils.Context):
         """Gives you the stats for the bot"""
 

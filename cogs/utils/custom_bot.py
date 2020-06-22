@@ -3,6 +3,7 @@ import collections
 import glob
 import logging
 import typing
+import copy
 from datetime import datetime as dt
 from urllib.parse import urlencode
 
@@ -52,15 +53,19 @@ class CustomBot(commands.AutoShardedBot):
         self.DEFAULT_GUILD_SETTINGS = {
             'prefix': self.config['default_prefix'],
         }
+        self.DEFAULT_USER_SETTINGS = {
+        }
 
         # Aiohttp session
         self.session = aiohttp.ClientSession(loop=self.loop)
 
         # Allow database connections like this
+        # if self.config['database'].get('enabled'):
         self.database = DatabaseConnection
         self.database.logger = self.logger.getChild('database')
 
         # Allow redis connections like this
+        # if self.config['redis'].get('enabled'):
         self.redis = RedisConnection
         self.redis.logger = self.logger.getChild('redis')
 
@@ -69,7 +74,82 @@ class CustomBot(commands.AutoShardedBot):
         self.startup_method = None
 
         # Here's the storage for cached stuff
-        self.guild_settings = collections.defaultdict(self.DEFAULT_GUILD_SETTINGS.copy)
+        self.guild_settings = collections.defaultdict(lambda: copy.deepcopy(self.DEFAULT_GUILD_SETTINGS))
+        self.user_settings = collections.defaultdict(lambda: copy.deepcopy(self.DEFAULT_USER_SETTINGS))
+
+    async def startup(self):
+        """Clears all the bot's caches and fills them from a DB read"""
+
+        # Remove caches
+        self.logger.debug("Clearing caches")
+        self.guild_settings.clear()
+        self.user_settings.clear()
+        Field.all_fields.clear()
+        Field.all_profile_fields.clear()
+        FilledField.all_filled_fields.clear()
+        Profile.all_guilds.clear()
+        Profile.all_profiles.clear()
+        UserProfile.all_profiles.clear()
+
+        # Get database connection
+        db = await self.database.get_connection()
+
+        # Get guild settings
+        data = await self.get_all_table_data(db, "guild_settings")
+        for row in data:
+            for key, value in row.items():
+                self.guild_settings[row['guild_id']][key] = value
+
+        # Get user settings
+        data = await self.get_all_table_data(db, "user_settings")
+        for row in data:
+            for key, value in row.items():
+                self.user_settings[row['user_id']][key] = value
+
+        # Fill caches
+        fields = await db('SELECT * FROM field')
+        filled_fields = await db('SELECT * FROM filled_field')
+        profiles = await db('SELECT * FROM profile')
+        user_profiles = await db('SELECT * FROM created_profile')
+
+        if fields:
+            for i in fields:
+                Field(**i)
+        if filled_fields:
+            for i in filled_fields:
+                FilledField(**i)
+        if profiles:
+            for i in profiles:
+                Profile(**i)
+        if user_profiles:
+            for i in user_profiles:
+                UserProfile(**i)
+
+        # Wait for the bot to cache users before continuing
+        self.logger.debug("Waiting until ready before completing startup method.")
+        await self.wait_until_ready()
+
+        # Close database connection
+        await db.disconnect()
+
+    async def run_sql_exit_on_error(self, db, sql, *args):
+        """Get data form a table, exiting if it can't"""
+
+        try:
+            return await db(sql, *args)
+        except Exception as e:
+            self.logger.critical(f"Error selecting from table - {e}")
+            exit(1)
+
+    async def get_all_table_data(self, db, table_name):
+        """Get all data from a table"""
+
+        return await self.run_sql_exit_on_error(db, "SELECT * FROM {0}".format(table_name))
+
+    async def get_list_table_data(self, db, table_name, key):
+        """Get all data from a table"""
+
+        return await self.run_sql_exit_on_error(db, "SELECT * FROM {0} WHERE key=$1".format(table_name), key)
 
     def get_invite_link(self, *, scope:str='bot', response_type:str=None, redirect_uri:str=None, guild_id:int=None, **kwargs):
         """Gets the invite link for the bot, with permissions all set properly"""
@@ -152,57 +232,6 @@ class CustomBot(commands.AutoShardedBot):
         """A setter method so that the original bot object doesn't complain"""
 
         pass
-
-    async def startup(self):
-        """Clears all the bot's caches and fills them from a DB read"""
-
-        # Remove caches
-        self.logger.debug("Clearing caches")
-        self.guild_settings.clear()
-        Field.all_fields.clear()
-        Field.all_profile_fields.clear()
-        FilledField.all_filled_fields.clear()
-        Profile.all_guilds.clear()
-        Profile.all_profiles.clear()
-        UserProfile.all_profiles.clear()
-
-        # Get database connection
-        db = await self.database.get_connection()
-
-        # Get stored prefixes
-        try:
-            guild_data = await db("SELECT * FROM guild_settings")
-        except Exception as e:
-            self.logger.critical(f"Error selecting from guild_settings - {e}")
-            exit(1)
-        for row in guild_data:
-            self.guild_settings[row['guild_id']] = dict(row)
-
-        # Fill caches
-        fields = await db('SELECT * FROM field')
-        filled_fields = await db('SELECT * FROM filled_field')
-        profiles = await db('SELECT * FROM profile')
-        user_profiles = await db('SELECT * FROM created_profile')
-
-        if fields:
-            for i in fields:
-                Field(**i)
-        if filled_fields:
-            for i in filled_fields:
-                FilledField(**i)
-        if profiles:
-            for i in profiles:
-                Profile(**i)
-        if user_profiles:
-            for i in user_profiles:
-                UserProfile(**i)
-
-        # Wait for the bot to cache users before continuing
-        self.logger.debug("Waiting until ready before completing startup method.")
-        await self.wait_until_ready()
-
-        # Close database connection
-        await db.disconnect()
 
     def get_uptime(self) -> float:
         """Gets the uptime of the bot in seconds

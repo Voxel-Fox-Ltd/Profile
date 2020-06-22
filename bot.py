@@ -63,7 +63,7 @@ args = get_program_arguments()  # noqa: E305
 
 
 # Set up loggers
-logging.basicConfig(format='%(name)s:%(levelname)s: %(message)s')
+logging.basicConfig(format='%(asctime)s:%(name)s:%(levelname)s: %(message)s', stream=sys.stdout)
 logger = logging.getLogger(os.getcwd().split(os.sep)[-1].split()[-1].lower())
 
 # Filter warnings
@@ -98,6 +98,7 @@ bot = utils.Bot(
     shard_id=args.min,
     max_messages=100,  # The lowest amount that we can actually cache
     logger=logger.getChild('bot'),
+    allowed_mentions=discord.AllowedMentions(everyone=False),
 )
 
 # Set loglevel defaults

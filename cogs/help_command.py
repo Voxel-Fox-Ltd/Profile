@@ -50,7 +50,7 @@ class CustomHelpCommand(commands.MinimalHelpCommand):
         )
 
         # Send it to the destination
-        await self.send_to_destination(embed=help_embed)
+        await self.send_to_destination(content=self.context.bot.config['command_data']['guild_invite'], embed=help_embed)
 
     async def send_bot_help(self, mapping:typing.Dict[typing.Optional[utils.Cog], typing.List[commands.Command]]):
         """Sends all help to the given channel"""

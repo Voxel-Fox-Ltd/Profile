@@ -11,8 +11,8 @@ from cogs import utils
 
 class ProfileTemplates(utils.Cog):
 
-    TICK_EMOJI = "<:tickYes:596096897995899097>"
-    CROSS_EMOJI = "<:crossNo:596096897769275402>"
+    TICK_EMOJI = "<:tick_yes:596096897995899097>"
+    CROSS_EMOJI = "<:cross_no:596096897769275402>"
 
     NUMBERS_EMOJI = "\U00000031\U000020e3"
     LETTERS_EMOJI = "\U0001F170"

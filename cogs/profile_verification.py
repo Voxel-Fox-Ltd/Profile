@@ -8,8 +8,8 @@ class ProfileVerification(utils.Cog):
     # TICK_EMOJI_ID = 596096897995899097
     # CROSS_EMOJI_ID = 596096897769275402
 
-    TICK_EMOJI = "<:tickYes:596096897995899097>"
-    CROSS_EMOJI = "<:crossNo:596096897769275402>"
+    TICK_EMOJI = "<:tick_yes:596096897995899097>"
+    CROSS_EMOJI = "<:cross_no:596096897769275402>"
 
     @utils.Cog.listener('on_raw_reaction_add')
     async def verification_emoji_check(self, payload:discord.RawReactionActionEvent):

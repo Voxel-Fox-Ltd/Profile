@@ -11,8 +11,8 @@ from cogs import utils
 
 class ProfileCreation(utils.Cog):
 
-    TICK_EMOJI = "<:tickYes:596096897995899097>"
-    CROSS_EMOJI = "<:crossNo:596096897769275402>"
+    TICK_EMOJI = "<:tick_yes:596096897995899097>"
+    CROSS_EMOJI = "<:cross_no:596096897769275402>"
     COMMAND_REGEX = re.compile(r"^(set|get|delete|edit)(\S{1,30})( .*)?$", re.IGNORECASE)
 
     @utils.Cog.listener()

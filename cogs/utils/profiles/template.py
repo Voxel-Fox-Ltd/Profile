@@ -61,5 +61,5 @@ class Template(object):
 
         v = cls.all_guilds[ctx.guild.id].get(argument.lower())
         if v is None:
-            raise ProfileNotFoundError(argument.lower())
+            raise TemplateNotFoundError(argument.lower())
         return v

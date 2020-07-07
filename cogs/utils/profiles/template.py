@@ -23,7 +23,7 @@ class Template(object):
     """
 
     all_profiles: typing.Dict[uuid.UUID, 'Template'] = {}
-    all_guilds: typing.Dict[int, typing.Dict[str, 'Template']] = collections.defaultdict(lambda: collections.defaultdict(lambda: None))
+    all_guilds: typing.Dict[int, typing.Dict[str, 'Template']] = collections.defaultdict(dict)
 
     __slots__ = ("template_id", "colour", "guild_id", "verification_channel_id", "name", "archive_channel_id", "role_id")
 

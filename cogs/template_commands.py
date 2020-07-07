@@ -29,7 +29,7 @@ class ProfileTemplates(utils.Cog):
         # Grab template object
         template: utils.Profile = utils.Profile.all_guilds[ctx.guild.id].get(template_name.lower())
         if template is None:
-            return await ctx.send(f"There's no template with the name `{template_name}` on this guild. Please see `{ctx.prefix}help` to see all the created templates.")
+            return await ctx.send(f"There's no template with the name `{template_name}` on this guild. Please see `{ctx.prefix}help` to see all the created templates.", allowed_mentions=discord.AllowedMentions(everyone=False, users=False, roles=False))
 
         # Ask for confirmation
         template_profiles: typing.List[utils.UserProfile] = [i for i in utils.UserProfile.all_profiles.values() if i.profile_id == template.profile_id]
@@ -145,7 +145,7 @@ class ProfileTemplates(utils.Cog):
 
             # Check name is unique
             if utils.Profile.all_guilds[ctx.guild.id].get(profile_name):
-                await ctx.send(f"This server already has a template with name `{profile_name}`. Please run this command again to provide another one.")
+                await ctx.send(f"This server already has a template with name `{profile_name}`. Please run this command again to provide another one.", allowed_mentions=discord.AllowedMentions(everyone=False, users=False, roles=False))
                 return
             break
 

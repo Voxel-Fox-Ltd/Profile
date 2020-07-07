@@ -33,27 +33,28 @@ class ProfileTemplates(utils.Cog):
 
         # Ask for confirmation
         template_profiles: typing.List[utils.UserProfile] = [i for i in utils.UserProfile.all_profiles.values() if i.profile_id == template.profile_id]
-        delete_confirmation_message = await ctx.send(f"By doing this, you'll delete `{len(template_profiles)}` of the created profiles under this template as well. Would you like to proceed?")
-        valid_reactions = [self.TICK_EMOJI, self.CROSS_EMOJI]
-        for e in valid_reactions:
-            try:
-                await delete_confirmation_message.add_reaction(e)
-            except discord.Forbidden:
+        if len(template_profiles):
+            delete_confirmation_message = await ctx.send(f"By doing this, you'll delete `{len(template_profiles)}` of the created profiles under this template as well. Would you like to proceed?")
+            valid_reactions = [self.TICK_EMOJI, self.CROSS_EMOJI]
+            for e in valid_reactions:
                 try:
-                    await delete_confirmation_message.delete()
-                except discord.NotFound:
-                    pass
-                return await ctx.send("I tried to add a reaction to my message, but I was unable to. Please update my permissions for this channel and try again.")
-        try:
-            r, _ = await self.bot.wait_for(
-                "reaction_add", timeout=120.0,
-                check=lambda r, u: r.message.id == delete_confirmation_message.id and str(r.emoji) in valid_reactions and u.id == ctx.author.id
-            )
-        except asyncio.TimeoutError:
+                    await delete_confirmation_message.add_reaction(e)
+                except discord.Forbidden:
+                    try:
+                        await delete_confirmation_message.delete()
+                    except discord.NotFound:
+                        pass
+                    return await ctx.send("I tried to add a reaction to my message, but I was unable to. Please update my permissions for this channel and try again.")
             try:
-                return await ctx.send("Template delete timed out - please try again later.")
-            except discord.Forbidden:
-                return
+                r, _ = await self.bot.wait_for(
+                    "reaction_add", timeout=120.0,
+                    check=lambda r, u: r.message.id == delete_confirmation_message.id and str(r.emoji) in valid_reactions and u.id == ctx.author.id
+                )
+            except asyncio.TimeoutError:
+                try:
+                    return await ctx.send("Template delete timed out - please try again later.")
+                except discord.Forbidden:
+                    return
 
         # Check if they said no
         if str(r.emoji) == self.CROSS_EMOJI:
@@ -104,10 +105,14 @@ class ProfileTemplates(utils.Cog):
 
     @commands.command()
     @commands.has_permissions(manage_roles=True)
-    @commands.bot_has_permissions(send_messages=True, external_emojis=True, add_reactions=True)
+    @commands.bot_has_permissions(send_messages=True, external_emojis=True, add_reactions=True, embed_links=True)
     @commands.guild_only()
     async def createtemplate(self, ctx:utils.Context):
         """Creates a new template for your guild"""
+
+        # See if they have too many templates already
+        if len(utils.Profile.all_guilds[ctx.guild.id]) >= 5:
+            return await ctx.send("You already have 5 templates set for this server, which is the maximum amount allowed.")
 
         # Send the flavour text behind getting a template name
         await ctx.send(f"What name do you want to give this template? This will be used for the set and get commands, eg if the name of your template is `test`, the commands generated will be `{ctx.prefix}settest` to set a profile, `{ctx.prefix}gettest` to get a profile, and `{ctx.prefix}deletetest` to delete a profile. A profile name is case insensitive.")
@@ -219,9 +224,17 @@ class ProfileTemplates(utils.Cog):
 
         # Save it all to database
         async with self.bot.database() as db:
-            await db('INSERT INTO profile (profile_id, name, colour, guild_id, verification_channel_id, archive_channel_id) VALUES ($1, $2, $3, $4, $5, $6)', profile.profile_id, profile.name, profile.colour, profile.guild_id, profile.verification_channel_id, archive_channel_id)
+            await db(
+                """INSERT INTO profile (profile_id, name, colour, guild_id, verification_channel_id, archive_channel_id)
+                VALUES ($1, $2, $3, $4, $5, $6)""",
+                profile.profile_id, profile.name, profile.colour, profile.guild_id, profile.verification_channel_id, archive_channel_id
+            )
             for field in profile.fields:
-                await db('INSERT INTO field (field_id, name, index, prompt, timeout, field_type, optional, profile_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)', field.field_id, field.name, field.index, field.prompt, field.timeout, field.field_type.name, field.optional, field.profile_id)
+                await db(
+                    """INSERT INTO field (field_id, name, index, prompt, timeout, field_type, optional, profile_id)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)""",
+                    field.field_id, field.name, field.index, field.prompt, field.timeout, field.field_type.name, field.optional, field.profile_id
+                )
 
         # Output to user
         self.logger.info(f"New template '{profile.name}' created on guild {ctx.guild.id}")
@@ -230,7 +243,7 @@ class ProfileTemplates(utils.Cog):
         except (discord.Forbidden, discord.NotFound):
             return
 
-    async def create_new_field(self, ctx:utils.Context, profile_id:uuid.UUID, index:int, image_set:bool=False) -> utils.Field:
+    async def create_new_field(self, ctx:utils.Context, profile_id:uuid.UUID, index:int, image_set:bool=False) -> typing.Optional[utils.Field]:
         """Lets a user create a new field in their profile"""
 
         # Ask if they want a new field
@@ -302,7 +315,7 @@ class ProfileTemplates(utils.Cog):
         field_prompt = field_prompt_message.content
 
         # Get field optional
-        prompt_message = await ctx.send(f"Is this field optional?")
+        prompt_message = await ctx.send("Is this field optional?")
         await prompt_message.add_reaction(self.TICK_EMOJI)
         await prompt_message.add_reaction(self.CROSS_EMOJI)
         try:
@@ -326,7 +339,7 @@ class ProfileTemplates(utils.Cog):
                     raise ValueError()
                 break
             except ValueError:
-                await ctx.send("I couldn't convert your message into a number - the minimum is 30 seconds. Please try again.")
+                await ctx.send("I couldn't convert your message into a valid number - the minimum is 30 seconds. Please try again.")
         field_timeout = min([timeout, 600])
 
         # Ask for field type

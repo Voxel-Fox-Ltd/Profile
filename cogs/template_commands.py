@@ -20,6 +20,16 @@ class ProfileTemplates(utils.Cog):
     # TICK_EMOJI = "\U00002705"  # TODO make this work or something
 
     @commands.command(cls=utils.Command)
+    @commands.guild_only()
+    async def templates(self, ctx:utils.Context):
+        """Lists the templates that have been created for this server"""
+
+        templates: typing.List[utils.Template] = list(utils.Template.all_guilds[ctx.guild.id].values())
+        if not templates:
+            return await ctx.send("There are no created templats for this guild.")
+        templates_and_count = [(i, len(i.fields)) for i in templates]
+        return await ctx.send('\n'.join([f"`{i.name}` ({o} fields)" for i, o in templates_and_count]))
+    @commands.command(cls=utils.Command)
     @commands.has_permissions(manage_roles=True)
     @commands.bot_has_permissions(send_messages=True, external_emojis=True, add_reactions=True)
     @commands.guild_only()
@@ -29,7 +39,7 @@ class ProfileTemplates(utils.Cog):
         # Grab template object
         template: utils.Template = utils.Template.all_guilds[ctx.guild.id].get(template_name.lower())
         if template is None:
-            return await ctx.send(f"There's no template with the name `{template_name}` on this guild. Please see `{ctx.prefix}help` to see all the created templates.", allowed_mentions=discord.AllowedMentions(everyone=False, users=False, roles=False))
+            return await ctx.send(f"There's no template with the name `{template_name}` on this guild. Please see `{ctx.prefix}templates` to see all the created templates.", allowed_mentions=discord.AllowedMentions(everyone=False, users=False, roles=False))
 
         # Ask for confirmation
         template_profiles: typing.List[utils.UserProfile] = [i for i in utils.UserProfile.all_profiles.values() if i.template_id == template.template_id]
@@ -56,22 +66,22 @@ class ProfileTemplates(utils.Cog):
                 except discord.Forbidden:
                     return
 
-        # Check if they said no
-        if str(r.emoji) == self.CROSS_EMOJI:
-            return await ctx.send("Got it, cancelling template delete.")
+            # Check if they said no
+            if str(r.emoji) == self.CROSS_EMOJI:
+                return await ctx.send("Got it, cancelling template delete.")
 
-        # Make sure the emoji is actually valid
-        elif str(r.emoji) == self.TICK_EMOJI:
-            pass
-        else:
-            raise RuntimeError("Invalid emoji passed to command")
+            # Make sure the emoji is actually valid
+            elif str(r.emoji) == self.TICK_EMOJI:
+                pass
+            else:
+                raise RuntimeError("Invalid emoji passed to command")
 
         # Okay time to delete from the database
         async with self.bot.database() as db:
             await db('DELETE FROM filled_field WHERE field_id IN (SELECT field_id FROM field WHERE template_id=$1)', template.template_id)
             await db('DELETE FROM created_profile WHERE template_id=$1', template.template_id)
             await db('DELETE FROM field WHERE template_id=$1', template.template_id)
-            await db('DELETE FROM profile WHERE template_id=$1', template.template_id)
+            await db('DELETE FROM template WHERE template_id=$1', template.template_id)
         self.logger.info(f"Template '{template.name}' deleted on guild {ctx.guild.id}")
 
         # And I'll just try to delete things from cache as best I can
@@ -163,18 +173,19 @@ class ProfileTemplates(utils.Cog):
             except (discord.Forbidden, discord.NotFound):
                 return
         else:
-            if verification_message.channel_mentions:
-                verification_channel = verification_message.channel_mentions[0]
+            try:
+                verification_channel = await commands.TextChannelConverter().convert(ctx, verification_message.content)
                 proper_permissions = discord.Permissions()
                 proper_permissions.update(read_messages=True, add_external_emojis=True, send_messages=True, add_reactions=True, embed_links=True)
                 if verification_channel.permissions_for(ctx.guild.me).is_superset(proper_permissions):
                     verification_channel_id = verification_channel.id
                 else:
                     return await ctx.send("I don't have all the permissions I need to be able to send messages to that channel. I need `read messages`, `send messages`, `add external emojis`, `add reactions`, and `embed links`. Please update the channel permissions, and run this command again.")
-            elif verification_message.content.lower() == "continue":
-                pass
-            else:
-                return await ctx.send(f"I couldn't quite work out what you were trying to say there - please mention the channel as a ping, eg {ctx.channel.mention}. Please re-run the command to continue.")
+            except commands.BadArgument:
+                if verification_message.content.lower() == "continue":
+                    pass
+                else:
+                    return await ctx.send(f"I couldn't quite work out what you were trying to say there - please mention the channel as a ping, eg {ctx.channel.mention}. Please re-run the command to continue.")
 
         # Get archive channel
         await ctx.send("Some servers want approved profiles to be sent automatically to a given channel - this is called archiving. What channel would you like verified profiles to be archived in? If you don't want to set up an archive channel, just say `continue`.")
@@ -196,11 +207,10 @@ class ProfileTemplates(utils.Cog):
                 else:
                     return await ctx.send("I don't have all the permissions I need to be able to send messages to that channel. I need `read messages`, `send messages`, `embed links`. Please update the channel permissions, and run this command again.")
             except commands.BadArgument:
-                pass
-            if archive_message.content.lower() == "continue":
-                pass
-            else:
-                return await ctx.send(f"I couldn't quite work out what you were trying to say there - please mention the channel as a ping, eg {ctx.channel.mention}. Please re-run the command to continue.")
+                if archive_message.content.lower() == "continue":
+                    pass
+                else:
+                    return await ctx.send(f"I couldn't quite work out what you were trying to say there - please mention the channel as a ping, eg {ctx.channel.mention}. Please re-run the command to continue.")
 
         # Get filled profile role
         await ctx.send("Some servers want users with approved profiles to be given a role automatically - if you want users to be assigned a role, provide one here. If not, send `continue`.")
@@ -217,11 +227,10 @@ class ProfileTemplates(utils.Cog):
                 profile_role = await commands.RoleConverter().convert(ctx, role_message.content)
                 profile_role_id = profile_role.id
             except commands.BadArgument:
-                pass
-            if role_message.content.lower() == "continue":
-                pass
-            else:
-                return await ctx.send("I couldn't quite work out what you were trying to say there - please either ping the role you want, give its ID, or give its name (case sensitive). Please re-run the command to continue.")
+                if role_message.content.lower() == "continue":
+                    pass
+                else:
+                    return await ctx.send("I couldn't quite work out what you were trying to say there - please either ping the role you want, give its ID, or give its name (case sensitive). Please re-run the command to continue.")
 
         # Get an ID for the profile
         profile = utils.Template(
@@ -249,7 +258,7 @@ class ProfileTemplates(utils.Cog):
         # Save it all to database
         async with self.bot.database() as db:
             await db(
-                """INSERT INTO profile (template_id, name, colour, guild_id, verification_channel_id, archive_channel_id)
+                """INSERT INTO template (template_id, name, colour, guild_id, verification_channel_id, archive_channel_id)
                 VALUES ($1, $2, $3, $4, $5, $6)""",
                 profile.template_id, profile.name, profile.colour, profile.guild_id, profile.verification_channel_id, archive_channel_id
             )

@@ -156,15 +156,23 @@ class ProfileCreation(utils.Cog):
                 return await user.send(f"Your profile couldn't be sent to the verification channel - `{e}`.")
             except AttributeError:
                 return await user.send("The verification channel was deleted from the server - please tell an admin.")
-        elif profile.archive_channel_id:
-            try:
-                channel = await self.bot.fetch_channel(profile.archive_channel_id)
-                embed = user_profile.build_embed()
-                await channel.send(embed=embed)
-            except discord.HTTPException as e:
-                return await user.send(f"Your profile couldn't be sent to the archive channel - `{e}`.")
-            except AttributeError:
-                pass  # The archive channel being deleted isn't too bad tbh
+        else:
+            if profile.archive_channel_id:
+                try:
+                    channel = await self.bot.fetch_channel(profile.archive_channel_id)
+                    embed = user_profile.build_embed()
+                    await channel.send(embed=embed)
+                except discord.HTTPException as e:
+                    return await user.send(f"Your profile couldn't be sent to the archive channel - `{e}`.")
+                except AttributeError:
+                    pass  # The archive channel being deleted isn't too bad tbh
+            if profile.role_id:
+                role_to_add: discord.Role = ctx.guild.get_role(profile.role_id)
+                try:
+                    await user.add_roles(role_to_add, reason="Verified profile")
+                except discord.HTTPException as e:
+                    self.logger.error(f"Couldn't add role {role_to_add.id} to user {user_profile.user_id} about their '{user_profile.profile.name}' profile verification on {ctx.guild.id} - {e}")
+                    pass
 
         # Database me up daddy
         async with self.bot.database() as db:

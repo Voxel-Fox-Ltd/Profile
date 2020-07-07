@@ -4,3 +4,4 @@ from cogs.utils.checks.meta_command import InvokedMetaCommand
 from cogs.utils.missing_required_argument import MissingRequiredArgumentString
 from cogs.utils.time_value import InvalidTimeDuration
 from cogs.utils.profiles.field_type import FieldCheckFailure
+from cogs.utils.profiles.profile import ProfileNotFoundError

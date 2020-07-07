@@ -13,7 +13,14 @@ class ProfileCreation(utils.Cog):
 
     TICK_EMOJI = "<:tick_yes:596096897995899097>"
     CROSS_EMOJI = "<:cross_no:596096897769275402>"
-    COMMAND_REGEX = re.compile(r"^(set|get|delete|edit)(\S{1,30})( .*)?$", re.IGNORECASE)
+    # COMMAND_REGEX = re.compile(
+    #     r"^(?P<command>set|get|delete|edit)(?P<template>\S{1,30})(?:\s(?:<@)?(?P<user>\d{15,23})>?)?(?:\s(?P<name>\S{1,}))?",
+    #     re.IGNORECASE
+    # )
+    COMMAND_REGEX = re.compile(
+        r"^(?P<command>set|get|delete|edit)(?P<template>\S{1,30})( .*)?$",
+        re.IGNORECASE
+    )
 
     @utils.Cog.listener()
     async def on_command_error(self, ctx:utils.Context, error:commands.CommandError):
@@ -27,8 +34,8 @@ class ProfileCreation(utils.Cog):
         matches = self.COMMAND_REGEX.search(ctx.message.content[len(ctx.prefix):])
         if not matches:
             return
-        command_operator = matches.group(1)  # get/get/delete/edit
-        profile_name = matches.group(2)  # profile name
+        command_operator = matches.group("command")  # get/get/delete/edit
+        profile_name = matches.group("template")  # profile name
 
         # Filter out DMs
         if isinstance(ctx.channel, discord.DMChannel):

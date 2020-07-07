@@ -187,18 +187,41 @@ class ProfileTemplates(utils.Cog):
             except (discord.Forbidden, discord.NotFound):
                 return
         else:
-            if archive_message.channel_mentions:
-                archive_channel = archive_message.channel_mentions[0]
+            try:
+                archive_channel = await commands.TextChannelConverter().convert(ctx, archive_message.content)
                 proper_permissions = discord.Permissions()
                 proper_permissions.update(read_messages=True, send_messages=True, embed_links=True)
                 if archive_channel.permissions_for(ctx.guild.me).is_superset(proper_permissions):
                     archive_channel_id = archive_channel.id
                 else:
                     return await ctx.send("I don't have all the permissions I need to be able to send messages to that channel. I need `read messages`, `send messages`, `embed links`. Please update the channel permissions, and run this command again.")
-            elif archive_message.content.lower() == "continue":
+            except commands.BadArgument:
+                pass
+            if archive_message.content.lower() == "continue":
                 pass
             else:
                 return await ctx.send(f"I couldn't quite work out what you were trying to say there - please mention the channel as a ping, eg {ctx.channel.mention}. Please re-run the command to continue.")
+
+        # Get filled profile role
+        await ctx.send("Some servers want users with approved profiles to be given a role automatically - if you want users to be assigned a role, provide one here. If not, send `continue`.")
+        profile_role_id = None
+        try:
+            role_message = await self.bot.wait_for('message', check=lambda m: m.author == ctx.author and m.channel == ctx.channel, timeout=120)
+        except asyncio.TimeoutError:
+            try:
+                await ctx.send(f"{ctx.author.mention}, because of your 2 minutes of inactivity, profiles have been set to have no assigned role.")
+            except (discord.Forbidden, discord.NotFound):
+                return
+        else:
+            try:
+                profile_role = await commands.RoleConverter().convert(ctx, role_message.content)
+                profile_role_id = profile_role.id
+            except commands.BadArgument:
+                pass
+            if role_message.content.lower() == "continue":
+                pass
+            else:
+                return await ctx.send("I couldn't quite work out what you were trying to say there - please either ping the role you want, give its ID, or give its name (case sensitive). Please re-run the command to continue.")
 
         # Get an ID for the profile
         profile = utils.Profile(
@@ -208,6 +231,7 @@ class ProfileTemplates(utils.Cog):
             verification_channel_id=verification_channel_id,
             name=profile_name,
             archive_channel_id=archive_channel_id,
+            role_id=profile_role_id,
         )
 
         # Now we start the field loop

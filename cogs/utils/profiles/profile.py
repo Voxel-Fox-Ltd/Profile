@@ -15,15 +15,16 @@ class Profile(object):
     all_profiles: typing.Dict[uuid.UUID, 'Profile'] = {}
     all_guilds: typing.Dict[int, typing.Dict[str, 'Profile']] = collections.defaultdict(collections.defaultdict(lambda: None))
 
-    __slots__ = ("profile_id", "colour", "guild_id", "verification_channel_id", "name", "archive_channel_id")
+    __slots__ = ("profile_id", "colour", "guild_id", "verification_channel_id", "name", "archive_channel_id", "role_id")
 
-    def __init__(self, profile_id:uuid.UUID, colour:int, guild_id:int, verification_channel_id:int, name:str, archive_channel_id:int):
+    def __init__(self, profile_id:uuid.UUID, colour:int, guild_id:int, verification_channel_id:int, name:str, archive_channel_id:int, role_id:int):
         self.profile_id = profile_id
         self.colour = colour
         self.guild_id = guild_id
         self.verification_channel_id = verification_channel_id
         self.name = name
         self.archive_channel_id = archive_channel_id
+        self.role_id = role_id
 
         self.all_profiles[self.profile_id] = self
         self.all_guilds[self.guild_id][self.name] = self

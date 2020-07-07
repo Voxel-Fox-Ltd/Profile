@@ -95,9 +95,7 @@ class ProfileVerification(utils.Cog):
             user_profile.verified = verify
 
         # Tell the user about the decision
-        user: discord.User = self.bot.get_user(profile_user_id)
-        if user is None:
-            user: discord.User = await self.bot.fetch_user(profile_user_id)
+        user: discord.User = guild.get_member(profile_user_id) or self.bot.get_user(profile_user_id) or await self.bot.fetch_user(profile_user_id)
         try:
             if verify:
                 await user.send(f"Your profile for `{user_profile.profile.name}` on `{guild.name}` has been verified.", embed=user_profile.build_embed())
@@ -106,6 +104,15 @@ class ProfileVerification(utils.Cog):
         except discord.Forbidden:
             self.logger.info(f"Couldn't DM user {user_profile.user_id} about their '{user_profile.profile.name}' profile verification on {guild.id}")
             pass  # Can't send the user a DM, let's just ignore it
+
+        # Add a role to them
+        role_to_add: discord.Role = guild.get_role(user_profile.profile.role_id)
+        if verify and role_to_add and isinstance(user, discord.Member):
+            try:
+                await user.add_roles(role_to_add, reason="Verified profile")
+            except discord.HTTPException:
+                self.logger.info(f"Couldn't add role {role_to_add.id} to user {user_profile.user_id} about their '{user_profile.profile.name}' profile verification on {guild.id}")
+                pass
 
         # Send the profile off to the archive
         if user_profile.profile.archive_channel_id and verify:

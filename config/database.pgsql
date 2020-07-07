@@ -49,7 +49,8 @@ CREATE TABLE profile(
     colour INTEGER,
     guild_id BIGINT NOT NULL,
     verification_channel_id BIGINT,
-    archive_channel_id BIGINT
+    archive_channel_id BIGINT,
+    role_id BIGINT
 );
 -- A table to describe a profile in its entirety
 -- profile_id - the general ID of the profile

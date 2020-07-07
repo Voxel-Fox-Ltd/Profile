@@ -15,7 +15,7 @@ from discord.ext import commands
 from cogs.utils.custom_context import CustomContext
 from cogs.utils.database import DatabaseConnection
 from cogs.utils.redis import RedisConnection
-from cogs.utils.profiles.field import Field 
+from cogs.utils.profiles.field import Field
 from cogs.utils.profiles.filled_field import FilledField
 from cogs.utils.profiles.profile import Profile
 from cogs.utils.profiles.user_profile import UserProfile
@@ -109,23 +109,21 @@ class CustomBot(commands.AutoShardedBot):
                 self.user_settings[row['user_id']][key] = value
 
         # Fill caches
-        fields = await db('SELECT * FROM field')
-        filled_fields = await db('SELECT * FROM filled_field')
-        profiles = await db('SELECT * FROM profile')
-        user_profiles = await db('SELECT * FROM created_profile')
+        data = await self.get_all_table_data(db, "field")
+        for i in data:
+            Field(**i)
 
-        if fields:
-            for i in fields:
-                Field(**i)
-        if filled_fields:
-            for i in filled_fields:
-                FilledField(**i)
-        if profiles:
-            for i in profiles:
-                Profile(**i)
-        if user_profiles:
-            for i in user_profiles:
-                UserProfile(**i)
+        data = await self.get_all_table_data(db, "filled_field")
+        for i in data:
+            FilledField(**i)
+
+        data = await self.get_all_table_data(db, "profile")
+        for i in data:
+            Profile(**i)
+
+        data = await self.get_all_table_data(db, "created_profile")
+        for i in data:
+            UserProfile(**i)
 
         # Wait for the bot to cache users before continuing
         self.logger.debug("Waiting until ready before completing startup method.")

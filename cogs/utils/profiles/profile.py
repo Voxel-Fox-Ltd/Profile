@@ -13,7 +13,7 @@ class Profile(object):
     """
 
     all_profiles: typing.Dict[uuid.UUID, 'Profile'] = {}
-    all_guilds: typing.Dict[int, typing.Dict[str, 'Profile']] = collections.defaultdict(collections.defaultdict(lambda: None))
+    all_guilds: typing.Dict[int, typing.Dict[str, 'Profile']] = collections.defaultdict(lambda: collections.defaultdict(lambda: None))
 
     __slots__ = ("profile_id", "colour", "guild_id", "verification_channel_id", "name", "archive_channel_id", "role_id")
 

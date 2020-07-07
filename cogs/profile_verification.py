@@ -39,6 +39,8 @@ class ProfileVerification(utils.Cog):
 
         # Make sure it's the right kind of embed
         embed: discord.Embed = message.embeds[0]
+        if not embed.footer.text:
+            return
         if 'Verification Check' not in embed.footer.text:
             return
         profile_name = embed.title.split(' ')[0].strip().lower()

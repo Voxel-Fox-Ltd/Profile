@@ -27,12 +27,12 @@ class ProfileTemplates(utils.Cog):
         """Deletes a template for your guild"""
 
         # Grab template object
-        template: utils.Profile = utils.Profile.all_guilds[ctx.guild.id].get(template_name.lower())
+        template: utils.Template = utils.Template.all_guilds[ctx.guild.id].get(template_name.lower())
         if template is None:
             return await ctx.send(f"There's no template with the name `{template_name}` on this guild. Please see `{ctx.prefix}help` to see all the created templates.", allowed_mentions=discord.AllowedMentions(everyone=False, users=False, roles=False))
 
         # Ask for confirmation
-        template_profiles: typing.List[utils.UserProfile] = [i for i in utils.UserProfile.all_profiles.values() if i.profile_id == template.profile_id]
+        template_profiles: typing.List[utils.UserProfile] = [i for i in utils.UserProfile.all_profiles.values() if i.template_id == template.template_id]
         if len(template_profiles):
             delete_confirmation_message = await ctx.send(f"By doing this, you'll delete `{len(template_profiles)}` of the created profiles under this template as well. Would you like to proceed?")
             valid_reactions = [self.TICK_EMOJI, self.CROSS_EMOJI]
@@ -68,10 +68,10 @@ class ProfileTemplates(utils.Cog):
 
         # Okay time to delete from the database
         async with self.bot.database() as db:
-            await db('DELETE FROM filled_field WHERE field_id IN (SELECT field_id FROM field WHERE profile_id=$1)', template.profile_id)
-            await db('DELETE FROM created_profile WHERE profile_id=$1', template.profile_id)
-            await db('DELETE FROM field WHERE profile_id=$1', template.profile_id)
-            await db('DELETE FROM profile WHERE profile_id=$1', template.profile_id)
+            await db('DELETE FROM filled_field WHERE field_id IN (SELECT field_id FROM field WHERE template_id=$1)', template.template_id)
+            await db('DELETE FROM created_profile WHERE template_id=$1', template.template_id)
+            await db('DELETE FROM field WHERE template_id=$1', template.template_id)
+            await db('DELETE FROM profile WHERE template_id=$1', template.template_id)
         self.logger.info(f"Template '{template.name}' deleted on guild {ctx.guild.id}")
 
         # And I'll just try to delete things from cache as best I can
@@ -86,7 +86,7 @@ class ProfileTemplates(utils.Cog):
         # Delete fields
         for f in fields:
             f.all_fields.pop(f.field_id, None)
-            f.all_profile_fields.pop(f.profile_id, None)
+            f.all_profile_fields.pop(f.template_id, None)
 
         # Delete filled fields
         for f in filled_fields:
@@ -97,7 +97,7 @@ class ProfileTemplates(utils.Cog):
             c.all_profiles.pop((c.user_id, ctx.guild.id, template_name), None)
 
         # Delete profile
-        template.all_profiles.pop(template.profile_id, None)
+        template.all_profiles.pop(template.template_id, None)
         template.all_guilds[ctx.guild.id].pop(template.name, None)
 
         # And done
@@ -111,7 +111,7 @@ class ProfileTemplates(utils.Cog):
         """Creates a new template for your guild"""
 
         # See if they have too many templates already
-        if len(utils.Profile.all_guilds[ctx.guild.id]) >= 5:
+        if len(utils.Template.all_guilds[ctx.guild.id]) >= 5:
             return await ctx.send("You already have 5 templates set for this server, which is the maximum amount allowed.")
 
         # Send the flavour text behind getting a template name
@@ -144,7 +144,7 @@ class ProfileTemplates(utils.Cog):
                 continue
 
             # Check name is unique
-            if utils.Profile.all_guilds[ctx.guild.id].get(profile_name):
+            if utils.Template.all_guilds[ctx.guild.id].get(profile_name):
                 await ctx.send(f"This server already has a template with name `{profile_name}`. Please run this command again to provide another one.", allowed_mentions=discord.AllowedMentions(everyone=False, users=False, roles=False))
                 return
             break
@@ -224,8 +224,8 @@ class ProfileTemplates(utils.Cog):
                 return await ctx.send("I couldn't quite work out what you were trying to say there - please either ping the role you want, give its ID, or give its name (case sensitive). Please re-run the command to continue.")
 
         # Get an ID for the profile
-        profile = utils.Profile(
-            profile_id=uuid.uuid4(),
+        profile = utils.Template(
+            template_id=uuid.uuid4(),
             colour=colour,
             guild_id=ctx.guild.id,
             verification_channel_id=verification_channel_id,
@@ -239,7 +239,7 @@ class ProfileTemplates(utils.Cog):
         field = True
         image_set = False
         while field:
-            field = await self.create_new_field(ctx, profile.profile_id, index, image_set)
+            field = await self.create_new_field(ctx, profile.template_id, index, image_set)
             if field:
                 image_set = isinstance(field.field_type, utils.ImageField) or image_set
             index += 1
@@ -249,15 +249,15 @@ class ProfileTemplates(utils.Cog):
         # Save it all to database
         async with self.bot.database() as db:
             await db(
-                """INSERT INTO profile (profile_id, name, colour, guild_id, verification_channel_id, archive_channel_id)
+                """INSERT INTO profile (template_id, name, colour, guild_id, verification_channel_id, archive_channel_id)
                 VALUES ($1, $2, $3, $4, $5, $6)""",
-                profile.profile_id, profile.name, profile.colour, profile.guild_id, profile.verification_channel_id, archive_channel_id
+                profile.template_id, profile.name, profile.colour, profile.guild_id, profile.verification_channel_id, archive_channel_id
             )
             for field in profile.fields:
                 await db(
-                    """INSERT INTO field (field_id, name, index, prompt, timeout, field_type, optional, profile_id)
+                    """INSERT INTO field (field_id, name, index, prompt, timeout, field_type, optional, template_id)
                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)""",
-                    field.field_id, field.name, field.index, field.prompt, field.timeout, field.field_type.name, field.optional, field.profile_id
+                    field.field_id, field.name, field.index, field.prompt, field.timeout, field.field_type.name, field.optional, field.template_id
                 )
 
         # Output to user
@@ -267,7 +267,7 @@ class ProfileTemplates(utils.Cog):
         except (discord.Forbidden, discord.NotFound):
             return
 
-    async def create_new_field(self, ctx:utils.Context, profile_id:uuid.UUID, index:int, image_set:bool=False) -> typing.Optional[utils.Field]:
+    async def create_new_field(self, ctx:utils.Context, template_id:uuid.UUID, index:int, image_set:bool=False) -> typing.Optional[utils.Field]:
         """Lets a user create a new field in their profile"""
 
         # Ask if they want a new field
@@ -410,7 +410,7 @@ class ProfileTemplates(utils.Cog):
             prompt=field_prompt,
             timeout=field_timeout,
             field_type=field_type,
-            profile_id=profile_id,
+            template_id=template_id,
             optional=field_optional,
             deleted=False,
         )

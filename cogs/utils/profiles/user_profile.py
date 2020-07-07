@@ -1,7 +1,7 @@
 import typing
 import uuid
 
-from cogs.utils.profiles.profile import Profile
+from cogs.utils.profiles.template import Template
 from cogs.utils.profiles.filled_field import FilledField
 from cogs.utils.profiles.field_type import ImageField
 from cogs.utils.context_embed import ContextEmbed as Embed
@@ -17,17 +17,17 @@ class UserProfile(object):
 
     all_profiles = {}
 
-    __slots__ = ("user_id", "profile_id", "verified")
+    __slots__ = ("user_id", "template_id", "verified")
 
-    def __init__(self, user_id:int, profile_id:uuid.UUID, verified:bool):
+    def __init__(self, user_id:int, template_id:uuid.UUID, verified:bool):
         self.user_id = user_id
-        self.profile_id = profile_id
+        self.template_id = template_id
         self.verified = verified
         self.all_profiles[(self.user_id, self.profile.guild_id, self.profile.name)] = self
 
     @property
-    def profile(self) -> Profile:
-        return Profile.all_profiles.get(self.profile_id)
+    def profile(self) -> Template:
+        return Template.all_profiles.get(self.template_id)
 
     @property
     def filled_fields(self) -> typing.List[FilledField]:

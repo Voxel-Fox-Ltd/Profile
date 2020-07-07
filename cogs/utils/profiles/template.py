@@ -8,7 +8,7 @@ from discord.ext import commands
 from cogs.utils.profiles.field import Field
 
 
-class ProfileNotFoundError(commands.BadArgument):
+class TemplateNotFoundError(commands.BadArgument):
 
     def __init__(self, profile_name:str):
         self.profile_name = profile_name
@@ -17,18 +17,18 @@ class ProfileNotFoundError(commands.BadArgument):
         return f"There's no template with the name `{self.profile_name}` on this guild."
 
 
-class Profile(object):
+class Template(object):
     """A class for an abstract template object that's saved to guild
     This contains no user data, but rather the metadata for the template itself
     """
 
-    all_profiles: typing.Dict[uuid.UUID, 'Profile'] = {}
-    all_guilds: typing.Dict[int, typing.Dict[str, 'Profile']] = collections.defaultdict(lambda: collections.defaultdict(lambda: None))
+    all_profiles: typing.Dict[uuid.UUID, 'Template'] = {}
+    all_guilds: typing.Dict[int, typing.Dict[str, 'Template']] = collections.defaultdict(lambda: collections.defaultdict(lambda: None))
 
-    __slots__ = ("profile_id", "colour", "guild_id", "verification_channel_id", "name", "archive_channel_id", "role_id")
+    __slots__ = ("template_id", "colour", "guild_id", "verification_channel_id", "name", "archive_channel_id", "role_id")
 
-    def __init__(self, profile_id:uuid.UUID, colour:int, guild_id:int, verification_channel_id:int, name:str, archive_channel_id:int, role_id:int):
-        self.profile_id = profile_id
+    def __init__(self, template_id:uuid.UUID, colour:int, guild_id:int, verification_channel_id:int, name:str, archive_channel_id:int, role_id:int):
+        self.template_id = template_id
         self.colour = colour
         self.guild_id = guild_id
         self.verification_channel_id = verification_channel_id
@@ -36,7 +36,7 @@ class Profile(object):
         self.archive_channel_id = archive_channel_id
         self.role_id = role_id
 
-        self.all_profiles[self.profile_id] = self
+        self.all_profiles[self.template_id] = self
         self.all_guilds[self.guild_id][self.name] = self
 
     @property
@@ -44,7 +44,7 @@ class Profile(object):
         """Returns a list of cogs.utils.profiles.fields.Field objects for this particular profile"""
 
         try:
-            return [i for i in sorted(Field.all_profile_fields.get(self.profile_id), key=lambda x: x.index) if i.deleted is False]
+            return [i for i in sorted(Field.all_profile_fields.get(self.template_id), key=lambda x: x.index) if i.deleted is False]
         except TypeError:
             return list()
 

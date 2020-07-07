@@ -70,16 +70,16 @@ class ProfileVerification(utils.Cog):
         verify = str(payload.emoji) == self.TICK_EMOJI
 
         # Check whom and what we're updating
-        profile_user_id, profile_id = message.content.split('\n')[-1].split('/')
+        profile_user_id, template_id = message.content.split('\n')[-1].split('/')
         profile_user_id = int(profile_user_id)
 
         # Decide whether to verify or to delete
         async with self.bot.database() as db:
             if verify:
-                await db('UPDATE created_profile SET verified=true WHERE user_id=$1 AND profile_id=$2', profile_user_id, profile_id)
+                await db('UPDATE created_profile SET verified=true WHERE user_id=$1 AND template_id=$2', profile_user_id, template_id)
             else:
-                await db('DELETE FROM filled_field WHERE user_id=$1 AND field_id IN (SELECT field_id FROM field WHERE profile_id=$2)', profile_user_id, profile_id)
-                await db('DELETE FROM created_profile WHERE user_id=$1 AND profile_id=$2', profile_user_id, profile_id)
+                await db('DELETE FROM filled_field WHERE user_id=$1 AND field_id IN (SELECT field_id FROM field WHERE template_id=$2)', profile_user_id, template_id)
+                await db('DELETE FROM created_profile WHERE user_id=$1 AND template_id=$2', profile_user_id, template_id)
 
         # Delete the verify message
         await message.delete()

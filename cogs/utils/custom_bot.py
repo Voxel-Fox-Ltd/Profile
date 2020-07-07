@@ -17,7 +17,7 @@ from cogs.utils.database import DatabaseConnection
 from cogs.utils.redis import RedisConnection
 from cogs.utils.profiles.field import Field
 from cogs.utils.profiles.filled_field import FilledField
-from cogs.utils.profiles.profile import Profile
+from cogs.utils.profiles.template import Template
 from cogs.utils.profiles.user_profile import UserProfile
 
 
@@ -89,8 +89,8 @@ class CustomBot(commands.AutoShardedBot):
         Field.all_fields.clear()
         Field.all_profile_fields.clear()
         FilledField.all_filled_fields.clear()
-        Profile.all_guilds.clear()
-        Profile.all_profiles.clear()
+        Template.all_guilds.clear()
+        Template.all_profiles.clear()
         UserProfile.all_profiles.clear()
 
         # Get database connection
@@ -119,7 +119,7 @@ class CustomBot(commands.AutoShardedBot):
 
         data = await self.get_all_table_data(db, "profile")
         for i in data:
-            Profile(**i)
+            Template(**i)
 
         data = await self.get_all_table_data(db, "created_profile")
         for i in data:

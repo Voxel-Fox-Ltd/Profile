@@ -43,8 +43,8 @@ CREATE TABLE command_log(
 );
 
 
-CREATE TABLE profile(
-    profile_id UUID PRIMARY KEY,
+CREATE TABLE template(
+    template_id UUID PRIMARY KEY,
     name VARCHAR(30),
     colour INTEGER,
     guild_id BIGINT NOT NULL,
@@ -53,7 +53,7 @@ CREATE TABLE profile(
     role_id BIGINT
 );
 -- A table to describe a profile in its entirety
--- profile_id - the general ID of the profile
+-- template_id - the general ID of the profile
 -- name - the name of the profile used in commands
 -- colour - the colour of the embed field
 -- guild_id - the guild that the profile is made for
@@ -80,7 +80,7 @@ CREATE TABLE field(
     field_type FIELDTYPE,
     optional BOOLEAN DEFAULT FALSE,
     deleted BOOLEAN DEFAULT FALSE,
-    profile_id UUID REFERENCES profile(profile_id)
+    template_id UUID REFERENCES template(template_id)
 );
 -- A table to describe each individual field in a profile
 -- field_id - general ID of the field
@@ -95,13 +95,13 @@ CREATE TABLE field(
 
 CREATE TABLE created_profile(
     user_id BIGINT,
-    profile_id UUID REFERENCES profile(profile_id),
+    template_id UUID REFERENCES template(template_id),
     verified BOOLEAN DEFAULT FALSE,
-    PRIMARY KEY (user_id, profile_id)
+    PRIMARY KEY (user_id, template_id)
 );
 -- A table describing an entire profile filled by a user
 -- user_id - the user filling the profile
--- profile_id - the profile being filled
+-- template_id - the profile being filled
 -- verified - whether or not the profile is a verified one
 
 

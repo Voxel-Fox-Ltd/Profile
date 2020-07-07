@@ -35,7 +35,7 @@ class ProfileCreation(utils.Cog):
             return  # Fail silently on DM invocation
 
         # Find the profile they asked for on their server
-        guild_commands = utils.Profile.all_guilds[ctx.guild.id]
+        guild_commands = utils.Template.all_guilds[ctx.guild.id]
         profile = guild_commands.get(profile_name)
         if not profile:
             self.logger.info(f"Failed at getting profile '{profile_name}' in guild {ctx.guild.id}")
@@ -62,7 +62,7 @@ class ProfileCreation(utils.Cog):
         # Set up some variables
         user: discord.Member = ctx.author
         target_user: discord.Member = target_user or user
-        profile: utils.Profile = ctx.profile
+        profile: utils.Template = ctx.profile
         fields: typing.List[utils.Field] = profile.fields
 
         # Only mods can see other people's profiles
@@ -126,7 +126,7 @@ class ProfileCreation(utils.Cog):
         # Make the UserProfile object
         user_profile = utils.UserProfile(
             user_id=target_user.id,
-            profile_id=profile.profile_id,
+            template_id=profile.template_id,
             verified=profile.verification_channel_id is None
         )
 
@@ -142,7 +142,7 @@ class ProfileCreation(utils.Cog):
                 channel = await self.bot.fetch_channel(profile.verification_channel_id)
                 embed = user_profile.build_embed()
                 embed.set_footer(text=f'{profile.name.upper()} // Verification Check')
-                v = await channel.send(f"New **{profile.name}** submission from {target_user.mention}\n{target_user.id}/{profile.profile_id}", embed=embed)
+                v = await channel.send(f"New **{profile.name}** submission from {target_user.mention}\n{target_user.id}/{profile.template_id}", embed=embed)
                 await v.add_reaction(self.TICK_EMOJI)
                 await v.add_reaction(self.CROSS_EMOJI)
             except discord.HTTPException as e:
@@ -162,10 +162,10 @@ class ProfileCreation(utils.Cog):
         # Database me up daddy
         async with self.bot.database() as db:
             try:
-                await db('INSERT INTO created_profile (user_id, profile_id, verified) VALUES ($1, $2, $3)', user_profile.user_id, user_profile.profile.profile_id, user_profile.verified)
+                await db('INSERT INTO created_profile (user_id, template_id, verified) VALUES ($1, $2, $3)', user_profile.user_id, user_profile.profile.template_id, user_profile.verified)
             except asyncpg.UniqueViolationError:
-                await db('UPDATE created_profile SET verified=$3 WHERE user_id=$1 AND profile_id=$2', user_profile.user_id, user_profile.profile.profile_id, user_profile.verified)
-                await db('DELETE FROM filled_field WHERE user_id=$1 AND field_id in (SELECT field_id FROM field WHERE profile_id=$2)', user_profile.user_id, user_profile.profile.profile_id)
+                await db('UPDATE created_profile SET verified=$3 WHERE user_id=$1 AND template_id=$2', user_profile.user_id, user_profile.profile.template_id, user_profile.verified)
+                await db('DELETE FROM filled_field WHERE user_id=$1 AND field_id in (SELECT field_id FROM field WHERE template_id=$2)', user_profile.user_id, user_profile.profile.template_id)
                 self.logger.info(f"Deleted profile for {user_profile.user_id} on UniqueViolationError")
             for field in filled_field_list:
                 await db('INSERT INTO filled_field (user_id, field_id, value) VALUES ($1, $2, $3) ON CONFLICT (user_id, field_id) DO UPDATE SET value=excluded.value', field.user_id, field.field_id, field.value)
@@ -257,7 +257,7 @@ class ProfileCreation(utils.Cog):
                 channel = await self.bot.fetch_channel(profile.verification_channel_id)
                 embed = user_profile.build_embed()
                 embed.set_footer(text=f'{profile.name.upper()} // Verification Check')
-                v = await channel.send(f"Edited **{profile.name}** submission from {target_user.mention}\n{target_user.id}/{profile.profile_id}", embed=embed)
+                v = await channel.send(f"Edited **{profile.name}** submission from {target_user.mention}\n{target_user.id}/{profile.template_id}", embed=embed)
                 await v.add_reaction(self.TICK_EMOJI)
                 await v.add_reaction(self.CROSS_EMOJI)
             except discord.HTTPException as e:
@@ -276,8 +276,8 @@ class ProfileCreation(utils.Cog):
 
         # Database me up daddy
         async with self.bot.database() as db:
-            await db('UPDATE created_profile SET verified=$3 WHERE user_id=$1 AND profile_id=$2', user_profile.user_id, user_profile.profile.profile_id, user_profile.verified)
-            # await db('DELETE FROM filled_field WHERE user_id=$1 AND field_id in (SELECT field_id FROM field WHERE profile_id=$2)', user_profile.user_id, user_profile.profile.profile_id)
+            await db('UPDATE created_profile SET verified=$3 WHERE user_id=$1 AND template_id=$2', user_profile.user_id, user_profile.profile.template_id, user_profile.verified)
+            # await db('DELETE FROM filled_field WHERE user_id=$1 AND field_id in (SELECT field_id FROM field WHERE template_id=$2)', user_profile.user_id, user_profile.profile.template_id)
             for field in filled_field_list:
                 # await db('INSERT INTO filled_field (user_id, field_id, value) VALUES ($1, $2, $3)', field.user_id, field.field_id, field.value)
                 await db('UPDATE filled_field SET value=$3 WHERE user_id=$1 AND field_id=$2', field.user_id, field.field_id, field.value)
@@ -308,8 +308,8 @@ class ProfileCreation(utils.Cog):
         # Database it babey
         target_user = target_user or ctx.author
         async with self.bot.database() as db:
-            await db('DELETE FROM filled_field WHERE user_id=$1 AND field_id in (SELECT field_id FROM field WHERE profile_id=$2)', target_user.id, profile.profile_id)
-            await db('DELETE FROM created_profile WHERE user_id=$1 AND profile_id=$2', target_user.id, profile.profile_id)
+            await db('DELETE FROM filled_field WHERE user_id=$1 AND field_id in (SELECT field_id FROM field WHERE template_id=$2)', target_user.id, profile.template_id)
+            await db('DELETE FROM created_profile WHERE user_id=$1 AND template_id=$2', target_user.id, profile.template_id)
         del utils.UserProfile.all_profiles[(target_user.id, ctx.guild.id, profile.name)]
         await ctx.send("This profile has been deleted.")
 

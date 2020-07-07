@@ -117,7 +117,7 @@ class CustomBot(commands.AutoShardedBot):
         for i in data:
             FilledField(**i)
 
-        data = await self.get_all_table_data(db, "profile")
+        data = await self.get_all_table_data(db, "template")
         for i in data:
             Template(**i)
 

@@ -12,8 +12,8 @@ class Profile(object):
     This contains no user data, but rather the metadata for the template itself
     """
 
-    all_profiles: typing.Dict['profile_id', 'Profile'] = {}
-    all_guilds: typing.Dict['guild_id', typing.Dict['name', 'Profile']] = collections.defaultdict(dict)
+    all_profiles: typing.Dict[uuid.UUID, 'Profile'] = {}
+    all_guilds: typing.Dict[int, typing.Dict[str, 'Profile']] = collections.defaultdict(collections.defaultdict(lambda: None))
 
     __slots__ = ("profile_id", "colour", "guild_id", "verification_channel_id", "name", "archive_channel_id")
 

@@ -20,6 +20,65 @@ class ProfileTemplates(utils.Cog):
     # TICK_EMOJI = "\U00002705"  # TODO make this work or something
 
     @commands.command(cls=utils.Command)
+    @commands.has_permissions(manage_roles=True)
+    @commands.bot_has_permissions(send_messages=True, external_emojis=True, add_reactions=True)
+    @commands.guild_only()
+    async def edittemplate(self, ctx:utils.Context, template_name:str):
+        """Edits a template for your guild"""
+
+        # Grab template object
+        template: utils.Template = utils.Template.all_guilds[ctx.guild.id].get(template_name.lower())
+        if template is None:
+            return await ctx.send(f"There's no template with the name `{template_name}` on this guild. Please see `{ctx.prefix}templates` to see all the created templates.", allowed_mentions=discord.AllowedMentions(everyone=False, users=False, roles=False))
+
+        # Ask what they want to edit
+        lines = [
+            "What do you want to edit?",
+            "1\N{COMBINING ENCLOSING KEYCAP} Verification channel " + (ctx.guild.get_channel(template.verification_channel_id).mention if template.verification_channel_id else ''),
+            "2\N{COMBINING ENCLOSING KEYCAP} Profile archive channel " + (ctx.guild.get_channel(template.archive_channel_id).mention if template.archive_channel_id else ''),
+            "3\N{COMBINING ENCLOSING KEYCAP} Verified profile role " + (ctx.guild.get_role(template.role_id).mention if template.role_id else ''),
+        ]
+        edit_message = await ctx.send('\n'.join(lines), allowed_mentions=discord.AllowedMentions(roles=False))
+        valid_emoji = ["1\N{COMBINING ENCLOSING KEYCAP}", "2\N{COMBINING ENCLOSING KEYCAP}", "3\N{COMBINING ENCLOSING KEYCAP}"]
+        for e in valid_emoji:
+            await edit_message.add_reaction(e)
+
+        # Wait for a response
+        try:
+            reaction, _ = await self.bot.wait_for("reaction_add", check=lambda r, u: u.id == ctx.author.id and r.message.id == edit_message.id and str(r) in valid_emoji)
+        except asyncio.TimeoutError:
+            return await ctx.send("Timed out waiting for edit response.")
+
+        # See what they reacted with
+        attr, converter = {
+            "1\N{COMBINING ENCLOSING KEYCAP}": ('verification_channel_id', commands.TextChannelConverter()),
+            "2\N{COMBINING ENCLOSING KEYCAP}": ('archive_channel_id', commands.TextChannelConverter()),
+            "3\N{COMBINING ENCLOSING KEYCAP}": ('role_id', commands.RoleConverter()),
+        }[str(reaction)]
+
+        # Ask what they want to set things to
+        await ctx.send("What do you want to set that to? You can give a name, a ping, or an ID, or say `continue` to set the value to null. " + ("Note that any current pending profiles will _not_ be able to be approved after moving the channel" if attr == 'verification_channel_id' else ''))
+        try:
+            value_message = await self.bot.wait_for("message", check=lambda m: m.author.id == ctx.author.id and m.channel.id == ctx.channel.id)
+        except asyncio.TimeoutError:
+            return await ctx.send("Timed out waiting for edit response.")
+
+        # Convert the response
+        try:
+            converted = (await converter.convert(ctx, value_message.content)).id
+        except commands.BadArgument:
+            if value_message.content == "continue":
+                converted = None
+            else:
+                return await ctx.send("I couldn't work out what you were trying to mention - please re-run this command to try again.")
+
+        # Store our new shit
+        setattr(template, attr, converted)
+        async with self.bot.database() as db:
+            await db(f"UPDATE template SET {attr}=$1 WHERE template_id=$2", converted, template.template_id)
+        await ctx.send("Converted and stored the information.")
+
+    @commands.command(cls=utils.Command)
     @commands.guild_only()
     async def templates(self, ctx:utils.Context):
         """Lists the templates that have been created for this server"""
@@ -29,6 +88,7 @@ class ProfileTemplates(utils.Cog):
             return await ctx.send("There are no created templats for this guild.")
         templates_and_count = [(i, len(i.fields)) for i in templates]
         return await ctx.send('\n'.join([f"`{i.name}` ({o} fields)" for i, o in templates_and_count]))
+
     @commands.command(cls=utils.Command)
     @commands.has_permissions(manage_roles=True)
     @commands.bot_has_permissions(send_messages=True, external_emojis=True, add_reactions=True)

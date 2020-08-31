@@ -102,9 +102,9 @@ class ProfileTemplates(utils.Cog):
             return await ctx.send(f"There's no template with the name `{template_name}` on this guild. Please see `{ctx.prefix}templates` to see all the created templates.", allowed_mentions=discord.AllowedMentions(everyone=False, users=False, roles=False))
 
         # Ask for confirmation
-        template_profiles: typing.List[utils.UserProfile] = [i for i in utils.UserProfile.all_profiles.values() if i.template_id == template.template_id]
-        if len(template_profiles):
-            delete_confirmation_message = await ctx.send(f"By doing this, you'll delete `{len(template_profiles)}` of the created profiles under this template as well. Would you like to proceed?")
+        user_profiles: typing.List[utils.UserProfile] = [i for i in utils.UserProfile.all_profiles.values() if i.template_id == template.template_id]
+        if len(user_profiles):
+            delete_confirmation_message = await ctx.send(f"By doing this, you'll delete `{len(user_profiles)}` of the created profiles under this template as well. Would you like to proceed?")
             valid_reactions = [self.TICK_EMOJI, self.CROSS_EMOJI]
             for e in valid_reactions:
                 try:
@@ -148,7 +148,7 @@ class ProfileTemplates(utils.Cog):
         # First grab all the fields and filled fields - I grabbed the created profiles earlier
         fields: typing.List[utils.Field] = []
         filled_fields: typing.List[utils.FilledField] = []
-        for t in template_profiles:
+        for t in user_profiles:
             for f in t.filled_fields:
                 fields.append(f.field)
                 filled_fields.append(f)
@@ -163,11 +163,11 @@ class ProfileTemplates(utils.Cog):
             f.all_filled_fields.pop((f.user_id, f.field_id), None)
 
         # Delete filled profiles
-        for c in template_profiles:
+        for c in user_profiles:
             c.all_profiles.pop((c.user_id, ctx.guild.id, template_name), None)
 
         # Delete profile
-        template.all_profiles.pop(template.template_id, None)
+        template.all_templates.pop(template.template_id, None)
         template.all_guilds[ctx.guild.id].pop(template.name, None)
 
         # And done

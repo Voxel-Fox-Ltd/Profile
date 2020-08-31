@@ -90,7 +90,7 @@ class CustomBot(commands.AutoShardedBot):
         Field.all_profile_fields.clear()
         FilledField.all_filled_fields.clear()
         Template.all_guilds.clear()
-        Template.all_profiles.clear()
+        Template.all_templates.clear()
         UserProfile.all_profiles.clear()
 
         # Get database connection

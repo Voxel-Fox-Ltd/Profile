@@ -22,7 +22,7 @@ class Template(object):
     This contains no user data, but rather the metadata for the template itself
     """
 
-    all_profiles: typing.Dict[uuid.UUID, 'Template'] = {}
+    all_templates: typing.Dict[uuid.UUID, 'Template'] = {}
     all_guilds: typing.Dict[int, typing.Dict[str, 'Template']] = collections.defaultdict(dict)
 
     __slots__ = ("template_id", "colour", "guild_id", "verification_channel_id", "name", "archive_channel_id", "role_id")
@@ -36,7 +36,7 @@ class Template(object):
         self.archive_channel_id = archive_channel_id
         self.role_id = role_id
 
-        self.all_profiles[self.template_id] = self
+        self.all_templates[self.template_id] = self
         self.all_guilds[self.guild_id][self.name] = self
 
     @property

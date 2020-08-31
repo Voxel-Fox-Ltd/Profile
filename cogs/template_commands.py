@@ -23,6 +23,29 @@ class ProfileTemplates(utils.Cog):
     MAXIMUM_ALLOWED_FIELDS = 20
 
     @commands.command(cls=utils.Command)
+    @commands.guild_only()
+    async def templates(self, ctx:utils.Context):
+        """Lists the templates that have been created for this server"""
+
+        # Grab the templates
+        async with self.bot.database() as db:
+            templates = await db("SELECT template_id, name FROM template WHERE guild_id=$1", ctx.guild.id)
+            created_profiles = await db("SELECT template_id, COUNT(*) AS count FROM created_profile WHERE template_id=ANY($1::UUID[]) GROUP BY template_id", [i['template_id'] for i in templates])
+
+        # Count em up
+        template_names_and_counts = {}
+        for i in templates:
+            for o in created_profiles:
+                if i['template_id'] != o['template_id']:
+                    continue
+                template_names_and_counts[i['name']] = o['count']
+
+        # Output nicely
+        if not templates:
+            return await ctx.send("There are no created templates for this guild.")
+        return await ctx.send('\n'.join([f"**{i}** ({o} created profile{'s' if o != 1 else ''})" for i, o in template_names_and_counts.items()]))
+
+    @commands.command(cls=utils.Command)
     @commands.has_permissions(manage_roles=True)
     @commands.bot_has_permissions(send_messages=True, external_emojis=True, add_reactions=True)
     @commands.guild_only()
@@ -75,29 +98,6 @@ class ProfileTemplates(utils.Cog):
         async with self.bot.database() as db:
             await db("UPDATE template SET {0}=$1 WHERE template_id=$2".format(attr), converted, template.template_id)
         await ctx.send("Converted and stored the information.")
-
-    @commands.command(cls=utils.Command)
-    @commands.guild_only()
-    async def templates(self, ctx:utils.Context):
-        """Lists the templates that have been created for this server"""
-
-        # Grab the templates
-        async with self.bot.database() as db:
-            templates = await db("SELECT template_id, name FROM template WHERE guild_id=$1", ctx.guild.id)
-            created_profiles = await db("SELECT template_id, COUNT(*) AS count FROM created_profile WHERE template_id=ANY($1::TEXT[]) GROUP BY template_id", [i.template_id for i in templates])
-
-        # Count em up
-        template_names_and_counts = {}
-        for i in templates:
-            for o in created_profiles:
-                if i['template_id'] != o['template_id']:
-                    continue
-                template_names_and_counts[i['name']] = o['count']
-
-        # Output nicely
-        if not templates:
-            return await ctx.send("There are no created templates for this guild.")
-        return await ctx.send('\n'.join([f"**{i}** ({o} created profile{'s' if o != 1 else ''})" for i, o in template_names_and_counts]))
 
     @commands.command(cls=utils.Command)
     @commands.has_permissions(manage_roles=True)

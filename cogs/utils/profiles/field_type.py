@@ -10,6 +10,11 @@ class FieldCheckFailure(Exception):
 class FieldType(object):
     """The typing of a given profile field"""
 
+    name = None
+
+    def __str__(self):
+        return self.name
+
     @classmethod
     def convert_to_python(cls, value:str):
         """Converts the given value into the valid field type"""

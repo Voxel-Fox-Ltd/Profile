@@ -176,7 +176,9 @@ class ProfileTemplates(utils.Cog):
                 continue
 
             # Check name is unique
-            if utils.Template.all_guilds[ctx.guild.id].get(template_name):
+            async with self.bot.database() as db:
+                template_exists = await db("SELECT * FROM template WHERE guild_id=$1 AND name=$2", ctx.guild.id, template_name.lower())
+            if template_exists:
                 await ctx.send(f"This server already has a template with name **{template_name}**. Please run this command again to provide another one.")
                 return
             break
@@ -197,7 +199,7 @@ class ProfileTemplates(utils.Cog):
         else:
             try:
                 verification_channel = await commands.TextChannelConverter().convert(ctx, verification_message.content)
-                proper_permissions = discord.Permissions(read_messages=True, add_external_emojis=True, send_messages=True, add_reactions=True, embed_links=True)
+                proper_permissions = discord.Permissions(read_messages=True, external_emojis=True, send_messages=True, add_reactions=True, embed_links=True)
                 if verification_channel.permissions_for(ctx.guild.me).is_superset(proper_permissions):
                     verification_channel_id = verification_channel.id
                 else:
@@ -270,9 +272,11 @@ class ProfileTemplates(utils.Cog):
         image_set = False
         while field:
             field = await self.create_new_field(ctx, template, index, image_set)
+            if field is None:
+                break
             if field:
                 image_set = isinstance(field.field_type, utils.ImageField) or image_set
-            template.all_fields.append(field)
+            template.all_fields[field.field_id] = field
             index += 1
             if index == self.MAXIMUM_ALLOWED_FIELDS:
                 break  # Set max field amount
@@ -284,7 +288,7 @@ class ProfileTemplates(utils.Cog):
                 VALUES ($1, $2, $3, $4, $5, $6)""",
                 template.template_id, template.name, template.colour, template.guild_id, template.verification_channel_id, archive_channel_id
             )
-            for field in template.all_fields:
+            for field in template.all_fields.values():
                 await db(
                     """INSERT INTO field (field_id, name, index, prompt, timeout, field_type, optional, template_id)
                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)""",

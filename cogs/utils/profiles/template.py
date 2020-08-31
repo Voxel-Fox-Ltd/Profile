@@ -108,27 +108,31 @@ class Template(object):
         """Create an embed to visualise all of the created fields and given information"""
 
         # Create the initial embed
-        fields: typing.List[Field] = sorted(self.fields.values(), key=lambda x: x.field.index)
-        embed = Embed(use_random_colour=True, title=self.template.name.title())
+        fields: typing.List[Field] = sorted(self.fields.values(), key=lambda x: x.index)
+        embed = Embed(use_random_colour=True, title=self.name.title())
         embed.description = '\n'.join([
-            f"Template ID {self.id} for guild {self.guild_id}",
-            f"Verification channel: {'none' if self.verification_channel_id is None else '<#' + self.verification_channel_id + '>'}",
-            f"Archive channel: {'none' if self.archive_channel_id is None else '<#' + self.archive_channel_id + '>'}",
-            f"Given role: {'none' if self.role_id is None else '<@&' + self.role_id + '>'}",
+            f"Template ID `{self.template_id}` for guild {self.guild_id}",
+            f"Verification channel: {'none' if self.verification_channel_id is None else '<#' + str(self.verification_channel_id) + '>'}",
+            f"Archive channel: {'none' if self.archive_channel_id is None else '<#' + str(self.archive_channel_id) + '>'}",
+            f"Given role: {'none' if self.role_id is None else '<@&' + str(self.role_id) + '>'}",
         ])
 
         # Add the user
-        embed.add_field(name="Discord User", value="In this field, the owner of the created profile will be pinged.")
+        embed.add_field(name="Discord User", value="In this field, the owner of the created profile will be pinged.", inline=False)
 
         # Set the colour if there is one to set
-        if self.template.colour:
-            embed.colour = self.template.colour
+        if self.colour:
+            embed.colour = self.colour
 
         # Add each of the fields
         for index, f in enumerate(fields):
             if f.deleted:
                 continue
-            embed.add_field(name=f.name, value=f"Field question {index} at index {f.index}, type {f.type!s}\n{f.prompt}")
+            embed.add_field(
+                name=f.name,
+                value=f"Field ID `{f.field_id}` at position {index} with index {f.index}, type {f.field_type!s}\n\"{f.prompt}\"",
+                inline=False
+            )
 
         # Return embed
         return embed

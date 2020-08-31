@@ -17,12 +17,12 @@ class Field(object):
         self.name = name
         self.prompt = prompt
         self.timeout = timeout
-        self.field_type = field_type if isinstance(field_type, FieldType) else {
+        self.field_type = {
             '1000-CHAR': TextField(),
             'INT': NumberField(),
             'IMAGE': ImageField(),
             'BOOLEAN': BooleanField(),
-        }[field_type]
+        }[getattr(field_type, 'name', field_type)]
         self.template_id = template_id
         self.optional = optional
         self.deleted = deleted

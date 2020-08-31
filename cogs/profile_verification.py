@@ -71,15 +71,13 @@ class ProfileVerification(utils.Cog):
 
         # Decide whether to verify or to delete
         user_profile = None
+        template = None
         async with self.bot.database() as db:
+            template = await utils.Template.fetch_template_by_id(db, template_id)
+            if template:
+                user_profile = await template.fetch_profile_for_user(db, profile_user_id)
             if verify:
-                user_profile_rows = await db("UPDATE created_profile SET verified=true WHERE user_id=$1 AND template_id=$2 RETURNING *", profile_user_id, template_id)
-                try:
-                    user_profile = utils.UserProfile(**user_profile_rows[0])
-                    await user_profile.fetch_template(db)
-                except IndexError:
-                    self.logger.warning(f"Couldn't get user {user_profile.user_id} '{user_profile.template.name}' profile for verification on guild {guild.id}")
-                    return  # Silently fail I guess
+                await db("UPDATE created_profile SET verified=true WHERE user_id=$1 AND template_id=$2", profile_user_id, template_id)
             else:
                 await db("DELETE FROM filled_field WHERE user_id=$1 AND field_id IN (SELECT field_id FROM field WHERE template_id=$2)", profile_user_id, template_id)
                 await db("DELETE FROM created_profile WHERE user_id=$1 AND template_id=$2", profile_user_id, template_id)

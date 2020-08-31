@@ -29,7 +29,7 @@ class UserProfile(object):
 
         if self.template is None or len(self.template.all_fields) == 0:
             await self.fetch_template(db, fetch_fields=True)
-        field_rows = await db("SELECT * FROM filled_field WHERE user_id=$1 AND field_id=ANY($2::TEXT[])", self.user_id, [i.field_id for i in self.template.all_fields])
+        field_rows = await db("SELECT * FROM filled_field WHERE user_id=$1 AND field_id=ANY($2::UUID[])", self.user_id, self.template.all_fields.keys())
         self.all_filled_fields.clear()
         for f in field_rows:
             filled = FilledField(**f)
@@ -40,7 +40,7 @@ class UserProfile(object):
     async def fetch_template(self, db, *, fetch_fields:bool=True) -> Template:
         """Fetch the template for this field and store it in .template"""
 
-        template = Template.fetch_template_by_id(db, self.template_id, fetch_fields=fetch_fields)
+        template = await Template.fetch_template_by_id(db, self.template_id, fetch_fields=fetch_fields)
         self.template = template
         return template
 
@@ -53,14 +53,14 @@ class UserProfile(object):
 
         # Create the initial embed
         fields: typing.List[FilledField] = sorted(self.filled_fields.values(), key=lambda x: x.field.index)
-        embed = Embed(use_random_colour=True, title=self.template.name.title())
+        embed = Embed(use_random_colour=True)
+        if self.template:
+            embed.title = self.template.name.title()
+            if self.template.colour:
+                embed.colour = self.template.colour
 
         # Add the user
         embed.add_field(name="Discord User", value=f"<@{self.user_id}>")
-
-        # Set the colour if there is one to set
-        if self.template.colour:
-            embed.colour = self.template.colour
 
         # Add each of the fields
         for f in fields:

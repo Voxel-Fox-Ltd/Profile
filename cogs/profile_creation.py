@@ -122,6 +122,7 @@ class ProfileCreation(utils.Cog):
         # Check if they already have a profile set
         async with self.bot.database() as db:
             user_profile: utils.UserProfile = await template.fetch_profile_for_user(db, target_user.id)
+            await template.fetch_fields(db)
         if user_profile is not None:
             if target_user == ctx.author:
                 await ctx.send(f"You already have a profile set for **{template.name}**.")
@@ -140,7 +141,7 @@ class ProfileCreation(utils.Cog):
             return await ctx.send("I'm unable to send you DMs to set up the profile :/")
 
         # Talk the user through each field
-        filled_field_list = []
+        filled_field_dict = {}
         for field in sorted(template.fields.values(), key=lambda x: x.index):
 
             # Send the user the prompt
@@ -172,7 +173,8 @@ class ProfileCreation(utils.Cog):
 
             # Add field to list
             filled_field = utils.FilledField(target_user.id, field.field_id, field_content)
-            filled_field_list.append(filled_field)
+            filled_field.field = field
+            filled_field_dict[field.field_id] = filled_field
 
         # Make the UserProfile object
         user_profile = utils.UserProfile(
@@ -180,6 +182,8 @@ class ProfileCreation(utils.Cog):
             template_id=template.template_id,
             verified=template.verification_channel_id is None
         )
+        user_profile.template = template
+        user_profile.all_filled_fields = filled_field_dict
 
         # Make sure the bot can send the embed at all
         try:
@@ -188,7 +192,7 @@ class ProfileCreation(utils.Cog):
             return await ctx.author.send(f"Your profile couldn't be sent to you, so the embed was probably hecked - `{e}`.\nPlease try again later.")
 
         # Let's see if this worked
-        if await self.send_profile_verification(user_profile) is False:
+        if await self.send_profile_verification(ctx, user_profile) is False:
             return
 
         # Database me up daddy
@@ -199,7 +203,7 @@ class ProfileCreation(utils.Cog):
                 await db("UPDATE created_profile SET verified=$3 WHERE user_id=$1 AND template_id=$2", user_profile.user_id, user_profile.template.template_id, user_profile.verified)
                 await db("DELETE FROM filled_field WHERE user_id=$1 AND field_id in (SELECT field_id FROM field WHERE template_id=$2)", user_profile.user_id, user_profile.template.template_id)
                 self.logger.info(f"Deleted profile for {user_profile.user_id} on UniqueViolationError")
-            for field in filled_field_list:
+            for field in filled_field_dict.values():
                 await db("INSERT INTO filled_field (user_id, field_id, value) VALUES ($1, $2, $3) ON CONFLICT (user_id, field_id) DO UPDATE SET value=excluded.value", field.user_id, field.field_id, field.value)
 
         # Respond to user
@@ -226,6 +230,7 @@ class ProfileCreation(utils.Cog):
         # Check if they already have a profile set
         async with self.bot.database() as db:
             user_profile: utils.UserProfile = await template.fetch_profile_for_user(db, target_user.id)
+            await template.fetch_fields(db)
         if user_profile is None:
             if target_user == ctx.author:
                 await ctx.send(f"You have no profile set for **{template.name}**.")
@@ -297,7 +302,7 @@ class ProfileCreation(utils.Cog):
             return await ctx.author.send(f"Your profile couldn't be sent to you, so the embed was probably hecked - `{e}`.\nPlease try again later.")
 
         # Let's see if this worked
-        if await self.send_profile_verification(user_profile) is False:
+        if await self.send_profile_verification(ctx, user_profile) is False:
             return
 
         # Database me up daddy
@@ -348,7 +353,7 @@ class ProfileCreation(utils.Cog):
         # See if there's a set profile
         template: utils.Template = ctx.template
         async with self.bot.database() as db:
-            user_profile = await template.fetch_profile_for_user(db, (user or ctx.author).id)
+            user_profile: utils.UserProfile = await template.fetch_profile_for_user(db, (user or ctx.author).id)
         if user_profile is None:
             if user:
                 await ctx.send(f"{user.mention} doesn't have a profile for **{template.name}**.", allowed_mentions=discord.AllowedMentions(users=False))

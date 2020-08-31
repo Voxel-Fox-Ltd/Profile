@@ -1,6 +1,4 @@
 import uuid
-import collections
-import typing
 
 from cogs.utils.profiles.field_type import FieldType, TextField, ImageField, NumberField, BooleanField
 

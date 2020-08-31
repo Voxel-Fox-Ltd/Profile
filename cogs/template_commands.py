@@ -129,7 +129,7 @@ class ProfileTemplates(utils.Cog):
 
         # Delete it from the database
         async with self.bot.database() as db:
-            await db('DELETE FROM template WHERE template_id=$1', template.template_id)
+            await db("DELETE FROM template WHERE template_id=$1", template.template_id)
         self.logger.info(f"Template '{template.name}' deleted on guild {ctx.guild.id}")
         await ctx.send(f"All relevant data for template {template.name} (`{template.template_id}`) has been deleted.")
 

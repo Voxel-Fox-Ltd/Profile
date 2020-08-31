@@ -5,7 +5,6 @@ from discord.ext import commands
 
 from cogs.utils.profiles.field import Field
 from cogs.utils.profiles.filled_field import FilledField
-from cogs.utils.profiles.field_type import ImageField
 from cogs.utils.context_embed import ContextEmbed as Embed
 
 
@@ -43,7 +42,7 @@ class Template(object):
 
         return {i: o for i, o in self.all_fields.items() if o.deleted is False}
 
-    async def get_profile_for_user(self, db, user_id:int) -> 'cogs.utils.profiles.user_profile.UserProfile':
+    async def fetch_profile_for_user(self, db, user_id:int) -> 'cogs.utils.profiles.user_profile.UserProfile':
         """Gets the filled profile for a given user"""
 
         # Grab our imports here to avoid circular importing
@@ -54,18 +53,12 @@ class Template(object):
         if not profile_rows:
             return None
         user_profile = UserProfile(**profile_rows[0])
-
-        # Grab their filled fields
-        field_rows = await db("SELECT * FROM filled_field WHERE user_id=$1 AND field_id=ANY($2::TEXT[])", user_id, [i.field_id for i in self.all_fields])
-        for f in field_rows:
-            filled = FilledField(**f)
-            filled.field = self.all_fields[filled.field_id]
-            user_profile._all_filled_fields.append()
         user_profile.template = self
+        await user_profile.fetch_fields(db)
         return user_profile
 
     @classmethod
-    async def get_template_by_id(cls, db, template_id:uuid.UUID) -> typing.Optional['Template']:
+    async def fetch_template_by_id(cls, db, template_id:uuid.UUID) -> typing.Optional['Template']:
         """Get a template from the database via its ID"""
 
         # Grab the template
@@ -73,16 +66,11 @@ class Template(object):
         if not template_rows:
             return None
         template = cls(**template_rows[0])
-
-        # Grab the template's fields
-        field_rows = await db("SELECT * FROM field WHERE template_id=$1", template_id)
-        for f in field_rows:
-            field = Field(**f)
-            template.all_fields[field.field_id] = field
+        await template.fetch_fields(db)
         return template
 
     @classmethod
-    async def get_template_by_name(cls, db, guild_id:int, template_name:str) -> typing.Optional['Template']:
+    async def fetch_template_by_name(cls, db, guild_id:int, template_name:str) -> typing.Optional['Template']:
         """Get a template from the database via its name"""
 
         # Grab the template
@@ -90,20 +78,25 @@ class Template(object):
         if not template_rows:
             return None
         template = cls(**template_rows[0])
+        await template.fetch_fields(db)
+        return template
 
-        # Grab the template's fields
-        field_rows = await db("SELECT * FROM field WHERE template_id=$1", template.template_id)
+    async def fetch_fields(self, db) -> typing.Dict[uuid.UUID, FilledField]:
+        """Fetch the fields for this template and store them in .all_fields"""
+
+        field_rows = await db("SELECT * FROM field WHERE template_id=$1", self.template_id)
+        self.all_fields.clear()
         for f in field_rows:
             field = Field(**f)
-            template.all_fields[field.field_id] = field
-        return template
+            self.all_fields[field.field_id] = field
+        return self.all_fields
 
     @classmethod
     async def convert(cls, ctx, argument:str):
         """The Discord.py convert method for getting a template"""
 
         async with ctx.bot.database() as db:
-            v = await cls.get_template_by_name(db, ctx.guild.id, argument)
+            v = await cls.fetch_template_by_name(db, ctx.guild.id, argument)
         if v is None:
             raise TemplateNotFoundError(argument.lower())
         return v

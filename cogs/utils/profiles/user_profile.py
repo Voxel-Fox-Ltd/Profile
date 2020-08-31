@@ -24,8 +24,28 @@ class UserProfile(object):
         self.all_filled_fields: typing.Dict[uuid.UUID, FilledField] = dict()
         self.template: Template = template
 
+    async def fetch_filled_fields(self, db) -> typing.Dict[uuid.UUID, FilledField]:
+        """Fetch the fields for this profile and store them in .all_filled_fields"""
+
+        if self.template is None:
+            await self.fetch_template(db)
+        field_rows = await db("SELECT * FROM filled_field WHERE user_id=$1 AND field_id=ANY($2::TEXT[])", self.user_id, [i.field_id for i in self.template.all_fields])
+        self.all_filled_fields.clear()
+        for f in field_rows:
+            filled = FilledField(**f)
+            filled.field = self.template.all_fields[filled.field_id]
+            self.all_filled_fields[filled.field_id] = filled
+        return self.all_filled_fields
+
+    async def fetch_template(self, db) -> Template:
+        """Fetch the template for this field and store it in .template"""
+
+        template = Template.fetch_template_by_id(db, self.template_id)
+        self.template = template
+        return template
+
     @property
-    def filled_fields(self) -> typing.List[FilledField]:
+    def filled_fields(self) -> typing.Dict[uuid.UUID, FilledField]:
         return {i: o for i, o in self.all_filled_fields.items() if o.field.deleted is False}
 
     def build_embed(self) -> Embed:

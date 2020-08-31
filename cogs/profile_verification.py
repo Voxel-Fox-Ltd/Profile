@@ -11,8 +11,6 @@ class ProfileVerification(utils.Cog):
     TICK_EMOJI = "<:tick_yes:596096897995899097>"
     CROSS_EMOJI = "<:cross_no:596096897769275402>"
 
-    TEMPLATE_FOOTER_REGEX = re.compile(r"(?P<name>.+) // Verification Check")
-
     @utils.Cog.listener('on_raw_reaction_add')
     async def verification_emoji_check(self, payload:discord.RawReactionActionEvent):
         """Triggered when a reaction is added or removed, check for profile verification"""

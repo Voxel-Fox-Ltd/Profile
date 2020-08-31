@@ -42,7 +42,7 @@ class Template(object):
 
         return {i: o for i, o in self.all_fields.items() if o.deleted is False}
 
-    async def fetch_profile_for_user(self, db, user_id:int) -> 'cogs.utils.profiles.user_profile.UserProfile':
+    async def fetch_profile_for_user(self, db, user_id:int, *, fetch_filled_fields:bool=True) -> 'cogs.utils.profiles.user_profile.UserProfile':
         """Gets the filled profile for a given user"""
 
         # Grab our imports here to avoid circular importing
@@ -54,11 +54,12 @@ class Template(object):
             return None
         user_profile = UserProfile(**profile_rows[0])
         user_profile.template = self
-        await user_profile.fetch_fields(db)
+        if fetch_filled_fields:
+            await user_profile.fetch_filled_fields(db)
         return user_profile
 
     @classmethod
-    async def fetch_template_by_id(cls, db, template_id:uuid.UUID) -> typing.Optional['Template']:
+    async def fetch_template_by_id(cls, db, template_id:uuid.UUID, *, fetch_fields:bool=True) -> typing.Optional['Template']:
         """Get a template from the database via its ID"""
 
         # Grab the template
@@ -66,11 +67,12 @@ class Template(object):
         if not template_rows:
             return None
         template = cls(**template_rows[0])
-        await template.fetch_fields(db)
+        if fetch_fields:
+            await template.fetch_fields(db)
         return template
 
     @classmethod
-    async def fetch_template_by_name(cls, db, guild_id:int, template_name:str) -> typing.Optional['Template']:
+    async def fetch_template_by_name(cls, db, guild_id:int, template_name:str, *, fetch_fields:bool=True) -> typing.Optional['Template']:
         """Get a template from the database via its name"""
 
         # Grab the template
@@ -78,7 +80,8 @@ class Template(object):
         if not template_rows:
             return None
         template = cls(**template_rows[0])
-        await template.fetch_fields(db)
+        if fetch_fields:
+            await template.fetch_fields(db)
         return template
 
     async def fetch_fields(self, db) -> typing.Dict[uuid.UUID, FilledField]:

@@ -97,7 +97,7 @@ class ProfileTemplates(utils.Cog):
         # Output nicely
         if not templates:
             return await ctx.send("There are no created templates for this guild.")
-        return await ctx.send('\n'.join([f"`{i}` ({o} created profile{'s' if o != 1 else ''})" for i, o in template_names_and_counts]))
+        return await ctx.send('\n'.join([f"**{i}** ({o} created profile{'s' if o != 1 else ''})" for i, o in template_names_and_counts]))
 
     @commands.command(cls=utils.Command)
     @commands.has_permissions(manage_roles=True)
@@ -131,7 +131,7 @@ class ProfileTemplates(utils.Cog):
         async with self.bot.database() as db:
             await db("DELETE FROM template WHERE template_id=$1", template.template_id)
         self.logger.info(f"Template '{template.name}' deleted on guild {ctx.guild.id}")
-        await ctx.send(f"All relevant data for template {template.name} (`{template.template_id}`) has been deleted.")
+        await ctx.send(f"All relevant data for template **{template.name}** (`{template.template_id}`) has been deleted.")
 
     @commands.command()
     @commands.has_permissions(manage_roles=True)
@@ -177,7 +177,7 @@ class ProfileTemplates(utils.Cog):
 
             # Check name is unique
             if utils.Template.all_guilds[ctx.guild.id].get(template_name):
-                await ctx.send(f"This server already has a template with name `{template_name}`. Please run this command again to provide another one.", allowed_mentions=discord.AllowedMentions(everyone=False, users=False, roles=False))
+                await ctx.send(f"This server already has a template with name **{template_name}**. Please run this command again to provide another one.")
                 return
             break
 

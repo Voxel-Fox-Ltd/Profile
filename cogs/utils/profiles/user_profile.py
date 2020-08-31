@@ -27,8 +27,8 @@ class UserProfile(object):
     async def fetch_filled_fields(self, db) -> typing.Dict[uuid.UUID, FilledField]:
         """Fetch the fields for this profile and store them in .all_filled_fields"""
 
-        if self.template is None:
-            await self.fetch_template(db)
+        if self.template is None or len(self.template.all_fields) == 0:
+            await self.fetch_template(db, fetch_fields=True)
         field_rows = await db("SELECT * FROM filled_field WHERE user_id=$1 AND field_id=ANY($2::TEXT[])", self.user_id, [i.field_id for i in self.template.all_fields])
         self.all_filled_fields.clear()
         for f in field_rows:
@@ -37,10 +37,10 @@ class UserProfile(object):
             self.all_filled_fields[filled.field_id] = filled
         return self.all_filled_fields
 
-    async def fetch_template(self, db) -> Template:
+    async def fetch_template(self, db, *, fetch_fields:bool=True) -> Template:
         """Fetch the template for this field and store it in .template"""
 
-        template = Template.fetch_template_by_id(db, self.template_id)
+        template = Template.fetch_template_by_id(db, self.template_id, fetch_fields=fetch_fields)
         self.template = template
         return template
 

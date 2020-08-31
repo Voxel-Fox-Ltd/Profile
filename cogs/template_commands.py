@@ -45,6 +45,13 @@ class ProfileTemplates(utils.Cog):
             return await ctx.send("There are no created templates for this guild.")
         return await ctx.send('\n'.join([f"**{i}** ({o} created profile{'s' if o != 1 else ''})" for i, o in template_names_and_counts.items()]))
 
+    @commands.command(cls=utils.Command, aliases=['describe'])
+    @commands.guild_only()
+    async def describetemplate(self, ctx:utils.Context, template:utils.Template):
+        """Describe a template and its fields"""
+
+        return await ctx.send(embed=template.build_embed())
+
     @commands.command(cls=utils.Command)
     @commands.has_permissions(manage_roles=True)
     @commands.bot_has_permissions(send_messages=True, external_emojis=True, add_reactions=True)

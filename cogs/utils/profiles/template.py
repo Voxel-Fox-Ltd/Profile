@@ -130,7 +130,7 @@ class Template(object):
                 continue
             embed.add_field(
                 name=f.name,
-                value=f"Field ID `{f.field_id}` at position {index} with index {f.index}, type {f.field_type!s}\n\"{f.prompt}\"",
+                value=f'Field ID `{f.field_id}` at position {index} with index {f.index}, type `{f.field_type!s}`.\n"{f.prompt}"',
                 inline=False
             )
 

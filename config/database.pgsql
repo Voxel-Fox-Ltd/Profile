@@ -27,22 +27,6 @@ CREATE TABLE channel_list(
 );
 
 
-CREATE TABLE command_log(
-    guild_id BIGINT,
-    channel_id BIGINT,
-    user_id BIGINT,
-    message_id BIGINT PRIMARY KEY,
-    content VARCHAR(2000),
-    command_name VARCHAR(100),
-    invoked_with VARCHAR(100),
-    command_prefix VARCHAR(2000),
-    timestamp TIMESTAMP,
-    command_failed BOOLEAN,
-    valid BOOLEAN,
-    shard_id SMALLINT
-);
-
-
 CREATE TABLE template(
     template_id UUID PRIMARY KEY,
     name VARCHAR(30),
@@ -80,7 +64,7 @@ CREATE TABLE field(
     field_type FIELDTYPE,
     optional BOOLEAN DEFAULT FALSE,
     deleted BOOLEAN DEFAULT FALSE,
-    template_id UUID REFERENCES template(template_id)
+    template_id UUID REFERENCES template(template_id) ON DELETE CASCADE
 );
 -- A table to describe each individual field in a profile
 -- field_id - general ID of the field
@@ -95,7 +79,7 @@ CREATE TABLE field(
 
 CREATE TABLE created_profile(
     user_id BIGINT,
-    template_id UUID REFERENCES template(template_id),
+    template_id UUID REFERENCES template(template_id) ON DELETE CASCADE,
     verified BOOLEAN DEFAULT FALSE,
     PRIMARY KEY (user_id, template_id)
 );
@@ -107,7 +91,7 @@ CREATE TABLE created_profile(
 
 CREATE TABLE filled_field(
     user_id BIGINT,
-    field_id UUID REFERENCES field(field_id),
+    field_id UUID REFERENCES field(field_id) ON DELETE CASCADE,
     value VARCHAR(1000),
     PRIMARY KEY (user_id, field_id)
 );

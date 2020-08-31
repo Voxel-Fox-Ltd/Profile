@@ -11,9 +11,6 @@ class Field(object):
     a field from a template
     """
 
-    all_profile_fields: typing.Dict[uuid.UUID, typing.List['Field']] = collections.defaultdict(list)
-    all_fields: typing.Dict[uuid.UUID, 'Field'] = {}
-
     __slots__ = ("field_id", "index", "name", "prompt", "timeout", "field_type", "template_id", "optional", "deleted")
 
     def __init__(self, field_id:uuid.UUID, name:str, index:int, prompt:str, timeout:int, field_type:FieldType, template_id:uuid.UUID, optional:bool, deleted:bool):
@@ -31,6 +28,3 @@ class Field(object):
         self.template_id = template_id
         self.optional = optional
         self.deleted = deleted
-
-        self.all_profile_fields[self.template_id].append(self)
-        self.all_fields[self.field_id] = self

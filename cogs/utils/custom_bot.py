@@ -15,10 +15,6 @@ from discord.ext import commands
 from cogs.utils.custom_context import CustomContext
 from cogs.utils.database import DatabaseConnection
 from cogs.utils.redis import RedisConnection
-from cogs.utils.profiles.field import Field
-from cogs.utils.profiles.filled_field import FilledField
-from cogs.utils.profiles.template import Template
-from cogs.utils.profiles.user_profile import UserProfile
 
 
 def get_prefix(bot, message:discord.Message):
@@ -86,12 +82,6 @@ class CustomBot(commands.AutoShardedBot):
         self.logger.debug("Clearing caches")
         self.guild_settings.clear()
         self.user_settings.clear()
-        Field.all_fields.clear()
-        Field.all_profile_fields.clear()
-        FilledField.all_filled_fields.clear()
-        Template.all_guilds.clear()
-        Template.all_templates.clear()
-        UserProfile.all_profiles.clear()
 
         # Get database connection
         db = await self.database.get_connection()
@@ -107,23 +97,6 @@ class CustomBot(commands.AutoShardedBot):
         for row in data:
             for key, value in row.items():
                 self.user_settings[row['user_id']][key] = value
-
-        # Fill caches
-        data = await self.get_all_table_data(db, "field")
-        for i in data:
-            Field(**i)
-
-        data = await self.get_all_table_data(db, "filled_field")
-        for i in data:
-            FilledField(**i)
-
-        data = await self.get_all_table_data(db, "template")
-        for i in data:
-            Template(**i)
-
-        data = await self.get_all_table_data(db, "created_profile")
-        for i in data:
-            UserProfile(**i)
 
         # Wait for the bot to cache users before continuing
         self.logger.debug("Waiting until ready before completing startup method.")

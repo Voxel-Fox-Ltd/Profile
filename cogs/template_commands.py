@@ -201,21 +201,21 @@ class ProfileTemplates(utils.Cog):
                     return
 
             # Check name for characters
-            profile_name = name_message.content.lower()
-            if [i for i in profile_name if i not in string.ascii_lowercase + string.digits]:
+            template_name = name_message.content.lower()
+            if [i for i in template_name if i not in string.ascii_lowercase + string.digits]:
                 await ctx.send("You can only use normal lettering and digits in your command name. Please run this command again to set a new one.")
                 return
 
             # Check name for length
-            if 30 >= len(profile_name) >= 1:
+            if 30 >= len(template_name) >= 1:
                 pass
             else:
                 await ctx.send("The maximum length of a profile name is 30 characters. Please give another name.")
                 continue
 
             # Check name is unique
-            if utils.Template.all_guilds[ctx.guild.id].get(profile_name):
-                await ctx.send(f"This server already has a template with name `{profile_name}`. Please run this command again to provide another one.", allowed_mentions=discord.AllowedMentions(everyone=False, users=False, roles=False))
+            if utils.Template.all_guilds[ctx.guild.id].get(template_name):
+                await ctx.send(f"This server already has a template with name `{template_name}`. Please run this command again to provide another one.", allowed_mentions=discord.AllowedMentions(everyone=False, users=False, roles=False))
                 return
             break
 
@@ -298,7 +298,7 @@ class ProfileTemplates(utils.Cog):
             colour=colour,
             guild_id=ctx.guild.id,
             verification_channel_id=verification_channel_id,
-            name=profile_name,
+            name=template_name,
             archive_channel_id=archive_channel_id,
             role_id=profile_role_id,
         )

@@ -10,11 +10,11 @@ from cogs.utils.profiles.field import Field
 
 class TemplateNotFoundError(commands.BadArgument):
 
-    def __init__(self, profile_name:str):
-        self.profile_name = profile_name
+    def __init__(self, template_name:str):
+        self.template_name = template_name
 
     def __str__(self):
-        return f"There's no template with the name `{self.profile_name}` on this guild."
+        return f"There's no template with the name `{self.template_name}` on this guild."
 
 
 class Template(object):

@@ -30,28 +30,28 @@ class ProfileCreation(utils.Cog):
         if not isinstance(error, commands.CommandNotFound):
             return
 
-        # Get the command and used profile
+        # Get the command and used template
         matches = self.COMMAND_REGEX.search(ctx.message.content[len(ctx.prefix):])
         if not matches:
             return
         command_operator = matches.group("command")  # get/get/delete/edit
-        profile_name = matches.group("template")  # profile name
+        template_name = matches.group("template")  # template name
 
         # Filter out DMs
         if isinstance(ctx.channel, discord.DMChannel):
             return  # Fail silently on DM invocation
 
-        # Find the profile they asked for on their server
+        # Find the template they asked for on their server
         guild_commands = utils.Template.all_guilds[ctx.guild.id]
-        profile = guild_commands.get(profile_name)
-        if not profile:
-            self.logger.info(f"Failed at getting profile '{profile_name}' in guild {ctx.guild.id}")
-            return  # Fail silently on profile doesn't exist
+        template = guild_commands.get(template_name)
+        if not template:
+            self.logger.info(f"Failed at getting template '{template_name}' in guild {ctx.guild.id}")
+            return  # Fail silently on template doesn't exist
 
         # Invoke command
         metacommand: utils.Command = self.bot.get_command(f'{command_operator.lower()}_profile_meta')
         ctx.command = metacommand
-        ctx.profile = profile
+        ctx.template = template
         ctx.invoke_meta = True
         try:
             self.bot.dispatch("command", ctx)
@@ -69,28 +69,28 @@ class ProfileCreation(utils.Cog):
         # Set up some variables
         user: discord.Member = ctx.author
         target_user: discord.Member = target_user or user
-        profile: utils.Template = ctx.profile
-        fields: typing.List[utils.Field] = profile.fields
+        template: utils.Template = ctx.template
+        fields: typing.List[utils.Field] = template.fields
 
         # Only mods can see other people's profiles
         if target_user != ctx.author and not utils.checks.member_is_moderator(ctx.bot, ctx.author):
             return await ctx.send(f"You're missing the `manage_roles` permission required to do this.")
 
         # Check if they already have a profile set
-        user_profile: utils.UserProfile = profile.get_profile_for_member(target_user)
+        user_profile: utils.UserProfile = template.get_profile_for_member(target_user)
         if user_profile is not None:
             if target_user == user:
-                await ctx.send(f"You already have a profile set for `{profile.name}`.")
+                await ctx.send(f"You already have a profile set for `{template.name}`.")
             else:
-                await ctx.send(f"{target_user.mention} already has a profile set up for `{profile.name}`.")
+                await ctx.send(f"{target_user.mention} already has a profile set up for `{template.name}`.")
             return
 
         # See if you we can send them the PM
         try:
             if target_user == user:
-                await user.send(f"Now talking you through setting up a `{profile.name}` profile.")
+                await user.send(f"Now talking you through setting up a `{template.name}` profile.")
             else:
-                await user.send(f"Now talking you through setting up a `{profile.name}` profile for {target_user.mention}.")
+                await user.send(f"Now talking you through setting up a `{template.name}` profile for {target_user.mention}.")
             await ctx.send("Sent you a DM!")
         except discord.Forbidden:
             return await ctx.send("I'm unable to send you DMs to set up the profile :/")
@@ -114,7 +114,7 @@ class ProfileCreation(utils.Cog):
                     )
                 except asyncio.TimeoutError:
                     try:
-                        return await user.send(f"Your input for this field has timed out. Please try running `set{profile.name}` on your server again.")
+                        return await user.send(f"Your input for this field has timed out. Please try running `set{template.name}` on your server again.")
                     except discord.Forbidden:
                         return
                 try:
@@ -133,8 +133,8 @@ class ProfileCreation(utils.Cog):
         # Make the UserProfile object
         user_profile = utils.UserProfile(
             user_id=target_user.id,
-            template_id=profile.template_id,
-            verified=profile.verification_channel_id is None
+            template_id=template.template_id,
+            verified=template.verification_channel_id is None
         )
 
         # Make sure the bot can send the embed at all
@@ -144,12 +144,12 @@ class ProfileCreation(utils.Cog):
             return await user.send(f"Your profile couldn't be sent to you, so the embed was probably hecked - `{e}`.\nPlease try again later.")
 
         # Send the profile in for verification
-        if profile.verification_channel_id:
+        if template.verification_channel_id:
             try:
-                channel = await self.bot.fetch_channel(profile.verification_channel_id)
+                channel = await self.bot.fetch_channel(template.verification_channel_id)
                 embed = user_profile.build_embed()
-                embed.set_footer(text=f'{profile.name.upper()} // Verification Check')
-                v = await channel.send(f"New **{profile.name}** submission from {target_user.mention}\n{target_user.id}/{profile.template_id}", embed=embed)
+                embed.set_footer(text=f'{template.name.upper()} // Verification Check')
+                v = await channel.send(f"New **{template.name}** submission from {target_user.mention}\n{target_user.id}/{template.template_id}", embed=embed)
                 await v.add_reaction(self.TICK_EMOJI)
                 await v.add_reaction(self.CROSS_EMOJI)
             except discord.HTTPException as e:
@@ -157,36 +157,36 @@ class ProfileCreation(utils.Cog):
             except AttributeError:
                 return await user.send("The verification channel was deleted from the server - please tell an admin.")
         else:
-            if profile.archive_channel_id:
+            if template.archive_channel_id:
                 try:
-                    channel = await self.bot.fetch_channel(profile.archive_channel_id)
+                    channel = await self.bot.fetch_channel(template.archive_channel_id)
                     embed = user_profile.build_embed()
                     await channel.send(embed=embed)
                 except discord.HTTPException as e:
                     return await user.send(f"Your profile couldn't be sent to the archive channel - `{e}`.")
                 except AttributeError:
                     pass  # The archive channel being deleted isn't too bad tbh
-            if profile.role_id:
-                role_to_add: discord.Role = ctx.guild.get_role(profile.role_id)
+            if template.role_id:
+                role_to_add: discord.Role = ctx.guild.get_role(template.role_id)
                 try:
                     await user.add_roles(role_to_add, reason="Verified profile")
                 except discord.HTTPException as e:
-                    self.logger.error(f"Couldn't add role {role_to_add.id} to user {user_profile.user_id} about their '{user_profile.profile.name}' profile verification on {ctx.guild.id} - {e}")
+                    self.logger.error(f"Couldn't add role {role_to_add.id} to user {user_profile.user_id} about their '{user_profile.template.name}' profile verification on {ctx.guild.id} - {e}")
                     pass
 
         # Database me up daddy
         async with self.bot.database() as db:
             try:
-                await db('INSERT INTO created_profile (user_id, template_id, verified) VALUES ($1, $2, $3)', user_profile.user_id, user_profile.profile.template_id, user_profile.verified)
+                await db('INSERT INTO created_profile (user_id, template_id, verified) VALUES ($1, $2, $3)', user_profile.user_id, user_profile.template.template_id, user_profile.verified)
             except asyncpg.UniqueViolationError:
-                await db('UPDATE created_profile SET verified=$3 WHERE user_id=$1 AND template_id=$2', user_profile.user_id, user_profile.profile.template_id, user_profile.verified)
-                await db('DELETE FROM filled_field WHERE user_id=$1 AND field_id in (SELECT field_id FROM field WHERE template_id=$2)', user_profile.user_id, user_profile.profile.template_id)
+                await db('UPDATE created_profile SET verified=$3 WHERE user_id=$1 AND template_id=$2', user_profile.user_id, user_profile.template.template_id, user_profile.verified)
+                await db('DELETE FROM filled_field WHERE user_id=$1 AND field_id in (SELECT field_id FROM field WHERE template_id=$2)', user_profile.user_id, user_profile.template.template_id)
                 self.logger.info(f"Deleted profile for {user_profile.user_id} on UniqueViolationError")
             for field in filled_field_list:
                 await db('INSERT INTO filled_field (user_id, field_id, value) VALUES ($1, $2, $3) ON CONFLICT (user_id, field_id) DO UPDATE SET value=excluded.value', field.user_id, field.field_id, field.value)
 
         # Respond to user
-        if profile.verification_channel_id:
+        if template.verification_channel_id:
             await user.send(f"Your profile has been sent to the **{ctx.guild.name}** staff team for verification - please hold tight!")
         else:
             await user.send("Your profile has been created and saved.")
@@ -201,34 +201,34 @@ class ProfileCreation(utils.Cog):
         # Set up some variables
         user = ctx.author
         target_user = target_user or user
-        profile = ctx.profile
+        template = ctx.template
 
         # You can only edit someone else's profile if you're a moderator
         if target_user and target_user != ctx.author and not utils.checks.member_is_moderator(ctx.bot, ctx.author):
             return await ctx.send(f"You're missing the `manage_roles` permission required to do this.")
 
         # Check if they already have a profile set
-        user_profile = profile.get_profile_for_member(target_user)
+        user_profile = template.get_profile_for_member(target_user)
         if user_profile is None:
             if target_user == user:
-                await ctx.send(f"You have no profile set for `{profile.name}`.")
+                await ctx.send(f"You have no profile set for `{template.name}`.")
             else:
-                await ctx.send(f"{target_user.mention} has no profile set up for `{profile.name}`.")
+                await ctx.send(f"{target_user.mention} has no profile set up for `{template.name}`.")
             return
 
         # See if you we can send them the PM
         try:
             if target_user == user:
-                await user.send(f"Now talking you through editing a `{profile.name}` profile.")
+                await user.send(f"Now talking you through editing a `{template.name}` profile.")
             else:
-                await user.send(f"Now talking you through editing a `{profile.name}` profile for {target_user.mention}.")
+                await user.send(f"Now talking you through editing a `{template.name}` profile for {target_user.mention}.")
             await ctx.send("Sent you a PM!")
         except Exception:
             return await ctx.send("I'm unable to send you PMs to set up the profile :/")
 
         # Talk the user through each field
         filled_field_list = []
-        for field, current in zip(profile.fields, user_profile.filled_fields):
+        for field, current in zip(template.fields, user_profile.filled_fields):
 
             # Send the user the prompt
             await user.send(field.prompt + f"\nThe current value for this field is `{current.value}`. Type **pass** to leave the value as it currently is.")
@@ -242,7 +242,7 @@ class ProfileCreation(utils.Cog):
                     )
                 except asyncio.TimeoutError:
                     try:
-                        return await user.send(f"Your input for this field has timed out. Please try running `set{profile.name}` on your server again.")
+                        return await user.send(f"Your input for this field has timed out. Please try running `set{template.name}` on your server again.")
                     except discord.Forbidden:
                         return
                 if user_message.content.lower() == "pass":
@@ -258,7 +258,7 @@ class ProfileCreation(utils.Cog):
             filled_field_list.append(utils.FilledField(target_user.id, field.field_id, field_content))
 
         # Make the UserProfile object
-        user_profile.verified = profile.verification_channel_id is None
+        user_profile.verified = template.verification_channel_id is None
 
         # Make sure the bot can send the embed at all
         try:
@@ -267,21 +267,21 @@ class ProfileCreation(utils.Cog):
             return await user.send(f"Your profile couldn't be sent to you, so the embed was probably hecked - `{e}`.\nPlease try again later.")
 
         # Make sure the bot can send the embed to the channel
-        if profile.verification_channel_id:
+        if template.verification_channel_id:
             try:
-                channel = await self.bot.fetch_channel(profile.verification_channel_id)
+                channel = await self.bot.fetch_channel(template.verification_channel_id)
                 embed = user_profile.build_embed()
-                embed.set_footer(text=f'{profile.name.upper()} // Verification Check')
-                v = await channel.send(f"Edited **{profile.name}** submission from {target_user.mention}\n{target_user.id}/{profile.template_id}", embed=embed)
+                embed.set_footer(text=f'{template.name.upper()} // Verification Check')
+                v = await channel.send(f"Edited **{template.name}** submission from {target_user.mention}\n{target_user.id}/{template.template_id}", embed=embed)
                 await v.add_reaction(self.TICK_EMOJI)
                 await v.add_reaction(self.CROSS_EMOJI)
             except discord.HTTPException as e:
                 return await user.send(f"Your profile couldn't be sent to the verification channel - `{e}`.")
             except AttributeError:
                 return await user.send("The verification channel was deleted from the server - please tell an admin.")
-        elif profile.archive_channel_id:
+        elif template.archive_channel_id:
             try:
-                channel = await self.bot.fetch_channel(profile.archive_channel_id)
+                channel = await self.bot.fetch_channel(template.archive_channel_id)
                 embed = user_profile.build_embed()
                 await channel.send(embed=embed)
             except discord.HTTPException as e:
@@ -291,11 +291,9 @@ class ProfileCreation(utils.Cog):
 
         # Database me up daddy
         async with self.bot.database() as db:
-            await db('UPDATE created_profile SET verified=$3 WHERE user_id=$1 AND template_id=$2', user_profile.user_id, user_profile.profile.template_id, user_profile.verified)
-            # await db('DELETE FROM filled_field WHERE user_id=$1 AND field_id in (SELECT field_id FROM field WHERE template_id=$2)', user_profile.user_id, user_profile.profile.template_id)
+            await db('UPDATE created_profile SET verified=$3 WHERE user_id=$1 AND template_id=$2', user_profile.user_id, user_profile.template.template_id, user_profile.verified)
             for field in filled_field_list:
-                # await db('INSERT INTO filled_field (user_id, field_id, value) VALUES ($1, $2, $3)', field.user_id, field.field_id, field.value)
-                await db('UPDATE filled_field SET value=$3 WHERE user_id=$1 AND field_id=$2', field.user_id, field.field_id, field.value)
+                await db('INSERT INTO filled_field (user_id, field_id, value) VALUES ($1, $2, $3) ON CONFLICT (user_id, field_id) DO UPDATE SET value=excluded.value', field.user_id, field.field_id, field.value)
 
         # Respond to user
         await user.send("Your profile has been edited and saved.")
@@ -309,23 +307,23 @@ class ProfileCreation(utils.Cog):
 
         # You can only delete someone else's profile if you're a moderator
         if target_user and ctx.author != target_user and not utils.checks.member_is_moderator(self.bot, ctx.author):
-            return await ctx.send(f"You're missing the `manage_roles` permission required to do this.")
+            return await ctx.send("You're missing the `manage_roles` permission required to do this.")
 
         # Check it exists
-        profile = ctx.profile
-        if profile.get_profile_for_member(target_user or ctx.author) is None:
+        template = ctx.template
+        if template.get_profile_for_member(target_user or ctx.author) is None:
             if target_user:
-                await ctx.send(f"{target_user.mention} doesn't have a profile set for `{profile.name}`.")
+                await ctx.send(f"{target_user.mention} doesn't have a profile set for `{template.name}`.")
             else:
-                await ctx.send(f"You don't have a profile set for `{profile.name}`.")
+                await ctx.send(f"You don't have a profile set for `{template.name}`.")
             return
 
         # Database it babey
         target_user = target_user or ctx.author
         async with self.bot.database() as db:
-            await db('DELETE FROM filled_field WHERE user_id=$1 AND field_id in (SELECT field_id FROM field WHERE template_id=$2)', target_user.id, profile.template_id)
-            await db('DELETE FROM created_profile WHERE user_id=$1 AND template_id=$2', target_user.id, profile.template_id)
-        del utils.UserProfile.all_profiles[(target_user.id, ctx.guild.id, profile.name)]
+            await db('DELETE FROM filled_field WHERE user_id=$1 AND field_id in (SELECT field_id FROM field WHERE template_id=$2)', target_user.id, template.template_id)
+            await db('DELETE FROM created_profile WHERE user_id=$1 AND template_id=$2', target_user.id, template.template_id)
+        del utils.UserProfile.all_profiles[(target_user.id, ctx.guild.id, template.name)]
         await ctx.send("This profile has been deleted.")
 
     @commands.command(cls=utils.Command, hidden=True)
@@ -336,13 +334,13 @@ class ProfileCreation(utils.Cog):
         """Gets a profile for a given member"""
 
         # See if there's a set profile
-        profile = ctx.profile
-        user_profile = profile.get_profile_for_member(target_user or ctx.author)
+        template = ctx.template
+        user_profile = template.get_profile_for_member(target_user or ctx.author)
         if user_profile is None:
             if target_user:
-                await ctx.send(f"{target_user.mention} doesn't have a profile for `{profile.name}`.")
+                await ctx.send(f"{target_user.mention} doesn't have a profile for `{template.name}`.")
             else:
-                await ctx.send(f"You don't have a profile for `{profile.name}`.")
+                await ctx.send(f"You don't have a profile for `{template.name}`.")
             return
 
         # See if verified

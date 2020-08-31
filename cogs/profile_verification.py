@@ -43,7 +43,7 @@ class ProfileVerification(utils.Cog):
             return
         if 'Verification Check' not in embed.footer.text:
             return
-        profile_name = embed.title.split(' ')[0].strip().lower()
+        template_name = embed.title.split(' ')[0].strip().lower()
 
         # Get guild for verification
         guild_id = payload.guild_id
@@ -85,14 +85,14 @@ class ProfileVerification(utils.Cog):
         await message.delete()
 
         # Get the profile
-        user_profile: utils.UserProfile = utils.UserProfile.all_profiles.get((profile_user_id, guild.id, profile_name))
+        user_profile: utils.UserProfile = utils.UserProfile.all_profiles.get((profile_user_id, guild.id, template_name))
         if user_profile is None:
-            self.logger.warning(f"Couldn't get user {user_profile.user_id} '{user_profile.profile.name}' profile for verification on guild {guild.id}")
+            self.logger.warning(f"Couldn't get user {user_profile.user_id} '{user_profile.template.name}' profile for verification on guild {guild.id}")
             return  # Silently fail I guess
 
         # Remove them if necessary
         if verify is False:
-            del utils.UserProfile.all_profiles[(profile_user_id, guild.id, profile_name)]
+            del utils.UserProfile.all_profiles[(profile_user_id, guild.id, template_name)]
         else:
             user_profile.verified = verify
 
@@ -100,33 +100,33 @@ class ProfileVerification(utils.Cog):
         user: discord.User = guild.get_member(profile_user_id) or self.bot.get_user(profile_user_id) or await self.bot.fetch_user(profile_user_id)
         try:
             if verify:
-                await user.send(f"Your profile for `{user_profile.profile.name}` on `{guild.name}` has been verified.", embed=user_profile.build_embed())
+                await user.send(f"Your profile for `{user_profile.template.name}` on `{guild.name}` has been verified.", embed=user_profile.build_embed())
             else:
-                await user.send(f"Your profile for `{user_profile.profile.name}` on `{guild.name}` has been denied.", embed=user_profile.build_embed())
+                await user.send(f"Your profile for `{user_profile.template.name}` on `{guild.name}` has been denied.", embed=user_profile.build_embed())
         except discord.Forbidden:
-            self.logger.info(f"Couldn't DM user {user_profile.user_id} about their '{user_profile.profile.name}' profile verification on {guild.id}")
+            self.logger.info(f"Couldn't DM user {user_profile.user_id} about their '{user_profile.template.name}' profile verification on {guild.id}")
             pass  # Can't send the user a DM, let's just ignore it
 
         # Add a role to them
-        role_to_add: discord.Role = guild.get_role(user_profile.profile.role_id)
+        role_to_add: discord.Role = guild.get_role(user_profile.template.role_id)
         if verify and role_to_add and isinstance(user, discord.Member):
             try:
                 await user.add_roles(role_to_add, reason="Verified profile")
             except discord.HTTPException:
-                self.logger.info(f"Couldn't add role {role_to_add.id} to user {user_profile.user_id} about their '{user_profile.profile.name}' profile verification on {guild.id}")
+                self.logger.info(f"Couldn't add role {role_to_add.id} to user {user_profile.user_id} about their '{user_profile.template.name}' profile verification on {guild.id}")
                 pass
 
         # Send the profile off to the archive
-        if user_profile.profile.archive_channel_id and verify:
+        if user_profile.template.archive_channel_id and verify:
             try:
-                channel = await self.bot.fetch_channel(user_profile.profile.archive_channel_id)
+                channel = await self.bot.fetch_channel(user_profile.template.archive_channel_id)
                 embed = user_profile.build_embed()
                 await channel.send(user.mention, embed=embed)
             except discord.HTTPException as e:
-                self.logger.info(f"Couldn't archive profile in guild {user_profile.profile.guild_id} - {e}")
+                self.logger.info(f"Couldn't archive profile in guild {user_profile.template.guild_id} - {e}")
                 pass  # Couldn't be sent to the archive channel
             except AttributeError:
-                self.logger.info(f"Couldn't archive profile in guild {user_profile.profile.guild_id} - AttributeError (probably channel deleted)")
+                self.logger.info(f"Couldn't archive profile in guild {user_profile.template.guild_id} - AttributeError (probably channel deleted)")
                 pass  # The archive channel has been deleted
 
 

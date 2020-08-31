@@ -23,16 +23,16 @@ class UserProfile(object):
         self.user_id = user_id
         self.template_id = template_id
         self.verified = verified
-        self.all_profiles[(self.user_id, self.profile.guild_id, self.profile.name)] = self
+        self.all_profiles[(self.user_id, self.template.guild_id, self.template.name)] = self
 
     @property
-    def profile(self) -> Template:
+    def template(self) -> Template:
         return Template.all_profiles.get(self.template_id)
 
     @property
     def filled_fields(self) -> typing.List[FilledField]:
         try:
-            return [FilledField.all_filled_fields[(self.user_id, i.field_id)] for i in self.profile.fields]
+            return [FilledField.all_filled_fields[(self.user_id, i.field_id)] for i in self.template.fields]
         except KeyError:
             return []
 
@@ -41,10 +41,10 @@ class UserProfile(object):
 
         fields: typing.List[FilledField] = sorted(self.filled_fields, key=lambda x: x.field.index)
         with Embed(use_random_colour=True) as embed:
-            embed.title = self.profile.name.title()
+            embed.title = self.template.name.title()
             embed.add_field(name="Discord User", value=f"<@{self.user_id}>")
-            if self.profile.colour:
-                embed.colour = self.profile.colour
+            if self.template.colour:
+                embed.colour = self.template.colour
             for f in fields:
 
                 # Filter deleted or unset data

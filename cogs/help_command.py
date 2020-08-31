@@ -8,13 +8,13 @@ from cogs import utils
 
 
 HELP_TEXT = """
-ProfileBot is a bot which allows you to set profiles for users to fill in. These profiles could be things like character sheets, game tags, etc.
+ProfileBot is a bot which allows you to set templates for users to fill in. These templates could be things like character sheets, game tags, etc.
 
-Below you can see all of the commands I have available, but I'll briefly take you through some more general usage of how to set up a profile.
+Below you can see all of the commands I have available, but I'll briefly take you through some more general usage of how to set up a template.
 
 Firstly you'd want to run `createtemplate` on your server, which starts the template creation process. From there, you can follow the prompts in order to set up a template that other users can fill in. Let's say, for example, you set up a template called `character`.
 
-Following that, users can set up their own profiles with that template by running the `setcharacter` command (note that it's "set__character__"), where the bot will PM them and take them through filling out the template you set for them. After that you can run `getcharacter` (or `getcharacter @User`; note "get__character__") to see what they filled in. If you can run `editcharacter` to edit a profile, but this will send it in again for verification.
+Following that, users can set up their own profiles with that template by running the `setcharacter` command (note that it's "set__character__"), where the bot will PM them and take them through filling out the template you set for them. After that you can run `getcharacter` (or `getcharacter @User`; note "get__character__") to see what they filled in. If you can run `editcharacter` to edit a profile, though this will send it in again for verification.
 """.strip()
 
 
@@ -79,14 +79,14 @@ class CustomHelpCommand(commands.MinimalHelpCommand):
                 value=value,
             )
 
-        # Grab the profiles in the server
+        # Grab the templates in the server
         if self.context.guild:
-            all_profiles_for_guild = utils.Template.all_guilds[self.context.guild.id].keys()
-            profile_string = '\n'.join([f"{self.clean_prefix}get{name}, {self.clean_prefix}set{name}, {self.clean_prefix}edit{name}" for name in all_profiles_for_guild])
-            if profile_string:
+            all_templates_for_guild = utils.Template.all_guilds[self.context.guild.id].keys()
+            template_string = '\n'.join([f"{self.clean_prefix}get{name}, {self.clean_prefix}set{name}, {self.clean_prefix}edit{name}" for name in all_templates_for_guild])
+            if template_string:
                 help_embed.add_field(
                     name="Templates",
-                    value=profile_string,
+                    value=template_string,
                     inline=False,
                 )
 

@@ -1,11 +1,12 @@
 import typing
 import uuid
 
-import discord
 from discord.ext import commands
 
 from cogs.utils.profiles.field import Field
 from cogs.utils.profiles.filled_field import FilledField
+from cogs.utils.profiles.field_type import ImageField
+from cogs.utils.context_embed import ContextEmbed as Embed
 
 
 class TemplateNotFoundError(commands.BadArgument):
@@ -106,3 +107,32 @@ class Template(object):
         if v is None:
             raise TemplateNotFoundError(argument.lower())
         return v
+
+    def build_embed(self) -> Embed:
+        """Create an embed to visualise all of the created fields and given information"""
+
+        # Create the initial embed
+        fields: typing.List[Field] = sorted(self.fields.values(), key=lambda x: x.field.index)
+        embed = Embed(use_random_colour=True, title=self.template.name.title())
+        embed.description = '\n'.join([
+            f"Template ID {self.id} for guild {self.guild_id}",
+            f"Verification channel: {'none' if self.verification_channel_id is None else '<#' + self.verification_channel_id + '>'}",
+            f"Archive channel: {'none' if self.archive_channel_id is None else '<#' + self.archive_channel_id + '>'}",
+            f"Given role: {'none' if self.role_id is None else '<@&' + self.role_id + '>'}",
+        ])
+
+        # Add the user
+        embed.add_field(name="Discord User", value="In this field, the owner of the created profile will be pinged.")
+
+        # Set the colour if there is one to set
+        if self.template.colour:
+            embed.colour = self.template.colour
+
+        # Add each of the fields
+        for index, f in enumerate(fields):
+            if f.deleted:
+                continue
+            embed.add_field(name=f.name, value=f"Field question {index} at index {f.index}, type {f.type!s}\n{f.prompt}")
+
+        # Return embed
+        return embed

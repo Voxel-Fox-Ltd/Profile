@@ -43,6 +43,8 @@ class UserProfile(object):
         with Embed(use_random_colour=True) as embed:
             embed.title = self.profile.name.title()
             embed.add_field(name="Discord User", value=f"<@{self.user_id}>")
+            if self.profile.colour:
+                embed.colour = self.profile.colour
             for f in fields:
 
                 # Filter deleted or unset data

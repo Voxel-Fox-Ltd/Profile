@@ -115,7 +115,7 @@ bot = utils.Bot(
     shard_count=args.shardcount,
     shard_ids=shard_ids,
     shard_id=args.min,
-    max_messages=100,  # The lowest amount that we can actually cache
+    # max_messages=100,  # The lowest amount that we can actually cache
     logger=logger.getChild('bot'),
     allowed_mentions=discord.AllowedMentions(everyone=False),
     intents=intents,

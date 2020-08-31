@@ -95,8 +95,10 @@ class CustomHelpCommand(commands.MinimalHelpCommand):
 
         # Grab the templates in the server
         if self.context.guild:
-            all_templates_for_guild = utils.Template.all_guilds[self.context.guild.id].keys()
-            template_string = '\n'.join([f"{self.clean_prefix}get{name}, {self.clean_prefix}set{name}, {self.clean_prefix}edit{name}" for name in all_templates_for_guild])
+            async with self.context.bot.database() as db:
+                template_name_rows = await db("SELECT name FROM template WHERE guild_id=$1", self.context.guild.id)
+            template_names = [i['name'] for i in template_name_rows]
+            template_string = '\n'.join([f"{self.clean_prefix}get{name}, {self.clean_prefix}set{name}, {self.clean_prefix}edit{name}" for name in template_names])
             if template_string:
                 help_embed.add_field(
                     name="Templates",

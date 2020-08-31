@@ -46,7 +46,7 @@ class UserProfile(object):
 
     @property
     def filled_fields(self) -> typing.Dict[uuid.UUID, FilledField]:
-        return {i: o for i, o in self.all_filled_fields.items() if o.field.deleted is False}
+        return {i: o for i, o in self.all_filled_fields.items() if o.field and o.field.deleted is False}
 
     def build_embed(self) -> Embed:
         """Converts the filled profile into an embed"""

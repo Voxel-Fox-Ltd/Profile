@@ -20,6 +20,17 @@ Following that, users can set up their own profiles with that template by runnin
 
 class CustomHelpCommand(commands.MinimalHelpCommand):
 
+    def __init__(self, **options):
+        self.include_invite = options.pop("include_invite", True)
+        super().__init__(**options)
+
+    async def filter_commands(self, commands:typing.List[utils.Command]) -> typing.List[utils.Command]:
+        """Filter the command list down into a list of _runnable_ commands"""
+
+        if self.context.author.id in self.context.bot.owner_ids:
+            return commands
+        return [i for i in commands if i.hidden is False and i.enabled is True]
+
     def get_command_signature(self, command:commands.Command):
         return '{0.clean_prefix}{1.qualified_name} {1.signature}'.format(self, command)
 
@@ -50,7 +61,10 @@ class CustomHelpCommand(commands.MinimalHelpCommand):
         )
 
         # Send it to the destination
-        await self.send_to_destination(content=self.context.bot.config['command_data']['guild_invite'], embed=help_embed)
+        data = {"embed": help_embed}
+        if self.include_invite:
+            data.update({"content": self.context.bot.config['command_data']['guild_invite']})
+        await self.send_to_destination(**data)
 
     async def send_bot_help(self, mapping:typing.Dict[typing.Optional[utils.Cog], typing.List[commands.Command]]):
         """Sends all help to the given channel"""
@@ -91,7 +105,10 @@ class CustomHelpCommand(commands.MinimalHelpCommand):
                 )
 
         # Send it to the destination
-        await self.send_to_destination(content=HELP_TEXT, embed=help_embed)
+        data = {"embed": help_embed}
+        if self.include_invite:
+            data.update({"content": HELP_TEXT})
+        await self.send_to_destination(**data)
 
     async def send_to_destination(self, *args, **kwargs):
         """Sends content to the given destination"""

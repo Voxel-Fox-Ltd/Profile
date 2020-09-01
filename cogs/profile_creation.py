@@ -60,7 +60,7 @@ class ProfileCreation(utils.Cog):
         except commands.CommandError as e:
             self.bot.dispatch("command_error", ctx, e)  # Throw any errors we get in this command into its own error handler
 
-    async def send_profile_verification(self, ctx:utils.Context, user_profile:utils.UserProfile) -> bool:
+    async def send_profile_verification(self, ctx:utils.Context, user_profile:utils.UserProfile, target_user:discord.Member=None) -> bool:
         """Send a profile verification OR archive message for a given profile. Returns whether or not the sending was a success"""
 
         # Let's get that template baybee
@@ -70,7 +70,7 @@ class ProfileCreation(utils.Cog):
         if template.verification_channel_id:
             try:
                 channel: discord.TextChannel = self.bot.get_channel(template.verification_channel_id) or await self.bot.fetch_channel(template.verification_channel_id)
-                embed: utils.Embed = user_profile.build_embed()
+                embed: utils.Embed = user_profile.build_embed(target_user)
                 embed.set_footer(text=f'{template.name.upper()} // Verification Check')
                 v = await channel.send(f"New **{template.name}** submission from <@{user_profile.user_id}>\n{user_profile.user_id}/{template.template_id}", embed=embed)
                 await v.add_reaction(self.TICK_EMOJI)
@@ -87,7 +87,7 @@ class ProfileCreation(utils.Cog):
             if template.archive_channel_id:
                 try:
                     channel: discord.TextChannel = self.bot.get_channel(template.archive_channel_id) or await self.bot.fetch_channel(template.archive_channel_id)
-                    embed: utils.Embed = user_profile.build_embed()
+                    embed: utils.Embed = user_profile.build_embed(target_user)
                     await channel.send(embed=embed)
                 except discord.HTTPException as e:
                     await ctx.author.send(f"Your profile couldn't be sent to the archive channel - `{e}`.")
@@ -121,8 +121,8 @@ class ProfileCreation(utils.Cog):
 
         # Check if they already have a profile set
         async with self.bot.database() as db:
-            user_profile: utils.UserProfile = await template.fetch_profile_for_user(db, target_user.id)
             await template.fetch_fields(db)
+            user_profile: utils.UserProfile = await template.fetch_profile_for_user(db, target_user.id)
         if user_profile is not None:
             if target_user == ctx.author:
                 await ctx.send(f"You already have a profile set for **{template.name}**.")
@@ -143,6 +143,13 @@ class ProfileCreation(utils.Cog):
         # Talk the user through each field
         filled_field_dict = {}
         for field in sorted(template.fields.values(), key=lambda x: x.index):
+
+            # See if it's a command
+            if utils.UserProfile.COMMAND_REGEX.search(field.prompt):
+                filled_field = utils.FilledField(target_user.id, field.field_id, "Could not get role information")
+                filled_field.field = field
+                filled_field_dict[field.field_id] = filled_field
+                continue
 
             # Send the user the prompt
             if field.optional:
@@ -187,12 +194,12 @@ class ProfileCreation(utils.Cog):
 
         # Make sure the bot can send the embed at all
         try:
-            await ctx.author.send(embed=user_profile.build_embed())
+            await ctx.author.send(embed=user_profile.build_embed(target_user))
         except discord.HTTPException as e:
             return await ctx.author.send(f"Your profile couldn't be sent to you, so the embed was probably hecked - `{e}`.\nPlease try again later.")
 
         # Let's see if this worked
-        if await self.send_profile_verification(ctx, user_profile) is False:
+        if await self.send_profile_verification(ctx, user_profile, target_user) is False:
             return
 
         # Database me up daddy
@@ -229,8 +236,8 @@ class ProfileCreation(utils.Cog):
 
         # Check if they already have a profile set
         async with self.bot.database() as db:
-            user_profile: utils.UserProfile = await template.fetch_profile_for_user(db, target_user.id)
             await template.fetch_fields(db)
+            user_profile: utils.UserProfile = await template.fetch_profile_for_user(db, target_user.id)
         if user_profile is None:
             if target_user == ctx.author:
                 await ctx.send(f"You have no profile set for **{template.name}**.")
@@ -251,6 +258,13 @@ class ProfileCreation(utils.Cog):
         # Talk the user through each field
         filled_field_dict: typing.Dict[uuid.UUID, utils.FilledField] = user_profile.filled_fields
         for field in sorted(template.fields.values(), key=lambda x: x.index):
+
+            # See if it's a command
+            if utils.UserProfile.COMMAND_REGEX.search(field.prompt):
+                filled_field = utils.FilledField(target_user.id, field.field_id, "")
+                filled_field.field = field
+                filled_field_dict[field.field_id] = filled_field
+                continue
 
             # Get the current value
             current_filled_field = filled_field_dict.get(field.field_id)
@@ -297,17 +311,18 @@ class ProfileCreation(utils.Cog):
 
         # Make sure the bot can send the embed at all
         try:
-            await ctx.author.send(embed=user_profile.build_embed())
+            await ctx.author.send(embed=user_profile.build_embed(target_user))
         except discord.HTTPException as e:
             return await ctx.author.send(f"Your profile couldn't be sent to you, so the embed was probably hecked - `{e}`.\nPlease try again later.")
 
         # Let's see if this worked
-        if await self.send_profile_verification(ctx, user_profile) is False:
+        if await self.send_profile_verification(ctx, user_profile, target_user) is False:
             return
 
         # Database me up daddy
         async with self.bot.database() as db:
-            await db("UPDATE created_profile SET verified=$3 WHERE user_id=$1 AND template_id=$2", user_profile.user_id, user_profile.template.template_id, user_profile.verified)
+            if user_profile.verified is False:
+                await db("UPDATE created_profile SET verified=$3 WHERE user_id=$1 AND template_id=$2", user_profile.user_id, user_profile.template.template_id, user_profile.verified)
             for field in user_profile.all_filled_fields.values():
                 await db("INSERT INTO filled_field (user_id, field_id, value) VALUES ($1, $2, $3) ON CONFLICT (user_id, field_id) DO UPDATE SET value=excluded.value", field.user_id, field.field_id, field.value)
 
@@ -363,7 +378,7 @@ class ProfileCreation(utils.Cog):
 
         # See if verified
         if user_profile.verified or utils.checks.member_is_moderator(ctx.bot, ctx.author):
-            return await ctx.send(embed=user_profile.build_embed())
+            return await ctx.send(embed=user_profile.build_embed(user or ctx.author))
 
         # Not verified
         if user:

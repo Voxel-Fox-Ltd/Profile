@@ -23,6 +23,7 @@ class ProfileTemplates(utils.Cog):
     MAXIMUM_ALLOWED_FIELDS = 20
 
     @commands.command(cls=utils.Command)
+    @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     async def templates(self, ctx:utils.Context):
         """Lists the templates that have been created for this server"""
@@ -41,11 +42,12 @@ class ProfileTemplates(utils.Cog):
                 template_names_and_counts[i['name']] = o['count']
 
         # Output nicely
-        if not templates:
+        if not template_names_and_counts:
             return await ctx.send("There are no created templates for this guild.")
         return await ctx.send('\n'.join([f"**{i}** ({o} created profile{'s' if o != 1 else ''})" for i, o in template_names_and_counts.items()]))
 
     @commands.command(cls=utils.Command, aliases=['describe'])
+    @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @commands.guild_only()
     async def describetemplate(self, ctx:utils.Context, template:utils.Template):
         """Describe a template and its fields"""
@@ -62,9 +64,9 @@ class ProfileTemplates(utils.Cog):
         # Ask what they want to edit
         lines = [
             "What do you want to edit?",
-            "1\N{COMBINING ENCLOSING KEYCAP} Verification channel " + (ctx.guild.get_channel(template.verification_channel_id).mention if template.verification_channel_id else ''),
-            "2\N{COMBINING ENCLOSING KEYCAP} Profile archive channel " + (ctx.guild.get_channel(template.archive_channel_id).mention if template.archive_channel_id else ''),
-            "3\N{COMBINING ENCLOSING KEYCAP} Verified profile role " + (ctx.guild.get_role(template.role_id).mention if template.role_id else ''),
+            "1\N{COMBINING ENCLOSING KEYCAP} Verification channel " + (f"<#{template.verification_channel_id}>" if template.verification_channel_id else ''),
+            "2\N{COMBINING ENCLOSING KEYCAP} Profile archive channel " + (f"<#{template.archive_channel_id}>" if template.archive_channel_id else ''),
+            "3\N{COMBINING ENCLOSING KEYCAP} Verified profile role " + (f"<@&{template.role_id}>" if template.role_id else ''),
         ]
         edit_message = await ctx.send('\n'.join(lines), allowed_mentions=discord.AllowedMentions(roles=False))
         valid_emoji = ["1\N{COMBINING ENCLOSING KEYCAP}", "2\N{COMBINING ENCLOSING KEYCAP}", "3\N{COMBINING ENCLOSING KEYCAP}"]
@@ -382,69 +384,79 @@ class ProfileTemplates(utils.Cog):
             else:
                 await ctx.send("You need to actually give text for the prompt :/")
         field_prompt = field_prompt_message.content
+        prompt_is_command = bool(utils.UserProfile.COMMAND_REGEX.search(field_prompt))
 
-        # Get field optional
-        prompt_message = await ctx.send("Is this field optional?")
-        for e in prompt_emoji:
-            await prompt_message.add_reaction(e)
-        try:
-            field_optional_reaction, _ = await self.bot.wait_for('reaction_add', check=okay_reaction_check, timeout=120)
-            field_optional_emoji = str(field_optional_reaction.emoji)
-        except asyncio.TimeoutError:
-            field_optional_emoji = self.CROSS_EMOJI
-        field_optional = field_optional_emoji == self.TICK_EMOJI
+        # If it's a command, then we don't need to deal with this
+        if not prompt_is_command:
 
-        # Get timeout
-        await ctx.send("How many seconds should I wait for people to fill out this field (I recommend 120 - that's 2 minutes)? The minimum is 30, and the maximum is 600.")
-        while True:
+            # Get field optional
+            prompt_message = await ctx.send("Is this field optional?")
+            for e in prompt_emoji:
+                await prompt_message.add_reaction(e)
             try:
-                field_timeout_message = await self.bot.wait_for('message', check=message_check, timeout=120)
+                field_optional_reaction, _ = await self.bot.wait_for('reaction_add', check=okay_reaction_check, timeout=120)
+                field_optional_emoji = str(field_optional_reaction.emoji)
             except asyncio.TimeoutError:
-                await ctx.send("Creating a new field has timed out. The profile is being created with the fields currently added.")
-                return None
-            try:
-                timeout = int(field_timeout_message.content)
-                if timeout < 30:
-                    raise ValueError()
-                break
-            except ValueError:
-                await ctx.send("I couldn't convert your message into a valid number - the minimum is 30 seconds. Please try again.")
-        field_timeout = min([timeout, 600])
+                field_optional_emoji = self.CROSS_EMOJI
+            field_optional = field_optional_emoji == self.TICK_EMOJI
 
-        # Ask for field type
-        if image_set:
-            text = f"What TYPE is this field? Will you be getting numbers ({self.NUMBERS_EMOJI}), or text ({self.LETTERS_EMOJI})?"
+            # Get timeout
+            await ctx.send("How many seconds should I wait for people to fill out this field (I recommend 120 - that's 2 minutes)? The minimum is 30, and the maximum is 600.")
+            while True:
+                try:
+                    field_timeout_message = await self.bot.wait_for('message', check=message_check, timeout=120)
+                except asyncio.TimeoutError:
+                    await ctx.send("Creating a new field has timed out. The profile is being created with the fields currently added.")
+                    return None
+                try:
+                    timeout = int(field_timeout_message.content)
+                    if timeout < 30:
+                        raise ValueError()
+                    break
+                except ValueError:
+                    await ctx.send("I couldn't convert your message into a valid number - the minimum is 30 seconds. Please try again.")
+            field_timeout = min([timeout, 600])
+
+            # Ask for field type
+            if image_set:
+                text = f"What TYPE is this field? Will you be getting numbers ({self.NUMBERS_EMOJI}), or text ({self.LETTERS_EMOJI})?"
+            else:
+                text = f"What TYPE is this field? Will you be getting numbers ({self.NUMBERS_EMOJI}), text ({self.LETTERS_EMOJI}), or an image ({self.PICTURE_EMOJI})?"
+            field_type_message = await ctx.send(text)
+
+            # Add reactions
+            await field_type_message.add_reaction(self.NUMBERS_EMOJI)
+            await field_type_message.add_reaction(self.LETTERS_EMOJI)
+            if not image_set:
+                await field_type_message.add_reaction(self.PICTURE_EMOJI)
+
+            # See what they said
+            field_type_emoji = [self.NUMBERS_EMOJI, self.LETTERS_EMOJI, self.PICTURE_EMOJI]  # self.TICK_EMOJI
+            field_type_check = lambda r, u: str(r.emoji) in field_type_emoji and u == ctx.author
+            try:
+                reaction, _ = await self.bot.wait_for('reaction_add', check=field_type_check, timeout=120)
+                emoji = str(reaction.emoji)
+            except asyncio.TimeoutError:
+                try:
+                    await ctx.send("Picking a field type has timed out - defaulting to text.")
+                except (discord.Forbidden, discord.NotFound):
+                    pass
+                emoji = self.LETTERS_EMOJI
+
+            # Change that emoji into a datatype
+            field_type = {
+                self.NUMBERS_EMOJI: utils.NumberField,
+                self.LETTERS_EMOJI: utils.TextField,
+                self.PICTURE_EMOJI: utils.ImageField,
+            }[emoji]
+            if isinstance(field_type, utils.ImageField) and image_set:
+                raise Exception("You shouldn't be able to set two image fields.")
+
+        # Set some defaults for the field stuff
         else:
-            text = f"What TYPE is this field? Will you be getting numbers ({self.NUMBERS_EMOJI}), text ({self.LETTERS_EMOJI}), or an image ({self.PICTURE_EMOJI})?"
-        field_type_message = await ctx.send(text)
-
-        # Add reactions
-        await field_type_message.add_reaction(self.NUMBERS_EMOJI)
-        await field_type_message.add_reaction(self.LETTERS_EMOJI)
-        if not image_set:
-            await field_type_message.add_reaction(self.PICTURE_EMOJI)
-
-        # See what they said
-        field_type_emoji = [self.NUMBERS_EMOJI, self.LETTERS_EMOJI, self.PICTURE_EMOJI]  # self.TICK_EMOJI
-        field_type_check = lambda r, u: str(r.emoji) in field_type_emoji and u == ctx.author
-        try:
-            reaction, _ = await self.bot.wait_for('reaction_add', check=field_type_check, timeout=120)
-            emoji = str(reaction.emoji)
-        except asyncio.TimeoutError:
-            try:
-                await ctx.send("Picking a field type has timed out - defaulting to text.")
-            except (discord.Forbidden, discord.NotFound):
-                pass
-            emoji = self.LETTERS_EMOJI
-
-        # Change that emoji into a datatype
-        field_type = {
-            self.NUMBERS_EMOJI: utils.NumberField,
-            self.LETTERS_EMOJI: utils.TextField,
-            self.PICTURE_EMOJI: utils.ImageField,
-        }[emoji]
-        if isinstance(field_type, utils.ImageField) and image_set:
-            raise Exception("You shouldn't be able to set two image fields.")
+            field_optional = False
+            field_timeout = 15
+            field_type = utils.TextField
 
         # Make the field object
         field = utils.Field(

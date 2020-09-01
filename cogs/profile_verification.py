@@ -74,8 +74,7 @@ class ProfileVerification(utils.Cog):
         template = None
         async with self.bot.database() as db:
             template = await utils.Template.fetch_template_by_id(db, template_id)
-            if template:
-                user_profile = await template.fetch_profile_for_user(db, profile_user_id)
+            user_profile = await template.fetch_profile_for_user(db, profile_user_id)
             if verify:
                 await db("UPDATE created_profile SET verified=true WHERE user_id=$1 AND template_id=$2", profile_user_id, template_id)
             else:
@@ -87,14 +86,16 @@ class ProfileVerification(utils.Cog):
 
         # Tell the user about the decision
         profile_user: discord.User = guild.get_member(profile_user_id) or self.bot.get_user(profile_user_id) or await self.bot.fetch_user(profile_user_id)
-        try:
-            if verify:
-                await profile_user.send(f"Your profile for `{user_profile.template.name}` on `{guild.name}` has been verified.", embed=user_profile.build_embed())
-            else:
-                await profile_user.send(f"Your profile for `{user_profile.template.name}` on `{guild.name}` has been denied.", embed=user_profile.build_embed())
-        except discord.HTTPException:
-            self.logger.info(f"Couldn't DM user {user_profile.user_id} about their '{user_profile.template.name}' profile verification on {guild.id}")
-            pass  # Can't send the user a DM, let's just ignore it
+        if user_profile:
+            try:
+                embed: utils.Embed = user_profile.build_embed(profile_user if isinstance(profile_user, discord.Member) else None)
+                if verify:
+                    await profile_user.send(f"Your profile for `{user_profile.template.name}` on `{guild.name}` has been verified.", embed=embed)
+                else:
+                    await profile_user.send(f"Your profile for `{user_profile.template.name}` on `{guild.name}` has been denied.", embed=embed)
+            except discord.HTTPException:
+                self.logger.info(f"Couldn't DM user {user_profile.user_id} about their '{user_profile.template.name}' profile verification on {guild.id}")
+                pass  # Can't send the user a DM, let's just ignore it
 
         # Add a role to them
         role_to_add: discord.Role = guild.get_role(user_profile.template.role_id)
@@ -109,7 +110,7 @@ class ProfileVerification(utils.Cog):
         if user_profile.template.archive_channel_id and verify:
             try:
                 channel = await self.bot.fetch_channel(user_profile.template.archive_channel_id)
-                embed = user_profile.build_embed()
+                embed: utils.Embed = user_profile.build_embed(profile_user if isinstance(profile_user, discord.Member) else None)
                 await channel.send(profile_user.mention, embed=embed)
             except discord.HTTPException as e:
                 self.logger.info(f"Couldn't archive profile in guild {user_profile.template.guild_id} - {e}")

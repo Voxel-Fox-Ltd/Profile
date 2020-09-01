@@ -1,5 +1,8 @@
 import typing
 import uuid
+import re
+
+import discord
 
 from cogs.utils.profiles.template import Template
 from cogs.utils.profiles.filled_field import FilledField
@@ -14,6 +17,10 @@ class UserProfile(object):
     eg whether it's been verified etc; the user's data is stored inthe FilledField objects associated
     with this
     """
+
+    COMMAND_REGEX = re.compile(r'^{{.+?}}$', re.IGNORECASE)
+    HAS_ROLE_REGEX = re.compile(r'^{{HASROLE (?:DEFAULT \"(?P<default>.+?)\")( HAS\(((?:\d{16,23}(?:, ?)?)+)\) SAYS \"(?P<text>.+?)\")+}}$', re.IGNORECASE)
+    HAS_ROLE_PARAMETER_REGEX = re.compile(r'(?:HAS\((?P<roleids>(?:\d{16,23}(?:, ?)?)+)\) SAYS \"(?P<text>.+?)\")', re.IGNORECASE)
 
     __slots__ = ("user_id", "template_id", "verified", "all_filled_fields", "template")
 
@@ -46,10 +53,14 @@ class UserProfile(object):
 
     @property
     def filled_fields(self) -> typing.Dict[uuid.UUID, FilledField]:
-        return {i: o for i, o in self.all_filled_fields.items() if o.field and o.field.deleted is False}
+        return {i: o for i, o in self.all_filled_fields.items() if o.field is not None and o.field.deleted is False and o.value is not None}
 
-    def build_embed(self) -> Embed:
+    def build_embed(self, member:discord.Member=None) -> Embed:
         """Converts the filled profile into an embed"""
+
+        # See if they're the right person
+        if member and member.id != self.user_id:
+            raise RuntimeError("You passed the wrong person into this method")
 
         # Create the initial embed
         fields: typing.List[FilledField] = sorted(self.filled_fields.values(), key=lambda x: x.field.index)
@@ -68,14 +79,27 @@ class UserProfile(object):
             # Filter deleted or unset data
             if f.field.deleted:
                 continue
-            if not f.value:
+            if f.value is None:
                 continue
 
             # Set data
             if isinstance(f.field.field_type, ImageField) or f.field.field_type == ImageField:
                 embed.set_image(url=f.value)
             else:
-                embed.add_field(name=f.field.name, value=f.value)
+                if member:
+                    has_role_match = self.HAS_ROLE_REGEX.search(f.field.prompt)
+                    if has_role_match:
+                        text = has_role_match.group("default")
+                        for match in self.HAS_ROLE_PARAMETER_REGEX.finditer(f.field.prompt):
+                            role_ids = [int(i.strip()) for i in match.group("roleids").split(',')]
+                            if [i for i in member._roles if i in role_ids]:
+                                text = match.group("text")
+                                break
+                        embed.add_field(name=f.field.name, value=text)
+                    else:
+                        embed.add_field(name=f.field.name, value=f.value)
+                else:
+                    embed.add_field(name=f.field.name, value=f.value)
 
         # Return embed
         return embed

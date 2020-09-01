@@ -107,7 +107,7 @@ class Template(object):
                 v = await cls.fetch_template_by_name(db, ctx.guild.id, argument)
             else:
                 v = await cls.fetch_template_by_id(db, match.group("uuid"))
-            if v.guild_id != ctx.guild.id and ctx.author.id not in ctx.bot.owner_ids:
+            if v is not None and v.guild_id != ctx.guild.id and ctx.author.id not in ctx.bot.owner_ids:
                 v = None
         if v is None:
             raise TemplateNotFoundError(argument.lower())

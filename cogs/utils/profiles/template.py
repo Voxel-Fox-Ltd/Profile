@@ -113,7 +113,7 @@ class Template(object):
             raise TemplateNotFoundError(argument.lower())
         return v
 
-    def build_embed(self) -> Embed:
+    def build_embed(self, brief:bool=False) -> Embed:
         """Create an embed to visualise all of the created fields and given information"""
 
         # Create the initial embed
@@ -127,20 +127,33 @@ class Template(object):
         ])
 
         # Add the user
-        embed.add_field(name="Discord User", value="In this field, the owner of the created profile will be pinged.", inline=False)
+        if brief is False:
+            embed.add_field(name="Discord User", value="In this field, the owner of the created profile will be pinged.", inline=False)
 
         # Set the colour if there is one to set
         if self.colour:
             embed.colour = self.colour
 
         # Add each of the fields
+        text = []
         for index, f in enumerate(fields):
             if f.deleted:
                 continue
+            if brief:
+                text.append(f"#{f.index} **{f.name}** ({f.field_type!s})")
+            else:
+                embed.add_field(
+                    name=f.name,
+                    value=f'Field ID `{f.field_id}` at position {index} with index {f.index}, type `{f.field_type!s}`.\n"{f.prompt}"',
+                    inline=False
+                )
+
+        # If we're being brief, then just add all the field text at once
+        if brief:
             embed.add_field(
-                name=f.name,
-                value=f'Field ID `{f.field_id}` at position {index} with index {f.index}, type `{f.field_type!s}`.\n"{f.prompt}"',
-                inline=False
+                name="Fields",
+                value='\n'.join(text),
+                inline=False,
             )
 
         # Return embed

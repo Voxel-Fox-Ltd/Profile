@@ -13,6 +13,7 @@ class ProfileTemplates(utils.Cog):
 
     TICK_EMOJI = "<:tick_yes:596096897995899097>"
     CROSS_EMOJI = "<:cross_no:596096897769275402>"
+    # PLUS_EMOJI = "<:plus_maybe:750613306120601620>"
 
     NUMBERS_EMOJI = "\U00000031\U000020e3"
     LETTERS_EMOJI = "\U0001F170"
@@ -56,57 +57,227 @@ class ProfileTemplates(utils.Cog):
 
     @commands.command(cls=utils.Command)
     @commands.has_permissions(manage_roles=True)
-    @commands.bot_has_permissions(send_messages=True, external_emojis=True, add_reactions=True)
+    @commands.bot_has_permissions(send_messages=True, external_emojis=True, add_reactions=True, manage_messages=True)
     @commands.guild_only()
     async def edittemplate(self, ctx:utils.Context, template:utils.Template):
         """Edits a template for your guild"""
 
-        # Ask what they want to edit
-        lines = [
-            "What do you want to edit?",
-            "1\N{COMBINING ENCLOSING KEYCAP} Verification channel " + (f"<#{template.verification_channel_id}>" if template.verification_channel_id else ''),
-            "2\N{COMBINING ENCLOSING KEYCAP} Profile archive channel " + (f"<#{template.archive_channel_id}>" if template.archive_channel_id else ''),
-            "3\N{COMBINING ENCLOSING KEYCAP} Verified profile role " + (f"<@&{template.role_id}>" if template.role_id else ''),
-        ]
-        edit_message = await ctx.send('\n'.join(lines), allowed_mentions=discord.AllowedMentions(roles=False))
-        valid_emoji = ["1\N{COMBINING ENCLOSING KEYCAP}", "2\N{COMBINING ENCLOSING KEYCAP}", "3\N{COMBINING ENCLOSING KEYCAP}"]
+        # Get the template fields
+        async with self.bot.database() as db:
+            await template.fetch_fields(db)
+
+        edit_message = await ctx.send("Loading...")
+        messages_to_delete = []
+        while True:
+
+            # Ask what they want to edit
+            await edit_message.edit(
+                content="What do you want to edit? Verification channel (1\N{COMBINING ENCLOSING KEYCAP}), archive channel (2\N{COMBINING ENCLOSING KEYCAP}), given role (3\N{COMBINING ENCLOSING KEYCAP}), or fields (4\N{COMBINING ENCLOSING KEYCAP})",
+                embed=template.build_embed(brief=True),
+                allowed_mentions=discord.AllowedMentions(roles=False),
+            )
+            valid_emoji = ["1\N{COMBINING ENCLOSING KEYCAP}", "2\N{COMBINING ENCLOSING KEYCAP}", "3\N{COMBINING ENCLOSING KEYCAP}", "4\N{COMBINING ENCLOSING KEYCAP}", self.TICK_EMOJI]
+            for e in valid_emoji:
+                await edit_message.add_reaction(e)
+
+            # Wait for a response
+            try:
+                reaction, _ = await self.bot.wait_for("reaction_add", check=lambda r, u: u.id == ctx.author.id and r.message.id == edit_message.id and str(r) in valid_emoji, timeout=120)
+            except asyncio.TimeoutError:
+                return await ctx.send("Timed out waiting for edit response.")
+
+            # See what they reacted with
+            try:
+                attr, converter = {
+                    "1\N{COMBINING ENCLOSING KEYCAP}": ('verification_channel_id', commands.TextChannelConverter()),
+                    "2\N{COMBINING ENCLOSING KEYCAP}": ('archive_channel_id', commands.TextChannelConverter()),
+                    "3\N{COMBINING ENCLOSING KEYCAP}": ('role_id', commands.RoleConverter()),
+                    "4\N{COMBINING ENCLOSING KEYCAP}": (None, self.edit_field(ctx, template)),
+                    self.TICK_EMOJI: None,
+                }[str(reaction)]
+            except TypeError:
+                break
+
+            # See if they want to edit a field
+            if attr is None:
+                fields_have_changed = await converter
+                if fields_have_changed is None:
+                    return
+                if fields_have_changed:
+                    async with self.bot.database() as db:
+                        await template.fetch_fields(db)
+                continue
+
+            # Ask what they want to set things to
+            v = await ctx.send("What do you want to set that to? You can give a name, a ping, or an ID, or say `continue` to set the value to null. " + ("Note that any current pending profiles will _not_ be able to be approved after moving the channel" if attr == 'verification_channel_id' else ''))
+            messages_to_delete.append(v)
+            try:
+                value_message = await self.bot.wait_for("message", check=lambda m: m.author.id == ctx.author.id and m.channel.id == ctx.channel.id, timeout=120)
+            except asyncio.TimeoutError:
+                return await ctx.send("Timed out waiting for edit response.")
+            messages_to_delete.append(value_message)
+
+            # Convert the response
+            try:
+                converted = (await converter.convert(ctx, value_message.content)).id
+            except commands.BadArgument:
+                if value_message.content == "continue":
+                    converted = None
+                else:
+                    for m in messages_to_delete:
+                        try:
+                            await m.delete()
+                        except discord.HTTPException:
+                            pass
+                    messages_to_delete.clear()
+                    await ctx.send("I can't work out what you were trying to mention.", delete_after=3)
+                    continue
+
+            # Delete the messages we don't need any more
+            for m in messages_to_delete:
+                try:
+                    await m.delete()
+                except discord.HTTPException:
+                    pass
+            messages_to_delete.clear()
+
+            # Store our new shit
+            setattr(template, attr, converted)
+            async with self.bot.database() as db:
+                await db("UPDATE template SET {0}=$1 WHERE template_id=$2".format(attr), converted, template.template_id)
+
+        # Tell them it's done
+        await ctx.send("Done editing template.")
+
+    async def edit_field(self, ctx:utils.Context, template:utils.Template):
+        """Talk the user through editing a field of a template"""
+
+        # Ask which index they want to edit
+        v: discord.Message = await ctx.send("What is the index of the field you want to edit? If you want to add a *new* field, type **new**.")
+        while True:
+            try:
+                field_index_message: discord.Message = await self.bot.wait_for("message", check=lambda m: m.author.id == ctx.author.id and m.channel.id == ctx.channel.id, timeout=120)
+            except asyncio.TimeoutError:
+                await ctx.send("Timed out waiting for field index.")
+                return None
+
+            # Make sure their provided index is valid
+            try:
+                field_index = int(field_index_message.content)
+                field_to_edit = [i for i in template.fields.values() if i.index == field_index and i.deleted is False][0]
+                break
+            except (ValueError, IndexError):
+                try:
+                    await field_index_message.delete()
+                except discord.HTTPException:
+                    pass
+
+                # If they just messed up the field creation
+                if field_index_message.content.lower() != "new":
+                    await ctx.send("That isn't a valid index number - please provide another.", delete_after=3)
+                    continue
+
+                # They want to create a new field
+                try:
+                    await v.delete()
+                except discord.HTTPException:
+                    pass
+                field = await self.create_new_field(ctx, template, len(template.all_fields), True, False, True)
+                if field is None:
+                    return None
+                async with self.bot.database() as db:
+                    await db(
+                        """INSERT INTO field (field_id, name, index, prompt, timeout, field_type, optional, template_id)
+                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)""",
+                        field.field_id, field.name, field.index, field.prompt, field.timeout, field.field_type.name, field.optional, field.template_id
+                    )
+                return True
+
+        # Delete trailing messages
+        try:
+            await v.delete()
+        except discord.HTTPException:
+            pass
+        try:
+            await field_index_message.delete()
+        except discord.HTTPException:
+            pass
+
+        # Ask what part of it they want to edit
+        attribute_message: discord.Message = await ctx.send(f"Alright, editing the field **{field_to_edit.name}**. What part do you want to edit? Its name (1\N{COMBINING ENCLOSING KEYCAP}), prompt (2\N{COMBINING ENCLOSING KEYCAP}), whether or not it's optional (3\N{COMBINING ENCLOSING KEYCAP}), or delete it entirely (4\N{COMBINING ENCLOSING KEYCAP})?", allowed_mentions=discord.AllowedMentions(users=False, roles=False, everyone=False))
+        valid_emoji = ["1\N{COMBINING ENCLOSING KEYCAP}", "2\N{COMBINING ENCLOSING KEYCAP}", "3\N{COMBINING ENCLOSING KEYCAP}", "4\N{COMBINING ENCLOSING KEYCAP}", self.CROSS_EMOJI]
         for e in valid_emoji:
-            await edit_message.add_reaction(e)
+            await attribute_message.add_reaction(e)
 
         # Wait for a response
         try:
-            reaction, _ = await self.bot.wait_for("reaction_add", check=lambda r, u: u.id == ctx.author.id and r.message.id == edit_message.id and str(r) in valid_emoji)
+            reaction, _ = await self.bot.wait_for("reaction_add", check=lambda r, u: u.id == ctx.author.id and r.message.id == attribute_message.id and str(r) in valid_emoji, timeout=120)
         except asyncio.TimeoutError:
-            return await ctx.send("Timed out waiting for edit response.")
+            await ctx.send("Timed out waiting for field attribute.")
+            return None
 
         # See what they reacted with
-        attr, converter = {
-            "1\N{COMBINING ENCLOSING KEYCAP}": ('verification_channel_id', commands.TextChannelConverter()),
-            "2\N{COMBINING ENCLOSING KEYCAP}": ('archive_channel_id', commands.TextChannelConverter()),
-            "3\N{COMBINING ENCLOSING KEYCAP}": ('role_id', commands.RoleConverter()),
-        }[str(reaction)]
-
-        # Ask what they want to set things to
-        await ctx.send("What do you want to set that to? You can give a name, a ping, or an ID, or say `continue` to set the value to null. " + ("Note that any current pending profiles will _not_ be able to be approved after moving the channel" if attr == 'verification_channel_id' else ''))
         try:
-            value_message = await self.bot.wait_for("message", check=lambda m: m.author.id == ctx.author.id and m.channel.id == ctx.channel.id)
-        except asyncio.TimeoutError:
-            return await ctx.send("Timed out waiting for edit response.")
+            attr, converter = {
+                "1\N{COMBINING ENCLOSING KEYCAP}": ('name', str),
+                "2\N{COMBINING ENCLOSING KEYCAP}": ('prompt', str),
+                "3\N{COMBINING ENCLOSING KEYCAP}": ('optional', str),
+                "4\N{COMBINING ENCLOSING KEYCAP}": (None, str),
+                self.CROSS_EMOJI: None,
+            }[str(reaction)]
+        except TypeError:
+            try:
+                await attribute_message.delete()
+            except discord.HTTPException:
+                pass
+            return False
 
-        # Convert the response
+        # Clean up
         try:
-            converted = (await converter.convert(ctx, value_message.content)).id
-        except commands.BadArgument:
-            if value_message.content == "continue":
-                converted = None
+            await attribute_message.delete()
+        except discord.HTTPException:
+            pass
+
+        # And work with it accordingly
+        field_value_message = None
+        if attr:
+            if attr == 'optional':
+                v = await ctx.send("Do you want this field to be optional? Type **yes** or **no**.")
             else:
-                return await ctx.send("I couldn't work out what you were trying to mention - please re-run this command to try again.")
+                v = await ctx.send("What do you want to set this value to?")
+            try:
+                field_value_message = await self.bot.wait_for("message", check=lambda m: m.author.id == ctx.author.id and m.channel.id == ctx.channel.id, timeout=120)
+                field_value = field_value_message.content
+            except asyncio.TimeoutError:
+                await ctx.send("Timed out waiting for field value.")
+                return None
 
-        # Store our new shit
-        setattr(template, attr, converted)
+            # Fix up the inputs
+            if attr == 'name' and not 256 >= len(field_value) > 0:
+                await ctx.send("That field name is too long.", delete_after=3)
+                return False
+            if attr == 'optional':
+                field_value = field_value.lower() == 'yes'
+
+        # Save the data
         async with self.bot.database() as db:
-            await db("UPDATE template SET {0}=$1 WHERE template_id=$2".format(attr), converted, template.template_id)
-        await ctx.send("Converted and stored the information.")
+            if attr:
+                await db("UPDATE field SET {0}=$2 WHERE field_id=$1".format(attr), field_to_edit.field_id, field_value)
+            else:
+                await db("UPDATE field SET deleted=true WHERE field_id=$1", field_to_edit.field_id)
+
+        # Delete trailing messages
+        try:
+            await v.delete()
+        except discord.HTTPException:
+            pass
+        try:
+            await field_value_message.delete()
+        except (discord.HTTPException, AttributeError):
+            pass
+
+        # And done
+        return True
 
     @commands.command(cls=utils.Command)
     @commands.has_permissions(manage_roles=True)
@@ -311,13 +482,19 @@ class ProfileTemplates(utils.Cog):
         except (discord.Forbidden, discord.NotFound):
             return
 
-    async def create_new_field(self, ctx:utils.Context, template:utils.Template, index:int, image_set:bool=False, prompt_for_creation:bool=True) -> typing.Optional[utils.Field]:
+    async def create_new_field(self, ctx:utils.Context, template:utils.Template, index:int, image_set:bool=False, prompt_for_creation:bool=True, delete_messages:bool=False) -> typing.Optional[utils.Field]:
         """Talk a user through creating a new field for their template"""
 
-        # Ask if they want a new field
+        # Here are some things we can use later
+        message_check = lambda m: m.author == ctx.author and m.channel == ctx.channel
+        okay_reaction_check = lambda r, u: str(r.emoji) in prompt_emoji and u.id == ctx.author.id
         prompt_emoji = [self.TICK_EMOJI, self.CROSS_EMOJI]
+        messages_to_delete = []
+
+        # Ask if they want a new field
         if prompt_for_creation:
             field_message = await ctx.send("Do you want to make a new field for your profile?", embed=template.build_embed())
+            messages_to_delete.append(field_message)
             for e in prompt_emoji:
                 try:
                     await field_message.add_reaction(e)
@@ -328,10 +505,6 @@ class ProfileTemplates(utils.Cog):
                         pass
                     await ctx.send("I tried to add a reaction to my message, but I was unable to. Please update my permissions for this channel and try again.")
                     return None
-
-            # Here are some checks we can use later
-            message_check = lambda m: m.author == ctx.author and m.channel == ctx.channel
-            okay_reaction_check = lambda r, u: str(r.emoji) in prompt_emoji and u.id == ctx.author.id
 
             # Here's us waiting for the "do you want to make a new field" reaction
             try:
@@ -349,10 +522,12 @@ class ProfileTemplates(utils.Cog):
             await field_message.edit(content=field_message.content, embed=None)
 
         # Get a name for the new field
-        await ctx.send("What name should this field have? This is the name shown on the embed, so it should be something like 'Name', 'Age', 'Gender', etc.")
+        v = await ctx.send("What name should this field have? This is the name shown on the embed, so it should be something like 'Name', 'Age', 'Gender', etc.")
+        messages_to_delete.append(v)
         while True:
             try:
                 field_name_message = await self.bot.wait_for('message', check=message_check, timeout=120)
+                messages_to_delete.append(field_name_message)
             except asyncio.TimeoutError:
                 try:
                     await ctx.send("Creating a new field has timed out. The profile is being created with the fields currently added.")
@@ -364,14 +539,17 @@ class ProfileTemplates(utils.Cog):
             if 256 >= len(field_name_message.content) >= 1:
                 break
             else:
-                await ctx.send("The maximum length of a field name is 256 characters. Please provide another name.")
+                v = await ctx.send("The maximum length of a field name is 256 characters. Please provide another name.")
+                messages_to_delete.append(v)
         field_name = field_name_message.content
 
         # Get a prompt for the field
-        await ctx.send("What message should I send when I'm asking people to fill out this field? This should be a question or prompt, eg 'What is your name/age/gender/etc'.")
+        v = await ctx.send("What message should I send when I'm asking people to fill out this field? This should be a question or prompt, eg 'What is your name/age/gender/etc'.")
+        messages_to_delete.append(v)
         while True:
             try:
                 field_prompt_message = await self.bot.wait_for('message', check=message_check, timeout=120)
+                messages_to_delete.append(field_prompt_message)
             except asyncio.TimeoutError:
                 try:
                     await ctx.send("Creating a new field has timed out. The profile is being created with the fields currently added.")
@@ -382,7 +560,8 @@ class ProfileTemplates(utils.Cog):
             if len(field_prompt_message.content) >= 1:
                 break
             else:
-                await ctx.send("You need to actually give text for the prompt :/")
+                v = await ctx.send("You need to actually give text for the prompt :/")
+                messages_to_delete.append(v)
         field_prompt = field_prompt_message.content
         prompt_is_command = bool(utils.UserProfile.COMMAND_REGEX.search(field_prompt))
 
@@ -391,6 +570,7 @@ class ProfileTemplates(utils.Cog):
 
             # Get field optional
             prompt_message = await ctx.send("Is this field optional?")
+            messages_to_delete.append(prompt_message)
             for e in prompt_emoji:
                 await prompt_message.add_reaction(e)
             try:
@@ -401,10 +581,12 @@ class ProfileTemplates(utils.Cog):
             field_optional = field_optional_emoji == self.TICK_EMOJI
 
             # Get timeout
-            await ctx.send("How many seconds should I wait for people to fill out this field (I recommend 120 - that's 2 minutes)? The minimum is 30, and the maximum is 600.")
+            v = await ctx.send("How many seconds should I wait for people to fill out this field (I recommend 120 - that's 2 minutes)? The minimum is 30, and the maximum is 600.")
+            messages_to_delete.append(v)
             while True:
                 try:
                     field_timeout_message = await self.bot.wait_for('message', check=message_check, timeout=120)
+                    messages_to_delete.append(field_timeout_message)
                 except asyncio.TimeoutError:
                     await ctx.send("Creating a new field has timed out. The profile is being created with the fields currently added.")
                     return None
@@ -414,7 +596,8 @@ class ProfileTemplates(utils.Cog):
                         raise ValueError()
                     break
                 except ValueError:
-                    await ctx.send("I couldn't convert your message into a valid number - the minimum is 30 seconds. Please try again.")
+                    v = await ctx.send("I couldn't convert your message into a valid number - the minimum is 30 seconds. Please try again.")
+                    messages_to_delete.append(v)
             field_timeout = min([timeout, 600])
 
             # Ask for field type
@@ -423,6 +606,7 @@ class ProfileTemplates(utils.Cog):
             else:
                 text = f"What TYPE is this field? Will you be getting numbers ({self.NUMBERS_EMOJI}), text ({self.LETTERS_EMOJI}), or an image ({self.PICTURE_EMOJI})?"
             field_type_message = await ctx.send(text)
+            messages_to_delete.append(field_type_message)
 
             # Add reactions
             await field_type_message.add_reaction(self.NUMBERS_EMOJI)
@@ -470,6 +654,16 @@ class ProfileTemplates(utils.Cog):
             optional=field_optional,
             deleted=False,
         )
+
+        # See if we need to delete things
+        if delete_messages:
+            for m in messages_to_delete:
+                try:
+                    await m.delete()
+                except discord.HTTPException:
+                    pass
+
+        # And we done
         return field
 
 

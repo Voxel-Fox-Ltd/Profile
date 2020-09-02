@@ -34,7 +34,8 @@ CREATE TABLE template(
     guild_id BIGINT NOT NULL,
     verification_channel_id BIGINT,
     archive_channel_id BIGINT,
-    role_id BIGINT
+    role_id BIGINT,
+    UNIQUE (guild_id, name)
 );
 -- A table to describe a profile in its entirety
 -- template_id - the general ID of the profile

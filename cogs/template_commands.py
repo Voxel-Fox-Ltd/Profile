@@ -68,14 +68,17 @@ class ProfileTemplates(utils.Cog):
 
         edit_message = await ctx.send("Loading...")
         messages_to_delete = []
+        should_edit = True
         while True:
 
             # Ask what they want to edit
-            await edit_message.edit(
-                content="What do you want to edit? Verification channel (1\N{COMBINING ENCLOSING KEYCAP}), archive channel (2\N{COMBINING ENCLOSING KEYCAP}), given role (3\N{COMBINING ENCLOSING KEYCAP}), or fields (4\N{COMBINING ENCLOSING KEYCAP})",
-                embed=template.build_embed(brief=True),
-                allowed_mentions=discord.AllowedMentions(roles=False),
-            )
+            if should_edit:
+                await edit_message.edit(
+                    content="What do you want to edit? Verification channel (1\N{COMBINING ENCLOSING KEYCAP}), archive channel (2\N{COMBINING ENCLOSING KEYCAP}), given role (3\N{COMBINING ENCLOSING KEYCAP}), or fields (4\N{COMBINING ENCLOSING KEYCAP})",
+                    embed=template.build_embed(brief=True),
+                    allowed_mentions=discord.AllowedMentions(roles=False),
+                )
+                should_edit = False
             valid_emoji = ["1\N{COMBINING ENCLOSING KEYCAP}", "2\N{COMBINING ENCLOSING KEYCAP}", "3\N{COMBINING ENCLOSING KEYCAP}", "4\N{COMBINING ENCLOSING KEYCAP}", self.TICK_EMOJI]
             for e in valid_emoji:
                 await edit_message.add_reaction(e)
@@ -106,6 +109,7 @@ class ProfileTemplates(utils.Cog):
                 if fields_have_changed:
                     async with self.bot.database() as db:
                         await template.fetch_fields(db)
+                    should_edit = True
                 continue
 
             # Ask what they want to set things to
@@ -124,27 +128,20 @@ class ProfileTemplates(utils.Cog):
                 if value_message.content == "continue":
                     converted = None
                 else:
-                    for m in messages_to_delete:
-                        try:
-                            await m.delete()
-                        except discord.HTTPException:
-                            pass
+                    await ctx.channel.purge(check=lambda m: m.id in [i.id for i in messages_to_delete], bulk=ctx.channel.permissions_for(ctx.guild.me).manage_messages)
                     messages_to_delete.clear()
-                    await ctx.send("I can't work out what you were trying to mention.", delete_after=3)
                     continue
 
             # Delete the messages we don't need any more
-            for m in messages_to_delete:
-                try:
-                    await m.delete()
-                except discord.HTTPException:
-                    pass
+            await ctx.channel.purge(check=lambda m: m.id in [i.id for i in messages_to_delete], bulk=ctx.channel.permissions_for(ctx.guild.me).manage_messages)
             messages_to_delete.clear()
 
             # Store our new shit
             setattr(template, attr, converted)
             async with self.bot.database() as db:
                 await db("UPDATE template SET {0}=$1 WHERE template_id=$2".format(attr), converted, template.template_id)
+            should_edit = True
+            await edit_message.remove_reaction(reaction, ctx.author)
 
         # Tell them it's done
         await ctx.send("Done editing template.")
@@ -154,9 +151,11 @@ class ProfileTemplates(utils.Cog):
 
         # Ask which index they want to edit
         v: discord.Message = await ctx.send("What is the index of the field you want to edit? If you want to add a *new* field, type **new**.")
+        messages_to_delete = [v]
         while True:
             try:
                 field_index_message: discord.Message = await self.bot.wait_for("message", check=lambda m: m.author.id == ctx.author.id and m.channel.id == ctx.channel.id, timeout=120)
+                messages_to_delete.append(field_index_message)
             except asyncio.TimeoutError:
                 await ctx.send("Timed out waiting for field index.")
                 return None
@@ -167,23 +166,18 @@ class ProfileTemplates(utils.Cog):
                 field_to_edit = [i for i in template.fields.values() if i.index == field_index and i.deleted is False][0]
                 break
             except (ValueError, IndexError):
-                try:
-                    await field_index_message.delete()
-                except discord.HTTPException:
-                    pass
+                messages_to_delete.append(field_index_message)
 
                 # If they just messed up the field creation
                 if field_index_message.content.lower() != "new":
-                    await ctx.send("That isn't a valid index number - please provide another.", delete_after=3)
+                    v = await ctx.send("That isn't a valid index number - please provide another.")
+                    messages_to_delete.append(v)
                     continue
 
                 # They want to create a new field
-                try:
-                    await v.delete()
-                except discord.HTTPException:
-                    pass
                 field = await self.create_new_field(ctx, template, len(template.all_fields), True, False, True)
                 if field is None:
+                    await ctx.channel.purge(check=lambda m: m.id in [i.id for i in messages_to_delete], bulk=ctx.channel.permissions_for(ctx.guild.me).manage_messages)
                     return None
                 async with self.bot.database() as db:
                     await db(
@@ -193,18 +187,9 @@ class ProfileTemplates(utils.Cog):
                     )
                 return True
 
-        # Delete trailing messages
-        try:
-            await v.delete()
-        except discord.HTTPException:
-            pass
-        try:
-            await field_index_message.delete()
-        except discord.HTTPException:
-            pass
-
         # Ask what part of it they want to edit
         attribute_message: discord.Message = await ctx.send(f"Alright, editing the field **{field_to_edit.name}**. What part do you want to edit? Its name (1\N{COMBINING ENCLOSING KEYCAP}), prompt (2\N{COMBINING ENCLOSING KEYCAP}), whether or not it's optional (3\N{COMBINING ENCLOSING KEYCAP}), or delete it entirely (4\N{COMBINING ENCLOSING KEYCAP})?", allowed_mentions=discord.AllowedMentions(users=False, roles=False, everyone=False))
+        messages_to_delete.append(attribute_message)
         valid_emoji = ["1\N{COMBINING ENCLOSING KEYCAP}", "2\N{COMBINING ENCLOSING KEYCAP}", "3\N{COMBINING ENCLOSING KEYCAP}", "4\N{COMBINING ENCLOSING KEYCAP}", self.CROSS_EMOJI]
         for e in valid_emoji:
             await attribute_message.add_reaction(e)
@@ -226,38 +211,34 @@ class ProfileTemplates(utils.Cog):
                 self.CROSS_EMOJI: None,
             }[str(reaction)]
         except TypeError:
-            try:
-                await attribute_message.delete()
-            except discord.HTTPException:
-                pass
+            await ctx.channel.purge(check=lambda m: m.id in [i.id for i in messages_to_delete], bulk=ctx.channel.permissions_for(ctx.guild.me).manage_messages)
             return False
-
-        # Clean up
-        try:
-            await attribute_message.delete()
-        except discord.HTTPException:
-            pass
 
         # And work with it accordingly
         field_value_message = None
         if attr:
-            if attr == 'optional':
-                v = await ctx.send("Do you want this field to be optional? Type **yes** or **no**.")
-            else:
-                v = await ctx.send("What do you want to set this value to?")
-            try:
-                field_value_message = await self.bot.wait_for("message", check=lambda m: m.author.id == ctx.author.id and m.channel.id == ctx.channel.id, timeout=120)
-                field_value = field_value_message.content
-            except asyncio.TimeoutError:
-                await ctx.send("Timed out waiting for field value.")
-                return None
+            while True:
+                if attr == 'optional':
+                    v = await ctx.send("Do you want this field to be optional? Type **yes** or **no**.")
+                else:
+                    v = await ctx.send("What do you want to set this value to?")
+                messages_to_delete.append(v)
+                try:
+                    field_value_message = await self.bot.wait_for("message", check=lambda m: m.author.id == ctx.author.id and m.channel.id == ctx.channel.id, timeout=120)
+                    messages_to_delete.append(field_value_message)
+                    field_value = field_value_message.content
+                except asyncio.TimeoutError:
+                    await ctx.send("Timed out waiting for field value.")
+                    return None
 
-            # Fix up the inputs
-            if attr == 'name' and not 256 >= len(field_value) > 0:
-                await ctx.send("That field name is too long.", delete_after=3)
-                return False
-            if attr == 'optional':
-                field_value = field_value.lower() == 'yes'
+                # Fix up the inputs
+                if attr == 'name' and not 256 >= len(field_value) > 0:
+                    v = await ctx.send("That field name is too long. Please provide another.")
+                    messages_to_delete.append(v)
+                    continue
+                if attr == 'optional':
+                    field_value = field_value.lower() == 'yes'
+                break
 
         # Save the data
         async with self.bot.database() as db:
@@ -266,17 +247,8 @@ class ProfileTemplates(utils.Cog):
             else:
                 await db("UPDATE field SET deleted=true WHERE field_id=$1", field_to_edit.field_id)
 
-        # Delete trailing messages
-        try:
-            await v.delete()
-        except discord.HTTPException:
-            pass
-        try:
-            await field_value_message.delete()
-        except (discord.HTTPException, AttributeError):
-            pass
-
         # And done
+        await ctx.channel.purge(check=lambda m: m.id in [i.id for i in messages_to_delete], bulk=ctx.channel.permissions_for(ctx.guild.me).manage_messages)
         return True
 
     @commands.command(cls=utils.Command)
@@ -657,11 +629,7 @@ class ProfileTemplates(utils.Cog):
 
         # See if we need to delete things
         if delete_messages:
-            for m in messages_to_delete:
-                try:
-                    await m.delete()
-                except discord.HTTPException:
-                    pass
+            await ctx.channel.purge(check=lambda m: m.id in [i.id for i in messages_to_delete], bulk=ctx.channel.permissions_for(ctx.guild.me).manage_messages)
 
         # And we done
         return field

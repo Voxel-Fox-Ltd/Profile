@@ -25,26 +25,26 @@ class ProfileTemplates(utils.Cog):
     @commands.command(cls=utils.Command)
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
-    async def templates(self, ctx:utils.Context):
+    async def templates(self, ctx:utils.Context, guild_id:int=None):
         """Lists the templates that have been created for this server"""
+
+        # See if they're allowed to get from another guild ID
+        if guild_id is not None and guild_id != ctx.guild.id and self.bot.config.get('bot_support_role_id') not in ctx.author._roles:
+            raise commands.MissingRole("Bot Support Team")
 
         # Grab the templates
         async with self.bot.database() as db:
-            templates = await db("SELECT template_id, name FROM template WHERE guild_id=$1", ctx.guild.id)
-            created_profiles = await db("SELECT template_id, COUNT(*) AS count FROM created_profile WHERE template_id=ANY($1::UUID[]) GROUP BY template_id", [i['template_id'] for i in templates])
+            templates = await db(
+                """SELECT template.template_id, name, COUNT(created_profile.*) FROM template
+                LEFT JOIN created_profile ON template.template_id=created_profile.template_id
+                WHERE guild_id=$1 GROUP BY template.template_id""",
+                guild_id or ctx.guild.id
+            )
+            # created_profiles = await db("SELECT template_id, COUNT(*) AS count FROM created_profile WHERE template_id=ANY($1::UUID[]) GROUP BY template_id", [i['template_id'] for i in templates])
 
-        # Count em up
-        template_names_and_counts = {}
-        for i in templates:
-            for o in created_profiles:
-                if i['template_id'] != o['template_id']:
-                    continue
-                template_names_and_counts[i['name']] = o['count']
-
-        # Output nicely
-        if not template_names_and_counts:
+        if not templates:
             return await ctx.send("There are no created templates for this guild.")
-        return await ctx.send('\n'.join([f"**{i}** ({o} created profile{'s' if o != 1 else ''})" for i, o in template_names_and_counts.items()]))
+        return await ctx.send('\n'.join([f"**{row['name']}** (`{row['template_id']}`, `{row['count']}` created profiles)" for row in templates]))
 
     @commands.command(cls=utils.Command, aliases=['describe'])
     @commands.bot_has_permissions(send_messages=True, embed_links=True)

@@ -5,6 +5,7 @@ default_prefix = "!"  # The prefix for the bot's commands
 guild_id = 1  # The ID of the main/support guild
 dm_uncaught_errors = false
 event_webhook_url = ""
+bot_support_role_id = 522072743273824262
 
 # Data that's copied directly over to a command without processing
 [command_data]

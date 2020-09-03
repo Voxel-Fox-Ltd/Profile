@@ -46,7 +46,16 @@ class Template(object):
         return {i: o for i, o in self.all_fields.items() if o.deleted is False}
 
     async def fetch_profile_for_user(self, db, user_id:int, *, fetch_filled_fields:bool=True) -> 'cogs.utils.profiles.user_profile.UserProfile':
-        """Gets the filled profile for a given user"""
+        """Gets the filled profile for a given user
+
+        Args:
+            db (cogs.utils.database.DatabaseConnection): Description
+            user_id (int): Description
+            fetch_filled_fields (bool, optional): Description
+
+        Returns:
+            cogs.utils.profiles.user_profile.UserProfile: Description
+        """
 
         # Grab our imports here to avoid circular importing
         from cogs.utils.profiles.user_profile import UserProfile

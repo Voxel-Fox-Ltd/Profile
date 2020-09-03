@@ -2,6 +2,7 @@ import asyncio
 import string
 import uuid
 import typing
+import collections
 
 import discord
 from discord.ext import commands
@@ -13,15 +14,18 @@ class ProfileTemplates(utils.Cog):
 
     TICK_EMOJI = "<:tick_yes:596096897995899097>"
     CROSS_EMOJI = "<:cross_no:596096897769275402>"
-    # PLUS_EMOJI = "<:plus_maybe:750613306120601620>"
 
     NUMBERS_EMOJI = "\U00000031\U000020e3"
     LETTERS_EMOJI = "\U0001F170"
     PICTURE_EMOJI = "\U0001f5bc"
-    # TICK_EMOJI = "\U00002705"  # Used for boolean fields. I don't know if I want to do this.
 
     MAXIMUM_ALLOWED_TEMPLATES = 3
     MAXIMUM_ALLOWED_FIELDS = 20
+
+    def __init__(self, bot:utils.Bot):
+        super().__init__(bot)
+        self.template_creation_locks: typing.Dict[int, asyncio.Lock] = collections.defaultdict(lambda: asyncio.Lock())
+        self.template_editing_locks: typing.Dict[typing.Tuple[int, str], asyncio.Lock] = collections.defaultdict(lambda: asyncio.Lock())
 
     @commands.command(cls=utils.Command)
     @commands.bot_has_permissions(send_messages=True)
@@ -62,86 +66,93 @@ class ProfileTemplates(utils.Cog):
     async def edittemplate(self, ctx:utils.Context, template:utils.Template):
         """Edits a template for your guild"""
 
-        # Get the template fields
-        async with self.bot.database() as db:
-            await template.fetch_fields(db)
+        # See if they're already editing that template
+        if self.template_editing_locks[(ctx.guild.id, template.name)].locked():
+            return await ctx.send("You're already editing this template.")
 
-        edit_message = await ctx.send("Loading...")
-        messages_to_delete = []
-        should_edit = True
-        while True:
+        # Start the template editing
+        async with self.template_editing_locks[(ctx.guild.id, template.name)]:
 
-            # Ask what they want to edit
-            if should_edit:
-                await edit_message.edit(
-                    content="What do you want to edit? Verification channel (1\N{COMBINING ENCLOSING KEYCAP}), archive channel (2\N{COMBINING ENCLOSING KEYCAP}), given role (3\N{COMBINING ENCLOSING KEYCAP}), or fields (4\N{COMBINING ENCLOSING KEYCAP})",
-                    embed=template.build_embed(brief=True),
-                    allowed_mentions=discord.AllowedMentions(roles=False),
-                )
-                should_edit = False
-            valid_emoji = ["1\N{COMBINING ENCLOSING KEYCAP}", "2\N{COMBINING ENCLOSING KEYCAP}", "3\N{COMBINING ENCLOSING KEYCAP}", "4\N{COMBINING ENCLOSING KEYCAP}", self.TICK_EMOJI]
-            for e in valid_emoji:
-                await edit_message.add_reaction(e)
+            # Get the template fields
+            async with self.bot.database() as db:
+                await template.fetch_fields(db)
 
-            # Wait for a response
-            try:
-                reaction, _ = await self.bot.wait_for("reaction_add", check=lambda r, u: u.id == ctx.author.id and r.message.id == edit_message.id and str(r) in valid_emoji, timeout=120)
-            except asyncio.TimeoutError:
-                return await ctx.send("Timed out waiting for edit response.")
+            edit_message = await ctx.send("Loading...")
+            messages_to_delete = []
+            should_edit = True
+            while True:
 
-            # See what they reacted with
-            try:
-                attr, converter = {
-                    "1\N{COMBINING ENCLOSING KEYCAP}": ('verification_channel_id', commands.TextChannelConverter()),
-                    "2\N{COMBINING ENCLOSING KEYCAP}": ('archive_channel_id', commands.TextChannelConverter()),
-                    "3\N{COMBINING ENCLOSING KEYCAP}": ('role_id', commands.RoleConverter()),
-                    "4\N{COMBINING ENCLOSING KEYCAP}": (None, self.edit_field(ctx, template)),
-                    self.TICK_EMOJI: None,
-                }[str(reaction)]
-            except TypeError:
-                break
+                # Ask what they want to edit
+                if should_edit:
+                    await edit_message.edit(
+                        content="What do you want to edit? Verification channel (1\N{COMBINING ENCLOSING KEYCAP}), archive channel (2\N{COMBINING ENCLOSING KEYCAP}), given role (3\N{COMBINING ENCLOSING KEYCAP}), or fields (4\N{COMBINING ENCLOSING KEYCAP})",
+                        embed=template.build_embed(brief=True),
+                        allowed_mentions=discord.AllowedMentions(roles=False),
+                    )
+                    should_edit = False
+                valid_emoji = ["1\N{COMBINING ENCLOSING KEYCAP}", "2\N{COMBINING ENCLOSING KEYCAP}", "3\N{COMBINING ENCLOSING KEYCAP}", "4\N{COMBINING ENCLOSING KEYCAP}", self.TICK_EMOJI]
+                for e in valid_emoji:
+                    await edit_message.add_reaction(e)
 
-            # See if they want to edit a field
-            if attr is None:
-                fields_have_changed = await converter
-                if fields_have_changed is None:
-                    return
-                if fields_have_changed:
-                    async with self.bot.database() as db:
-                        await template.fetch_fields(db)
-                    should_edit = True
-                continue
+                # Wait for a response
+                try:
+                    reaction, _ = await self.bot.wait_for("reaction_add", check=lambda r, u: u.id == ctx.author.id and r.message.id == edit_message.id and str(r) in valid_emoji, timeout=120)
+                except asyncio.TimeoutError:
+                    return await ctx.send("Timed out waiting for edit response.")
 
-            # Ask what they want to set things to
-            v = await ctx.send("What do you want to set that to? You can give a name, a ping, or an ID, or say `continue` to set the value to null. " + ("Note that any current pending profiles will _not_ be able to be approved after moving the channel" if attr == 'verification_channel_id' else ''))
-            messages_to_delete.append(v)
-            try:
-                value_message = await self.bot.wait_for("message", check=lambda m: m.author.id == ctx.author.id and m.channel.id == ctx.channel.id, timeout=120)
-            except asyncio.TimeoutError:
-                return await ctx.send("Timed out waiting for edit response.")
-            messages_to_delete.append(value_message)
+                # See what they reacted with
+                try:
+                    attr, converter = {
+                        "1\N{COMBINING ENCLOSING KEYCAP}": ('verification_channel_id', commands.TextChannelConverter()),
+                        "2\N{COMBINING ENCLOSING KEYCAP}": ('archive_channel_id', commands.TextChannelConverter()),
+                        "3\N{COMBINING ENCLOSING KEYCAP}": ('role_id', commands.RoleConverter()),
+                        "4\N{COMBINING ENCLOSING KEYCAP}": (None, self.edit_field(ctx, template)),
+                        self.TICK_EMOJI: None,
+                    }[str(reaction)]
+                except TypeError:
+                    break
 
-            # Convert the response
-            try:
-                converted = (await converter.convert(ctx, value_message.content)).id
-            except commands.BadArgument:
-                if value_message.content == "continue":
-                    converted = None
-                else:
-                    await ctx.channel.purge(check=lambda m: m.id in [i.id for i in messages_to_delete], bulk=ctx.channel.permissions_for(ctx.guild.me).manage_messages)
-                    messages_to_delete.clear()
+                # See if they want to edit a field
+                if attr is None:
+                    fields_have_changed = await converter
+                    if fields_have_changed is None:
+                        return
+                    if fields_have_changed:
+                        async with self.bot.database() as db:
+                            await template.fetch_fields(db)
+                        should_edit = True
                     continue
 
-            # Delete the messages we don't need any more
-            await ctx.channel.purge(check=lambda m: m.id in [i.id for i in messages_to_delete], bulk=ctx.channel.permissions_for(ctx.guild.me).manage_messages)
-            messages_to_delete.clear()
+                # Ask what they want to set things to
+                v = await ctx.send("What do you want to set that to? You can give a name, a ping, or an ID, or say `continue` to set the value to null. " + ("Note that any current pending profiles will _not_ be able to be approved after moving the channel" if attr == 'verification_channel_id' else ''))
+                messages_to_delete.append(v)
+                try:
+                    value_message = await self.bot.wait_for("message", check=lambda m: m.author.id == ctx.author.id and m.channel.id == ctx.channel.id, timeout=120)
+                except asyncio.TimeoutError:
+                    return await ctx.send("Timed out waiting for edit response.")
+                messages_to_delete.append(value_message)
 
-            # Store our new shit
-            setattr(template, attr, converted)
-            async with self.bot.database() as db:
-                await db("UPDATE template SET {0}=$1 WHERE template_id=$2".format(attr), converted, template.template_id)
-            should_edit = True
-            await edit_message.remove_reaction(reaction, ctx.author)
+                # Convert the response
+                try:
+                    converted = (await converter.convert(ctx, value_message.content)).id
+                except commands.BadArgument:
+                    if value_message.content == "continue":
+                        converted = None
+                    else:
+                        await ctx.channel.purge(check=lambda m: m.id in [i.id for i in messages_to_delete], bulk=ctx.channel.permissions_for(ctx.guild.me).manage_messages)
+                        messages_to_delete.clear()
+                        continue
+
+                # Delete the messages we don't need any more
+                await ctx.channel.purge(check=lambda m: m.id in [i.id for i in messages_to_delete], bulk=ctx.channel.permissions_for(ctx.guild.me).manage_messages)
+                messages_to_delete.clear()
+
+                # Store our new shit
+                setattr(template, attr, converted)
+                async with self.bot.database() as db:
+                    await db("UPDATE template SET {0}=$1 WHERE template_id=$2".format(attr), converted, template.template_id)
+                should_edit = True
+                await edit_message.remove_reaction(reaction, ctx.author)
 
         # Tell them it's done
         await ctx.send("Done editing template.")
@@ -292,146 +303,154 @@ class ProfileTemplates(utils.Cog):
     async def createtemplate(self, ctx:utils.Context):
         """Creates a new template for your guild"""
 
+        # Only allow them to make one template at once
+        if self.template_creation_locks[ctx.guild.id].locked():
+            return await ctx.send("You're already creating a template.")
+
         # See if they have too many templates already
         async with self.bot.database() as db:
             template_list = await db("SELECT template_id FROM template WHERE guild_id=$1", ctx.guild.id)
         if len(template_list) >= self.MAXIMUM_ALLOWED_TEMPLATES:
             return await ctx.send(f"You already have {self.MAXIMUM_ALLOWED_TEMPLATES} templates set for this server, which is the maximum amount allowed.")
 
-        # Send the flavour text behind getting a template name
-        await ctx.send(f"What name do you want to give this template? This will be used for the set and get commands; eg if the name of your template is `test`, the commands generated will be `{ctx.prefix}settest` to set a profile, `{ctx.prefix}gettest` to get a profile, and `{ctx.prefix}deletetest` to delete a profile. A profile name is case insensitive, and will be automatically cast to lowercase.")
+        # And now we start creating the template itself
+        async with self.template_creation_locks[ctx.guild.id]:
 
-        # Get name from the messages they send
-        while True:
-            # Get message
-            try:
-                name_message = await self.bot.wait_for('message', check=lambda m: m.author == ctx.author and m.channel == ctx.channel, timeout=120)
+            # Send the flavour text behind getting a template name
+            await ctx.send(f"What name do you want to give this template? This will be used for the set and get commands; eg if the name of your template is `test`, the commands generated will be `{ctx.prefix}settest` to set a profile, `{ctx.prefix}gettest` to get a profile, and `{ctx.prefix}deletetest` to delete a profile. A profile name is case insensitive, and will be automatically cast to lowercase.")
 
-            # Catch timeout
-            except asyncio.TimeoutError:
+            # Get name from the messages they send
+            while True:
+
+                # Get message
                 try:
-                    return await ctx.send(f"{ctx.author.mention}, your template creation has timed out after 2 minutes of inactivity.")
-                except discord.Forbidden:
+                    name_message = await self.bot.wait_for('message', check=lambda m: m.author == ctx.author and m.channel == ctx.channel, timeout=120)
+
+                # Catch timeout
+                except asyncio.TimeoutError:
+                    try:
+                        return await ctx.send(f"{ctx.author.mention}, your template creation has timed out after 2 minutes of inactivity.")
+                    except discord.Forbidden:
+                        return
+
+                # Check name for characters
+                template_name = name_message.content.lower()
+                if [i for i in template_name if i not in string.ascii_lowercase + string.digits]:
+                    await ctx.send("You can only use normal lettering and digits in your command name. Please run this command again to set a new one.")
                     return
 
-            # Check name for characters
-            template_name = name_message.content.lower()
-            if [i for i in template_name if i not in string.ascii_lowercase + string.digits]:
-                await ctx.send("You can only use normal lettering and digits in your command name. Please run this command again to set a new one.")
-                return
-
-            # Check name for length
-            if 30 >= len(template_name) >= 1:
-                pass
-            else:
-                await ctx.send("The maximum length of a profile name is 30 characters. Please give another name.")
-                continue
-
-            # Check name is unique
-            async with self.bot.database() as db:
-                template_exists = await db("SELECT * FROM template WHERE guild_id=$1 AND name=$2", ctx.guild.id, template_name.lower())
-            if template_exists:
-                await ctx.send(f"This server already has a template with name **{template_name}**. Please run this command again to provide another one.")
-                return
-            break
-
-        # Get colour
-        colour = 0x000000  # TODO
-
-        # Get verification channel
-        await ctx.send("Sometimes you want to be able to make sure that your users are putting in relevant data before allowing their profiles to be seen on your server - this process is called verification. What channel would you like the the verification process to happen in? If you want profiles to be verified automatically (ie not verified by a mod team), just say `continue`.")
-        verification_channel_id = None
-        try:
-            verification_message = await self.bot.wait_for('message', check=lambda m: m.author == ctx.author and m.channel == ctx.channel, timeout=120)
-        except asyncio.TimeoutError:
-            try:
-                return await ctx.send(f"{ctx.author.mention}, because of your 2 minutes of inactivity, profiles have been set to automatic approval.")
-            except (discord.Forbidden, discord.NotFound):
-                return
-        else:
-            try:
-                verification_channel = await commands.TextChannelConverter().convert(ctx, verification_message.content)
-                proper_permissions = discord.Permissions(read_messages=True, external_emojis=True, send_messages=True, add_reactions=True, embed_links=True)
-                if verification_channel.permissions_for(ctx.guild.me).is_superset(proper_permissions):
-                    verification_channel_id = verification_channel.id
-                else:
-                    return await ctx.send("I don't have all the permissions I need to be able to send messages to that channel. I need `read messages`, `send messages`, `add external emojis`, `add reactions`, and `embed links`. Please update the channel permissions, and run this command again.")
-            except commands.BadArgument:
-                if verification_message.content.lower() == "continue":
+                # Check name for length
+                if 30 >= len(template_name) >= 1:
                     pass
                 else:
-                    return await ctx.send(f"I couldn't quite work out what you were trying to say there - please mention the channel as a ping, eg {ctx.channel.mention}. Please re-run the command to continue.")
+                    await ctx.send("The maximum length of a profile name is 30 characters. Please give another name.")
+                    continue
 
-        # Get archive channel
-        await ctx.send("Some servers want approved profiles to be sent automatically to a given channel - this is called archiving. What channel would you like verified profiles to be archived in? If you don't want to set up an archive channel, just say `continue`.")
-        archive_channel_id = None
-        try:
-            archive_message = await self.bot.wait_for('message', check=lambda m: m.author == ctx.author and m.channel == ctx.channel, timeout=120)
-        except asyncio.TimeoutError:
-            try:
-                await ctx.send(f"{ctx.author.mention}, because of your 2 minutes of inactivity, profiles have been set to automatic approval.")
-            except (discord.Forbidden, discord.NotFound):
-                return
-        else:
-            try:
-                archive_channel = await commands.TextChannelConverter().convert(ctx, archive_message.content)
-                proper_permissions = discord.Permissions()
-                proper_permissions.update(read_messages=True, send_messages=True, embed_links=True)
-                if archive_channel.permissions_for(ctx.guild.me).is_superset(proper_permissions):
-                    archive_channel_id = archive_channel.id
-                else:
-                    return await ctx.send("I don't have all the permissions I need to be able to send messages to that channel. I need `read messages`, `send messages`, `embed links`. Please update the channel permissions, and run this command again.")
-            except commands.BadArgument:
-                if archive_message.content.lower() == "continue":
-                    pass
-                else:
-                    return await ctx.send(f"I couldn't quite work out what you were trying to say there - please mention the channel as a ping, eg {ctx.channel.mention}. Please re-run the command to continue.")
-
-        # Get filled profile role
-        await ctx.send("Some servers want users with approved profiles to be given a role automatically - if you want users to be assigned a role, provide one here. If not, send `continue`.")
-        profile_role_id = None
-        try:
-            role_message = await self.bot.wait_for('message', check=lambda m: m.author == ctx.author and m.channel == ctx.channel, timeout=120)
-        except asyncio.TimeoutError:
-            try:
-                await ctx.send(f"{ctx.author.mention}, because of your 2 minutes of inactivity, profiles have been set to have no assigned role.")
-            except (discord.Forbidden, discord.NotFound):
-                return
-        else:
-            try:
-                profile_role = await commands.RoleConverter().convert(ctx, role_message.content)
-                profile_role_id = profile_role.id
-            except commands.BadArgument:
-                if role_message.content.lower() == "continue":
-                    pass
-                else:
-                    return await ctx.send("I couldn't quite work out what you were trying to say there - please either ping the role you want, give its ID, or give its name (case sensitive). Please re-run the command to continue.")
-
-        # Get an ID for the profile
-        template = utils.Template(
-            template_id=uuid.uuid4(),
-            colour=colour,
-            guild_id=ctx.guild.id,
-            verification_channel_id=verification_channel_id,
-            name=template_name,
-            archive_channel_id=archive_channel_id,
-            role_id=profile_role_id,
-        )
-
-        # Now we start the field loop
-        index = 0
-        field = True
-        image_set = False
-        while field:
-            field = await self.create_new_field(ctx, template, index, image_set)
-            if field is None:
+                # Check name is unique
+                async with self.bot.database() as db:
+                    template_exists = await db("SELECT * FROM template WHERE guild_id=$1 AND name=$2", ctx.guild.id, template_name.lower())
+                if template_exists:
+                    await ctx.send(f"This server already has a template with name **{template_name}**. Please run this command again to provide another one.")
+                    return
                 break
-            if field:
-                image_set = isinstance(field.field_type, utils.ImageField) or image_set
-            template.all_fields[field.field_id] = field
-            index += 1
-            if index == self.MAXIMUM_ALLOWED_FIELDS:
-                break  # Set max field amount
+
+            # Get colour
+            colour = 0x000000  # TODO
+
+            # Get verification channel
+            await ctx.send("Sometimes you want to be able to make sure that your users are putting in relevant data before allowing their profiles to be seen on your server - this process is called verification. What channel would you like the the verification process to happen in? If you want profiles to be verified automatically (ie not verified by a mod team), just say `continue`.")
+            verification_channel_id = None
+            try:
+                verification_message = await self.bot.wait_for('message', check=lambda m: m.author == ctx.author and m.channel == ctx.channel, timeout=120)
+            except asyncio.TimeoutError:
+                try:
+                    return await ctx.send(f"{ctx.author.mention}, because of your 2 minutes of inactivity, profiles have been set to automatic approval.")
+                except (discord.Forbidden, discord.NotFound):
+                    return
+            else:
+                try:
+                    verification_channel = await commands.TextChannelConverter().convert(ctx, verification_message.content)
+                    proper_permissions = discord.Permissions(read_messages=True, external_emojis=True, send_messages=True, add_reactions=True, embed_links=True)
+                    if verification_channel.permissions_for(ctx.guild.me).is_superset(proper_permissions):
+                        verification_channel_id = verification_channel.id
+                    else:
+                        return await ctx.send("I don't have all the permissions I need to be able to send messages to that channel. I need `read messages`, `send messages`, `add external emojis`, `add reactions`, and `embed links`. Please update the channel permissions, and run this command again.")
+                except commands.BadArgument:
+                    if verification_message.content.lower() == "continue":
+                        pass
+                    else:
+                        return await ctx.send(f"I couldn't quite work out what you were trying to say there - please mention the channel as a ping, eg {ctx.channel.mention}. Please re-run the command to continue.")
+
+            # Get archive channel
+            await ctx.send("Some servers want approved profiles to be sent automatically to a given channel - this is called archiving. What channel would you like verified profiles to be archived in? If you don't want to set up an archive channel, just say `continue`.")
+            archive_channel_id = None
+            try:
+                archive_message = await self.bot.wait_for('message', check=lambda m: m.author == ctx.author and m.channel == ctx.channel, timeout=120)
+            except asyncio.TimeoutError:
+                try:
+                    await ctx.send(f"{ctx.author.mention}, because of your 2 minutes of inactivity, profiles have been set to automatic approval.")
+                except (discord.Forbidden, discord.NotFound):
+                    return
+            else:
+                try:
+                    archive_channel = await commands.TextChannelConverter().convert(ctx, archive_message.content)
+                    proper_permissions = discord.Permissions()
+                    proper_permissions.update(read_messages=True, send_messages=True, embed_links=True)
+                    if archive_channel.permissions_for(ctx.guild.me).is_superset(proper_permissions):
+                        archive_channel_id = archive_channel.id
+                    else:
+                        return await ctx.send("I don't have all the permissions I need to be able to send messages to that channel. I need `read messages`, `send messages`, `embed links`. Please update the channel permissions, and run this command again.")
+                except commands.BadArgument:
+                    if archive_message.content.lower() == "continue":
+                        pass
+                    else:
+                        return await ctx.send(f"I couldn't quite work out what you were trying to say there - please mention the channel as a ping, eg {ctx.channel.mention}. Please re-run the command to continue.")
+
+            # Get filled profile role
+            await ctx.send("Some servers want users with approved profiles to be given a role automatically - if you want users to be assigned a role, provide one here. If not, send `continue`.")
+            profile_role_id = None
+            try:
+                role_message = await self.bot.wait_for('message', check=lambda m: m.author == ctx.author and m.channel == ctx.channel, timeout=120)
+            except asyncio.TimeoutError:
+                try:
+                    await ctx.send(f"{ctx.author.mention}, because of your 2 minutes of inactivity, profiles have been set to have no assigned role.")
+                except (discord.Forbidden, discord.NotFound):
+                    return
+            else:
+                try:
+                    profile_role = await commands.RoleConverter().convert(ctx, role_message.content)
+                    profile_role_id = profile_role.id
+                except commands.BadArgument:
+                    if role_message.content.lower() == "continue":
+                        pass
+                    else:
+                        return await ctx.send("I couldn't quite work out what you were trying to say there - please either ping the role you want, give its ID, or give its name (case sensitive). Please re-run the command to continue.")
+
+            # Get an ID for the profile
+            template = utils.Template(
+                template_id=uuid.uuid4(),
+                colour=colour,
+                guild_id=ctx.guild.id,
+                verification_channel_id=verification_channel_id,
+                name=template_name,
+                archive_channel_id=archive_channel_id,
+                role_id=profile_role_id,
+            )
+
+            # Now we start the field loop
+            index = 0
+            field = True
+            image_set = False
+            while field:
+                field = await self.create_new_field(ctx, template, index, image_set)
+                if field is None:
+                    break
+                if field:
+                    image_set = isinstance(field.field_type, utils.ImageField) or image_set
+                template.all_fields[field.field_id] = field
+                index += 1
+                if index == self.MAXIMUM_ALLOWED_FIELDS:
+                    break  # Set max field amount
 
         # Save it all to database
         async with self.bot.database() as db:

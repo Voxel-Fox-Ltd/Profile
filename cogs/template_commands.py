@@ -54,10 +54,10 @@ class ProfileTemplates(utils.Cog):
     @commands.command(cls=utils.Command, aliases=['describe'])
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @commands.guild_only()
-    async def describetemplate(self, ctx:utils.Context, template:utils.Template):
+    async def describetemplate(self, ctx:utils.Context, template:utils.Template, brief:bool=True):
         """Describe a template and its fields"""
 
-        return await ctx.send(embed=template.build_embed())
+        return await ctx.send(embed=template.build_embed(brief=brief))
 
     @commands.command(cls=utils.Command)
     @commands.has_permissions(manage_roles=True)

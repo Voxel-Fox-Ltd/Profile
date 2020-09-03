@@ -87,7 +87,7 @@ class NumberField(FieldType):
 class ImageField(FieldType):
 
     name = 'IMAGE'
-    matcher = re.compile(r"(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png|jpeg|gif)")
+    matcher = re.compile(r"^(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png|jpeg|gif)$")
 
     @classmethod
     def check(cls, value):

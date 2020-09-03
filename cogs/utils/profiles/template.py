@@ -25,7 +25,7 @@ class Template(object):
     This contains no user data, but rather the metadata for the template itself
     """
 
-    TEMPLATE_ID_REGEX = re.compile(r"(?P<uuid>.{8}-.{4}-.{4}-.{4}-.{12})")
+    TEMPLATE_ID_REGEX = re.compile(r"^(?P<uuid>.{8}-.{4}-.{4}-.{4}-.{12})$")
 
     __slots__ = ("template_id", "colour", "guild_id", "verification_channel_id", "name", "archive_channel_id", "role_id", "all_fields")
 

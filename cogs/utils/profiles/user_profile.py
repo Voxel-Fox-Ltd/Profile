@@ -95,11 +95,11 @@ class UserProfile(object):
                             if [i for i in member._roles if i in role_ids]:
                                 text = match.group("text")
                                 break
-                        embed.add_field(name=f.field.name, value=text)
+                        embed.add_field(name=f.field.name, value=text, inline=len(text) <= 100)
                     else:
-                        embed.add_field(name=f.field.name, value=f.value)
+                        embed.add_field(name=f.field.name, value=f.value, inline=len(f.value) <= 100)
                 else:
-                    embed.add_field(name=f.field.name, value=f.value)
+                    embed.add_field(name=f.field.name, value=f.value, inline=len(f.value) <= 100)
 
         # Return embed
         return embed

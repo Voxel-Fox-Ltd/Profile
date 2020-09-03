@@ -158,7 +158,7 @@ class Template(object):
                 )
 
         # If we're being brief, then just add all the field text at once
-        if brief:
+        if brief and text:
             embed.add_field(
                 name="Fields",
                 value='\n'.join(text),

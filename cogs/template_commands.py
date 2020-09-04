@@ -45,7 +45,6 @@ class ProfileTemplates(utils.Cog):
                 WHERE guild_id=$1 GROUP BY template.template_id""",
                 guild_id or ctx.guild.id
             )
-            # created_profiles = await db("SELECT template_id, COUNT(*) AS count FROM created_profile WHERE template_id=ANY($1::UUID[]) GROUP BY template_id", [i['template_id'] for i in templates])
 
         if not templates:
             return await ctx.send("There are no created templates for this guild.")
@@ -85,7 +84,7 @@ class ProfileTemplates(utils.Cog):
                 # Ask what they want to edit
                 if should_edit:
                     await edit_message.edit(
-                        content="What do you want to edit? Verification channel (1\N{COMBINING ENCLOSING KEYCAP}), archive channel (2\N{COMBINING ENCLOSING KEYCAP}), given role (3\N{COMBINING ENCLOSING KEYCAP}), or fields (4\N{COMBINING ENCLOSING KEYCAP})",
+                        content="What do you want to edit - verification channel (1\ufe0f), archive channel (2\ufe0f), given role (3\ufe0f), or fields (4\ufe0f)?",
                         embed=template.build_embed(brief=True),
                         allowed_mentions=discord.AllowedMentions(roles=False),
                     )

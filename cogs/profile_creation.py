@@ -234,10 +234,12 @@ class ProfileCreation(utils.Cog):
         if target_user and target_user != ctx.author and not utils.checks.member_is_moderator(ctx.bot, ctx.author):
             raise commands.MissingPermissions(["manage_roles"])
 
-        # Check if they already have a profile set
+        # Grab the data we need
         async with self.bot.database() as db:
             await template.fetch_fields(db)
             user_profile: utils.UserProfile = await template.fetch_profile_for_user(db, target_user.id)
+
+        # Check if they already have a profile set
         if user_profile is None:
             if target_user == ctx.author:
                 await ctx.send(f"You have no profile set for **{template.name}**.")
@@ -256,18 +258,18 @@ class ProfileCreation(utils.Cog):
             return await ctx.send("I'm unable to send you a DM to set up the profile :/")
 
         # Talk the user through each field
-        filled_field_dict: typing.Dict[uuid.UUID, utils.FilledField] = user_profile.filled_fields
+        user_profile.all_filled_fields: typing.Dict[uuid.UUID, utils.FilledField] = user_profile.filled_fields
         for field in sorted(template.fields.values(), key=lambda x: x.index):
 
             # See if it's a command
             if utils.UserProfile.COMMAND_REGEX.search(field.prompt):
                 filled_field = utils.FilledField(target_user.id, field.field_id, "")
                 filled_field.field = field
-                filled_field_dict[field.field_id] = filled_field
+                user_profile.all_filled_fields[field.field_id] = filled_field
                 continue
 
             # Get the current value
-            current_filled_field = filled_field_dict.get(field.field_id)
+            current_filled_field = user_profile.all_filled_fields.get(field.field_id)
             current_value = None
             if current_filled_field:
                 current_value = current_filled_field.value
@@ -303,11 +305,12 @@ class ProfileCreation(utils.Cog):
                     await ctx.author.send(e.message)
 
             # Add field to list
-            filled_field_dict[field.field_id] = utils.FilledField(target_user.id, field.field_id, field_content)
+            filled_field = utils.FilledField(target_user.id, field.field_id, field_content)
+            filled_field.field = field
+            user_profile.all_filled_fields[field.field_id] = filled_field
 
-        # Make the UserProfile object
+        # Update verification
         user_profile.verified = template.verification_channel_id is None
-        user_profile.all_filled_fields = filled_field_dict
 
         # Make sure the bot can send the embed at all
         try:
@@ -322,7 +325,7 @@ class ProfileCreation(utils.Cog):
         # Database me up daddy
         async with self.bot.database() as db:
             if user_profile.verified is False:
-                await db("UPDATE created_profile SET verified=$3 WHERE user_id=$1 AND template_id=$2", user_profile.user_id, user_profile.template.template_id, user_profile.verified)
+                await db("INSERT INTO created_profile (user_id, template_id, verified) VALUES ($1, $2, $3) ON CONFLICT (user_id, template_id) DO UPDATE SET verified=excluded.verified", user_profile.user_id, user_profile.template.template_id, user_profile.verified)
             for field in user_profile.all_filled_fields.values():
                 await db("INSERT INTO filled_field (user_id, field_id, value) VALUES ($1, $2, $3) ON CONFLICT (user_id, field_id) DO UPDATE SET value=excluded.value", field.user_id, field.field_id, field.value)
 

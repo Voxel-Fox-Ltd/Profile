@@ -66,7 +66,11 @@ class ProfileVerification(utils.Cog):
         verify = str(payload.emoji) == self.TICK_EMOJI
 
         # Check whom and what we're updating
-        profile_user_id, template_id = message.content.split('\n')[-1].split('/')
+        try:
+            profile_user_id, template_id, profile_name = message.content.split('\n')[-1].split('/')
+        except ValueError:
+            profile_user_id, template_id = message.content.split('\n')[-1].split('/')
+            profile_name = None
         profile_user_id = int(profile_user_id)
 
         # Decide whether to verify or to delete
@@ -74,7 +78,7 @@ class ProfileVerification(utils.Cog):
         template = None
         async with self.bot.database() as db:
             template = await utils.Template.fetch_template_by_id(db, template_id)
-            user_profile = await template.fetch_profile_for_user(db, profile_user_id)
+            user_profile = await template.fetch_profile_for_user(db, profile_user_id, profile_name)
             if verify:
                 await db("UPDATE created_profile SET verified=true WHERE user_id=$1 AND template_id=$2", profile_user_id, template_id)
             else:

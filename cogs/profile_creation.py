@@ -2,6 +2,8 @@ import asyncio
 import re
 import typing
 import uuid
+import collections
+import string
 
 import discord
 from discord.ext import commands
@@ -14,14 +16,17 @@ class ProfileCreation(utils.Cog):
 
     TICK_EMOJI = "<:tick_yes:596096897995899097>"
     CROSS_EMOJI = "<:cross_no:596096897769275402>"
-    # COMMAND_REGEX = re.compile(
-    #     r"^(?P<command>set|get|delete|edit)(?P<template>\S{1,30})(?:\s(?:<@)?(?P<user>\d{15,23})>?)?(?:\s(?P<name>\S{1,}))?",
-    #     re.IGNORECASE
-    # )
+
     COMMAND_REGEX = re.compile(
         r"^(?P<command>set|get|delete|edit)(?P<template>\S{1,30})( .*)?$",
         re.IGNORECASE
     )
+
+    MAX_PROFILES_PER_TEMPLATE = 1
+
+    def __init__(self, bot:utils.Bot):
+        super().__init__(bot)
+        self.set_profile_locks: typing.Dict[int, asyncio.Lock] = collections.defaultdict(asyncio.Lock)
 
     @utils.Cog.listener()
     async def on_command_error(self, ctx:utils.Context, error:commands.CommandError):
@@ -72,7 +77,7 @@ class ProfileCreation(utils.Cog):
                 channel: discord.TextChannel = self.bot.get_channel(template.verification_channel_id) or await self.bot.fetch_channel(template.verification_channel_id)
                 embed: utils.Embed = user_profile.build_embed(target_user)
                 embed.set_footer(text=f'{template.name.upper()} // Verification Check')
-                v = await channel.send(f"New **{template.name}** submission from <@{user_profile.user_id}>\n{user_profile.user_id}/{template.template_id}", embed=embed)
+                v = await channel.send(f"New **{template.name}** submission from <@{user_profile.user_id}>\n{user_profile.user_id}/{template.template_id}/{user_profile.name}", embed=embed)
                 await v.add_reaction(self.TICK_EMOJI)
                 await v.add_reaction(self.CROSS_EMOJI)
             except discord.HTTPException as e:
@@ -108,26 +113,30 @@ class ProfileCreation(utils.Cog):
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     @utils.checks.meta_command()
-    async def set_profile_meta(self, ctx:utils.Context, *, target_user:discord.Member=None):
+    async def set_profile_meta(self, ctx:utils.Context, target_user:typing.Optional[discord.Member]):
         """Talks a user through setting up a profile on a given server"""
 
         # Set up some variables
         target_user: discord.Member = target_user or ctx.author
         template: utils.Template = ctx.template
 
+        # See if the user is already setting up a profile
+        if self.set_profile_locks[ctx.author.id].locked():
+            return await ctx.send("You're already setting up a profile.")
+
         # Only mods can see other people's profiles
         if target_user != ctx.author and not utils.checks.member_is_moderator(ctx.bot, ctx.author):
             raise commands.MissingPermissions(["manage_roles"])
 
-        # Check if they already have a profile set
+        # Check if they're already at the maximum amount of profiles
         async with self.bot.database() as db:
             await template.fetch_fields(db)
-            user_profile: utils.UserProfile = await template.fetch_profile_for_user(db, target_user.id)
-        if user_profile is not None:
+            user_profiles: typing.List[utils.UserProfile] = await template.fetch_all_profiles_for_user(db, target_user.id)
+        if len(user_profiles) >= self.MAX_PROFILES_PER_TEMPLATE:
             if target_user == ctx.author:
-                await ctx.send(f"You already have a profile set for **{template.name}**.")
+                await ctx.send(f"You're already at the maximum number of profiles set for **{template.name}**.")
             else:
-                await ctx.send(f"{target_user.mention} already has a profile set up for **{template.name}**.")
+                await ctx.send(f"{target_user.mention} is already at the maximum number of profiles set up for **{template.name}**.")
             return
 
         # See if you we can send them the PM
@@ -140,52 +149,87 @@ class ProfileCreation(utils.Cog):
         except discord.Forbidden:
             return await ctx.send("I'm unable to send you DMs to set up the profile :/")
 
-        # Talk the user through each field
-        filled_field_dict = {}
-        for field in sorted(template.fields.values(), key=lambda x: x.index):
+        # Drag the user into the create profile lock
+        async with self.set_profile_locks[ctx.author.id]:
 
-            # See if it's a command
-            if utils.UserProfile.COMMAND_REGEX.search(field.prompt):
-                filled_field = utils.FilledField(target_user.id, field.field_id, "Could not get role information")
-                filled_field.field = field
-                filled_field_dict[field.field_id] = filled_field
-                continue
-
-            # Send the user the prompt
-            if field.optional:
-                await ctx.author.send(f"{field.prompt.rstrip('.')}. Type **pass** to skip this field.")
-            else:
-                await ctx.author.send(field.prompt)
-
-            # Get user input
+            # Ask them for a profile name
+            await ctx.author.send(f"What name would you like to give this profile? This won't be shown, but will be used to get the profile information (eg for the name \"test\", you could run `get{template.name.lower()} test`).")
             while True:
                 try:
                     user_message = await self.bot.wait_for(
-                        "message", timeout=field.timeout,
+                        "message", timeout=120,
                         check=lambda m: m.author == ctx.author and isinstance(m.channel, discord.DMChannel)
                     )
                 except asyncio.TimeoutError:
                     try:
-                        return await ctx.author.send(f"Your input for this field has timed out. Running `set{template.name}` on your server again to go back through this setup.")
+                        return await ctx.author.send(f"Your input for this field has timed out. Please try running `set{template.name}` on your server again.")
                     except discord.Forbidden:
                         return
                 try:
-                    if user_message.content.lower() == 'pass' and field.optional:
-                        field_content = None
-                    else:
-                        field_content = field.field_type.get_from_message(user_message)
+                    name_content = utils.TextField.get_from_message(user_message)
+                    if name_content.lower() in [i.name.lower() for i in user_profiles]:
+                        raise utils.errors.FieldCheckFailure("You're already using that name for this template. Please provide an alternative.")
+                    if any([i for i in name_content if i not in string.ascii_letters + string.digits + ' ']):
+                        raise utils.errors.FieldCheckFailure("You can only use standard lettering and digits in your profile name. Please provide an alternative.")
                     break
                 except utils.errors.FieldCheckFailure as e:
                     await ctx.author.send(e.message)
 
-            # Add field to list
-            filled_field = utils.FilledField(target_user.id, field.field_id, field_content)
-            filled_field.field = field
-            filled_field_dict[field.field_id] = filled_field
+            # Talk the user through each field
+            filled_field_dict = {}
+            for field in sorted(template.fields.values(), key=lambda x: x.index):
+
+                # See if it's a command
+                if utils.UserProfile.COMMAND_REGEX.search(field.prompt):
+                    filled_field_dict[field.field_id] = utils.FilledField(
+                        user_id=target_user.id,
+                        name=name_content,
+                        field_id=field.field_id,
+                        value="Could not get field information",
+                        field=field,
+                    )
+                    continue
+
+                # Send the user the prompt
+                if field.optional:
+                    await ctx.author.send(f"{field.prompt.rstrip('.')}. Type **pass** to skip this field.")
+                else:
+                    await ctx.author.send(field.prompt)
+
+                # Get user input
+                while True:
+                    try:
+                        user_message = await self.bot.wait_for(
+                            "message", timeout=field.timeout,
+                            check=lambda m: m.author == ctx.author and isinstance(m.channel, discord.DMChannel)
+                        )
+                    except asyncio.TimeoutError:
+                        try:
+                            return await ctx.author.send(f"Your input for this field has timed out. Running `set{template.name}` on your server again to go back through this setup.")
+                        except discord.Forbidden:
+                            return
+                    try:
+                        if user_message.content.lower() == 'pass' and field.optional:
+                            field_content = None
+                        else:
+                            field_content = field.field_type.get_from_message(user_message)
+                        break
+                    except utils.errors.FieldCheckFailure as e:
+                        await ctx.author.send(e.message)
+
+                # Add field to list
+                filled_field_dict[field.field_id] = utils.FilledField(
+                    user_id=target_user.id,
+                    name=name_content,
+                    field_id=field.field_id,
+                    value=field_content,
+                    field=field,
+                )
 
         # Make the UserProfile object
         user_profile = utils.UserProfile(
             user_id=target_user.id,
+            name=name_content,
             template_id=template.template_id,
             verified=template.verification_channel_id is None
         )
@@ -205,13 +249,13 @@ class ProfileCreation(utils.Cog):
         # Database me up daddy
         async with self.bot.database() as db:
             try:
-                await db("INSERT INTO created_profile (user_id, template_id, verified) VALUES ($1, $2, $3)", user_profile.user_id, user_profile.template.template_id, user_profile.verified)
+                await db("INSERT INTO created_profile (user_id, name, template_id, verified) VALUES ($1, $2, $3, $4)", user_profile.user_id, user_profile.name, user_profile.template.template_id, user_profile.verified)
             except asyncpg.UniqueViolationError:
-                await db("UPDATE created_profile SET verified=$3 WHERE user_id=$1 AND template_id=$2", user_profile.user_id, user_profile.template.template_id, user_profile.verified)
-                await db("DELETE FROM filled_field WHERE user_id=$1 AND field_id in (SELECT field_id FROM field WHERE template_id=$2)", user_profile.user_id, user_profile.template.template_id)
+                await db("UPDATE created_profile SET verified=$4 WHERE user_id=$1 AND name=$2 AND template_id=$3", user_profile.user_id, name_content, user_profile.template.template_id, user_profile.verified)
+                await db("DELETE FROM filled_field WHERE user_id=$1 AND name=$2 AND field_id in (SELECT field_id FROM field WHERE template_id=$3)", user_profile.user_id, name_content, user_profile.template.template_id)
                 self.logger.info(f"Deleted profile for {user_profile.user_id} on UniqueViolationError")
             for field in filled_field_dict.values():
-                await db("INSERT INTO filled_field (user_id, field_id, value) VALUES ($1, $2, $3) ON CONFLICT (user_id, field_id) DO UPDATE SET value=excluded.value", field.user_id, field.field_id, field.value)
+                await db("INSERT INTO filled_field (user_id, name, field_id, value) VALUES ($1, $2, $3, $4) ON CONFLICT (user_id, name, field_id) DO UPDATE SET value=excluded.value", field.user_id, name_content, field.field_id, field.value)
 
         # Respond to user
         if template.verification_channel_id:
@@ -223,12 +267,16 @@ class ProfileCreation(utils.Cog):
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     @utils.checks.meta_command()
-    async def edit_profile_meta(self, ctx:utils.Context, *, target_user:discord.Member=None):
+    async def edit_profile_meta(self, ctx:utils.Context, target_user:typing.Optional[discord.Member], *, profile_name:str=None):
         """Talks a user through setting up a profile on a given server"""
 
         # Set up some variables
         target_user = target_user or ctx.author
         template = ctx.template
+
+        # See if the user is already setting up a profile
+        if self.set_profile_locks[ctx.author.id].locked():
+            return await ctx.send("You're already setting up a profile.")
 
         # You can only edit someone else's profile if you're a moderator
         if target_user and target_user != ctx.author and not utils.checks.member_is_moderator(ctx.bot, ctx.author):
@@ -237,14 +285,29 @@ class ProfileCreation(utils.Cog):
         # Grab the data we need
         async with self.bot.database() as db:
             await template.fetch_fields(db)
-            user_profile: utils.UserProfile = await template.fetch_profile_for_user(db, target_user.id)
+            try:
+                user_profile: utils.UserProfile = await template.fetch_profile_for_user(db, target_user.id, profile_name)
+                user_profiles: typing.List[utils.UserProfile] = await template.fetch_all_profiles_for_user(db, target_user.id, fetch_filled_fields=False)
+            except ValueError:
+                user_profiles: typing.List[utils.UserProfile] = await template.fetch_all_profiles_for_user(db, target_user.id)
+                if target_user == ctx.author:
+                    await ctx.send(f"You have multiple profiles set for the template **{template.name}**.")
+                else:
+                    await ctx.send(f"{target_user.mention} has multiple profiles set for the template **{template.name}**.")
+                return
 
         # Check if they already have a profile set
         if user_profile is None:
-            if target_user == ctx.author:
-                await ctx.send(f"You have no profile set for **{template.name}**.")
+            if profile_name:
+                if target_user == ctx.author:
+                    await ctx.send(f"You don't have a profile for **{template.name}** with the name **{profile_name}**.")
+                else:
+                    await ctx.send(f"{target_user.mention} doesn't have a profile for **{template.name}** with the name **{profile_name}**.", allowed_mentions=discord.AllowedMentions(users=False))
             else:
-                await ctx.send(f"{target_user.mention} has no profile set up for **{template.name}**.", allowed_mentions=discord.AllowedMentions(users=False))
+                if target_user == ctx.author:
+                    await ctx.send(f"You don't have a profile for **{template.name}**.")
+                else:
+                    await ctx.send(f"{target_user.mention} doesn't have a profile for **{template.name}**.", allowed_mentions=discord.AllowedMentions(users=False))
             return
 
         # See if you we can send them the PM
@@ -257,57 +320,69 @@ class ProfileCreation(utils.Cog):
         except Exception:
             return await ctx.send("I'm unable to send you a DM to set up the profile :/")
 
-        # Talk the user through each field
-        user_profile.all_filled_fields: typing.Dict[uuid.UUID, utils.FilledField] = user_profile.filled_fields
-        for field in sorted(template.fields.values(), key=lambda x: x.index):
+        # Drag them into a lock
+        async with self.set_profile_locks[ctx.author.id]:
 
-            # See if it's a command
-            if utils.UserProfile.COMMAND_REGEX.search(field.prompt):
-                filled_field = utils.FilledField(target_user.id, field.field_id, "")
-                filled_field.field = field
-                user_profile.all_filled_fields[field.field_id] = filled_field
-                continue
+            # Talk the user through each field
+            user_profile.all_filled_fields: typing.Dict[uuid.UUID, utils.FilledField] = user_profile.filled_fields
+            for field in sorted(template.fields.values(), key=lambda x: x.index):
 
-            # Get the current value
-            current_filled_field = user_profile.all_filled_fields.get(field.field_id)
-            current_value = None
-            if current_filled_field:
-                current_value = current_filled_field.value
-
-            # Send the user a prompt
-            if current_filled_field is None:
-                if field.optional:
-                    await ctx.author.send(f"{field.prompt.rstrip('.')}. Type **pass** to skip this field.")
-                else:
-                    await ctx.author.send(field.prompt)
-            else:
-                await ctx.author.send(f"{field.prompt.rstrip('.')}. The current value for this field is `{current_value or 'empty'}`. Type **pass** to leave the value as it currently is.")
-
-            # Get user input
-            while True:
-                try:
-                    user_message = await self.bot.wait_for(
-                        "message", timeout=field.timeout,
-                        check=lambda m: m.author == ctx.author and isinstance(m.channel, discord.DMChannel)
+                # See if it's a command
+                if utils.UserProfile.COMMAND_REGEX.search(field.prompt):
+                    filled_field = utils.FilledField(
+                        user_id=target_user.id,
+                        name=user_profile.name,
+                        field_id=field.field_id,
+                        value="Could not get field information",
+                        field=field,
                     )
-                except asyncio.TimeoutError:
-                    try:
-                        return await ctx.author.send(f"Your input for this field has timed out. Please try running `set{template.name}` on your server again.")
-                    except discord.Forbidden:
-                        return
-                if user_message.content.lower() == "pass" and (current_filled_field or field.optional):
-                    field_content = current_value
-                    break
-                try:
-                    field_content = field.field_type.get_from_message(user_message)
-                    break
-                except utils.errors.FieldCheckFailure as e:
-                    await ctx.author.send(e.message)
+                    user_profile.all_filled_fields[field.field_id] = filled_field
+                    continue
 
-            # Add field to list
-            filled_field = utils.FilledField(target_user.id, field.field_id, field_content)
-            filled_field.field = field
-            user_profile.all_filled_fields[field.field_id] = filled_field
+                # Get the current value
+                current_filled_field = user_profile.all_filled_fields.get(field.field_id)
+                current_value = None
+                if current_filled_field:
+                    current_value = current_filled_field.value
+
+                # Send the user a prompt
+                if current_filled_field is None:
+                    if field.optional:
+                        await ctx.author.send(f"{field.prompt.rstrip('.')}. Type **pass** to skip this field.")
+                    else:
+                        await ctx.author.send(field.prompt)
+                else:
+                    await ctx.author.send(f"{field.prompt.rstrip('.')}. The current value for this field is `{current_value or 'empty'}`. Type **pass** to leave the value as it currently is.")
+
+                # Get user input
+                while True:
+                    try:
+                        user_message = await self.bot.wait_for(
+                            "message", timeout=field.timeout,
+                            check=lambda m: m.author == ctx.author and isinstance(m.channel, discord.DMChannel)
+                        )
+                    except asyncio.TimeoutError:
+                        try:
+                            return await ctx.author.send(f"Your input for this field has timed out. Please try running `set{template.name}` on your server again.")
+                        except discord.Forbidden:
+                            return
+                    if user_message.content.lower() == "pass" and (current_filled_field or field.optional):
+                        field_content = current_value
+                        break
+                    try:
+                        field_content = field.field_type.get_from_message(user_message)
+                        break
+                    except utils.errors.FieldCheckFailure as e:
+                        await ctx.author.send(e.message)
+
+                # Add field to list
+                user_profile.all_filled_fields[field.field_id] = utils.FilledField(
+                    user_id=target_user.id,
+                    name=user_profile.name,
+                    field_id=field.field_id,
+                    value=field_content,
+                    field=field,
+                )
 
         # Update verification
         user_profile.verified = template.verification_channel_id is None
@@ -325,9 +400,9 @@ class ProfileCreation(utils.Cog):
         # Database me up daddy
         async with self.bot.database() as db:
             if user_profile.verified is False:
-                await db("INSERT INTO created_profile (user_id, template_id, verified) VALUES ($1, $2, $3) ON CONFLICT (user_id, template_id) DO UPDATE SET verified=excluded.verified", user_profile.user_id, user_profile.template.template_id, user_profile.verified)
+                await db("INSERT INTO created_profile (user_id, name, template_id, verified) VALUES ($1, $2, $3, $4) ON CONFLICT (user_id, name, template_id) DO UPDATE SET verified=excluded.verified", user_profile.user_id, user_profile.name, user_profile.template.template_id, user_profile.verified)
             for field in user_profile.all_filled_fields.values():
-                await db("INSERT INTO filled_field (user_id, field_id, value) VALUES ($1, $2, $3) ON CONFLICT (user_id, field_id) DO UPDATE SET value=excluded.value", field.user_id, field.field_id, field.value)
+                await db("INSERT INTO filled_field (user_id, name, field_id, value) VALUES ($1, $2, $3, $4) ON CONFLICT (user_id, name, field_id) DO UPDATE SET value=excluded.value", field.user_id, user_profile.name, field.field_id, field.value)
 
         # Respond to user
         await ctx.author.send("Your profile has been edited and saved.")
@@ -336,7 +411,7 @@ class ProfileCreation(utils.Cog):
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     @utils.checks.meta_command()
-    async def delete_profile_meta(self, ctx:utils.Context, *, user:discord.Member=None):
+    async def delete_profile_meta(self, ctx:utils.Context, user:typing.Optional[discord.Member], *, profile_name:str=None):
         """Handles deleting a profile"""
 
         # You can only delete someone else's profile if you're a moderator
@@ -346,12 +421,26 @@ class ProfileCreation(utils.Cog):
         # Check it exists
         template: utils.Template = ctx.template
         async with self.bot.database() as db:
-            user_profile = await template.fetch_profile_for_user(db, (user or ctx.author).id, fetch_filled_fields=False)
+            try:
+                user_profile = await template.fetch_profile_for_user(db, (user or ctx.author).id, profile_name, fetch_filled_fields=False)
+            except ValueError:
+                user_profiles: typing.List[utils.UserProfile] = await template.fetch_all_profiles_for_user(db, (user or ctx.author).id)
+                if user:
+                    await ctx.send(f"{user.mention} has multiple profiles set for the template **{template.name}**.")
+                else:
+                    await ctx.send(f"You have multiple profiles set for the template **{template.name}**.")
+                return
         if user_profile is None:
-            if user:
-                await ctx.send(f"{user.mention} doesn't have a profile set for **{template.name}**.", allowed_mentions=discord.AllowedMentions(users=False))
+            if profile_name:
+                if user:
+                    await ctx.send(f"{user.mention} doesn't have a profile for **{template.name}** with the name **{profile_name}**.", allowed_mentions=discord.AllowedMentions(users=False))
+                else:
+                    await ctx.send(f"You don't have a profile for **{template.name}** with the name **{profile_name}**.")
             else:
-                await ctx.send(f"You don't have a profile set for **{template.name}**.")
+                if user:
+                    await ctx.send(f"{user.mention} doesn't have a profile for **{template.name}**.", allowed_mentions=discord.AllowedMentions(users=False))
+                else:
+                    await ctx.send(f"You don't have a profile for **{template.name}**.")
             return
 
         # Database it babey
@@ -365,18 +454,32 @@ class ProfileCreation(utils.Cog):
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     @utils.checks.meta_command()
-    async def get_profile_meta(self, ctx:utils.Context, *, user:discord.Member=None):
+    async def get_profile_meta(self, ctx:utils.Context, user:typing.Optional[discord.Member], *, profile_name:str=None):
         """Gets a profile for a given member"""
 
         # See if there's a set profile
         template: utils.Template = ctx.template
         async with self.bot.database() as db:
-            user_profile: utils.UserProfile = await template.fetch_profile_for_user(db, (user or ctx.author).id)
+            try:
+                user_profile: utils.UserProfile = await template.fetch_profile_for_user(db, (user or ctx.author).id, profile_name)
+            except ValueError:
+                user_profiles: typing.List[utils.UserProfile] = await template.fetch_all_profiles_for_user(db, (user or ctx.author).id)
+                if user:
+                    await ctx.send(f"{user.mention} has multiple profiles set for the template **{template.name}**.")
+                else:
+                    await ctx.send(f"You have multiple profiles set for the template **{template.name}**.")
+                return
         if user_profile is None:
-            if user:
-                await ctx.send(f"{user.mention} doesn't have a profile for **{template.name}**.", allowed_mentions=discord.AllowedMentions(users=False))
+            if profile_name:
+                if user:
+                    await ctx.send(f"{user.mention} doesn't have a profile for **{template.name}** with the name **{profile_name}**.", allowed_mentions=discord.AllowedMentions(users=False))
+                else:
+                    await ctx.send(f"You don't have a profile for **{template.name}** with the name **{profile_name}**.")
             else:
-                await ctx.send(f"You don't have a profile for **{template.name}**.")
+                if user:
+                    await ctx.send(f"{user.mention} doesn't have a profile for **{template.name}**.", allowed_mentions=discord.AllowedMentions(users=False))
+                else:
+                    await ctx.send(f"You don't have a profile for **{template.name}**.")
             return
 
         # See if verified

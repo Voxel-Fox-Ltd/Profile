@@ -80,9 +80,10 @@ CREATE TABLE field(
 
 CREATE TABLE created_profile(
     user_id BIGINT,
+    name VARCHAR(1000),
     template_id UUID REFERENCES template(template_id) ON DELETE CASCADE,
     verified BOOLEAN DEFAULT FALSE,
-    PRIMARY KEY (user_id, template_id)
+    PRIMARY KEY (user_id, name, template_id)
 );
 -- A table describing an entire profile filled by a user
 -- user_id - the user filling the profile
@@ -92,9 +93,10 @@ CREATE TABLE created_profile(
 
 CREATE TABLE filled_field(
     user_id BIGINT,
+    name VARCHAR(1000),
     field_id UUID REFERENCES field(field_id) ON DELETE CASCADE,
     value VARCHAR(1000),
-    PRIMARY KEY (user_id, field_id)
+    PRIMARY KEY (user_id, name, field_id)
 );
 -- A table for stored field data for a user
 -- user_id - the user that filled in the field

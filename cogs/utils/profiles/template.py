@@ -45,7 +45,36 @@ class Template(object):
 
         return {i: o for i, o in self.all_fields.items() if o.deleted is False}
 
-    async def fetch_profile_for_user(self, db, user_id:int, *, fetch_filled_fields:bool=True) -> 'cogs.utils.profiles.user_profile.UserProfile':
+    async def fetch_profile_for_user(self, db, user_id:int, profile_name:str=None, *, fetch_filled_fields:bool=True) -> 'cogs.utils.profiles.user_profile.UserProfile':
+        """Gets the filled profile for a given user
+
+        Args:
+            db (cogs.utils.database.DatabaseConnection): Description
+            user_id (int): Description
+            fetch_filled_fields (bool, optional): Description
+
+        Returns:
+            cogs.utils.profiles.user_profile.UserProfile: Description
+        """
+
+        # Grab our imports here to avoid circular importing
+        from cogs.utils.profiles.user_profile import UserProfile
+
+        # Grab the user profile
+        if profile_name is None:
+            profile_rows = await db("SELECT * FROM created_profile WHERE template_id=$1 AND user_id=$2", self.template_id, user_id)
+        else:
+            profile_rows = await db("SELECT * FROM created_profile WHERE template_id=$1 AND user_id=$2 AND LOWER(name)=LOWER($3)", self.template_id, user_id, profile_name)
+        if not profile_rows:
+            return None
+        if profile_name is None and len(profile_rows) > 1:
+            raise ValueError("Too many saved profiles to have no set profile name")
+        user_profile = UserProfile(**profile_rows[0], template=self)
+        if fetch_filled_fields:
+            await user_profile.fetch_filled_fields(db)
+        return user_profile
+
+    async def fetch_all_profiles_for_user(self, db, user_id:int, *, fetch_filled_fields:bool=True) -> typing.List['cogs.utils.profiles.user_profile.UserProfile']:
         """Gets the filled profile for a given user
 
         Args:
@@ -62,13 +91,10 @@ class Template(object):
 
         # Grab the user profile
         profile_rows = await db("SELECT * FROM created_profile WHERE template_id=$1 AND user_id=$2", self.template_id, user_id)
-        if not profile_rows:
-            return None
-        user_profile = UserProfile(**profile_rows[0])
-        user_profile.template = self
+        profiles = [UserProfile(**i, template=self) for i in profile_rows]
         if fetch_filled_fields:
-            await user_profile.fetch_filled_fields(db)
-        return user_profile
+            [await i.fetch_filled_fields(db) for i in profiles]
+        return profiles
 
     @classmethod
     async def fetch_template_by_id(cls, db, template_id:uuid.UUID, *, fetch_fields:bool=True) -> typing.Optional['Template']:
@@ -129,10 +155,11 @@ class Template(object):
         fields: typing.List[Field] = sorted(self.fields.values(), key=lambda x: x.index)
         embed = Embed(use_random_colour=True, title=self.name)
         embed.description = '\n'.join([
-            f"Template ID `{self.template_id}` for guild {self.guild_id}",
-            f"Verification channel: {'none' if self.verification_channel_id is None else '<#' + str(self.verification_channel_id) + '>'}",
-            f"Archive channel: {'none' if self.archive_channel_id is None else '<#' + str(self.archive_channel_id) + '>'}",
-            f"Given role: {'none' if self.role_id is None else '<@&' + str(self.role_id) + '>'}",
+            f"Template ID: `{self.template_id}`",
+            f"Guild ID: {self.guild_id}"
+            f"Verification channel: {'none' if self.verification_channel_id is None else '<#' + str(self.verification_channel_id) + '> (`' + str(self.verification_channel_id) + '`)'}",
+            f"Archive channel: {'none' if self.archive_channel_id is None else '<#' + str(self.archive_channel_id) + '> (`' + str(self.archive_channel_id) + '`)'}",
+            f"Given role: {'none' if self.role_id is None else '<@&' + str(self.role_id) + '> (`' + str(self.role_id) + '`)'}",
         ])
 
         # Add the user

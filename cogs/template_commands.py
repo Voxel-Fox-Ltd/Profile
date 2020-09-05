@@ -24,8 +24,8 @@ class ProfileTemplates(utils.Cog):
 
     def __init__(self, bot:utils.Bot):
         super().__init__(bot)
-        self.template_creation_locks: typing.Dict[int, asyncio.Lock] = collections.defaultdict(lambda: asyncio.Lock())
-        self.template_editing_locks: typing.Dict[typing.Tuple[int, str], asyncio.Lock] = collections.defaultdict(lambda: asyncio.Lock())
+        self.template_creation_locks: typing.Dict[int, asyncio.Lock] = collections.defaultdict(asyncio.Lock)
+        self.template_editing_locks: typing.Dict[typing.Tuple[int, str], asyncio.Lock] = collections.defaultdict(asyncio.Lock)
 
     @commands.command(cls=utils.Command)
     @commands.bot_has_permissions(send_messages=True)
@@ -40,7 +40,7 @@ class ProfileTemplates(utils.Cog):
         # Grab the templates
         async with self.bot.database() as db:
             templates = await db(
-                """SELECT template.template_id, name, COUNT(created_profile.*) FROM template
+                """SELECT template.template_id, template.name, COUNT(created_profile.*) FROM template
                 LEFT JOIN created_profile ON template.template_id=created_profile.template_id
                 WHERE guild_id=$1 GROUP BY template.template_id""",
                 guild_id or ctx.guild.id

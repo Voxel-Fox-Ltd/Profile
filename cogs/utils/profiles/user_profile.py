@@ -22,10 +22,11 @@ class UserProfile(object):
     HAS_ROLE_REGEX = re.compile(r'^{{HASROLE (?:DEFAULT \"(?P<default>.+?)\")( HAS\(((?:\d{16,23}(?:, ?)?)+)\) SAYS \"(?P<text>.+?)\")+}}$', re.IGNORECASE)
     HAS_ROLE_PARAMETER_REGEX = re.compile(r'(?:HAS\((?P<roleids>(?:\d{16,23}(?:, ?)?)+)\) SAYS \"(?P<text>.+?)\")', re.IGNORECASE)
 
-    __slots__ = ("user_id", "template_id", "verified", "all_filled_fields", "template")
+    __slots__ = ("user_id", "name", "template_id", "verified", "all_filled_fields", "template")
 
-    def __init__(self, user_id:int, template_id:uuid.UUID, verified:bool, template:Template=None):
+    def __init__(self, user_id:int, name:str, template_id:uuid.UUID, verified:bool, template:Template=None):
         self.user_id: int = user_id
+        self.name: str = name
         self.template_id: uuid.UUID = template_id
         self.verified: bool = verified
         self.all_filled_fields: typing.Dict[uuid.UUID, FilledField] = dict()
@@ -36,7 +37,7 @@ class UserProfile(object):
 
         if self.template is None or len(self.template.all_fields) == 0:
             await self.fetch_template(db, fetch_fields=True)
-        field_rows = await db("SELECT * FROM filled_field WHERE user_id=$1 AND field_id=ANY($2::UUID[])", self.user_id, self.template.all_fields.keys())
+        field_rows = await db("SELECT * FROM filled_field WHERE user_id=$1 AND name=$2 AND field_id=ANY($3::UUID[])", self.user_id, self.name, self.template.all_fields.keys())
         self.all_filled_fields.clear()
         for f in field_rows:
             filled = FilledField(**f)
@@ -66,7 +67,7 @@ class UserProfile(object):
         fields: typing.List[FilledField] = sorted(self.filled_fields.values(), key=lambda x: x.field.index)
         embed = Embed(use_random_colour=True)
         if self.template:
-            embed.title = self.template.name.title()
+            embed.title = f"{self.template.name} | {self.name}"
             if self.template.colour:
                 embed.colour = self.template.colour
 

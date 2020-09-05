@@ -88,7 +88,7 @@ class Template(object):
         """Get a template from the database via its name"""
 
         # Grab the template
-        template_rows = await db("SELECT * FROM template WHERE guild_id=$1 AND name=$2", guild_id, template_name.lower())
+        template_rows = await db("SELECT * FROM template WHERE guild_id=$1 AND LOWER(name)=LOWER($2)", guild_id, template_name)
         if not template_rows:
             return None
         template = cls(**template_rows[0])
@@ -127,7 +127,7 @@ class Template(object):
 
         # Create the initial embed
         fields: typing.List[Field] = sorted(self.fields.values(), key=lambda x: x.index)
-        embed = Embed(use_random_colour=True, title=self.name.title())
+        embed = Embed(use_random_colour=True, title=self.name)
         embed.description = '\n'.join([
             f"Template ID `{self.template_id}` for guild {self.guild_id}",
             f"Verification channel: {'none' if self.verification_channel_id is None else '<#' + str(self.verification_channel_id) + '>'}",

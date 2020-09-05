@@ -316,7 +316,7 @@ class ProfileTemplates(utils.Cog):
         async with self.template_creation_locks[ctx.guild.id]:
 
             # Send the flavour text behind getting a template name
-            await ctx.send(f"What name do you want to give this template? This will be used for the set and get commands; eg if the name of your template is `test`, the commands generated will be `{ctx.prefix}settest` to set a profile, `{ctx.prefix}gettest` to get a profile, and `{ctx.prefix}deletetest` to delete a profile. A profile name is case insensitive, and will be automatically cast to lowercase.")
+            await ctx.send(f"What name do you want to give this template? This will be used for the set and get commands; eg if the name of your template is `test`, the commands generated will be `{ctx.prefix}settest` to set a profile, `{ctx.prefix}gettest` to get a profile, and `{ctx.prefix}deletetest` to delete a profile. A profile name is case insensitive when used in commands.")
 
             # Get name from the messages they send
             while True:
@@ -333,8 +333,8 @@ class ProfileTemplates(utils.Cog):
                         return
 
                 # Check name for characters
-                template_name = name_message.content.lower()
-                if [i for i in template_name if i not in string.ascii_lowercase + string.digits]:
+                template_name = name_message.content
+                if [i for i in template_name if i not in string.ascii_letters + string.digits]:
                     await ctx.send("You can only use normal lettering and digits in your command name. Please run this command again to set a new one.")
                     return
 
@@ -347,7 +347,7 @@ class ProfileTemplates(utils.Cog):
 
                 # Check name is unique
                 async with self.bot.database() as db:
-                    template_exists = await db("SELECT * FROM template WHERE guild_id=$1 AND name=$2", ctx.guild.id, template_name.lower())
+                    template_exists = await db("SELECT * FROM template WHERE guild_id=$1 AND LOWER(name)=LOWER($2)", ctx.guild.id, template_name)
                 if template_exists:
                     await ctx.send(f"This server already has a template with name **{template_name}**. Please run this command again to provide another one.")
                     return

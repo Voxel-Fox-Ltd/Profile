@@ -70,7 +70,7 @@ class ProfileVerification(utils.Cog):
             profile_user_id, template_id, profile_name = message.content.split('\n')[-1].split('/')
         except ValueError:
             profile_user_id, template_id = message.content.split('\n')[-1].split('/')
-            profile_name = None
+            profile_name = 'default'
         profile_user_id = int(profile_user_id)
 
         # Decide whether to verify or to delete
@@ -80,17 +80,20 @@ class ProfileVerification(utils.Cog):
             template = await utils.Template.fetch_template_by_id(db, template_id)
             user_profile = await template.fetch_profile_for_user(db, profile_user_id, profile_name)
             if verify:
-                await db("UPDATE created_profile SET verified=true WHERE user_id=$1 AND template_id=$2", profile_user_id, template_id)
+                await db("UPDATE created_profile SET verified=true WHERE user_id=$1 AND template_id=$2 AND name=$3", profile_user_id, template_id, profile_name)
             else:
-                await db("DELETE FROM filled_field WHERE user_id=$1 AND field_id IN (SELECT field_id FROM field WHERE template_id=$2)", profile_user_id, template_id)
-                await db("DELETE FROM created_profile WHERE user_id=$1 AND template_id=$2", profile_user_id, template_id)
+                await db("DELETE FROM created_profile WHERE user_id=$1 AND template_id=$2 AND name=$3", profile_user_id, template_id, profile_name)
 
         # Delete the verify message
         await message.delete()
 
+        # See if we need to say anything
+        if user_profile is None:
+            return
+
         # Tell the user about the decision
         profile_user: discord.User = guild.get_member(profile_user_id) or self.bot.get_user(profile_user_id) or await self.bot.fetch_user(profile_user_id)
-        if user_profile:
+        if profile_user:
             try:
                 embed: utils.Embed = user_profile.build_embed(profile_user if isinstance(profile_user, discord.Member) else None)
                 if verify:

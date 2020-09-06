@@ -19,9 +19,6 @@ class ProfileTemplates(utils.Cog):
     LETTERS_EMOJI = "\U0001F170"
     PICTURE_EMOJI = "\U0001f5bc"
 
-    MAXIMUM_ALLOWED_TEMPLATES = 3
-    MAXIMUM_ALLOWED_FIELDS = 20
-
     def __init__(self, bot:utils.Bot):
         super().__init__(bot)
         self.template_creation_locks: typing.Dict[int, asyncio.Lock] = collections.defaultdict(asyncio.Lock)
@@ -75,6 +72,7 @@ class ProfileTemplates(utils.Cog):
             # Get the template fields
             async with self.bot.database() as db:
                 await template.fetch_fields(db)
+            guild_settings = await db("SELECT * FROM guild_settings WHERE guild_id=$1 OR guild_id=0 ORDER BY guild_id DESC", ctx.guild.id)
 
             edit_message = await ctx.send("Loading...")
             messages_to_delete = []
@@ -84,7 +82,7 @@ class ProfileTemplates(utils.Cog):
                 # Ask what they want to edit
                 if should_edit:
                     await edit_message.edit(
-                        content="What do you want to edit - verification channel (1\ufe0f), archive channel (2\ufe0f), given role (3\ufe0f), or fields (4\ufe0f)?",
+                        content="What do you want to edit - verification channel (1\u20e3), archive channel (2\u20e3), given role (3\u20e3), or fields (4\u20e3)?",
                         embed=template.build_embed(brief=True),
                         allowed_mentions=discord.AllowedMentions(roles=False),
                     )
@@ -105,7 +103,7 @@ class ProfileTemplates(utils.Cog):
                         "1\N{COMBINING ENCLOSING KEYCAP}": ('verification_channel_id', commands.TextChannelConverter()),
                         "2\N{COMBINING ENCLOSING KEYCAP}": ('archive_channel_id', commands.TextChannelConverter()),
                         "3\N{COMBINING ENCLOSING KEYCAP}": ('role_id', commands.RoleConverter()),
-                        "4\N{COMBINING ENCLOSING KEYCAP}": (None, self.edit_field(ctx, template)),
+                        "4\N{COMBINING ENCLOSING KEYCAP}": (None, self.edit_field(ctx, template, guild_settings[0])),
                         self.TICK_EMOJI: None,
                     }[str(reaction)]
                 except TypeError:
@@ -156,13 +154,20 @@ class ProfileTemplates(utils.Cog):
         # Tell them it's done
         await ctx.send("Done editing template.")
 
-    async def edit_field(self, ctx:utils.Context, template:utils.Template):
+    async def edit_field(self, ctx:utils.Context, template:utils.Template, guild_settings:dict):
         """Talk the user through editing a field of a template"""
 
         # Ask which index they want to edit
-        v: discord.Message = await ctx.send("What is the index of the field you want to edit? If you want to add a *new* field, type **new**.")
-        messages_to_delete = [v]
+        if len(template.fields) >= guild_settings['max_template_field_count']:
+            ask_field_edit_message: discord.Message = await ctx.send("What is the index of the field you want to edit?")
+        else:
+            ask_field_edit_message: discord.Message = await ctx.send("What is the index of the field you want to edit? If you want to add a *new* field, type **new**.")
+        messages_to_delete = [ask_field_edit_message]
+
+        # Start our infinite loop
         while True:
+
+            # Wait for them to say which field they want to edit
             try:
                 field_index_message: discord.Message = await self.bot.wait_for("message", check=lambda m: m.author.id == ctx.author.id and m.channel.id == ctx.channel.id, timeout=120)
                 messages_to_delete.append(field_index_message)
@@ -170,32 +175,40 @@ class ProfileTemplates(utils.Cog):
                 await ctx.send("Timed out waiting for field index.")
                 return None
 
-            # Make sure their provided index is valid
+            # Grab the field they wan tto edit
             try:
-                field_index = int(field_index_message.content)
+                field_index = int(field_index_message.content.lstrip('#'))
                 field_to_edit = [i for i in template.fields.values() if i.index == field_index and i.deleted is False][0]
                 break
-            except (ValueError, IndexError):
-                messages_to_delete.append(field_index_message)
 
-                # If they just messed up the field creation
-                if field_index_message.content.lower() != "new":
-                    v = await ctx.send("That isn't a valid index number - please provide another.")
+            # They either gave an invalid number or want to make a new field
+            except (ValueError, IndexError):
+
+                # They want to create a new field
+                if field_index_message.content.lower() == "new" and len(template.fields) < guild_settings['max_template_field_count']:
+                    field = await self.create_new_field(ctx, template, len(template.all_fields), True, False, True)
+                    if field is None:
+                        await ctx.channel.purge(check=lambda m: m.id in [i.id for i in messages_to_delete], bulk=ctx.channel.permissions_for(ctx.guild.me).manage_messages)
+                        return None
+                    async with self.bot.database() as db:
+                        await db(
+                            """INSERT INTO field (field_id, name, index, prompt, timeout, field_type, optional, template_id)
+                            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)""",
+                            field.field_id, field.name, field.index, field.prompt, field.timeout, field.field_type.name, field.optional, field.template_id
+                        )
+                    return True
+
+                # They want a new field but they're at the max
+                elif field_index_message.content.lower() == "new":
+                    v = await ctx.send("You're already at the maximum amount of fields for this template - please provide a field index to edit.")
                     messages_to_delete.append(v)
                     continue
 
-                # They want to create a new field
-                field = await self.create_new_field(ctx, template, len(template.all_fields), True, False, True)
-                if field is None:
-                    await ctx.channel.purge(check=lambda m: m.id in [i.id for i in messages_to_delete], bulk=ctx.channel.permissions_for(ctx.guild.me).manage_messages)
-                    return None
-                async with self.bot.database() as db:
-                    await db(
-                        """INSERT INTO field (field_id, name, index, prompt, timeout, field_type, optional, template_id)
-                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)""",
-                        field.field_id, field.name, field.index, field.prompt, field.timeout, field.field_type.name, field.optional, field.template_id
-                    )
-                return True
+                # If they just messed up the field creation
+                else:
+                    v = await ctx.send("That isn't a valid index number - please provide another.")
+                    messages_to_delete.append(v)
+                    continue
 
         # Ask what part of it they want to edit
         attribute_message: discord.Message = await ctx.send(f"Alright, editing the field **{field_to_edit.name}**. What part do you want to edit? Its name (1\N{COMBINING ENCLOSING KEYCAP}), prompt (2\N{COMBINING ENCLOSING KEYCAP}), whether or not it's optional (3\N{COMBINING ENCLOSING KEYCAP}), or delete it entirely (4\N{COMBINING ENCLOSING KEYCAP})?", allowed_mentions=discord.AllowedMentions(users=False, roles=False, everyone=False))
@@ -309,8 +322,9 @@ class ProfileTemplates(utils.Cog):
         # See if they have too many templates already
         async with self.bot.database() as db:
             template_list = await db("SELECT template_id FROM template WHERE guild_id=$1", ctx.guild.id)
-        if len(template_list) >= self.MAXIMUM_ALLOWED_TEMPLATES:
-            return await ctx.send(f"You already have {self.MAXIMUM_ALLOWED_TEMPLATES} templates set for this server, which is the maximum amount allowed.")
+            guild_settings = await db("SELECT * FROM guild_settings WHERE guild_id=$1 OR guild_id=0 ORDER BY guild_id DESC", ctx.guild.id)
+        if len(template_list) >= guild_settings[0]['max_template_count']:
+            return await ctx.send(f"You already have {guild_settings[0]['max_template_count']} templates set for this server, which is the maximum number allowed.")
 
         # And now we start creating the template itself
         async with self.template_creation_locks[ctx.guild.id]:
@@ -448,7 +462,7 @@ class ProfileTemplates(utils.Cog):
                     image_set = isinstance(field.field_type, utils.ImageField) or image_set
                 template.all_fields[field.field_id] = field
                 index += 1
-                if index == self.MAXIMUM_ALLOWED_FIELDS:
+                if index >= guild_settings[0]['max_template_field_count']:
                     break  # Set max field amount
 
         # Save it all to database

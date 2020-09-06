@@ -1,6 +1,8 @@
 CREATE TABLE guild_settings(
     guild_id BIGINT PRIMARY KEY,
-    prefix VARCHAR(30)
+    prefix VARCHAR(30),
+    max_template_count SMALLINT DEFAULT 3,
+    max_template_field_count SMALLINT DEFAULT 10
 );
 
 
@@ -35,6 +37,7 @@ CREATE TABLE template(
     verification_channel_id BIGINT,
     archive_channel_id BIGINT,
     role_id BIGINT,
+    max_profile_count SMALLINT DEFAULT 5,
     UNIQUE (guild_id, name)
 );
 -- A table to describe a profile in its entirety

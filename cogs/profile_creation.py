@@ -22,8 +22,6 @@ class ProfileCreation(utils.Cog):
         re.IGNORECASE
     )
 
-    MAX_PROFILES_PER_TEMPLATE = 1
-
     def __init__(self, bot:utils.Bot):
         super().__init__(bot)
         self.set_profile_locks: typing.Dict[int, asyncio.Lock] = collections.defaultdict(asyncio.Lock)
@@ -132,7 +130,7 @@ class ProfileCreation(utils.Cog):
         async with self.bot.database() as db:
             await template.fetch_fields(db)
             user_profiles: typing.List[utils.UserProfile] = await template.fetch_all_profiles_for_user(db, target_user.id)
-        if len(user_profiles) >= self.MAX_PROFILES_PER_TEMPLATE:
+        if len(user_profiles) >= template.max_profile_count:
             if target_user == ctx.author:
                 await ctx.send(f"You're already at the maximum number of profiles set for **{template.name}**.")
             else:

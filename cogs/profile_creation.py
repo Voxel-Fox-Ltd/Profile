@@ -299,10 +299,11 @@ class ProfileCreation(utils.Cog):
                 user_profiles: typing.List[utils.UserProfile] = await template.fetch_all_profiles_for_user(db, target_user.id, fetch_filled_fields=False)
             except ValueError:
                 user_profiles: typing.List[utils.UserProfile] = await template.fetch_all_profiles_for_user(db, target_user.id)
+                profile_names_string = [f'"{o}"' for o in [i.name.replace('*', '\\*').replace('`', '\\`').replace('_', '\\_') for i in user_profiles]]
                 if target_user == ctx.author:
-                    await ctx.send(f"You have multiple profiles set for the template **{template.name}**.")
+                    await ctx.send(f"You have multiple profiles set for the template **{template.name}** - {', '.join(profile_names_string)}.")
                 else:
-                    await ctx.send(f"{target_user.mention} has multiple profiles set for the template **{template.name}**.")
+                    await ctx.send(f"{target_user.mention} has multiple profiles set for the template **{template.name}** - {', '.join(profile_names_string)}.")
                 return
 
         # Check if they already have a profile set
@@ -434,10 +435,11 @@ class ProfileCreation(utils.Cog):
                 user_profile = await template.fetch_profile_for_user(db, (user or ctx.author).id, profile_name, fetch_filled_fields=False)
             except ValueError:
                 user_profiles: typing.List[utils.UserProfile] = await template.fetch_all_profiles_for_user(db, (user or ctx.author).id)
+                profile_names_string = [f'"{o}"' for o in [i.name.replace('*', '\\*').replace('`', '\\`').replace('_', '\\_') for i in user_profiles]]
                 if user:
-                    await ctx.send(f"{user.mention} has multiple profiles set for the template **{template.name}**.")
+                    await ctx.send(f"{user.mention} has multiple profiles set for the template **{template.name}** - {', '.join(profile_names_string)}.")
                 else:
-                    await ctx.send(f"You have multiple profiles set for the template **{template.name}**.")
+                    await ctx.send(f"You have multiple profiles set for the template **{template.name}** - {', '.join(profile_names_string)}.")
                 return
         if user_profile is None:
             if profile_name:
@@ -473,10 +475,11 @@ class ProfileCreation(utils.Cog):
                 user_profile: utils.UserProfile = await template.fetch_profile_for_user(db, (user or ctx.author).id, profile_name)
             except ValueError:
                 user_profiles: typing.List[utils.UserProfile] = await template.fetch_all_profiles_for_user(db, (user or ctx.author).id)
+                profile_names_string = [f'"{o}"' for o in [i.name.replace('*', '\\*').replace('`', '\\`').replace('_', '\\_') for i in user_profiles]]
                 if user:
-                    await ctx.send(f"{user.mention} has multiple profiles set for the template **{template.name}**.")
+                    await ctx.send(f"{user.mention} has multiple profiles set for the template **{template.name}** - {', '.join(profile_names_string)}.")
                 else:
-                    await ctx.send(f"You have multiple profiles set for the template **{template.name}**.")
+                    await ctx.send(f"You have multiple profiles set for the template **{template.name}** - {', '.join(profile_names_string)}.")
                 return
         if user_profile is None:
             if profile_name:

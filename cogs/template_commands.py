@@ -72,11 +72,12 @@ class ProfileTemplates(utils.Cog):
             # Get the template fields
             async with self.bot.database() as db:
                 await template.fetch_fields(db)
-            guild_settings = await db("SELECT * FROM guild_settings WHERE guild_id=$1 OR guild_id=0 ORDER BY guild_id DESC", ctx.guild.id)
+                guild_settings = await db("SELECT * FROM guild_settings WHERE guild_id=$1 OR guild_id=0 ORDER BY guild_id DESC", ctx.guild.id)
 
             edit_message = await ctx.send("Loading...")
             messages_to_delete = []
             should_edit = True
+            should_add_reactions = True
             while True:
 
                 # Ask what they want to edit
@@ -87,9 +88,13 @@ class ProfileTemplates(utils.Cog):
                         allowed_mentions=discord.AllowedMentions(roles=False),
                     )
                     should_edit = False
+
+                # Add reactions if there aren't any
                 valid_emoji = ["1\N{COMBINING ENCLOSING KEYCAP}", "2\N{COMBINING ENCLOSING KEYCAP}", "3\N{COMBINING ENCLOSING KEYCAP}", "4\N{COMBINING ENCLOSING KEYCAP}", self.TICK_EMOJI]
-                for e in valid_emoji:
-                    await edit_message.add_reaction(e)
+                if should_add_reactions:
+                    for e in valid_emoji:
+                        await edit_message.add_reaction(e)
+                    should_add_reactions = False
 
                 # Wait for a response
                 try:
@@ -108,6 +113,7 @@ class ProfileTemplates(utils.Cog):
                     }[str(reaction)]
                 except TypeError:
                     break
+                await edit_message.remove_reaction(reaction, ctx.author)
 
                 # See if they want to edit a field
                 if attr is None:
@@ -149,7 +155,6 @@ class ProfileTemplates(utils.Cog):
                 async with self.bot.database() as db:
                     await db("UPDATE template SET {0}=$1 WHERE template_id=$2".format(attr), converted, template.template_id)
                 should_edit = True
-                await edit_message.remove_reaction(reaction, ctx.author)
 
         # Tell them it's done
         await ctx.send("Done editing template.")
@@ -158,7 +163,9 @@ class ProfileTemplates(utils.Cog):
         """Talk the user through editing a field of a template"""
 
         # Ask which index they want to edit
-        if len(template.fields) >= guild_settings['max_template_field_count']:
+        if len(template.fields) == 0:
+            ask_field_edit_message: discord.Message = await ctx.send("Now talking you through creating a new field.")
+        elif len(template.fields) >= guild_settings['max_template_field_count']:
             ask_field_edit_message: discord.Message = await ctx.send("What is the index of the field you want to edit?")
         else:
             ask_field_edit_message: discord.Message = await ctx.send("What is the index of the field you want to edit? If you want to add a *new* field, type **new**.")
@@ -168,25 +175,36 @@ class ProfileTemplates(utils.Cog):
         while True:
 
             # Wait for them to say which field they want to edit
-            try:
-                field_index_message: discord.Message = await self.bot.wait_for("message", check=lambda m: m.author.id == ctx.author.id and m.channel.id == ctx.channel.id, timeout=120)
-                messages_to_delete.append(field_index_message)
-            except asyncio.TimeoutError:
-                await ctx.send("Timed out waiting for field index.")
-                return None
+            if len(template.fields) > 0:
+                try:
+                    field_index_message: discord.Message = await self.bot.wait_for("message", check=lambda m: m.author.id == ctx.author.id and m.channel.id == ctx.channel.id, timeout=120)
+                    messages_to_delete.append(field_index_message)
+                except asyncio.TimeoutError:
+                    await ctx.send("Timed out waiting for field index.")
+                    return None
 
-            # Grab the field they wan tto edit
+            # Grab the field they want to edit
             try:
-                field_index = int(field_index_message.content.lstrip('#'))
-                field_to_edit = [i for i in template.fields.values() if i.index == field_index and i.deleted is False][0]
+                if len(template.fields) == 0:
+                    raise ValueError()
+                field_index: int = int(field_index_message.content.lstrip('#'))
+                field_to_edit: utils.Field = [i for i in template.fields.values() if i.index == field_index and i.deleted is False][0]
                 break
 
             # They either gave an invalid number or want to make a new field
             except (ValueError, IndexError):
 
                 # They want to create a new field
-                if field_index_message.content.lower() == "new" and len(template.fields) < guild_settings['max_template_field_count']:
-                    field = await self.create_new_field(ctx, template, len(template.all_fields), True, False, True)
+                if len(template.fields) == 0 or (field_index_message.content.lower() == "new" and len(template.fields) < guild_settings['max_template_field_count']):
+                    image_field_exists: bool = any([i for i in template.fields.values() if isinstance(i.field_type, utils.ImageField)])
+                    field: utils.Field = await self.create_new_field(
+                        ctx=ctx,
+                        template=template,
+                        index=len(template.all_fields),
+                        image_set=image_field_exists,
+                        prompt_for_creation=False,
+                        delete_messages=True
+                    )
                     if field is None:
                         await ctx.channel.purge(check=lambda m: m.id in [i.id for i in messages_to_delete], bulk=ctx.channel.permissions_for(ctx.guild.me).manage_messages)
                         return None
@@ -310,7 +328,7 @@ class ProfileTemplates(utils.Cog):
 
     @commands.command()
     @commands.has_permissions(manage_roles=True)
-    @commands.bot_has_permissions(send_messages=True, external_emojis=True, add_reactions=True, embed_links=True)
+    @commands.bot_has_permissions(send_messages=True, manage_messages=True, external_emojis=True, add_reactions=True, embed_links=True)
     @commands.guild_only()
     async def createtemplate(self, ctx:utils.Context):
         """Creates a new template for your guild"""
@@ -367,124 +385,33 @@ class ProfileTemplates(utils.Cog):
                     return
                 break
 
-            # Get colour
-            colour = 0x000000  # TODO
-
-            # Get verification channel
-            await ctx.send("Sometimes you want to be able to make sure that your users are putting in relevant data before allowing their profiles to be seen on your server - this process is called verification. What channel would you like the the verification process to happen in? If you want profiles to be verified automatically (ie not verified by a mod team), just say `continue`.")
-            verification_channel_id = None
-            try:
-                verification_message = await self.bot.wait_for('message', check=lambda m: m.author == ctx.author and m.channel == ctx.channel, timeout=120)
-            except asyncio.TimeoutError:
-                try:
-                    return await ctx.send(f"{ctx.author.mention}, because of your 2 minutes of inactivity, profiles have been set to automatic approval.")
-                except (discord.Forbidden, discord.NotFound):
-                    return
-            else:
-                try:
-                    verification_channel = await commands.TextChannelConverter().convert(ctx, verification_message.content)
-                    proper_permissions = discord.Permissions(read_messages=True, external_emojis=True, send_messages=True, add_reactions=True, embed_links=True)
-                    if verification_channel.permissions_for(ctx.guild.me).is_superset(proper_permissions):
-                        verification_channel_id = verification_channel.id
-                    else:
-                        return await ctx.send("I don't have all the permissions I need to be able to send messages to that channel. I need `read messages`, `send messages`, `add external emojis`, `add reactions`, and `embed links`. Please update the channel permissions, and run this command again.")
-                except commands.BadArgument:
-                    if verification_message.content.lower() == "continue":
-                        pass
-                    else:
-                        return await ctx.send(f"I couldn't quite work out what you were trying to say there - please mention the channel as a ping, eg {ctx.channel.mention}. Please re-run the command to continue.")
-
-            # Get archive channel
-            await ctx.send("Some servers want approved profiles to be sent automatically to a given channel - this is called archiving. What channel would you like verified profiles to be archived in? If you don't want to set up an archive channel, just say `continue`.")
-            archive_channel_id = None
-            try:
-                archive_message = await self.bot.wait_for('message', check=lambda m: m.author == ctx.author and m.channel == ctx.channel, timeout=120)
-            except asyncio.TimeoutError:
-                try:
-                    await ctx.send(f"{ctx.author.mention}, because of your 2 minutes of inactivity, profiles have been set to automatic approval.")
-                except (discord.Forbidden, discord.NotFound):
-                    return
-            else:
-                try:
-                    archive_channel = await commands.TextChannelConverter().convert(ctx, archive_message.content)
-                    proper_permissions = discord.Permissions()
-                    proper_permissions.update(read_messages=True, send_messages=True, embed_links=True)
-                    if archive_channel.permissions_for(ctx.guild.me).is_superset(proper_permissions):
-                        archive_channel_id = archive_channel.id
-                    else:
-                        return await ctx.send("I don't have all the permissions I need to be able to send messages to that channel. I need `read messages`, `send messages`, `embed links`. Please update the channel permissions, and run this command again.")
-                except commands.BadArgument:
-                    if archive_message.content.lower() == "continue":
-                        pass
-                    else:
-                        return await ctx.send(f"I couldn't quite work out what you were trying to say there - please mention the channel as a ping, eg {ctx.channel.mention}. Please re-run the command to continue.")
-
-            # Get filled profile role
-            await ctx.send("Some servers want users with approved profiles to be given a role automatically - if you want users to be assigned a role, provide one here. If not, send `continue`.")
-            profile_role_id = None
-            try:
-                role_message = await self.bot.wait_for('message', check=lambda m: m.author == ctx.author and m.channel == ctx.channel, timeout=120)
-            except asyncio.TimeoutError:
-                try:
-                    await ctx.send(f"{ctx.author.mention}, because of your 2 minutes of inactivity, profiles have been set to have no assigned role.")
-                except (discord.Forbidden, discord.NotFound):
-                    return
-            else:
-                try:
-                    profile_role = await commands.RoleConverter().convert(ctx, role_message.content)
-                    profile_role_id = profile_role.id
-                except commands.BadArgument:
-                    if role_message.content.lower() == "continue":
-                        pass
-                    else:
-                        return await ctx.send("I couldn't quite work out what you were trying to say there - please either ping the role you want, give its ID, or give its name (case sensitive). Please re-run the command to continue.")
-
             # Get an ID for the profile
             template = utils.Template(
                 template_id=uuid.uuid4(),
-                colour=colour,
+                colour=0x0,
                 guild_id=ctx.guild.id,
-                verification_channel_id=verification_channel_id,
+                verification_channel_id=None,
                 name=template_name,
-                archive_channel_id=archive_channel_id,
-                role_id=profile_role_id,
+                archive_channel_id=None,
+                role_id=None,
+                max_profile_count=5,
             )
-
-            # Now we start the field loop
-            index = 0
-            field = True
-            image_set = False
-            while field:
-                field = await self.create_new_field(ctx, template, index, image_set)
-                if field is None:
-                    break
-                if field:
-                    image_set = isinstance(field.field_type, utils.ImageField) or image_set
-                template.all_fields[field.field_id] = field
-                index += 1
-                if index >= guild_settings[0]['max_template_field_count']:
-                    break  # Set max field amount
 
         # Save it all to database
         async with self.bot.database() as db:
             await db(
                 """INSERT INTO template (template_id, name, colour, guild_id, verification_channel_id, archive_channel_id)
                 VALUES ($1, $2, $3, $4, $5, $6)""",
-                template.template_id, template.name, template.colour, template.guild_id, template.verification_channel_id, archive_channel_id
+                template.template_id, template.name, template.colour, template.guild_id, template.verification_channel_id, template.archive_channel_id
             )
-            for field in template.all_fields.values():
-                await db(
-                    """INSERT INTO field (field_id, name, index, prompt, timeout, field_type, optional, template_id)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)""",
-                    field.field_id, field.name, field.index, field.prompt, field.timeout, field.field_type.name, field.optional, field.template_id
-                )
 
         # Output to user
         self.logger.info(f"New template '{template.name}' created on guild {ctx.guild.id}")
         try:
             await ctx.send(f"Your template has been created with {len(template.fields)} fields. Users can now run `{ctx.prefix}set{template.name.lower()}` to set a profile, or `{ctx.prefix}get{template.name.lower()} @User` to get the profile of another user.")
         except (discord.Forbidden, discord.NotFound):
-            return
+            pass
+        await ctx.invoke(self.bot.get_command("edittemplate"), template)
 
     async def create_new_field(self, ctx:utils.Context, template:utils.Template, index:int, image_set:bool=False, prompt_for_creation:bool=True, delete_messages:bool=False) -> typing.Optional[utils.Field]:
         """Talk a user through creating a new field for their template"""

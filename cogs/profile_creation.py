@@ -164,12 +164,23 @@ class ProfileCreation(utils.Cog):
                     except discord.Forbidden:
                         return
                 try:
+
+                    # Get the name they gave
                     name_content = utils.TextField.get_from_message(user_message)
+
+                    # They've misunderstood
+                    if f"get{template.name.lower()} " in name_content:
+                        raise utils.errors.FieldCheckFailure(f"Please provide the name for your profile _without_ the command call, eg if you wanted to run `get{template.name.lower()} test`, just say \"test\".")
+
+                    # See if they're already using the name
                     if name_content.lower() in [i.name.lower() for i in user_profiles]:
                         raise utils.errors.FieldCheckFailure("You're already using that name for this template. Please provide an alternative.")
+
+                    # See if the characters used are invalid
                     if any([i for i in name_content if i not in string.ascii_letters + string.digits + ' ']):
                         raise utils.errors.FieldCheckFailure("You can only use standard lettering and digits in your profile name. Please provide an alternative.")
                     break
+
                 except utils.errors.FieldCheckFailure as e:
                     await ctx.author.send(e.message)
 

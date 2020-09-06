@@ -205,8 +205,8 @@ class ProfileTemplates(utils.Cog):
                         prompt_for_creation=False,
                         delete_messages=True
                     )
+                    await ctx.channel.purge(check=lambda m: m.id in [i.id for i in messages_to_delete], bulk=ctx.channel.permissions_for(ctx.guild.me).manage_messages)
                     if field is None:
-                        await ctx.channel.purge(check=lambda m: m.id in [i.id for i in messages_to_delete], bulk=ctx.channel.permissions_for(ctx.guild.me).manage_messages)
                         return None
                     async with self.bot.database() as db:
                         await db(
@@ -330,7 +330,7 @@ class ProfileTemplates(utils.Cog):
     @commands.has_permissions(manage_roles=True)
     @commands.bot_has_permissions(send_messages=True, manage_messages=True, external_emojis=True, add_reactions=True, embed_links=True)
     @commands.guild_only()
-    async def createtemplate(self, ctx:utils.Context):
+    async def createtemplate(self, ctx:utils.Context, template_name:str=None):
         """Creates a new template for your guild"""
 
         # Only allow them to make one template at once
@@ -348,24 +348,26 @@ class ProfileTemplates(utils.Cog):
         async with self.template_creation_locks[ctx.guild.id]:
 
             # Send the flavour text behind getting a template name
-            await ctx.send(f"What name do you want to give this template? This will be used for the set and get commands; eg if the name of your template is `test`, the commands generated will be `{ctx.prefix}settest` to set a profile, `{ctx.prefix}gettest` to get a profile, and `{ctx.prefix}deletetest` to delete a profile. A profile name is case insensitive when used in commands.")
+            if template_name is None:
+                await ctx.send(f"What name do you want to give this template? This will be used for the set and get commands; eg if the name of your template is `test`, the commands generated will be `{ctx.prefix}settest` to set a profile, `{ctx.prefix}gettest` to get a profile, and `{ctx.prefix}deletetest` to delete a profile. A profile name is case insensitive when used in commands.")
 
             # Get name from the messages they send
             while True:
 
                 # Get message
-                try:
-                    name_message = await self.bot.wait_for('message', check=lambda m: m.author == ctx.author and m.channel == ctx.channel, timeout=120)
-
-                # Catch timeout
-                except asyncio.TimeoutError:
+                if template_name is None:
                     try:
-                        return await ctx.send(f"{ctx.author.mention}, your template creation has timed out after 2 minutes of inactivity.")
-                    except discord.Forbidden:
-                        return
+                        name_message = await self.bot.wait_for('message', check=lambda m: m.author == ctx.author and m.channel == ctx.channel, timeout=120)
+
+                    # Catch timeout
+                    except asyncio.TimeoutError:
+                        try:
+                            return await ctx.send(f"{ctx.author.mention}, your template creation has timed out after 2 minutes of inactivity.")
+                        except discord.Forbidden:
+                            return
+                    template_name = name_message.content
 
                 # Check name for characters
-                template_name = name_message.content
                 if [i for i in template_name if i not in string.ascii_letters + string.digits]:
                     await ctx.send("You can only use normal lettering and digits in your command name. Please run this command again to set a new one.")
                     return

@@ -157,7 +157,8 @@ class Template(object):
         embed = Embed(use_random_colour=True, title=self.name)
         embed.description = '\n'.join([
             f"Template ID: `{self.template_id}`",
-            f"Guild ID: {self.guild_id}"
+            f"Guild ID: {self.guild_id}",
+            f"Maximum allowed profiles: {self.max_profile_count}",
             f"Verification channel: {'none' if self.verification_channel_id is None else '<#' + str(self.verification_channel_id) + '> (`' + str(self.verification_channel_id) + '`)'}",
             f"Archive channel: {'none' if self.archive_channel_id is None else '<#' + str(self.archive_channel_id) + '> (`' + str(self.archive_channel_id) + '`)'}",
             f"Given role: {'none' if self.role_id is None else '<@&' + str(self.role_id) + '> (`' + str(self.role_id) + '`)'}",

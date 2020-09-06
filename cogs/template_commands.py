@@ -56,7 +56,7 @@ class ProfileTemplates(utils.Cog):
         return await ctx.send(embed=template.build_embed(brief=brief))
 
     @commands.command(cls=utils.Command)
-    @commands.has_permissions(manage_roles=True)
+    @commands.has_guild_permissions(manage_roles=True)
     @commands.bot_has_permissions(send_messages=True, external_emojis=True, add_reactions=True, manage_messages=True)
     @commands.guild_only()
     async def edittemplate(self, ctx:utils.Context, template:utils.Template):
@@ -82,15 +82,22 @@ class ProfileTemplates(utils.Cog):
 
                 # Ask what they want to edit
                 if should_edit:
+                    if ctx.original_author_id in self.bot.owner_ids:
+                        content = "What do you want to edit - verification channel (1\u20e3), archive channel (2\u20e3), given role (3\u20e3), fields (4\u20e3), or max profile count (5\u20e3)?"
+                    else:
+                        content = "What do you want to edit - verification channel (1\u20e3), archive channel (2\u20e3), given role (3\u20e3), or fields (4\u20e3)?"
                     await edit_message.edit(
-                        content="What do you want to edit - verification channel (1\u20e3), archive channel (2\u20e3), given role (3\u20e3), or fields (4\u20e3)?",
+                        content=content,
                         embed=template.build_embed(brief=True),
                         allowed_mentions=discord.AllowedMentions(roles=False),
                     )
                     should_edit = False
 
                 # Add reactions if there aren't any
-                valid_emoji = ["1\N{COMBINING ENCLOSING KEYCAP}", "2\N{COMBINING ENCLOSING KEYCAP}", "3\N{COMBINING ENCLOSING KEYCAP}", "4\N{COMBINING ENCLOSING KEYCAP}", self.TICK_EMOJI]
+                valid_emoji = ["1\N{COMBINING ENCLOSING KEYCAP}", "2\N{COMBINING ENCLOSING KEYCAP}", "3\N{COMBINING ENCLOSING KEYCAP}", "4\N{COMBINING ENCLOSING KEYCAP}"]
+                if ctx.original_author_id in self.bot.owner_ids:
+                    valid_emoji.append("5\N{COMBINING ENCLOSING KEYCAP}")
+                valid_emoji.append(self.TICK_EMOJI)
                 if should_add_reactions:
                     for e in valid_emoji:
                         await edit_message.add_reaction(e)
@@ -104,13 +111,15 @@ class ProfileTemplates(utils.Cog):
 
                 # See what they reacted with
                 try:
-                    attr, converter = {
+                    available_reactions = {
                         "1\N{COMBINING ENCLOSING KEYCAP}": ('verification_channel_id', commands.TextChannelConverter()),
                         "2\N{COMBINING ENCLOSING KEYCAP}": ('archive_channel_id', commands.TextChannelConverter()),
                         "3\N{COMBINING ENCLOSING KEYCAP}": ('role_id', commands.RoleConverter()),
                         "4\N{COMBINING ENCLOSING KEYCAP}": (None, self.edit_field(ctx, template, guild_settings[0])),
+                        "5\N{COMBINING ENCLOSING KEYCAP}": ('max_profile_count', int),
                         self.TICK_EMOJI: None,
-                    }[str(reaction)]
+                    }
+                    attr, converter = available_reactions[str(reaction)]
                 except TypeError:
                     break
                 await edit_message.remove_reaction(reaction, ctx.author)
@@ -127,7 +136,10 @@ class ProfileTemplates(utils.Cog):
                     continue
 
                 # Ask what they want to set things to
-                v = await ctx.send("What do you want to set that to? You can give a name, a ping, or an ID, or say `continue` to set the value to null. " + ("Note that any current pending profiles will _not_ be able to be approved after moving the channel" if attr == 'verification_channel_id' else ''))
+                if isinstance(converter, commands.Converter):
+                    v = await ctx.send("What do you want to set that to? You can give a name, a ping, or an ID, or say `continue` to set the value to null. " + ("Note that any current pending profiles will _not_ be able to be approved after moving the channel" if attr == 'verification_channel_id' else ''))
+                else:
+                    v = await ctx.send("What do you want to set that to?")
                 messages_to_delete.append(v)
                 try:
                     value_message = await self.bot.wait_for("message", check=lambda m: m.author.id == ctx.author.id and m.channel.id == ctx.channel.id, timeout=120)
@@ -145,6 +157,8 @@ class ProfileTemplates(utils.Cog):
                         await ctx.channel.purge(check=lambda m: m.id in [i.id for i in messages_to_delete], bulk=ctx.channel.permissions_for(ctx.guild.me).manage_messages)
                         messages_to_delete.clear()
                         continue
+                except AttributeError:
+                    converted = converter(value_message.content)
 
                 # Delete the messages we don't need any more
                 await ctx.channel.purge(check=lambda m: m.id in [i.id for i in messages_to_delete], bulk=ctx.channel.permissions_for(ctx.guild.me).manage_messages)
@@ -244,13 +258,14 @@ class ProfileTemplates(utils.Cog):
 
         # See what they reacted with
         try:
-            attr, converter = {
+            available_reactions = {
                 "1\N{COMBINING ENCLOSING KEYCAP}": ('name', str),
                 "2\N{COMBINING ENCLOSING KEYCAP}": ('prompt', str),
                 "3\N{COMBINING ENCLOSING KEYCAP}": ('optional', str),
                 "4\N{COMBINING ENCLOSING KEYCAP}": (None, str),
                 self.CROSS_EMOJI: None,
-            }[str(reaction)]
+            }
+            attr, converter = available_reactions[str(reaction)]
         except TypeError:
             await ctx.channel.purge(check=lambda m: m.id in [i.id for i in messages_to_delete], bulk=ctx.channel.permissions_for(ctx.guild.me).manage_messages)
             return False
@@ -267,10 +282,14 @@ class ProfileTemplates(utils.Cog):
                 try:
                     field_value_message = await self.bot.wait_for("message", check=lambda m: m.author.id == ctx.author.id and m.channel.id == ctx.channel.id, timeout=120)
                     messages_to_delete.append(field_value_message)
-                    field_value = field_value_message.content
+                    field_value = converter(field_value_message.content)
                 except asyncio.TimeoutError:
                     await ctx.send("Timed out waiting for field value.")
                     return None
+                except ValueError:
+                    v = await ctx.send("I couldn't convert your provided value properly. Please provide another.")
+                    messages_to_delete.append(v)
+                    continue
 
                 # Fix up the inputs
                 if attr == 'name' and not 256 >= len(field_value) > 0:
@@ -293,7 +312,7 @@ class ProfileTemplates(utils.Cog):
         return True
 
     @commands.command(cls=utils.Command)
-    @commands.has_permissions(manage_roles=True)
+    @commands.has_guild_permissions(manage_roles=True)
     @commands.bot_has_permissions(send_messages=True, external_emojis=True, add_reactions=True)
     @commands.guild_only()
     async def deletetemplate(self, ctx:utils.Context, template:utils.Template):
@@ -327,7 +346,7 @@ class ProfileTemplates(utils.Cog):
         await ctx.send(f"All relevant data for template **{template.name}** (`{template.template_id}`) has been deleted.")
 
     @commands.command()
-    @commands.has_permissions(manage_roles=True)
+    @commands.has_guild_permissions(manage_roles=True)
     @commands.bot_has_permissions(send_messages=True, manage_messages=True, external_emojis=True, add_reactions=True, embed_links=True)
     @commands.guild_only()
     async def createtemplate(self, ctx:utils.Context, template_name:str=None):

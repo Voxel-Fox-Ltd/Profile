@@ -457,8 +457,7 @@ class ProfileCreation(utils.Cog):
         # Database it babey
         user = user or ctx.author
         async with self.bot.database() as db:
-            await db("DELETE FROM filled_field WHERE user_id=$1 AND field_id in (SELECT field_id FROM field WHERE template_id=$2)", user.id, template.template_id)
-            await db("DELETE FROM created_profile WHERE user_id=$1 AND template_id=$2", user.id, template.template_id)
+            await db("DELETE FROM created_profile WHERE user_id=$1 AND template_id=$2 AND name=$3", user.id, template.template_id, user_profile.name)
         await ctx.send("This profile has been deleted.")
 
     @commands.command(cls=utils.Command, hidden=True)

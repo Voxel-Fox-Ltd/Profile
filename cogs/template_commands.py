@@ -22,7 +22,7 @@ class ProfileTemplates(utils.Cog):
     def __init__(self, bot:utils.Bot):
         super().__init__(bot)
         self.template_creation_locks: typing.Dict[int, asyncio.Lock] = collections.defaultdict(asyncio.Lock)
-        self.template_editing_locks: typing.Dict[typing.Tuple[int, str], asyncio.Lock] = collections.defaultdict(asyncio.Lock)
+        self.template_editing_locks: typing.Dict[int, asyncio.Lock] = collections.defaultdict(asyncio.Lock)
 
     @commands.command(cls=utils.Command)
     @commands.bot_has_permissions(send_messages=True)
@@ -63,11 +63,11 @@ class ProfileTemplates(utils.Cog):
         """Edits a template for your guild"""
 
         # See if they're already editing that template
-        if self.template_editing_locks[(ctx.guild.id, template.name)].locked():
-            return await ctx.send("You're already editing this template.")
+        if self.template_editing_locks[ctx.guild.id].locked():
+            return await ctx.send("You're already editing a template.")
 
         # Start the template editing
-        async with self.template_editing_locks[(ctx.guild.id, template.name)]:
+        async with self.template_editing_locks[ctx.guild.id]:
 
             # Get the template fields
             async with self.bot.database() as db:
@@ -82,10 +82,7 @@ class ProfileTemplates(utils.Cog):
 
                 # Ask what they want to edit
                 if should_edit:
-                    if ctx.original_author_id in self.bot.owner_ids:
-                        content = "What do you want to edit - verification channel (1\u20e3), archive channel (2\u20e3), given role (3\u20e3), fields (4\u20e3), or max profile count (5\u20e3)?"
-                    else:
-                        content = "What do you want to edit - verification channel (1\u20e3), archive channel (2\u20e3), given role (3\u20e3), or fields (4\u20e3)?"
+                    content = "What do you want to edit - its name (1\u20e3), verification channel (2\u20e3), archive channel (3\u20e3), given role (4\u20e3), fields (5\u20e3), or max profile count (6\u20e3)?"
                     await edit_message.edit(
                         content=content,
                         embed=template.build_embed(brief=True),
@@ -94,9 +91,10 @@ class ProfileTemplates(utils.Cog):
                     should_edit = False
 
                 # Add reactions if there aren't any
-                valid_emoji = ["1\N{COMBINING ENCLOSING KEYCAP}", "2\N{COMBINING ENCLOSING KEYCAP}", "3\N{COMBINING ENCLOSING KEYCAP}", "4\N{COMBINING ENCLOSING KEYCAP}"]
-                if ctx.original_author_id in self.bot.owner_ids:
-                    valid_emoji.append("5\N{COMBINING ENCLOSING KEYCAP}")
+                valid_emoji = [
+                    "1\N{COMBINING ENCLOSING KEYCAP}", "2\N{COMBINING ENCLOSING KEYCAP}", "3\N{COMBINING ENCLOSING KEYCAP}",
+                    "4\N{COMBINING ENCLOSING KEYCAP}", "5\N{COMBINING ENCLOSING KEYCAP}", "6\N{COMBINING ENCLOSING KEYCAP}"
+                ]
                 valid_emoji.append(self.TICK_EMOJI)
                 if should_add_reactions:
                     for e in valid_emoji:
@@ -112,11 +110,12 @@ class ProfileTemplates(utils.Cog):
                 # See what they reacted with
                 try:
                     available_reactions = {
-                        "1\N{COMBINING ENCLOSING KEYCAP}": ('verification_channel_id', commands.TextChannelConverter()),
-                        "2\N{COMBINING ENCLOSING KEYCAP}": ('archive_channel_id', commands.TextChannelConverter()),
-                        "3\N{COMBINING ENCLOSING KEYCAP}": ('role_id', commands.RoleConverter()),
-                        "4\N{COMBINING ENCLOSING KEYCAP}": (None, self.edit_field(ctx, template, guild_settings[0])),
-                        "5\N{COMBINING ENCLOSING KEYCAP}": ('max_profile_count', int),
+                        "1\N{COMBINING ENCLOSING KEYCAP}": ('name', str),
+                        "2\N{COMBINING ENCLOSING KEYCAP}": ('verification_channel_id', commands.TextChannelConverter()),
+                        "3\N{COMBINING ENCLOSING KEYCAP}": ('archive_channel_id', commands.TextChannelConverter()),
+                        "4\N{COMBINING ENCLOSING KEYCAP}": ('role_id', commands.RoleConverter()),
+                        "5\N{COMBINING ENCLOSING KEYCAP}": (None, self.edit_field(ctx, template, guild_settings[0])),
+                        "6\N{COMBINING ENCLOSING KEYCAP}": ('max_profile_count', int),
                         self.TICK_EMOJI: None,
                     }
                     attr, converter = available_reactions[str(reaction)]
@@ -163,6 +162,13 @@ class ProfileTemplates(utils.Cog):
                 # Delete the messages we don't need any more
                 await ctx.channel.purge(check=lambda m: m.id in [i.id for i in messages_to_delete], bulk=ctx.channel.permissions_for(ctx.guild.me).manage_messages)
                 messages_to_delete.clear()
+
+                # Validate if they provided a new name
+                if attr == 'name':
+                    async with self.bot.database() as db:
+                        name_in_use = await db("SELECT * FROM template WHERE guild_id=$1 AND LOWER(name)=LOWER($2)", ctx.guild.id, converted)
+                        if name_in_use:
+                            continue
 
                 # Store our new shit
                 setattr(template, attr, converted)

@@ -18,10 +18,6 @@ class UserProfile(object):
     with this
     """
 
-    COMMAND_REGEX = re.compile(r'^{{.+?}}$', re.IGNORECASE)
-    HAS_ROLE_REGEX = re.compile(r'^{{HASROLE (?:DEFAULT \"(?P<default>.+?)\")( HAS\(((?:\d{16,23}(?:, ?)?)+)\) SAYS \"(?P<text>.+?)\")+}}$', re.IGNORECASE)
-    HAS_ROLE_PARAMETER_REGEX = re.compile(r'(?:HAS\((?P<roleids>(?:\d{16,23}(?:, ?)?)+)\) SAYS \"(?P<text>.+?)\")', re.IGNORECASE)
-
     __slots__ = ("user_id", "name", "template_id", "verified", "all_filled_fields", "template")
 
     def __init__(self, user_id:int, name:str, template_id:uuid.UUID, verified:bool, template:Template=None):
@@ -56,20 +52,23 @@ class UserProfile(object):
     def filled_fields(self) -> typing.Dict[uuid.UUID, FilledField]:
         return {i: o for i, o in self.all_filled_fields.items() if o.field is not None and o.field.deleted is False and o.value is not None}
 
-    def build_embed(self, member:discord.Member=None) -> Embed:
+    def build_embed(self, member:typing.Optional[discord.Member]=None) -> Embed:
         """Converts the filled profile into an embed"""
 
         # See if they're the right person
         if member and member.id != self.user_id:
-            raise RuntimeError("You passed the wrong person into this method")
+            raise ValueError("Invalid user passed to build embed")
+        if member and not isinstance(member, discord.Member):
+            raise ValueError("Invalid member object passed to build embed")
 
         # Create the initial embed
         fields: typing.List[FilledField] = sorted(self.filled_fields.values(), key=lambda x: x.field.index)
         embed = Embed(use_random_colour=True)
-        if self.template:
-            embed.title = f"{self.template.name} | {self.name}"
-            if self.template.colour:
-                embed.colour = self.template.colour
+        if not self.template:
+            raise AttributeError("Missing template field for user profile")
+        embed.title = f"{self.template.name} | {self.name}"
+        if self.template.colour:
+            embed.colour = self.template.colour
 
         # Add the user
         embed.add_field(name="Discord User", value=f"<@{self.user_id}>")
@@ -80,27 +79,15 @@ class UserProfile(object):
             # Filter deleted or unset data
             if f.field.deleted:
                 continue
-            if f.value is None:
+            field_value = f.get_value(member)
+            if field_value is None:
                 continue
 
             # Set data
             if isinstance(f.field.field_type, ImageField) or f.field.field_type == ImageField:
-                embed.set_image(url=f.value)
+                embed.set_image(url=field_value)
             else:
-                if member:
-                    has_role_match = self.HAS_ROLE_REGEX.search(f.field.prompt)
-                    if has_role_match:
-                        text = has_role_match.group("default")
-                        for match in self.HAS_ROLE_PARAMETER_REGEX.finditer(f.field.prompt):
-                            role_ids = [int(i.strip()) for i in match.group("roleids").split(',')]
-                            if [i for i in member._roles if i in role_ids]:
-                                text = match.group("text")
-                                break
-                        embed.add_field(name=f.field.name, value=text, inline=len(text) <= 100)
-                    else:
-                        embed.add_field(name=f.field.name, value=f.value, inline=len(f.value) <= 100)
-                else:
-                    embed.add_field(name=f.field.name, value=f.value, inline=len(f.value) <= 100)
+                embed.add_field(name=f.field.name, value=field_value, inline=len(field_value) <= 100)
 
         # Return embed
         return embed

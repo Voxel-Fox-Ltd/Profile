@@ -27,6 +27,19 @@ class Template(object):
 
     TEMPLATE_ID_REGEX = re.compile(r"^(?P<uuid>.{8}-.{4}-.{4}-.{4}-.{12})$")
 
+    COMMAND_REGEX = re.compile(
+        r'^{{.+?}}$',
+        re.IGNORECASE | re.MULTILINE
+    )
+    VALID_COMMAND_REGEX = re.compile(
+        r'{{DEFAULT\s*(?<!\\)\"(?P<default>.+?)(?<!\\)\"(\s*(?P<command>(?P<commandname>HASROLE|FIELDVALUE)\((?P<commandparams>(?:\d{16,23}(?:,\s*)?)+|(?:(?<!\\)\".+(?<!\\)\"(?:,\s*)?)+)\)\s*SAYS\s*(?<!\\)\"(?P<text>.+?)(?<!\\)\"))+}}',
+        re.IGNORECASE | re.MULTILINE
+    )
+    COMMAND_PARAMETERS_REGEX = re.compile(
+        r'(?P<command>(?P<commandname>HASROLE|FIELDVALUE)\((?P<commandparams>(?:\d{16,23}(?:,\s*)?)+|(?:(?<!\\)\".+(?<!\\)\"(?:,\s*)?)+)\)\s*SAYS\s*(?<!\\)\"(?P<text>.+?)(?<!\\)\")',
+        re.IGNORECASE | re.MULTILINE
+    )
+
     __slots__ = ("template_id", "colour", "guild_id", "verification_channel_id", "name", "archive_channel_id", "role_id", "max_profile_count", "all_fields")
 
     def __init__(self, template_id:uuid.UUID, colour:int, guild_id:int, verification_channel_id:int, name:str, archive_channel_id:int, role_id:int, max_profile_count:int):

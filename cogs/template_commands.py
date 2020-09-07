@@ -521,7 +521,7 @@ class ProfileTemplates(utils.Cog):
                 v = await ctx.send("You need to actually give text for the prompt :/")
                 messages_to_delete.append(v)
         field_prompt = field_prompt_message.content
-        prompt_is_command = bool(utils.UserProfile.COMMAND_REGEX.search(field_prompt))
+        prompt_is_command = bool(utils.Template.COMMAND_REGEX.search(field_prompt))
 
         # If it's a command, then we don't need to deal with this
         if not prompt_is_command:
@@ -560,9 +560,9 @@ class ProfileTemplates(utils.Cog):
 
             # Ask for field type
             if image_set:
-                text = f"What TYPE is this field? Will you be getting numbers ({self.NUMBERS_EMOJI}), or text ({self.LETTERS_EMOJI})?"
+                text = f"What type is this field? Will you be getting numbers ({self.NUMBERS_EMOJI}), or any text ({self.LETTERS_EMOJI})?"
             else:
-                text = f"What TYPE is this field? Will you be getting numbers ({self.NUMBERS_EMOJI}), text ({self.LETTERS_EMOJI}), or an image ({self.PICTURE_EMOJI})?"
+                text = f"What type is this field? Will you be getting numbers ({self.NUMBERS_EMOJI}), any text ({self.LETTERS_EMOJI}), or an image ({self.PICTURE_EMOJI})?"
             field_type_message = await ctx.send(text)
             messages_to_delete.append(field_type_message)
 

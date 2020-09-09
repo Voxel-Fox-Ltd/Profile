@@ -50,14 +50,14 @@ class ProfileVerification(utils.Cog):
         guild: discord.Guild = self.bot.get_guild(payload.guild_id) or await self.bot.fetch_guild(payload.guild_id)
 
         # Get the member who added the reaction
-        member: discord.Member = guild.get_member(payload.user_id) or await guild.fetch_member(payload.user_id)
+        moderator: discord.Member = guild.get_member(payload.user_id) or await guild.fetch_member(payload.user_id)
 
         # Make sure they aren't a bot
-        if member.bot:
+        if moderator.bot:
             return
 
         # Check their permissions
-        if not utils.checks.member_is_moderator(self.bot, member):
+        if not utils.checks.member_is_moderator(self.bot, moderator):
             return
 
         # And FINALLY we can check their emoji
@@ -94,11 +94,11 @@ class ProfileVerification(utils.Cog):
             return
 
         # Gets a denial message from the denier
-        denial_reason = None
-        if not verify:
+        denial_reason = "No reason provided."
+        if verify is False and moderator.permissions_in(channel).send_messages:
             await channel.send("Why was that profile denied?")
             def check(m):
-                return m.author == member and m.channel == channel and len(m.content) > 0
+                return m.author.id == moderator.id and m.channel.id == channel.id and len(m.content) > 0
             try:
                 denial_message = await self.bot.wait_for('message', check=check, timeout=120)
                 denial_reason = denial_message.content

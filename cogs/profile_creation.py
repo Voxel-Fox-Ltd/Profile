@@ -150,39 +150,49 @@ class ProfileCreation(utils.Cog):
         # Drag the user into the create profile lock
         async with self.set_profile_locks[ctx.author.id]:
 
-            # Ask them for a profile name
-            await ctx.author.send(f"What name would you like to give this profile? This won't be shown, but will be used to get the profile information (eg for the name \"test\", you could run `get{template.name.lower()} test`).")
-            while True:
-                try:
-                    user_message = await self.bot.wait_for(
-                        "message", timeout=120,
-                        check=lambda m: m.author == ctx.author and isinstance(m.channel, discord.DMChannel)
-                    )
-                except asyncio.TimeoutError:
-                    try:
-                        return await ctx.author.send(f"Your input for this field has timed out. Please try running `set{template.name}` on your server again.")
-                    except discord.Forbidden:
-                        return
-                try:
-
-                    # Get the name they gave
-                    name_content = utils.TextField.get_from_message(user_message)
-
-                    # They've misunderstood
-                    if f"get{template.name.lower()} " in name_content:
-                        raise utils.errors.FieldCheckFailure(f"Please provide the name for your profile _without_ the command call, eg if you wanted to run `get{template.name.lower()} test`, just say \"test\".")
-
-                    # See if they're already using the name
+            # See if we need to ask for a name
+            if template.max_profile_count == 1:
+                suffix = None
+                while True:
+                    if suffix is None:
+                        name_content = "default"
+                    else:
+                        name_content = f"default{suffix}"
                     if name_content.lower() in [i.name.lower() for i in user_profiles]:
-                        raise utils.errors.FieldCheckFailure("You're already using that name for this template. Please provide an alternative.")
+                        suffix = (suffix or 0) + 1
+            else:
+                await ctx.author.send(f"What name would you like to give this profile? This won't be shown, but will be used to get the profile information (eg for the name \"test\", you could run `get{template.name.lower()} test`).")
+                while True:
+                    try:
+                        user_message = await self.bot.wait_for(
+                            "message", timeout=120,
+                            check=lambda m: m.author == ctx.author and isinstance(m.channel, discord.DMChannel)
+                        )
+                    except asyncio.TimeoutError:
+                        try:
+                            return await ctx.author.send(f"Your input for this field has timed out. Please try running `set{template.name}` on your server again.")
+                        except discord.Forbidden:
+                            return
+                    try:
 
-                    # See if the characters used are invalid
-                    if any([i for i in name_content if i not in string.ascii_letters + string.digits + ' ']):
-                        raise utils.errors.FieldCheckFailure("You can only use standard lettering and digits in your profile name. Please provide an alternative.")
-                    break
+                        # Get the name they gave
+                        name_content = utils.TextField.get_from_message(user_message)
 
-                except utils.errors.FieldCheckFailure as e:
-                    await ctx.author.send(e.message)
+                        # They've misunderstood
+                        if f"get{template.name.lower()} " in name_content:
+                            raise utils.errors.FieldCheckFailure(f"Please provide the name for your profile _without_ the command call, eg if you wanted to run `get{template.name.lower()} test`, just say \"test\".")
+
+                        # See if they're already using the name
+                        if name_content.lower() in [i.name.lower() for i in user_profiles]:
+                            raise utils.errors.FieldCheckFailure("You're already using that name for this template. Please provide an alternative.")
+
+                        # See if the characters used are invalid
+                        if any([i for i in name_content if i not in string.ascii_letters + string.digits + ' ']):
+                            raise utils.errors.FieldCheckFailure("You can only use standard lettering and digits in your profile name. Please provide an alternative.")
+                        break
+
+                    except utils.errors.FieldCheckFailure as e:
+                        await ctx.author.send(e.message)
 
             # Talk the user through each field
             filled_field_dict = {}

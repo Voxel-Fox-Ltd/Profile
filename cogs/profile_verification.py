@@ -86,21 +86,22 @@ class ProfileVerification(utils.Cog):
             else:
                 await db("DELETE FROM created_profile WHERE user_id=$1 AND template_id=$2 AND name=$3", profile_user_id, template_id, profile_name)
 
-        # Delete the verify message
-        await message.delete()
-
         # See if we need to say anything
         if user_profile is None:
+            await message.delete()
             return
 
         # Gets a denial message from the denier
         denial_reason = "No reason provided."
+        messages_to_delete = [message]
         if verify is False and moderator.permissions_in(channel).send_messages:
-            await channel.send("Why was that profile denied?")
+            denial_ask_message = await channel.send("Why was that profile denied?")
+            messages_to_delete.append(denial_ask_message)
             def check(m):
                 return m.author.id == moderator.id and m.channel.id == channel.id and len(m.content) > 0
             try:
                 denial_message = await self.bot.wait_for('message', check=check, timeout=120)
+                messages_to_delete.append(denial_message)
                 denial_reason = denial_message.content
             except asyncio.TimeoutError:
                 denial_reason = "No reason provided."
@@ -139,6 +140,11 @@ class ProfileVerification(utils.Cog):
             except AttributeError:
                 self.logger.info(f"Couldn't archive profile in guild {user_profile.template.guild_id} - AttributeError (probably channel deleted)")
                 pass  # The archive channel has been deleted
+
+        # Delete relevant messages
+        if messages_to_delete:
+            messages_to_delete = [i for i in messages_to_delete if channel.permissions_for(guild.me).manage_messages or i.author.id == guild.me.id]
+            await channel.purge(check=lambda m: m.id in [i.id for i in messages_to_delete], bulk=channel.permissions_for(guild.me).manage_messages)
 
 
 def setup(bot:utils.Bot):

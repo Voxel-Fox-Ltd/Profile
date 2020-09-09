@@ -92,11 +92,16 @@ class ProfileVerification(utils.Cog):
             return
     
         # Gets a denial message from the denier
+        denial_reason = None
         if not verify:
             await channel.send("Why was that profile denied?")
             def check(m):
-                return m.author == member and m.channel == channel
-            denial_message = await bot.wait_for('message', check=check, timeout = 120)
+                return m.author == member and m.channel == channel and len(m.content) > 0
+            try:
+                denial_message = await bot.wait_for('message', check=check, timeout=120)
+                denial_reason = denial_message.content
+            except asyncio.TimeoutError:
+                denial_reason = "No reason provided."
         
         # Tell the user about the decision
         profile_user: discord.User = guild.get_member(profile_user_id) or self.bot.get_user(profile_user_id) or await self.bot.fetch_user(profile_user_id)
@@ -106,10 +111,7 @@ class ProfileVerification(utils.Cog):
                 if verify:
                     await profile_user.send(f"Your profile for `{user_profile.template.name}` on `{guild.name}` has been verified.", embed=embed)
                 else:
-                    if denial_message is not None:
-                        await profile_user.send(f"Your profile for `{user_profile.template.name}` on `{guild.name}` has been denied for the reason `{denial_message}`.", embed=embed)
-                    else:
-                        await profile_user.send(f"Your profile for `{user_profile.template.name}` on `{guild.name}` has been denied.", embed=embed)
+                    await profile_user.send(f"Your profile for `{user_profile.template.name}` on `{guild.name}` has been denied with the reason `{denial_reason}`.", embed=embed)
             except discord.HTTPException:
                 self.logger.info(f"Couldn't DM user {user_profile.user_id} about their '{user_profile.template.name}' profile verification on {guild.id}")
                 pass  # Can't send the user a DM, let's just ignore it

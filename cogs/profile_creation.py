@@ -160,6 +160,8 @@ class ProfileCreation(utils.Cog):
                         name_content = f"default{suffix}"
                     if name_content.lower() in [i.name.lower() for i in user_profiles]:
                         suffix = (suffix or 0) + 1
+                    else:
+                        break
             else:
                 await ctx.author.send(f"What name would you like to give this profile? This won't be shown, but will be used to get the profile information (eg for the name \"test\", you could run `get{template.name.lower()} test`).")
                 while True:

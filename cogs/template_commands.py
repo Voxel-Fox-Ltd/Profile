@@ -72,7 +72,8 @@ class ProfileTemplates(utils.Cog):
             # Get the template fields
             async with self.bot.database() as db:
                 await template.fetch_fields(db)
-                guild_settings = await db("SELECT * FROM guild_settings WHERE guild_id=$1 OR guild_id=0 ORDER BY guild_id DESC", ctx.guild.id)
+                guild_settings_rows = await db("SELECT * FROM guild_settings WHERE guild_id=$1 OR guild_id=0 ORDER BY guild_id DESC", ctx.guild.id)
+            guild_settings = guild_settings_rows[0]
 
             edit_message = await ctx.send("Loading...")
             messages_to_delete = []
@@ -114,7 +115,7 @@ class ProfileTemplates(utils.Cog):
                         "2\N{COMBINING ENCLOSING KEYCAP}": ('verification_channel_id', commands.TextChannelConverter()),
                         "3\N{COMBINING ENCLOSING KEYCAP}": ('archive_channel_id', commands.TextChannelConverter()),
                         "4\N{COMBINING ENCLOSING KEYCAP}": ('role_id', commands.RoleConverter()),
-                        "5\N{COMBINING ENCLOSING KEYCAP}": (None, self.edit_field(ctx, template, guild_settings[0])),
+                        "5\N{COMBINING ENCLOSING KEYCAP}": (None, self.edit_field(ctx, template, guild_settings)),
                         "6\N{COMBINING ENCLOSING KEYCAP}": ('max_profile_count', int),
                         self.TICK_EMOJI: None,
                     }
@@ -157,7 +158,12 @@ class ProfileTemplates(utils.Cog):
                         messages_to_delete.clear()
                         continue
                 except AttributeError:
-                    converted = converter(value_message.content)
+                    try:
+                        converted = converter(value_message.content)
+                    except ValueError:
+                        await ctx.channel.purge(check=lambda m: m.id in [i.id for i in messages_to_delete], bulk=ctx.channel.permissions_for(ctx.guild.me).manage_messages)
+                        messages_to_delete.clear()
+                        continue
 
                 # Delete the messages we don't need any more
                 await ctx.channel.purge(check=lambda m: m.id in [i.id for i in messages_to_delete], bulk=ctx.channel.permissions_for(ctx.guild.me).manage_messages)
@@ -169,6 +175,8 @@ class ProfileTemplates(utils.Cog):
                         name_in_use = await db("SELECT * FROM template WHERE guild_id=$1 AND LOWER(name)=LOWER($2)", ctx.guild.id, converted)
                         if name_in_use:
                             continue
+                if attr == 'max_profile_count':
+                    converted = max([min([converted, guild_settings['max_profile_count']]), 1])
 
                 # Store our new shit
                 setattr(template, attr, converted)

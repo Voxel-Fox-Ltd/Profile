@@ -142,7 +142,7 @@ class ProfileVerification(utils.Cog):
                 pass  # The archive channel has been deleted
 
         # Delete relevant messages
-        messages_to_delete = [i for i in messages_to_delete if channel.permissions_for(guild.me).manage_messages or i.author.id == self.bot.author.id]
+        messages_to_delete = [i for i in messages_to_delete if channel.permissions_for(guild.me).manage_messages or i.author.id == self.bot.user.id]
         if len(messages_to_delete) == 1:
             await messages_to_delete[0].delete()
         elif len(messages_to_delete) > 1:

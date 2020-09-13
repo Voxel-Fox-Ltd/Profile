@@ -429,7 +429,7 @@ class ProfileTemplates(utils.Cog):
                 name=template_name,
                 archive_channel_id=None,
                 role_id=None,
-                max_profile_count=5,
+                max_profile_count=1,
             )
 
         # Save it all to database
@@ -529,7 +529,7 @@ class ProfileTemplates(utils.Cog):
                 v = await ctx.send("You need to actually give text for the prompt :/")
                 messages_to_delete.append(v)
         field_prompt = field_prompt_message.content
-        prompt_is_command = bool(utils.Template.COMMAND_REGEX.search(field_prompt))
+        prompt_is_command = bool(utils.CommandProcessor.COMMAND_REGEX.search(field_prompt))
 
         # If it's a command, then we don't need to deal with this
         if not prompt_is_command:

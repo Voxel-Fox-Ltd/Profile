@@ -201,7 +201,7 @@ class ProfileCreation(utils.Cog):
             for field in sorted(template.fields.values(), key=lambda x: x.index):
 
                 # See if it's a command
-                if utils.Template.COMMAND_REGEX.search(field.prompt):
+                if utils.CommandProcessor.COMMAND_REGEX.search(field.prompt):
                     filled_field_dict[field.field_id] = utils.FilledField(
                         user_id=target_user.id,
                         name=name_content,
@@ -350,7 +350,7 @@ class ProfileCreation(utils.Cog):
             for field in sorted(template.fields.values(), key=lambda x: x.index):
 
                 # See if it's a command
-                if utils.Template.COMMAND_REGEX.search(field.prompt):
+                if utils.CommandProcessor.COMMAND_REGEX.search(field.prompt):
                     filled_field = utils.FilledField(
                         user_id=target_user.id,
                         name=user_profile.name,

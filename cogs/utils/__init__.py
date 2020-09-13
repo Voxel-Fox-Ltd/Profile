@@ -16,3 +16,4 @@ from cogs.utils.profiles.field_type import FieldType, TextField, NumberField, Im
 from cogs.utils.profiles.template import Template
 from cogs.utils.profiles.user_profile import UserProfile
 from cogs.utils.profiles.filled_field import FilledField
+from cogs.utils.profiles.command_processor import CommandProcessor

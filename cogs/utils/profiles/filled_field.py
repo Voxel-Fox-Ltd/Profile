@@ -4,6 +4,7 @@ import uuid
 import discord
 
 from cogs.utils.profiles.field import Field
+from cogs.utils.profiles.command_processor import CommandProcessor
 
 
 class FilledField(object):
@@ -30,17 +31,14 @@ class FilledField(object):
     def get_value(self, member:typing.Optional[discord.Member]=None) -> str:
         """Return the value for a field"""
 
-        # Import here so we can avoid circular imports
-        from cogs.utils.profiles.template import Template
-
         # See if it's a command
-        valid_command = Template.VALID_COMMAND_REGEX.search(self.field.prompt)
+        valid_command = CommandProcessor.VALID_COMMAND_REGEX.search(self.field.prompt)
         if valid_command is None:
             return self.value
 
         # Get the command values
         default_text = valid_command.group("default")
-        command_list = Template.COMMAND_PARAMETERS_REGEX.finditer(self.field.prompt)
+        command_list = CommandProcessor.COMMAND_PARAMETERS_REGEX.finditer(self.field.prompt)
 
         # Work out how we're applying each thing
         for command in command_list:
@@ -48,13 +46,21 @@ class FilledField(object):
             command_params = command.group("commandparams")
 
             # hasrole command processing
-            if command_name.upper() == "HASROLE":
+            if command_name.upper() in ["HASROLE", "HASANYROLE"]:
                 if member is None:
                     raise ValueError("No provided member")
                 role_strings_to_check = [i.strip(' "') for i in command_params.split(',')]
                 role_ids_to_check = [int(i) for i in role_strings_to_check if i.isdigit()]
-                if any([i for i in role_ids_to_check if i in member._roles]):
-                    return command.group("text")
+
+                # hasrole check
+                if command_name.upper() == "HASROLE":
+                    if len([i for i in role_ids_to_check if i in member._roles]) == len(role_ids_to_check):
+                        return command.group("text").replace('\\n', '\n')
+
+                # hasanyrole check
+                elif command_name.upper() == "HASANYROLE":
+                    if any([i for i in role_ids_to_check if i in member._roles]):
+                        return command.group("text").replace('\\n', '\n')
 
             # fieldvalue can't apply here so we'll ignore it
             if command_name.upper() == "FIELDVALUE":

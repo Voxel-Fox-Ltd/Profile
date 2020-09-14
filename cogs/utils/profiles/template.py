@@ -187,14 +187,51 @@ class Template(object):
         # Create the initial embed
         fields: typing.List[Field] = sorted(self.fields.values(), key=lambda x: x.index)
         embed = Embed(use_random_colour=True, title=self.name)
-        embed.description = '\n'.join([
-            f"Template ID: `{self.template_id}`",
-            f"Guild ID: {self.guild_id}",
-            f"Maximum allowed profiles: {self.max_profile_count}",
-            f"Verification channel: {'none' if self.verification_channel_id is None else '<#' + str(self.verification_channel_id) + '> (`' + str(self.verification_channel_id) + '`)'}",
-            f"Archive channel: {'none' if self.archive_channel_id is None else '<#' + str(self.archive_channel_id) + '> (`' + str(self.archive_channel_id) + '`)'}",
-            f"Given role: {'none' if self.role_id is None else '<@&' + str(self.role_id) + '> (`' + str(self.role_id) + '`)'}",
-        ])
+
+        # Work out what goes in the description
+        description_lines = [f"Template ID: `{self.template_id}`", f"Guild ID: `{self.guild_id}`", f"Maximum allowed profiles: `{self.max_profile_count}`",]
+
+        # Add verification channel ID
+        if self.verification_channel_id:
+            is_command, is_valid_command = CommandProcessor.get_is_command(self.verification_channel_id)
+            if is_command:
+                if is_valid_command:
+                    description_lines.append(f"Verification channel: (COMMAND) `{self.verification_channel_id}`")
+                else:
+                    description_lines.append(f"Verification channel: (COMMAND::INVALID) `{self.verification_channel_id}`")
+            else:
+                description_lines.append(f"Verification channel: `{self.verification_channel_id}` (<#{self.verification_channel_id}>)")
+        else:
+            description_lines.append("Verification channel: N/A")
+
+        # Add archive channel ID
+        if self.archive_channel_id:
+            is_command, is_valid_command = CommandProcessor.get_is_command(self.archive_channel_id)
+            if is_command:
+                if is_valid_command:
+                    description_lines.append(f"Archive channel: (COMMAND) `{self.archive_channel_id}`")
+                else:
+                    description_lines.append(f"Archive channel: (COMMAND::INVALID) `{self.archive_channel_id}`")
+            else:
+                description_lines.append(f"Archive channel: `{self.archive_channel_id}` (<#{self.archive_channel_id}>)")
+        else:
+            description_lines.append("Archive channel: N/A")
+
+        # Add given role ID
+        if self.role_id:
+            is_command, is_valid_command = CommandProcessor.get_is_command(self.role_id)
+            if is_command:
+                if is_valid_command:
+                    description_lines.append(f"Given role: (COMMAND) `{self.role_id}`")
+                else:
+                    description_lines.append(f"Given role: (COMMAND::INVALID) `{self.role_id}`")
+            else:
+                description_lines.append(f"Given role: `{self.role_id}` (<@&{self.role_id}>)")
+        else:
+            description_lines.append("Given role: N/A")
+
+        # Add all our lines dab
+        embed.description = '\n'.join(description_lines)
 
         # Add the user
         if brief is False:
@@ -209,18 +246,23 @@ class Template(object):
         for index, f in enumerate(fields):
             if f.deleted:
                 continue
+
+            # Work out the field type
             field_type_string = str(f.field_type)
-            if CommandProcessor.COMMAND_REGEX.search(f.prompt):
-                if CommandProcessor.VALID_COMMAND_REGEX(f.prompt):
+            is_command, is_valid_command = CommandProcessor.get_is_command(f.prompt)
+            if is_command:
+                if is_valid_command:
                     field_type_string = "COMMAND"
                 else:
                     field_type_string = "COMMAND::INVALID"
+
+            # Wew let's add this jazz
             if brief:
                 text.append(f"#{f.index} **{f.name}** ({field_type_string})")
             else:
                 embed.add_field(
                     name=f.name,
-                    value=f'Field ID `{f.field_id}` at position {index} with index {f.index}, type `{field_type_string}`.\n"{f.prompt}"',
+                    value=f'Field ID `{f.field_id}` at position {index} with index {f.index}, type `{field_type_string}`.```\n{f.prompt}```',
                     inline=False
                 )
 

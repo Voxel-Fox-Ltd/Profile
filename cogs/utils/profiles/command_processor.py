@@ -37,6 +37,15 @@ class CommandProcessor(object):
     )
 
     @classmethod
+    def get_is_command(cls, text:str) -> typing.Tuple[bool, bool]:
+        """Returns whether or not the given text is a command as well as whether or not it's a _valid_ command"""
+
+        return (
+            cls.COMMAND_REGEX.search(text) is not None,
+            cls.VALID_COMMAND_REGEX.search(text) is not None,
+        )
+
+    @classmethod
     def get_value(cls, text:str, member:typing.Optional[discord.Member]=None) -> typing.Optional[str]:
         """Return the value for a field"""
 
@@ -64,12 +73,12 @@ class CommandProcessor(object):
                 # hasrole check
                 if command_name.upper() == "HASROLE":
                     if len([i for i in role_ids_to_check if i in member._roles]) == len(role_ids_to_check):
-                        return command.group("text").replace('\\n', '\n')
+                        return command.group("text").replace('\\n', '\n').replace('\\"', '"')
 
                 # hasanyrole check
                 elif command_name.upper() == "HASANYROLE":
                     if any([i for i in role_ids_to_check if i in member._roles]):
-                        return command.group("text").replace('\\n', '\n')
+                        return command.group("text").replace('\\n', '\n').replace('\\"', '"')
 
             # fieldvalue can't apply here so we'll ignore it
             if command_name.upper() == "FIELDVALUE":

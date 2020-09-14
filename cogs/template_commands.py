@@ -149,7 +149,7 @@ class ProfileTemplates(utils.Cog):
 
                 # Convert the response
                 try:
-                    converted = (await converter.convert(ctx, value_message.content)).id
+                    converted = str((await converter.convert(ctx, value_message.content)).id)
                 except commands.BadArgument:
                     if value_message.content == "continue":
                         converted = None

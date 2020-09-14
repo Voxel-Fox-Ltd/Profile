@@ -2,6 +2,7 @@ import typing
 import uuid
 import re
 
+import discord
 from discord.ext import commands
 
 from cogs.utils.profiles.field import Field
@@ -30,16 +31,46 @@ class Template(object):
 
     __slots__ = ("template_id", "colour", "guild_id", "verification_channel_id", "name", "archive_channel_id", "role_id", "max_profile_count", "all_fields")
 
-    def __init__(self, template_id:uuid.UUID, colour:int, guild_id:int, verification_channel_id:int, name:str, archive_channel_id:int, role_id:int, max_profile_count:int):
+    def __init__(self, template_id:uuid.UUID, colour:int, guild_id:int, verification_channel_id:str, name:str, archive_channel_id:str, role_id:str, max_profile_count:int):
         self.template_id: uuid.UUID = template_id
         self.colour: int = colour
         self.guild_id: int = guild_id
-        self.verification_channel_id: int = verification_channel_id
+        self.verification_channel_id: str = verification_channel_id
         self.name: str = name
-        self.archive_channel_id: int = archive_channel_id
-        self.role_id: int = role_id
+        self.archive_channel_id: str = archive_channel_id
+        self.role_id: str = role_id
         self.max_profile_count: int = max_profile_count
         self.all_fields: typing.Dict[uuid.UUID, Field] = dict()
+
+    def get_verification_channel_id(self, member:discord.Member) -> typing.Optional[int]:
+        """Get the correct verification channel ID for the given member"""
+
+        return self._get_id_from_command(self.verification_channel_id, member)
+
+    def get_archive_channel_id(self, member:discord.Member) -> typing.Optional[int]:
+        """Get the correct archive channel ID for a given member"""
+
+        return self._get_id_from_command(self.archive_channel_id, member)
+
+    def get_role_id(self, member:discord.Member) -> typing.Optional[int]:
+        """Get the correct role ID for a given member"""
+
+        return self._get_id_from_command(self.role_id, member)
+
+    def _get_id_from_command(self, text:str, member:discord.Member) -> typing.Optional[int]:
+        """Get the ID from either a command or as a straight value"""
+
+        # Given as a straight int
+        if text is None:
+            return None
+        if text.isdigit():
+            return int(text)
+
+        # Given as a command
+        return_value = CommandProcessor.get_value(text, member)
+        if return_value.isdigit():
+            return int(return_value)
+        return False
 
     @property
     def fields(self) -> typing.Dict[uuid.UUID, Field]:

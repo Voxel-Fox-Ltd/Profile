@@ -1,4 +1,5 @@
 import asyncio
+import typing
 
 import discord
 
@@ -120,26 +121,35 @@ class ProfileVerification(utils.Cog):
                 pass  # Can't send the user a DM, let's just ignore it
 
         # Add a role to them
-        role_to_add: discord.Role = guild.get_role(user_profile.template.role_id)
-        if verify and role_to_add and isinstance(profile_user, discord.Member):
+        role_id: typing.Optional[int] = template.get_role_id(profile_user)
+        if role_id is False:
             try:
-                await profile_user.add_roles(role_to_add, reason="Verified profile")
+                await profile_user.send("I couldn't add a role to you for profile verification; the role command is invalid - please tell an admin.")
             except discord.HTTPException:
-                self.logger.info(f"Couldn't add role {role_to_add.id} to user {user_profile.user_id} about their '{user_profile.template.name}' profile verification on {guild.id}")
                 pass
+        if verify and role_id and isinstance(profile_user, discord.Member):
+            role_to_add: discord.Role = guild.get_role(user_profile.template.role_id)
+            if role_to_add:
+                try:
+                    await profile_user.add_roles(role_to_add, reason="Verified profile")
+                except discord.HTTPException:
+                    self.logger.info(f"Couldn't add role {role_to_add.id} to user {user_profile.user_id} about their '{user_profile.template.name}' profile verification on {guild.id}")
+                    pass
 
         # Send the profile off to the archive
-        if user_profile.template.archive_channel_id and verify:
-            try:
-                channel = await self.bot.fetch_channel(user_profile.template.archive_channel_id)
-                embed: utils.Embed = user_profile.build_embed(profile_user if isinstance(profile_user, discord.Member) else None)
-                await channel.send(profile_user.mention, embed=embed)
-            except discord.HTTPException as e:
-                self.logger.info(f"Couldn't archive profile in guild {user_profile.template.guild_id} - {e}")
-                pass  # Couldn't be sent to the archive channel
-            except AttributeError:
-                self.logger.info(f"Couldn't archive profile in guild {user_profile.template.guild_id} - AttributeError (probably channel deleted)")
-                pass  # The archive channel has been deleted
+        if verify:
+            archive_channel_id: typing.Optional[int] = template.get_archive_channel_id(profile_user)
+            if archive_channel_id is not None:
+                if archive_channel_id is not False:
+                    try:
+                        channel: discord.TextChannel = self.bot.get_channel(archive_channel_id) or await self.bot.fetch_channel(archive_channel_id)
+                        await channel.send(embed=embed)
+                    except discord.HTTPException as e:
+                        self.logger.info(f"Couldn't archive profile in guild {user_profile.template.guild_id} - {e}")
+                        pass  # Couldn't be sent to the archive channel
+                    except AttributeError:
+                        self.logger.info(f"Couldn't archive profile in guild {user_profile.template.guild_id} - AttributeError (probably channel deleted)")
+                        pass  # The archive channel has been deleted
 
         # Delete relevant messages
         messages_to_delete = [i for i in messages_to_delete if channel.permissions_for(guild.me).manage_messages or i.author.id == self.bot.user.id]

@@ -63,16 +63,20 @@ class ProfileCreation(utils.Cog):
         except commands.CommandError as e:
             self.bot.dispatch("command_error", ctx, e)  # Throw any errors we get in this command into its own error handler
 
-    async def send_profile_verification(self, ctx:utils.Context, user_profile:utils.UserProfile, target_user:discord.Member=None) -> bool:
+    async def send_profile_verification(self, ctx:utils.Context, user_profile:utils.UserProfile, target_user:discord.Member) -> bool:
         """Send a profile verification OR archive message for a given profile. Returns whether or not the sending was a success"""
 
         # Let's get that template baybee
         template = user_profile.template
 
         # Send the profile in for verification
-        if template.verification_channel_id:
+        verification_channel_id: typing.Optional[int] = template.get_verification_channel_id(target_user)
+        if verification_channel_id is not None:
+            if verification_channel_id is False:
+                await ctx.author.send("The verification channel has been misset - please tell an admin.")
+                return False
             try:
-                channel: discord.TextChannel = self.bot.get_channel(template.verification_channel_id) or await self.bot.fetch_channel(template.verification_channel_id)
+                channel: discord.TextChannel = self.bot.get_channel(verification_channel_id) or await self.bot.fetch_channel(verification_channel_id)
                 embed: utils.Embed = user_profile.build_embed(target_user)
                 embed.set_footer(text=f'{template.name.upper()} // Verification Check')
                 v = await channel.send(f"New **{template.name}** submission from <@{user_profile.user_id}>\n{user_profile.user_id}/{template.template_id}/{user_profile.name}", embed=embed)
@@ -84,24 +88,35 @@ class ProfileCreation(utils.Cog):
             except AttributeError:
                 await ctx.author.send("The verification channel was deleted from the server - please tell an admin.")
                 return False
+            return True
 
         # Send the profile to the archive
-        else:
-            if template.archive_channel_id:
+        archive_channel_id: typing.Optional[int] = template.get_archive_channel_id(target_user)
+        if archive_channel_id is not None:
+            if archive_channel_id is False:
+                await ctx.author.send("The archive channel has been misset - please tell an admin.")
+                return False
+            try:
+                channel: discord.TextChannel = self.bot.get_channel(archive_channel_id) or await self.bot.fetch_channel(archive_channel_id)
+                embed: utils.Embed = user_profile.build_embed(target_user)
+                await channel.send(embed=embed)
+            except discord.HTTPException as e:
+                await target_user.send(f"Your profile couldn't be sent to the archive channel - `{e}`.")
+                return False
+            except AttributeError:
+                pass  # The archive channel being deleted isn't too bad tbh
+
+        # Add the role to the user
+        role_id: typing.Optional[int] = template.get_role_id(target_user)
+        if role_id is not None:
+            if role_id is False:
+                await target_user.send("I couldn't add a role to you for your profile verification; the role has been misset - please tell an admin.")
+            else:
+                role_to_add: discord.Role = ctx.guild.get_role(role_id)
                 try:
-                    channel: discord.TextChannel = self.bot.get_channel(template.archive_channel_id) or await self.bot.fetch_channel(template.archive_channel_id)
-                    embed: utils.Embed = user_profile.build_embed(target_user)
-                    await channel.send(embed=embed)
+                    await target_user.add_roles(role_to_add, reason="Verified profile")
                 except discord.HTTPException as e:
-                    await ctx.author.send(f"Your profile couldn't be sent to the archive channel - `{e}`.")
-                    return False
-                except AttributeError:
-                    pass  # The archive channel being deleted isn't too bad tbh
-            if template.role_id:
-                role_to_add: discord.Role = ctx.guild.get_role(template.role_id)
-                try:
-                    await ctx.author.add_roles(role_to_add, reason="Verified profile")
-                except discord.HTTPException as e:
+                    await target_user.send(f"I couldn't add a role to you for your profile verification; Discord returned an error ({e}) - please tell an admin.")
                     self.logger.error(f"Couldn't add role {role_to_add.id} to user {user_profile.user_id} about their '{user_profile.template.name}' profile verification on {ctx.guild.id} - {e}")
 
         # Wew it worked

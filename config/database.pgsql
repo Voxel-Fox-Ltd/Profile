@@ -35,9 +35,9 @@ CREATE TABLE template(
     name VARCHAR(30),
     colour INTEGER,
     guild_id BIGINT NOT NULL,
-    verification_channel_id BIGINT,
-    archive_channel_id BIGINT,
-    role_id BIGINT,
+    verification_channel_id TEXT,
+    archive_channel_id TEXT,
+    role_id TEXT,
     max_profile_count SMALLINT DEFAULT 5,
     UNIQUE (guild_id, name)
 );

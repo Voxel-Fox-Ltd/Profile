@@ -5,7 +5,7 @@ class CommandProcessor(object):
 
     COMMAND_REGEX = re.compile(
         r'^{{.+?}}$',
-        re.IGNORECASE | re.MULTILINE | re.VERBOSE
+        re.IGNORECASE | re.MULTILINE | re.VERBOSE | re.DOTALL
     )
     VALID_COMMAND_REGEX = re.compile(
         r'''
@@ -20,7 +20,7 @@ class CommandProcessor(object):
             )+
         }}
         ''',
-        re.IGNORECASE | re.MULTILINE | re.VERBOSE
+        re.IGNORECASE | re.MULTILINE | re.VERBOSE | re.DOTALL
     )
     COMMAND_PARAMETERS_REGEX = re.compile(
         r'''
@@ -30,5 +30,5 @@ class CommandProcessor(object):
             \)\s*SAYS\s*(?<!\\)\"(?P<text>.+?)(?<!\\)\"
         )
         ''',
-        re.IGNORECASE | re.MULTILINE | re.VERBOSE
+        re.IGNORECASE | re.MULTILINE | re.VERBOSE | re.DOTALL
     )

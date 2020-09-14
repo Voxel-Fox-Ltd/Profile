@@ -6,6 +6,7 @@ from discord.ext import commands
 
 from cogs.utils.profiles.field import Field
 from cogs.utils.profiles.filled_field import FilledField
+from cogs.utils.profiles.command_processor import CommandProcessor
 from cogs.utils.context_embed import ContextEmbed as Embed
 
 
@@ -177,17 +178,25 @@ class Template(object):
         for index, f in enumerate(fields):
             if f.deleted:
                 continue
+            field_type_string = str(f.field_type)
+            if CommandProcessor.COMMAND_REGEX.search(f.prompt):
+                if CommandProcessor.VALID_COMMAND_REGEX(f.prompt):
+                    field_type_string = "COMMAND"
+                else:
+                    field_type_string = "COMMAND::INVALID"
             if brief:
-                text.append(f"#{f.index} **{f.name}** ({f.field_type!s})")
+                text.append(f"#{f.index} **{f.name}** ({field_type_string})")
             else:
                 embed.add_field(
                     name=f.name,
-                    value=f'Field ID `{f.field_id}` at position {index} with index {f.index}, type `{f.field_type!s}`.\n"{f.prompt}"',
+                    value=f'Field ID `{f.field_id}` at position {index} with index {f.index}, type `{field_type_string}`.\n"{f.prompt}"',
                     inline=False
                 )
 
         # If we're being brief, then just add all the field text at once
-        if brief and text:
+        if brief:
+            if not text:
+                text = ["No fields added"]
             embed.add_field(
                 name="Fields",
                 value='\n'.join(text),

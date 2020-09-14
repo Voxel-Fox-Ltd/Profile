@@ -1,6 +1,5 @@
 import typing
 import uuid
-import re
 
 import discord
 

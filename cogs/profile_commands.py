@@ -64,7 +64,16 @@ class ProfileCreation(utils.Cog):
             self.bot.dispatch("command_error", ctx, e)  # Throw any errors we get in this command into its own error handler
 
     async def send_profile_verification(self, ctx:utils.Context, user_profile:utils.UserProfile, target_user:discord.Member) -> bool:
-        """Send a profile verification OR archive message for a given profile. Returns whether or not the sending was a success"""
+        """Send a profile verification OR archive message for a given profile. Returns whether or not the sending was a success
+
+        Args:
+            ctx (utils.Context): The command invocation for the user setting the profile
+            user_profile (utils.UserProfile): The profile being sent
+            target_user (discord.Member): The owner of the profile (may not be the same as ctx.author)
+
+        Returns:
+            bool: Whether or not sending the profile verification succeeds. 0 if any errors were found, 1 if it worked fine
+        """
 
         # Let's get that template baybee
         template = user_profile.template

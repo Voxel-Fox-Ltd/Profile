@@ -111,7 +111,7 @@ class ProfileVerification(utils.Cog):
             except discord.HTTPException:
                 pass
         if verify and role_id and isinstance(profile_user, discord.Member):
-            role_to_add: discord.Role = guild.get_role(user_profile.template.role_id)
+            role_to_add: discord.Role = guild.get_role(role_id)
             if role_to_add:
                 try:
                     await profile_user.add_roles(role_to_add, reason="Verified profile")

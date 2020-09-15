@@ -8,9 +8,6 @@ from cogs import utils
 
 class ProfileVerification(utils.Cog):
 
-    # TICK_EMOJI_ID = 596096897995899097
-    # CROSS_EMOJI_ID = 596096897769275402
-
     TICK_EMOJI = "<:tick_yes:596096897995899097>"
     CROSS_EMOJI = "<:cross_no:596096897769275402>"
 
@@ -18,27 +15,20 @@ class ProfileVerification(utils.Cog):
     async def verification_emoji_check(self, payload:discord.RawReactionActionEvent):
         """Triggered when a reaction is added or removed, check for profile verification"""
 
-        # Firstly we wanna check the message being reacted to, make sure its ours
+        # Check that both the channel and the message are readable
         try:
             channel: discord.TextChannel = self.bot.get_channel(payload.channel_id) or await self.bot.fetch_channel(payload.channel_id)
-        except discord.HTTPException:
-            return  # Channel may not exist? I guess that's fine
-
-        # Get the message from the channel
-        try:
             message: discord.Message = await channel.fetch_message(payload.message_id)
         except discord.HTTPException:
-            return  # Message doesn't exist? We can't read it? Wild but whatever, why not
+            return
 
-        # Check if we're the author
+        # Check that the message was sent by the bot
         if message.author.id != self.bot.user.id:
             return
 
-        # Check if there's an embed
+        # Check the message's embed
         if not message.embeds:
             return
-
-        # Make sure it's the right kind of embed
         embed: discord.Embed = message.embeds[0]
         if not embed.footer:
             return
@@ -47,17 +37,11 @@ class ProfileVerification(utils.Cog):
         if 'Verification Check' not in embed.footer.text:
             return
 
-        # Get guild for verification
-        guild: discord.Guild = self.bot.get_guild(payload.guild_id) or await self.bot.fetch_guild(payload.guild_id)
-
         # Get the member who added the reaction
+        guild: discord.Guild = self.bot.get_guild(payload.guild_id) or await self.bot.fetch_guild(payload.guild_id)
         moderator: discord.Member = guild.get_member(payload.user_id) or await guild.fetch_member(payload.user_id)
-
-        # Make sure they aren't a bot
         if moderator.bot:
             return
-
-        # Check their permissions
         if not utils.checks.member_is_moderator(self.bot, moderator):
             return
 
@@ -98,9 +82,8 @@ class ProfileVerification(utils.Cog):
         if verify is False and moderator.permissions_in(channel).send_messages:
             denial_ask_message = await channel.send("Why was that profile denied?")
             messages_to_delete.append(denial_ask_message)
-            def check(m):
-                return m.author.id == moderator.id and m.channel.id == channel.id and len(m.content) > 0
             try:
+                check = lambda m: m.author.id == moderator.id and m.channel.id == channel.id and len(m.content) > 0
                 denial_message = await self.bot.wait_for('message', check=check, timeout=120)
                 messages_to_delete.append(denial_message)
                 denial_reason = denial_message.content

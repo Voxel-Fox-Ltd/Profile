@@ -21,8 +21,7 @@ class ProfileTemplates(utils.Cog):
 
     def __init__(self, bot:utils.Bot):
         super().__init__(bot)
-        self.template_creation_locks: typing.Dict[int, asyncio.Lock] = collections.defaultdict(asyncio.Lock)
-        self.template_editing_locks: typing.Dict[int, asyncio.Lock] = collections.defaultdict(asyncio.Lock)
+        self.template_editing_locks: typing.Dict[int, asyncio.Lock] = collections.defaultdict(asyncio.Lock)  # guild_id: asyncio.Lock
 
     @commands.command(cls=utils.Command)
     @commands.bot_has_permissions(send_messages=True)
@@ -55,6 +54,12 @@ class ProfileTemplates(utils.Cog):
 
         return await ctx.send(embed=template.build_embed(brief=brief))
 
+    async def purge_message_list(self, channel:discord.TextChannel, message_list:typing.List[discord.Message]):
+        """Delete a list of messages from the channel"""
+
+        await channel.purge(check=lambda m: m.id in [i.id for i in message_list], bulk=channel.permissions_for(channel.guild.me).manage_messages)
+        message_list.clear()
+
     @commands.command(cls=utils.Command)
     @commands.has_guild_permissions(manage_roles=True)
     @commands.bot_has_permissions(send_messages=True, external_emojis=True, add_reactions=True, manage_messages=True)
@@ -66,7 +71,7 @@ class ProfileTemplates(utils.Cog):
         if self.template_editing_locks[ctx.guild.id].locked():
             return await ctx.send("You're already editing a template.")
 
-        # Start the template editing
+        # Grab the template edit lock
         async with self.template_editing_locks[ctx.guild.id]:
 
             # Get the template fields
@@ -75,10 +80,13 @@ class ProfileTemplates(utils.Cog):
                 guild_settings_rows = await db("SELECT * FROM guild_settings WHERE guild_id=$1 OR guild_id=0 ORDER BY guild_id DESC", ctx.guild.id)
             guild_settings = guild_settings_rows[0]
 
+            # Set up our initial vars so we can edit them later
             edit_message = await ctx.send("Loading...")
             messages_to_delete = []
             should_edit = True
             should_add_reactions = True
+
+            # Start our edit loop
             while True:
 
                 # Ask what they want to edit
@@ -94,7 +102,7 @@ class ProfileTemplates(utils.Cog):
                 # Add reactions if there aren't any
                 valid_emoji = [
                     "1\N{COMBINING ENCLOSING KEYCAP}", "2\N{COMBINING ENCLOSING KEYCAP}", "3\N{COMBINING ENCLOSING KEYCAP}",
-                    "4\N{COMBINING ENCLOSING KEYCAP}", "5\N{COMBINING ENCLOSING KEYCAP}", "6\N{COMBINING ENCLOSING KEYCAP}"
+                    "4\N{COMBINING ENCLOSING KEYCAP}", "5\N{COMBINING ENCLOSING KEYCAP}", "6\N{COMBINING ENCLOSING KEYCAP}",
                 ]
                 valid_emoji.append(self.TICK_EMOJI)
                 if should_add_reactions:
@@ -124,7 +132,7 @@ class ProfileTemplates(utils.Cog):
                     break
                 await edit_message.remove_reaction(reaction, ctx.author)
 
-                # See if they want to edit a field
+                # If they want to edit a field, we go through this section
                 if attr is None:
                     fields_have_changed = await converter
                     if fields_have_changed is None:
@@ -150,24 +158,33 @@ class ProfileTemplates(utils.Cog):
                 # Convert the response
                 try:
                     converted = str((await converter.convert(ctx, value_message.content)).id)
+
+                # The converter failed
                 except commands.BadArgument:
+
+                    # They want to set it to none
                     if value_message.content == "continue":
                         converted = None
+
+                    # They either gave a command or just something invalid
                     else:
-                        await ctx.channel.purge(check=lambda m: m.id in [i.id for i in messages_to_delete], bulk=ctx.channel.permissions_for(ctx.guild.me).manage_messages)
-                        messages_to_delete.clear()
-                        continue
+                        is_command, is_valid_command = utils.CommandProcessor.get_is_command(value_message.content)
+                        if is_command and is_valid_command:
+                            converted = value_message.content
+                        else:
+                            await self.purge_message_list(ctx.channel, messages_to_delete)
+                            continue
+
+                # It isn't a converter object
                 except AttributeError:
                     try:
                         converted = converter(value_message.content)
                     except ValueError:
-                        await ctx.channel.purge(check=lambda m: m.id in [i.id for i in messages_to_delete], bulk=ctx.channel.permissions_for(ctx.guild.me).manage_messages)
-                        messages_to_delete.clear()
+                        await self.purge_message_list(ctx.channel, messages_to_delete)
                         continue
 
                 # Delete the messages we don't need any more
-                await ctx.channel.purge(check=lambda m: m.id in [i.id for i in messages_to_delete], bulk=ctx.channel.permissions_for(ctx.guild.me).manage_messages)
-                messages_to_delete.clear()
+                await self.purge_message_list(ctx.channel, messages_to_delete)
 
                 # Validate if they provided a new name
                 if attr == 'name':
@@ -370,7 +387,7 @@ class ProfileTemplates(utils.Cog):
         """Creates a new template for your guild"""
 
         # Only allow them to make one template at once
-        if self.template_creation_locks[ctx.guild.id].locked():
+        if self.template_editing_locks[ctx.guild.id].locked():
             return await ctx.send("You're already creating a template.")
 
         # See if they have too many templates already
@@ -381,7 +398,7 @@ class ProfileTemplates(utils.Cog):
             return await ctx.send(f"You already have {guild_settings[0]['max_template_count']} templates set for this server, which is the maximum number allowed.")
 
         # And now we start creating the template itself
-        async with self.template_creation_locks[ctx.guild.id]:
+        async with self.template_editing_locks[ctx.guild.id]:
 
             # Send the flavour text behind getting a template name
             if template_name is None:

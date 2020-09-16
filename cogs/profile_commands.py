@@ -63,74 +63,6 @@ class ProfileCreation(utils.Cog):
         except commands.CommandError as e:
             self.bot.dispatch("command_error", ctx, e)  # Throw any errors we get in this command into its own error handler
 
-    async def send_profile_verification(self, ctx:utils.Context, user_profile:utils.UserProfile, target_user:discord.Member) -> bool:
-        """Send a profile verification OR archive message for a given profile. Returns whether or not the sending was a success
-
-        Args:
-            ctx (utils.Context): The command invocation for the user setting the profile
-            user_profile (utils.UserProfile): The profile being sent
-            target_user (discord.Member): The owner of the profile (may not be the same as ctx.author)
-
-        Returns:
-            bool: Whether or not sending the profile verification succeeds. 0 if any errors were found, 1 if it worked fine
-        """
-
-        # Let's get that template baybee
-        template = user_profile.template
-
-        # Send the profile in for verification
-        verification_channel_id: typing.Optional[int] = template.get_verification_channel_id(target_user)
-        if verification_channel_id is not None:
-            if verification_channel_id is False:
-                await ctx.author.send("The verification channel has been misset - please tell an admin.")
-                return False
-            try:
-                channel: discord.TextChannel = self.bot.get_channel(verification_channel_id) or await self.bot.fetch_channel(verification_channel_id)
-                embed: utils.Embed = user_profile.build_embed(target_user)
-                embed.set_footer(text=f'{template.name.upper()} // Verification Check')
-                v = await channel.send(f"New **{template.name}** submission from <@{user_profile.user_id}>\n{user_profile.user_id}/{template.template_id}/{user_profile.name}", embed=embed)
-                await v.add_reaction(self.TICK_EMOJI)
-                await v.add_reaction(self.CROSS_EMOJI)
-            except discord.HTTPException as e:
-                await ctx.author.send(f"Your profile couldn't be sent to the verification channel - `{e}`.")
-                return False
-            except AttributeError:
-                await ctx.author.send("The verification channel was deleted from the server - please tell an admin.")
-                return False
-            return True
-
-        # Send the profile to the archive
-        archive_channel_id: typing.Optional[int] = template.get_archive_channel_id(target_user)
-        if archive_channel_id is not None:
-            if archive_channel_id is False:
-                await ctx.author.send("The archive channel has been misset - please tell an admin.")
-                return False
-            try:
-                channel: discord.TextChannel = self.bot.get_channel(archive_channel_id) or await self.bot.fetch_channel(archive_channel_id)
-                embed: utils.Embed = user_profile.build_embed(target_user)
-                await channel.send(embed=embed)
-            except discord.HTTPException as e:
-                await target_user.send(f"Your profile couldn't be sent to the archive channel - `{e}`.")
-                return False
-            except AttributeError:
-                pass  # The archive channel being deleted isn't too bad tbh
-
-        # Add the role to the user
-        role_id: typing.Optional[int] = template.get_role_id(target_user)
-        if role_id is not None:
-            if role_id is False:
-                await target_user.send("I couldn't add a role to you for your profile verification; the role has been misset - please tell an admin.")
-            else:
-                role_to_add: discord.Role = ctx.guild.get_role(role_id)
-                try:
-                    await target_user.add_roles(role_to_add, reason="Verified profile")
-                except discord.HTTPException as e:
-                    await target_user.send(f"I couldn't add a role to you for your profile verification; Discord returned an error ({e}) - please tell an admin.")
-                    self.logger.error(f"Couldn't add role {role_to_add.id} to user {user_profile.user_id} about their '{user_profile.template.name}' profile verification on {ctx.guild.id} - {e}")
-
-        # Wew it worked
-        return True
-
     @commands.command(cls=utils.Command, hidden=True)
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
@@ -285,22 +217,25 @@ class ProfileCreation(utils.Cog):
         try:
             await ctx.author.send(embed=user_profile.build_embed(target_user))
         except discord.HTTPException as e:
-            return await ctx.author.send(f"Your profile couldn't be sent to you, so the embed was probably hecked - `{e}`.\nPlease try again later.")
+            return await ctx.author.send(f"Your profile couldn't be sent to you - `{e}`.\nPlease try again later.")
 
         # Let's see if this worked
-        if await self.send_profile_verification(ctx, user_profile, target_user) is False:
+        if await self.bot.get_cog("ProfileVerification").send_profile_submission(ctx, user_profile, target_user) is False:
             return
 
         # Database me up daddy
         async with self.bot.database() as db:
-            try:
-                await db("INSERT INTO created_profile (user_id, name, template_id, verified) VALUES ($1, $2, $3, $4)", user_profile.user_id, user_profile.name, user_profile.template.template_id, user_profile.verified)
-            except asyncpg.UniqueViolationError:
-                await db("UPDATE created_profile SET verified=$4 WHERE user_id=$1 AND name=$2 AND template_id=$3", user_profile.user_id, name_content, user_profile.template.template_id, user_profile.verified)
-                await db("DELETE FROM filled_field WHERE user_id=$1 AND name=$2 AND field_id in (SELECT field_id FROM field WHERE template_id=$3)", user_profile.user_id, name_content, user_profile.template.template_id)
-                self.logger.info(f"Deleted profile for {user_profile.user_id} on UniqueViolationError")
+            await db(
+                """INSERT INTO created_profile (user_id, name, template_id, verified) VALUES ($1, $2, $3, $4)
+                ON CONFLICT (user_id, name, template_id) DO UPDATE SET verified=excluded.verified""",
+                user_profile.user_id, user_profile.name, user_profile.template.template_id, user_profile.verified
+            )
             for field in filled_field_dict.values():
-                await db("INSERT INTO filled_field (user_id, name, field_id, value) VALUES ($1, $2, $3, $4) ON CONFLICT (user_id, name, field_id) DO UPDATE SET value=excluded.value", field.user_id, name_content, field.field_id, field.value)
+                await db(
+                    """INSERT INTO filled_field (user_id, name, field_id, value) VALUES ($1, $2, $3, $4)
+                    ON CONFLICT (user_id, name, field_id) DO UPDATE SET value=excluded.value""",
+                    field.user_id, name_content, field.field_id, field.value
+                )
 
         # Respond to user
         if template.verification_channel_id:
@@ -440,7 +375,7 @@ class ProfileCreation(utils.Cog):
             return await ctx.author.send(f"Your profile couldn't be sent to you, so the embed was probably hecked - `{e}`.\nPlease try again later.")
 
         # Let's see if this worked
-        if await self.send_profile_verification(ctx, user_profile, target_user) is False:
+        if await self.bot.get_cog("ProfileVerification").send_profile_submission(ctx, user_profile, target_user) is False:
             return
 
         # Database me up daddy

@@ -2,6 +2,11 @@ import typing
 import re
 
 import discord
+from discord.ext import commands
+
+
+class InvalidCommandText(commands.BadArgument):
+    pass
 
 
 class CommandProcessor(object):
@@ -52,7 +57,7 @@ class CommandProcessor(object):
         # See if it's a command
         valid_command = cls.VALID_COMMAND_REGEX.search(text)
         if valid_command is None:
-            return None
+            raise InvalidCommandText()
 
         # Get the command values
         default_text = valid_command.group("default")

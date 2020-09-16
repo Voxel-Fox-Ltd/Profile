@@ -7,19 +7,33 @@ from discord.ext import commands
 
 from cogs.utils.profiles.field import Field
 from cogs.utils.profiles.filled_field import FilledField
-from cogs.utils.profiles.command_processor import CommandProcessor
+from cogs.utils.profiles.command_processor import CommandProcessor, InvalidCommandText
 from cogs.utils.context_embed import ContextEmbed as Embed
 
 
 class TemplateNotFoundError(commands.BadArgument):
-
     def __init__(self, template_name:str=None):
-        self.template_name = template_name
+        if template_name:
+            message = f"There's no template with the name `{template_name}` on this guild."
+        else:
+            message = "The given template could not be found."
+        super().__init__(message)
 
-    def __str__(self):
-        if not self.template_name:
-            return "The given template could not be found."
-        return f"There's no template with the name `{self.template_name}` on this guild."
+
+class TemplateSendError(commands.BadArgument):
+    pass
+
+
+class TemplateVerificationChannelError(TemplateSendError):
+    pass
+
+
+class TemplateArchiveChannelError(TemplateSendError):
+    pass
+
+
+class TemplateRoleAddError(TemplateSendError):
+    pass
 
 
 class Template(object):
@@ -70,7 +84,7 @@ class Template(object):
         return_value = CommandProcessor.get_value(text, member)
         if return_value.isdigit():
             return int(return_value)
-        return False
+        raise InvalidCommandText()
 
     @property
     def fields(self) -> typing.Dict[uuid.UUID, Field]:

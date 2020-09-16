@@ -242,27 +242,12 @@ class ProfileVerification(utils.Cog):
             try:
                 embed: utils.Embed = user_profile.build_embed(profile_user if isinstance(profile_user, discord.Member) else None)
                 if verify:
-                    await profile_user.send(f"Your profile for `{user_profile.template.name}` on `{guild.name}` has been verified.", embed=embed)
+                    await profile_user.send(f"Your profile for **{user_profile.template.name}** (`{user_profile.name}`) on `{guild.name}` has been verified.", embed=embed)
                 else:
-                    await profile_user.send(f"Your profile for `{user_profile.template.name}` on `{guild.name}` has been denied with the reason `{denial_reason}`.", embed=embed)
+                    await profile_user.send(f"Your profile for **{user_profile.template.name}** (`{user_profile.name}`) on `{guild.name}` has been denied with the reason `{denial_reason}`.", embed=embed)
             except discord.HTTPException:
                 self.logger.info(f"Couldn't DM user {user_profile.user_id} about their '{user_profile.template.name}' profile verification on {guild.id}")
                 pass  # Can't send the user a DM, let's just ignore it
-
-        # Send the profile off to the archive
-        if verify:
-            archive_channel_id: typing.Optional[int] = template.get_archive_channel_id(profile_user)
-            if archive_channel_id is not None:
-                if archive_channel_id is not False:
-                    try:
-                        channel: discord.TextChannel = self.bot.get_channel(archive_channel_id) or await self.bot.fetch_channel(archive_channel_id)
-                        await channel.send(embed=embed)
-                    except discord.HTTPException as e:
-                        self.logger.info(f"Couldn't archive profile in guild {user_profile.template.guild_id} - {e}")
-                        pass  # Couldn't be sent to the archive channel
-                    except AttributeError:
-                        self.logger.info(f"Couldn't archive profile in guild {user_profile.template.guild_id} - AttributeError (probably channel deleted)")
-                        pass  # The archive channel has been deleted
 
         # Send the profile to the archive
         try:

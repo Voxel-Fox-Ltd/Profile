@@ -137,7 +137,7 @@ class ProfileCreation(utils.Cog):
                         name_content = utils.TextField.get_from_message(user_message)
 
                         # They've misunderstood
-                        if f"get{template.name.lower()} " in name_content:
+                        if f"get{template.name.lower()} " in name_content.lower():
                             raise utils.errors.FieldCheckFailure(f"Please provide the name for your profile _without_ the command call, eg if you wanted to run `get{template.name.lower()} test`, just say \"test\".")
 
                         # See if they're already using the name

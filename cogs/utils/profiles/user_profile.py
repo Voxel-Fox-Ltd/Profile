@@ -6,7 +6,7 @@ import discord
 from cogs.utils.profiles.template import Template
 from cogs.utils.profiles.filled_field import FilledField
 from cogs.utils.profiles.field_type import ImageField
-from cogs.utils.profiles.command_processor import CommandProcessor
+from cogs.utils.profiles.command_processor import CommandProcessor, InvalidCommandText
 from cogs.utils.context_embed import ContextEmbed as Embed
 
 
@@ -79,7 +79,10 @@ class UserProfile(object):
             # Filter deleted or unset data
             if f.field.deleted:
                 continue
-            field_value: str = CommandProcessor.get_value(f.field.prompt, member) or f.value
+            try:
+                field_value = CommandProcessor.get_value(f.field.prompt, member)
+            except InvalidCommandText:
+                field_value = f.value
             if field_value is None:
                 continue
 

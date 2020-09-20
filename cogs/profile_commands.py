@@ -60,7 +60,7 @@ class ProfileCreation(utils.Cog):
         try:
             self.bot.dispatch("command", ctx)
             await metacommand.invoke(ctx)  # This converts the args for me, which is nice
-        except commands.CommandError as e:
+        except (commands.CommandInvokeError, commands.CommandError) as e:
             self.bot.dispatch("command_error", ctx, e)  # Throw any errors we get in this command into its own error handler
 
     @commands.command(cls=utils.Command, hidden=True)

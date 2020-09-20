@@ -249,17 +249,20 @@ class ProfileVerification(utils.Cog):
                 self.logger.info(f"Couldn't DM user {user_profile.user_id} about their '{user_profile.template.name}' profile verification on {guild.id}")
                 pass  # Can't send the user a DM, let's just ignore it
 
-        # Send the profile to the archive
-        try:
-            await self.send_profile_archivation(user_profile, profile_user)
-        except utils.errors.TemplateArchiveChannelError:
-            pass
+        # Archive and add roles
+        if verify:
 
-        # Add the relevant role to the user
-        try:
-            await self.add_profile_user_roles(user_profile, profile_user)
-        except utils.errors.TemplateRoleAddError:
-            pass
+            # Send the profile to the archive
+            try:
+                await self.send_profile_archivation(user_profile, profile_user)
+            except utils.errors.TemplateArchiveChannelError:
+                pass
+
+            # Add the relevant role to the user
+            try:
+                await self.add_profile_user_roles(user_profile, profile_user)
+            except utils.errors.TemplateRoleAddError:
+                pass
 
         # Delete relevant messages
         messages_to_delete = [i for i in messages_to_delete if channel.permissions_for(guild.me).manage_messages or i.author.id == self.bot.user.id]

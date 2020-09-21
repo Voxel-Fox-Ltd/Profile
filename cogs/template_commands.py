@@ -330,6 +330,10 @@ class ProfileTemplates(utils.Cog):
                     v = await ctx.send("That field name is too long. Please provide another.")
                     messages_to_delete.append(v)
                     continue
+                if attr == 'prompt' and not 2000 >= len(field_value) > 0:
+                    v = await ctx.send("That field prompt is too long. Please provide another.")
+                    messages_to_delete.append(v)
+                    continue
                 if attr == 'optional':
                     field_value = field_value.lower() == 'yes'
                 break

@@ -257,6 +257,7 @@ class Template(object):
 
         # Add each of the fields
         text = []
+        char_limit_text = []
         for index, f in enumerate(fields):
             if f.deleted:
                 continue
@@ -273,6 +274,7 @@ class Template(object):
             # Wew let's add this jazz
             if brief:
                 text.append(f"#{f.index} **{f.name}** ({field_type_string})")
+                char_limit_text.append((f.index, f.name, field_type_string))
             else:
                 embed.add_field(
                     name=f.name,
@@ -284,11 +286,19 @@ class Template(object):
         if brief:
             if not text:
                 text = ["No fields added"]
-            embed.add_field(
-                name="Fields",
-                value='\n'.join(text),
-                inline=False,
-            )
+            if len('\n'.join(text)) > 1000:
+                for index, name, ftype in char_limit_text:
+                    embed.add_field(
+                        name=name,
+                        value=f"#{index} ({ftype})",
+                        inline=False,
+                    )
+            else:
+                embed.add_field(
+                    name="Fields",
+                    value='\n'.join(text),
+                    inline=False,
+                )
 
         # Return embed
         return embed

@@ -189,7 +189,11 @@ class ProfileTemplates(utils.Cog):
                 # Validate if they provided a new name
                 if attr == 'name':
                     async with self.bot.database() as db:
-                        name_in_use = await db("SELECT * FROM template WHERE guild_id=$1 AND LOWER(name)=LOWER($2)", ctx.guild.id, converted)
+                        name_in_use = await db(
+                            """SELECT * FROM template WHERE guild_id=$1 AND LOWER(name)=LOWER($2)
+                            AND template_id<>$3""",
+                            ctx.guild.id, converted, template.template_id,
+                        )
                         if name_in_use:
                             continue
                 if attr == 'max_profile_count':

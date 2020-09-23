@@ -431,7 +431,7 @@ class ProfileCreation(utils.Cog):
         await ctx.send("This profile has been deleted.")
 
     @commands.command(cls=utils.Command, hidden=True)
-    @commands.bot_has_permissions(send_messages=True)
+    @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @commands.guild_only()
     @utils.checks.meta_command()
     async def get_profile_meta(self, ctx:utils.Context, user:typing.Optional[discord.Member], *, profile_name:str=None):
@@ -473,6 +473,20 @@ class ProfileCreation(utils.Cog):
         else:
             await ctx.send("Your profile hasn't been verified yet, and thus can't be sent.")
         return
+
+    @commands.command(cls=utils.Command, hidden=True)
+    @commands.is_owner()
+    @commands.bot_has_permissions(send_messages=True, embed_links=True)
+    async def forcegetprofile(self, ctx:utils.Context, template:utils.Template, user:utils.converters.UserID, name:str='default'):
+        """Get the profile of a user"""
+
+        async with self.bot.database() as db:
+            profile: utils.UserProfile = await template.fetch_profile_for_user(db, user, name, fetch_filled_fields=True)
+        if not profile:
+            return await ctx.send("No profile found.")
+        guild = self.bot.get_guild(template.guild_id) or await self.bot.fetch_guild(template.guild_id)
+        member = guild.get_member(user) or await guild.fetch_member(user)
+        return await ctx.send(embed=profile.build_embed(member))
 
 
 def setup(bot:utils.Bot):

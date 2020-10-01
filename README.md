@@ -31,6 +31,19 @@ Only users with the `manage roles` permission are able to run these commands.
 * `,templates`
     * This will list the templates for your server.
 
+Each profile has
+
+* a name
+* a verification channel
+    * When this is set, then profiles have to be verified before users can save them. The bot will post a request for verificiation into the verification channel.
+* an archive channel
+    * When this is set, then the bot will post all profiles created for this template in the archive channel
+* a given role
+    * When this is set, then the bot will assign this role to anyone with a (verified) profile. Remember to give the bot permission to `Manage roles` and put the role they should assign below the role of the bot.
+* fields
+* a max profile count
+    * Limits how many profiles of this type each user can have. If users can have more than 1 profile, they will be asked to name them.
+
 ### Managing profiles
 
 * `,setcharacter`

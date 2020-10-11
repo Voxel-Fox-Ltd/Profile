@@ -91,7 +91,15 @@ class ProfileTemplates(utils.Cog):
 
                 # Ask what they want to edit
                 if should_edit:
-                    content = "What do you want to edit - its name (1\u20e3), verification channel (2\u20e3), archive channel (3\u20e3), given role (4\u20e3), fields (5\u20e3), or max profile count (6\u20e3)?"
+                    content = (
+                        "**Select the emoji next to the item you want to edit:**\n"
+                        "1\u20e3 Template name\n"
+                        "2\u20e3 Verification channel (where profiles are sent to be verified by staff\n"
+                        "3\u20e3 Archive channel (where profiles are sent once verified\n"
+                        "4\u20e3 Set a role to be given to users upon completing a profile\n"
+                        "5\u20e3 Template fields/questions\n"
+                        "6\u20e3 Max profile count\n"
+                    )
                     await edit_message.edit(
                         content=content,
                         embed=template.build_embed(brief=True),
@@ -209,6 +217,15 @@ class ProfileTemplates(utils.Cog):
                 should_edit = True
 
         # Tell them it's done
+        try:
+            await edit_message.edit(
+                content=None,
+                embed=template.build_embed(brief=True),
+                allowed_mentions=discord.AllowedMentions(roles=False),
+            )
+            await edit_message.clear_reactions()
+        except discord.HTTPException:
+            pass
         await ctx.send("Done editing template.")
 
     async def edit_field(self, ctx:utils.Context, template:utils.Template, guild_settings:dict):

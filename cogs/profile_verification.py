@@ -238,7 +238,7 @@ class ProfileVerification(utils.Cog):
 
         # Tell the user about the decision
         try:
-            profile_user: discord.Member = guild.get_member(profile_user_id) or await self.bot.fetch_user(profile_user_id)
+            profile_user: discord.Member = guild.get_member(profile_user_id) or await guild.fetch_member(profile_user_id)
         except discord.HTTPException:
             profile_user = None
         if profile_user:

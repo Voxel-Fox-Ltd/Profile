@@ -94,8 +94,8 @@ class ProfileTemplates(utils.Cog):
                     content = (
                         "**Select the emoji next to the item you want to edit:**\n"
                         "1\u20e3 Template name\n"
-                        "2\u20e3 Verification channel (where profiles are sent to be verified by staff\n"
-                        "3\u20e3 Archive channel (where profiles are sent once verified\n"
+                        "2\u20e3 Verification channel (where profiles are sent to be verified by staff)\n"
+                        "3\u20e3 Archive channel (where profiles are sent once verified)\n"
                         "4\u20e3 Set a role to be given to users upon completing a profile\n"
                         "5\u20e3 Template fields/questions\n"
                         "6\u20e3 Max profile count\n"
@@ -144,7 +144,8 @@ class ProfileTemplates(utils.Cog):
                 if attr is None:
                     fields_have_changed = await converter
                     if fields_have_changed is None:
-                        return
+                        # return
+                        pass
                     if fields_have_changed:
                         async with self.bot.database() as db:
                             await template.fetch_fields(db)
@@ -332,7 +333,7 @@ class ProfileTemplates(utils.Cog):
                 if attr == 'optional':
                     v = await ctx.send("Do you want this field to be optional? Type **yes** or **no**.")
                 else:
-                    v = await ctx.send("What do you want to set this value to?")
+                    v = await ctx.send(f"What do you want to set the {attr} to?")
                 messages_to_delete.append(v)
                 try:
                     field_value_message = await self.bot.wait_for("message", check=lambda m: m.author.id == ctx.author.id and m.channel.id == ctx.channel.id, timeout=120)

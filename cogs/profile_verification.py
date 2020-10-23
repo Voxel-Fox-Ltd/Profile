@@ -237,7 +237,10 @@ class ProfileVerification(utils.Cog):
                 denial_reason = "No reason provided."
 
         # Tell the user about the decision
-        profile_user: discord.User = guild.get_member(profile_user_id) or self.bot.get_user(profile_user_id) or await self.bot.fetch_user(profile_user_id)
+        try:
+            profile_user: discord.Member = guild.get_member(profile_user_id) or await self.bot.fetch_user(profile_user_id)
+        except discord.HTTPException:
+            profile_user = None
         if profile_user:
             try:
                 embed: utils.Embed = user_profile.build_embed(profile_user if isinstance(profile_user, discord.Member) else None)

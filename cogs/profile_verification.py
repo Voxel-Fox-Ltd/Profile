@@ -243,7 +243,7 @@ class ProfileVerification(utils.Cog):
             profile_user = None
         if profile_user:
             try:
-                embed: utils.Embed = user_profile.build_embed(profile_user if isinstance(profile_user, discord.Member) else None)
+                embed: utils.Embed = user_profile.build_embed(profile_user)
                 if verify:
                     await profile_user.send(f"Your profile for **{user_profile.template.name}** (`{user_profile.name}`) on `{guild.name}` has been verified.", embed=embed)
                 else:

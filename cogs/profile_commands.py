@@ -7,8 +7,9 @@ import string
 
 import discord
 from discord.ext import commands
+import voxelbotutils as utils
 
-from cogs import utils
+from cogs import utils as localutils
 
 
 class ProfileCreation(utils.Cog):
@@ -46,7 +47,7 @@ class ProfileCreation(utils.Cog):
 
         # Find the template they asked for on their server
         async with self.bot.database() as db:
-            template = await utils.Template.fetch_template_by_name(db, ctx.guild.id, template_name, fetch_fields=False)
+            template = await localutils.Template.fetch_template_by_name(db, ctx.guild.id, template_name, fetch_fields=False)
         if not template:
             self.logger.info(f"Failed at getting template '{template_name}' in guild {ctx.guild.id}")
             return  # Fail silently on template doesn't exist
@@ -62,7 +63,7 @@ class ProfileCreation(utils.Cog):
         except (commands.CommandInvokeError, commands.CommandError) as e:
             self.bot.dispatch("command_error", ctx, e)  # Throw any errors we get in this command into its own error handler
 
-    @commands.command(cls=utils.Command, hidden=True)
+    @utils.command(hidden=True)
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     @utils.checks.meta_command()
@@ -71,20 +72,20 @@ class ProfileCreation(utils.Cog):
 
         # Set up some variables
         target_user: discord.Member = target_user or ctx.author
-        template: utils.Template = ctx.template
+        template: localutils.Template = ctx.template
 
         # See if the user is already setting up a profile
         if self.set_profile_locks[ctx.author.id].locked():
             return await ctx.send("You're already setting up a profile.")
 
         # Only mods can see other people's profiles
-        if target_user != ctx.author and not utils.checks.member_is_moderator(ctx.bot, ctx.author):
+        if target_user != ctx.author and not localutils.checks.member_is_moderator(ctx.bot, ctx.author):
             raise commands.MissingPermissions(["manage_roles"])
 
         # Check if they're already at the maximum amount of profiles
         async with self.bot.database() as db:
             await template.fetch_fields(db)
-            user_profiles: typing.List[utils.UserProfile] = await template.fetch_all_profiles_for_user(db, target_user.id)
+            user_profiles: typing.List[localutils.UserProfile] = await template.fetch_all_profiles_for_user(db, target_user.id)
         if len(user_profiles) >= template.max_profile_count:
             if target_user == ctx.author:
                 await ctx.send(f"You're already at the maximum number of profiles set for **{template.name}**.")
@@ -133,22 +134,22 @@ class ProfileCreation(utils.Cog):
                     try:
 
                         # Get the name they gave
-                        name_content = utils.TextField.get_from_message(user_message)
+                        name_content = localutils.TextField.get_from_message(user_message)
 
                         # They've misunderstood
                         if f"get{template.name.lower()} " in name_content.lower():
-                            raise utils.errors.FieldCheckFailure(f"Please provide the name for your profile _without_ the command call, eg if you wanted to run `get{template.name.lower()} test`, just say \"test\".")
+                            raise localutils.errors.FieldCheckFailure(f"Please provide the name for your profile _without_ the command call, eg if you wanted to run `get{template.name.lower()} test`, just say \"test\".")
 
                         # See if they're already using the name
                         if name_content.lower() in [i.name.lower() for i in user_profiles]:
-                            raise utils.errors.FieldCheckFailure("You're already using that name for this template. Please provide an alternative.")
+                            raise localutils.errors.FieldCheckFailure("You're already using that name for this template. Please provide an alternative.")
 
                         # See if the characters used are invalid
                         if any([i for i in name_content if i not in string.ascii_letters + string.digits + ' ']):
-                            raise utils.errors.FieldCheckFailure("You can only use standard lettering and digits in your profile name. Please provide an alternative.")
+                            raise localutils.errors.FieldCheckFailure("You can only use standard lettering and digits in your profile name. Please provide an alternative.")
                         break
 
-                    except utils.errors.FieldCheckFailure as e:
+                    except localutils.errors.FieldCheckFailure as e:
                         await ctx.author.send(e.message)
 
             # Talk the user through each field
@@ -156,8 +157,8 @@ class ProfileCreation(utils.Cog):
             for field in sorted(template.fields.values(), key=lambda x: x.index):
 
                 # See if it's a command
-                if utils.CommandProcessor.COMMAND_REGEX.search(field.prompt):
-                    filled_field_dict[field.field_id] = utils.FilledField(
+                if localutils.CommandProcessor.COMMAND_REGEX.search(field.prompt):
+                    filled_field_dict[field.field_id] = localutils.FilledField(
                         user_id=target_user.id,
                         name=name_content,
                         field_id=field.field_id,
@@ -190,11 +191,11 @@ class ProfileCreation(utils.Cog):
                         else:
                             field_content = field.field_type.get_from_message(user_message)
                         break
-                    except utils.errors.FieldCheckFailure as e:
+                    except localutils.errors.FieldCheckFailure as e:
                         await ctx.author.send(e.message)
 
                 # Add field to list
-                filled_field_dict[field.field_id] = utils.FilledField(
+                filled_field_dict[field.field_id] = localutils.FilledField(
                     user_id=target_user.id,
                     name=name_content,
                     field_id=field.field_id,
@@ -203,7 +204,7 @@ class ProfileCreation(utils.Cog):
                 )
 
         # Make the UserProfile object
-        user_profile = utils.UserProfile(
+        user_profile = localutils.UserProfile(
             user_id=target_user.id,
             name=name_content,
             template_id=template.template_id,
@@ -242,7 +243,7 @@ class ProfileCreation(utils.Cog):
         else:
             await ctx.author.send("Your profile has been created and saved.")
 
-    @commands.command(cls=utils.Command, hidden=True)
+    @utils.command(hidden=True)
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     @utils.checks.meta_command()
@@ -258,17 +259,17 @@ class ProfileCreation(utils.Cog):
             return await ctx.send("You're already setting up a profile.")
 
         # You can only edit someone else's profile if you're a moderator
-        if target_user and target_user != ctx.author and not utils.checks.member_is_moderator(ctx.bot, ctx.author):
+        if target_user and target_user != ctx.author and not localutils.checks.member_is_moderator(ctx.bot, ctx.author):
             raise commands.MissingPermissions(["manage_roles"])
 
         # Grab the data we need
         async with self.bot.database() as db:
             await template.fetch_fields(db)
             try:
-                user_profile: utils.UserProfile = await template.fetch_profile_for_user(db, target_user.id, profile_name)
-                user_profiles: typing.List[utils.UserProfile] = await template.fetch_all_profiles_for_user(db, target_user.id, fetch_filled_fields=False)
+                user_profile: localutils.UserProfile = await template.fetch_profile_for_user(db, target_user.id, profile_name)
+                user_profiles: typing.List[localutils.UserProfile] = await template.fetch_all_profiles_for_user(db, target_user.id, fetch_filled_fields=False)
             except ValueError:
-                user_profiles: typing.List[utils.UserProfile] = await template.fetch_all_profiles_for_user(db, target_user.id)
+                user_profiles: typing.List[localutils.UserProfile] = await template.fetch_all_profiles_for_user(db, target_user.id)
                 profile_names_string = [f'"{o}"' for o in [i.name.replace('*', '\\*').replace('`', '\\`').replace('_', '\\_') for i in user_profiles]]
                 if target_user == ctx.author:
                     await ctx.send(f"You have multiple profiles set for the template **{template.name}** - {', '.join(profile_names_string)}.")
@@ -304,12 +305,12 @@ class ProfileCreation(utils.Cog):
         async with self.set_profile_locks[ctx.author.id]:
 
             # Talk the user through each field
-            user_profile.all_filled_fields: typing.Dict[uuid.UUID, utils.FilledField] = user_profile.filled_fields
+            user_profile.all_filled_fields: typing.Dict[uuid.UUID, localutils.FilledField] = user_profile.filled_fields
             for field in sorted(template.fields.values(), key=lambda x: x.index):
 
                 # See if it's a command
-                if utils.CommandProcessor.COMMAND_REGEX.search(field.prompt):
-                    filled_field = utils.FilledField(
+                if localutils.CommandProcessor.COMMAND_REGEX.search(field.prompt):
+                    filled_field = localutils.FilledField(
                         user_id=target_user.id,
                         name=user_profile.name,
                         field_id=field.field_id,
@@ -352,11 +353,11 @@ class ProfileCreation(utils.Cog):
                     try:
                         field_content = field.field_type.get_from_message(user_message)
                         break
-                    except utils.errors.FieldCheckFailure as e:
+                    except localutils.errors.FieldCheckFailure as e:
                         await ctx.author.send(e.message)
 
                 # Add field to list
-                user_profile.all_filled_fields[field.field_id] = utils.FilledField(
+                user_profile.all_filled_fields[field.field_id] = localutils.FilledField(
                     user_id=target_user.id,
                     name=user_profile.name,
                     field_id=field.field_id,
@@ -387,7 +388,7 @@ class ProfileCreation(utils.Cog):
         # Respond to user
         await ctx.author.send("Your profile has been edited and saved.")
 
-    @commands.command(cls=utils.Command, hidden=True)
+    @utils.command(hidden=True)
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     @utils.checks.meta_command()
@@ -395,16 +396,16 @@ class ProfileCreation(utils.Cog):
         """Handles deleting a profile"""
 
         # You can only delete someone else's profile if you're a moderator
-        if user and ctx.author != user and not utils.checks.member_is_moderator(self.bot, ctx.author):
+        if user and ctx.author != user and not localutils.checks.member_is_moderator(self.bot, ctx.author):
             raise commands.MissingPermissions(["manage_roles"])
 
         # Check it exists
-        template: utils.Template = ctx.template
+        template: localutils.Template = ctx.template
         async with self.bot.database() as db:
             try:
                 user_profile = await template.fetch_profile_for_user(db, (user or ctx.author).id, profile_name, fetch_filled_fields=False)
             except ValueError:
-                user_profiles: typing.List[utils.UserProfile] = await template.fetch_all_profiles_for_user(db, (user or ctx.author).id)
+                user_profiles: typing.List[localutils.UserProfile] = await template.fetch_all_profiles_for_user(db, (user or ctx.author).id)
                 profile_names_string = [f'"{o}"' for o in [i.name.replace('*', '\\*').replace('`', '\\`').replace('_', '\\_') for i in user_profiles]]
                 if user:
                     await ctx.send(f"{user.mention} has multiple profiles set for the template **{template.name}** - {', '.join(profile_names_string)}.")
@@ -430,7 +431,7 @@ class ProfileCreation(utils.Cog):
             await db("DELETE FROM created_profile WHERE user_id=$1 AND template_id=$2 AND name=$3", user.id, template.template_id, user_profile.name)
         await ctx.send("This profile has been deleted.")
 
-    @commands.command(cls=utils.Command, hidden=True)
+    @utils.command(hidden=True)
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @commands.guild_only()
     @utils.checks.meta_command()
@@ -438,12 +439,12 @@ class ProfileCreation(utils.Cog):
         """Gets a profile for a given member"""
 
         # See if there's a set profile
-        template: utils.Template = ctx.template
+        template: localutils.Template = ctx.template
         async with self.bot.database() as db:
             try:
-                user_profile: utils.UserProfile = await template.fetch_profile_for_user(db, (user or ctx.author).id, profile_name)
+                user_profile: localutils.UserProfile = await template.fetch_profile_for_user(db, (user or ctx.author).id, profile_name)
             except ValueError:
-                user_profiles: typing.List[utils.UserProfile] = await template.fetch_all_profiles_for_user(db, (user or ctx.author).id)
+                user_profiles: typing.List[localutils.UserProfile] = await template.fetch_all_profiles_for_user(db, (user or ctx.author).id)
                 profile_names_string = [f'"{o}"' for o in [i.name.replace('*', '\\*').replace('`', '\\`').replace('_', '\\_') for i in user_profiles]]
                 if user:
                     await ctx.send(f"{user.mention} has multiple profiles set for the template **{template.name}** - {', '.join(profile_names_string)}.")
@@ -464,7 +465,7 @@ class ProfileCreation(utils.Cog):
             return
 
         # See if verified
-        if user_profile.verified or utils.checks.member_is_moderator(ctx.bot, ctx.author):
+        if user_profile.verified or localutils.checks.member_is_moderator(ctx.bot, ctx.author):
             return await ctx.send(embed=user_profile.build_embed(user or ctx.author))
 
         # Not verified
@@ -474,14 +475,14 @@ class ProfileCreation(utils.Cog):
             await ctx.send("Your profile hasn't been verified yet, and thus can't be sent.")
         return
 
-    @commands.command(cls=utils.Command, hidden=True)
+    @utils.command(hidden=True)
     @commands.is_owner()
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    async def forcegetprofile(self, ctx:utils.Context, template:utils.Template, user:utils.converters.UserID, name:str='default'):
+    async def forcegetprofile(self, ctx:utils.Context, template:localutils.Template, user:utils.converters.UserID, name:str='default'):
         """Get the profile of a user"""
 
         async with self.bot.database() as db:
-            profile: utils.UserProfile = await template.fetch_profile_for_user(db, user, name, fetch_filled_fields=True)
+            profile: localutils.UserProfile = await template.fetch_profile_for_user(db, user, name, fetch_filled_fields=True)
         if not profile:
             return await ctx.send("No profile found.")
         guild = self.bot.get_guild(template.guild_id) or await self.bot.fetch_guild(template.guild_id)

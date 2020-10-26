@@ -1,9 +1,1 @@
-# Discord and config handling
-git+https://github.com/4Kaylum/discord.py@master
-toml
-git+https://github.com/Rapptz/discord-ext-menus
-
-# Storage handling
-asyncpg
-aioredis
-cryptography
+voxelbotutils

@@ -6,8 +6,9 @@ import collections
 
 import discord
 from discord.ext import commands
+import voxelbotutils as utils
 
-from cogs import utils
+from cogs import utils as localutils
 
 
 class ProfileTemplates(utils.Cog):
@@ -23,7 +24,7 @@ class ProfileTemplates(utils.Cog):
         super().__init__(bot)
         self.template_editing_locks: typing.Dict[int, asyncio.Lock] = collections.defaultdict(asyncio.Lock)  # guild_id: asyncio.Lock
 
-    @commands.command(cls=utils.Command)
+    @utils.command()
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     async def templates(self, ctx:utils.Context, guild_id:int=None):
@@ -46,10 +47,10 @@ class ProfileTemplates(utils.Cog):
             return await ctx.send("There are no created templates for this guild.")
         return await ctx.send('\n'.join([f"**{row['name']}** (`{row['template_id']}`, `{row['count']}` created profiles)" for row in templates]))
 
-    @commands.command(cls=utils.Command, aliases=['describe'])
+    @utils.command(aliases=['describe'])
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @commands.guild_only()
-    async def describetemplate(self, ctx:utils.Context, template:utils.Template, brief:bool=True):
+    async def describetemplate(self, ctx:utils.Context, template:localutils.Template, brief:bool=True):
         """Describe a template and its fields"""
 
         return await ctx.send(embed=template.build_embed(brief=brief))
@@ -60,11 +61,11 @@ class ProfileTemplates(utils.Cog):
         await channel.purge(check=lambda m: m.id in [i.id for i in message_list], bulk=channel.permissions_for(channel.guild.me).manage_messages)
         message_list.clear()
 
-    @commands.command(cls=utils.Command)
+    @utils.command()
     @commands.has_guild_permissions(manage_roles=True)
     @commands.bot_has_permissions(send_messages=True, external_emojis=True, add_reactions=True, manage_messages=True)
     @commands.guild_only()
-    async def edittemplate(self, ctx:utils.Context, template:utils.Template):
+    async def edittemplate(self, ctx:utils.Context, template:localutils.Template):
         """Edits a template for your guild"""
 
         # See if they're already editing that template
@@ -177,7 +178,7 @@ class ProfileTemplates(utils.Cog):
 
                     # They either gave a command or just something invalid
                     else:
-                        is_command, is_valid_command = utils.CommandProcessor.get_is_command(value_message.content)
+                        is_command, is_valid_command = localutils.CommandProcessor.get_is_command(value_message.content)
                         if is_command and is_valid_command:
                             converted = value_message.content
                         else:
@@ -229,7 +230,7 @@ class ProfileTemplates(utils.Cog):
             pass
         await ctx.send("Done editing template.")
 
-    async def edit_field(self, ctx:utils.Context, template:utils.Template, guild_settings:dict):
+    async def edit_field(self, ctx:utils.Context, template:localutils.Template, guild_settings:dict):
         """Talk the user through editing a field of a template"""
 
         # Ask which index they want to edit
@@ -258,7 +259,7 @@ class ProfileTemplates(utils.Cog):
                 if len(template.fields) == 0:
                     raise ValueError()
                 field_index: int = int(field_index_message.content.lstrip('#'))
-                field_to_edit: utils.Field = [i for i in template.fields.values() if i.index == field_index and i.deleted is False][0]
+                field_to_edit: localutils.Field = [i for i in template.fields.values() if i.index == field_index and i.deleted is False][0]
                 break
 
             # They either gave an invalid number or want to make a new field
@@ -267,8 +268,8 @@ class ProfileTemplates(utils.Cog):
                 # They want to create a new field
                 if len(template.fields) == 0 or field_index_message.content.lower() == "new":
                     if len(template.fields) < guild_settings['max_template_field_count'] or ctx.original_author_id in self.bot.owner_ids:
-                        image_field_exists: bool = any([i for i in template.fields.values() if isinstance(i.field_type, utils.ImageField)])
-                        field: utils.Field = await self.create_new_field(
+                        image_field_exists: bool = any([i for i in template.fields.values() if isinstance(i.field_type, localutils.ImageField)])
+                        field: localutils.Field = await self.create_new_field(
                             ctx=ctx,
                             template=template,
                             index=len(template.all_fields),
@@ -371,11 +372,11 @@ class ProfileTemplates(utils.Cog):
         await ctx.channel.purge(check=lambda m: m.id in [i.id for i in messages_to_delete], bulk=ctx.channel.permissions_for(ctx.guild.me).manage_messages)
         return True
 
-    @commands.command(cls=utils.Command)
+    @utils.command()
     @commands.has_guild_permissions(manage_roles=True)
     @commands.bot_has_permissions(send_messages=True, external_emojis=True, add_reactions=True)
     @commands.guild_only()
-    async def deletetemplate(self, ctx:utils.Context, template:utils.Template):
+    async def deletetemplate(self, ctx:utils.Context, template:localutils.Template):
         """Deletes a template for your guild"""
 
         # Ask for confirmation
@@ -405,7 +406,7 @@ class ProfileTemplates(utils.Cog):
         self.logger.info(f"Template '{template.name}' deleted on guild {ctx.guild.id}")
         await ctx.send(f"All relevant data for template **{template.name}** (`{template.template_id}`) has been deleted.")
 
-    @commands.command()
+    @utils.command()
     @commands.has_guild_permissions(manage_roles=True)
     @commands.bot_has_permissions(send_messages=True, manage_messages=True, external_emojis=True, add_reactions=True, embed_links=True)
     @commands.guild_only()
@@ -467,7 +468,7 @@ class ProfileTemplates(utils.Cog):
                 break
 
             # Get an ID for the profile
-            template = utils.Template(
+            template = localutils.Template(
                 template_id=uuid.uuid4(),
                 colour=0x0,
                 guild_id=ctx.guild.id,
@@ -494,7 +495,7 @@ class ProfileTemplates(utils.Cog):
         #     pass
         await ctx.invoke(self.bot.get_command("edittemplate"), template)
 
-    async def create_new_field(self, ctx:utils.Context, template:utils.Template, index:int, image_set:bool=False, prompt_for_creation:bool=True, delete_messages:bool=False) -> typing.Optional[utils.Field]:
+    async def create_new_field(self, ctx:utils.Context, template:localutils.Template, index:int, image_set:bool=False, prompt_for_creation:bool=True, delete_messages:bool=False) -> typing.Optional[utils.Field]:
         """Talk a user through creating a new field for their template"""
 
         # Here are some things we can use later
@@ -575,7 +576,7 @@ class ProfileTemplates(utils.Cog):
                 v = await ctx.send("You need to actually give text for the prompt :/")
                 messages_to_delete.append(v)
         field_prompt = field_prompt_message.content
-        prompt_is_command = bool(utils.CommandProcessor.COMMAND_REGEX.search(field_prompt))
+        prompt_is_command = bool(localutils.CommandProcessor.COMMAND_REGEX.search(field_prompt))
 
         # If it's a command, then we don't need to deal with this
         if not prompt_is_command:
@@ -641,21 +642,21 @@ class ProfileTemplates(utils.Cog):
 
             # Change that emoji into a datatype
             field_type = {
-                self.NUMBERS_EMOJI: utils.NumberField,
-                self.LETTERS_EMOJI: utils.TextField,
-                self.PICTURE_EMOJI: utils.ImageField,
+                self.NUMBERS_EMOJI: localutils.NumberField,
+                self.LETTERS_EMOJI: localutils.TextField,
+                self.PICTURE_EMOJI: localutils.ImageField,
             }[emoji]
-            if isinstance(field_type, utils.ImageField) and image_set:
+            if isinstance(field_type, localutils.ImageField) and image_set:
                 raise Exception("You shouldn't be able to set two image fields.")
 
         # Set some defaults for the field stuff
         else:
             field_optional = False
             field_timeout = 15
-            field_type = utils.TextField
+            field_type = localutils.TextField
 
         # Make the field object
-        field = utils.Field(
+        field = localutils.Field(
             field_id=uuid.uuid4(),
             name=field_name,
             index=index,

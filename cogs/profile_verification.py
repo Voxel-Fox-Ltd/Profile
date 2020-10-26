@@ -2,8 +2,9 @@ import asyncio
 import typing
 
 import discord
+import voxelbotutils as utils
 
-from cogs import utils
+from cogs import utils as localutils
 
 
 class ProfileVerification(utils.Cog):
@@ -11,7 +12,7 @@ class ProfileVerification(utils.Cog):
     TICK_EMOJI = "<:tick_yes:596096897995899097>"
     CROSS_EMOJI = "<:cross_no:596096897769275402>"
 
-    async def send_profile_verification(self, user_profile:utils.UserProfile, target_user:discord.Member) -> bool:
+    async def send_profile_verification(self, user_profile:localutils.UserProfile, target_user:discord.Member) -> bool:
         """Sends a profile in to the template's verification channel
 
         Args:
@@ -23,7 +24,7 @@ class ProfileVerification(utils.Cog):
         """
 
         # Grab the verification channel ID
-        template: utils.Template = user_profile.template
+        template: localutils.Template = user_profile.template
         verification_channel_id: typing.Optional[int] = template.get_verification_channel_id(target_user)  # this may raise InvalidCommandText
 
         # Check if there's a verification channel
@@ -34,9 +35,9 @@ class ProfileVerification(utils.Cog):
         try:
             channel: discord.TextChannel = self.bot.get_channel(verification_channel_id) or await self.bot.fetch_channel(verification_channel_id)
             if channel is None:
-                raise utils.errors.TemplateVerificationChannelError(f"I can't reach a channel with the ID `{verification_channel_id}`.")
+                raise localutils.errors.TemplateVerificationChannelError(f"I can't reach a channel with the ID `{verification_channel_id}`.")
         except discord.HTTPException:
-            raise utils.errors.TemplateVerificationChannelError(f"I can't reach a channel with the ID `{verification_channel_id}`.")
+            raise localutils.errors.TemplateVerificationChannelError(f"I can't reach a channel with the ID `{verification_channel_id}`.")
 
         # Send the data
         embed: utils.Embed = user_profile.build_embed(target_user)
@@ -44,7 +45,7 @@ class ProfileVerification(utils.Cog):
         try:
             v = await channel.send(f"New **{template.name}** submission from <@{user_profile.user_id}>\n{user_profile.user_id}/{template.template_id}/{user_profile.name}", embed=embed)
         except discord.HTTPException:
-            raise utils.errors.TemplateVerificationChannelError(f"I can't send messages to {channel.mention}.")
+            raise localutils.errors.TemplateVerificationChannelError(f"I can't send messages to {channel.mention}.")
 
         # Add reactions to message
         try:
@@ -55,12 +56,12 @@ class ProfileVerification(utils.Cog):
                 await v.delete()
             except discord.HTTPException:
                 pass
-            raise utils.errors.TemplateVerificationChannelError(f"I can't add reactions in {channel.mention}.")
+            raise localutils.errors.TemplateVerificationChannelError(f"I can't add reactions in {channel.mention}.")
 
         # Wew nice we're done
         return True
 
-    async def send_profile_archivation(self, user_profile:utils.UserProfile, target_user:discord.Member) -> bool:
+    async def send_profile_archivation(self, user_profile:localutils.UserProfile, target_user:discord.Member) -> bool:
         """Send a profile to the template's archive channel
         This will also add the given role to the user
         Yes, archivation is a word
@@ -74,7 +75,7 @@ class ProfileVerification(utils.Cog):
         """
 
         # Grab the archive channel ID
-        template: utils.Template = user_profile.template
+        template: localutils.Template = user_profile.template
         archive_channel_id: typing.Optional[int] = template.get_archive_channel_id(target_user)  # this may raise InvalidCommandText
 
         # Check if there's an archive channel set
@@ -85,19 +86,19 @@ class ProfileVerification(utils.Cog):
         try:
             channel: discord.TextChannel = self.bot.get_channel(archive_channel_id) or await self.bot.fetch_channel(archive_channel_id)
         except discord.HTTPException:
-            raise utils.errors.TemplateArchiveChannelError(f"I can't reach a channel with the ID `{archive_channel_id}`.")
+            raise localutils.errors.TemplateArchiveChannelError(f"I can't reach a channel with the ID `{archive_channel_id}`.")
 
         # Send the data
         embed: utils.Embed = user_profile.build_embed(target_user)
         try:
             await channel.send(target_user.mention, embed=embed)
         except discord.HTTPException:
-            raise utils.errors.TemplateArchiveChannelError(f"I can't send messages to {channel.mention}.")
+            raise localutils.errors.TemplateArchiveChannelError(f"I can't send messages to {channel.mention}.")
 
         # Wew nice we're done
         return True
 
-    async def add_profile_user_roles(self, user_profile:utils.UserProfile, target_user:discord.Member) -> bool:
+    async def add_profile_user_roles(self, user_profile:localutils.UserProfile, target_user:discord.Member) -> bool:
         """Add the profile roles to a given user
 
         Args:
@@ -109,7 +110,7 @@ class ProfileVerification(utils.Cog):
         """
 
         # Grab the role ID
-        template: utils.Template = user_profile.template
+        template: localutils.Template = user_profile.template
         role_id: typing.Optional[int] = template.get_role_id(target_user)
 
         # See if there's a role to add
@@ -121,14 +122,14 @@ class ProfileVerification(utils.Cog):
         try:
             await target_user.add_roles(role_to_add, reason="Verified profile")
         except discord.HTTPException:
-            raise utils.errors.TemplateRoleAddError(f"I couldn't add a role to you with the ID `{role_id}`.")
+            raise localutils.errors.TemplateRoleAddError(f"I couldn't add a role to you with the ID `{role_id}`.")
         except AttributeError:
-            raise utils.errors.TemplateRoleAddError(f"I couldn't find a role on this server with the ID `{role_id}`.")
+            raise localutils.errors.TemplateRoleAddError(f"I couldn't find a role on this server with the ID `{role_id}`.")
 
         # Wew we're done
         return True
 
-    async def send_profile_submission(self, ctx:utils.Context, user_profile:utils.UserProfile, target_user:discord.Member) -> bool:
+    async def send_profile_submission(self, ctx:utils.Context, user_profile:localutils.UserProfile, target_user:discord.Member) -> bool:
         """Send a profile verification OR archive message for a given profile. Returns whether or not the sending was a success
 
         Args:
@@ -150,7 +151,7 @@ class ProfileVerification(utils.Cog):
             else:
                 await self.send_profile_archivation(user_profile, target_user)
                 await self.add_profile_user_roles(user_profile, target_user)
-        except utils.errors.TemplateSendError as e:
+        except localutils.errors.TemplateSendError as e:
             await ctx.author.send(str(e))
             return False
 
@@ -188,7 +189,7 @@ class ProfileVerification(utils.Cog):
         moderator: discord.Member = guild.get_member(payload.user_id) or await guild.fetch_member(payload.user_id)
         if moderator.bot:
             return
-        if not utils.checks.member_is_moderator(self.bot, moderator):
+        if not localutils.checks.member_is_moderator(self.bot, moderator):
             return
 
         # And FINALLY we can check their emoji
@@ -210,7 +211,7 @@ class ProfileVerification(utils.Cog):
         user_profile = None
         template = None
         async with self.bot.database() as db:
-            template = await utils.Template.fetch_template_by_id(db, template_id)
+            template = await localutils.Template.fetch_template_by_id(db, template_id)
             user_profile = await template.fetch_profile_for_user(db, profile_user_id, profile_name)
             if verify:
                 await db("UPDATE created_profile SET verified=true WHERE user_id=$1 AND template_id=$2 AND name=$3", profile_user_id, template_id, profile_name)
@@ -243,7 +244,7 @@ class ProfileVerification(utils.Cog):
             profile_user = None
         if profile_user:
             try:
-                embed: utils.Embed = user_profile.build_embed(profile_user)
+                embed: localutils.Embed = user_profile.build_embed(profile_user)
                 if verify:
                     await profile_user.send(f"Your profile for **{user_profile.template.name}** (`{user_profile.name}`) on `{guild.name}` has been verified.", embed=embed)
                 else:
@@ -258,13 +259,13 @@ class ProfileVerification(utils.Cog):
             # Send the profile to the archive
             try:
                 await self.send_profile_archivation(user_profile, profile_user)
-            except utils.errors.TemplateArchiveChannelError:
+            except localutils.errors.TemplateArchiveChannelError:
                 pass
 
             # Add the relevant role to the user
             try:
                 await self.add_profile_user_roles(user_profile, profile_user)
-            except utils.errors.TemplateRoleAddError:
+            except localutils.errors.TemplateRoleAddError:
                 pass
 
         # Delete relevant messages

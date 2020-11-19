@@ -51,7 +51,7 @@ event_webhook_url = ""  # Some events will be posted via webhook to this url
 # Data that's copied directly over to a command
 [command_data]
     guild_invite = "https://discord.gg/vfl"
-    github_link = "https://github.com/Voxel-Fox-Ltd/ProfileBot"
+    github_link = "https://github.com/Voxel-Fox-Ltd/Profile"
     donate_link = "https://www.patreon.com/join/CalebB"
     invite_command_permissions = [ "read_messages", "send_messages", "embed_links", "add_reactions", "use_external_reactions", ]  # args here are passed directly to discord.Permissions. An empty list disabled the invite command
     echo_command_enabled = true  # Whether or not the invite command is enabled

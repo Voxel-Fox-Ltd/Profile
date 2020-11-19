@@ -1,4 +1,4 @@
-CREATE TABLE guild_settings(
+CREATE TABLE IF NOT EXISTS guild_settings(
     guild_id BIGINT PRIMARY KEY,
     prefix VARCHAR(30),
     max_template_count SMALLINT DEFAULT 3,
@@ -7,12 +7,12 @@ CREATE TABLE guild_settings(
 );
 
 
-CREATE TABLE user_settings(
+CREATE TABLE IF NOT EXISTS user_settings(
     user_id BIGINT PRIMARY KEY
 );
 
 
-CREATE TABLE role_list(
+CREATE TABLE IF NOT EXISTS role_list(
     guild_id BIGINT,
     role_id BIGINT,
     key VARCHAR(50),
@@ -21,7 +21,7 @@ CREATE TABLE role_list(
 );
 
 
-CREATE TABLE channel_list(
+CREATE TABLE IF NOT EXISTS channel_list(
     guild_id BIGINT,
     channel_id BIGINT,
     key VARCHAR(50),
@@ -30,7 +30,7 @@ CREATE TABLE channel_list(
 );
 
 
-CREATE TABLE template(
+CREATE TABLE IF NOT EXISTS template(
     template_id UUID PRIMARY KEY,
     name VARCHAR(30),
     colour INTEGER,
@@ -49,18 +49,22 @@ CREATE TABLE template(
 -- verification_channel_id - the channel that profiles are sent to for approval; if null then no approval needed
 
 
-CREATE TYPE FIELDTYPE AS ENUM(
-    '1000-CHAR',
-    '200-CHAR',
-    '50-CHAR',
-    'INT',
-    'IMAGE',
-    'BOOLEAN'
-);
+DO $$ BEGIN
+    CREATE TYPE FIELDTYPE AS ENUM(
+        '1000-CHAR',
+        '200-CHAR',
+        '50-CHAR',
+        'INT',
+        'IMAGE',
+        'BOOLEAN'
+    );
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 -- the different types that a field can contain
 
 
-CREATE TABLE field(
+CREATE TABLE IF NOT EXISTS field(
     field_id UUID PRIMARY KEY,
     name VARCHAR(256),
     index SMALLINT,
@@ -82,7 +86,7 @@ CREATE TABLE field(
 -- profile - the profile that this field is a part of
 
 
-CREATE TABLE created_profile(
+CREATE TABLE IF NOT EXISTS created_profile(
     user_id BIGINT,
     name VARCHAR(1000),
     template_id UUID REFERENCES template(template_id) ON DELETE CASCADE,
@@ -95,7 +99,7 @@ CREATE TABLE created_profile(
 -- verified - whether or not the profile is a verified one
 
 
-CREATE TABLE filled_field(
+CREATE TABLE IF NOT EXISTS filled_field(
     user_id BIGINT,
     name VARCHAR(1000),
     field_id UUID REFERENCES field(field_id) ON DELETE CASCADE,

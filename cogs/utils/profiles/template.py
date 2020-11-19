@@ -4,11 +4,11 @@ import re
 
 import discord
 from discord.ext import commands
+import voxelbotutils as utils
 
 from cogs.utils.profiles.field import Field
 from cogs.utils.profiles.filled_field import FilledField
 from cogs.utils.profiles.command_processor import CommandProcessor, InvalidCommandText
-from cogs.utils.context_embed import ContextEmbed as Embed
 
 
 class TemplateNotFoundError(commands.BadArgument):
@@ -195,12 +195,12 @@ class Template(object):
             raise TemplateNotFoundError(argument.lower())
         return v
 
-    def build_embed(self, brief:bool=False) -> Embed:
+    def build_embed(self, brief:bool=False) -> utils.Embed:
         """Create an embed to visualise all of the created fields and given information"""
 
         # Create the initial embed
         fields: typing.List[Field] = sorted(self.fields.values(), key=lambda x: x.index)
-        embed = Embed(use_random_colour=True, title=self.name)
+        embed = utils.Embed(use_random_colour=True, title=self.name)
 
         # Work out what goes in the description
         description_lines = [f"Template ID: `{self.template_id}`", f"Guild ID: `{self.guild_id}`", f"Maximum allowed profiles: `{self.max_profile_count}`",]

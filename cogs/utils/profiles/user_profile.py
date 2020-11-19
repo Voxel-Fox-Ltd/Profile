@@ -2,12 +2,12 @@ import typing
 import uuid
 
 import discord
+import voxelbotutils as utils
 
 from cogs.utils.profiles.template import Template
 from cogs.utils.profiles.filled_field import FilledField
 from cogs.utils.profiles.field_type import ImageField
 from cogs.utils.profiles.command_processor import CommandProcessor, InvalidCommandText
-from cogs.utils.context_embed import ContextEmbed as Embed
 
 
 class UserProfile(object):
@@ -52,7 +52,7 @@ class UserProfile(object):
     def filled_fields(self) -> typing.Dict[uuid.UUID, FilledField]:
         return {i: o for i, o in self.all_filled_fields.items() if o.field is not None and o.field.deleted is False and o.value is not None}
 
-    def build_embed(self, member:typing.Optional[discord.Member]=None) -> Embed:
+    def build_embed(self, member:typing.Optional[discord.Member]=None) -> utils.Embed:
         """Converts the filled profile into an embed"""
 
         # See if they're the right person
@@ -63,7 +63,7 @@ class UserProfile(object):
 
         # Create the initial embed
         fields: typing.List[FilledField] = sorted(self.filled_fields.values(), key=lambda x: x.field.index)
-        embed = Embed(use_random_colour=True)
+        embed = utils.Embed(use_random_colour=True)
         if not self.template:
             raise AttributeError("Missing template field for user profile")
         embed.title = f"{self.template.name} | {self.name}"

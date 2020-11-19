@@ -121,7 +121,9 @@ class ProfileTemplates(utils.Cog):
 
                 # Wait for a response
                 try:
-                    reaction, _ = await self.bot.wait_for("reaction_add", check=lambda r, u: u.id == ctx.author.id and r.message.id == edit_message.id and str(r) in valid_emoji, timeout=120)
+                    check = lambda p: p.user_id == ctx.author.id and p.message_id == edit_message.id and str(p.emoji) in valid_emoji
+                    reaction = await self.bot.wait_for("raw_reaction_add", check=check, timeout=120)
+                    reaction = str(payload.emoji)
                 except asyncio.TimeoutError:
                     return await ctx.send("Timed out waiting for edit response.")
 
@@ -136,7 +138,7 @@ class ProfileTemplates(utils.Cog):
                         "6\N{COMBINING ENCLOSING KEYCAP}": ('max_profile_count', int),
                         self.TICK_EMOJI: None,
                     }
-                    attr, converter = available_reactions[str(reaction)]
+                    attr, converter = available_reactions[reaction]
                 except TypeError:
                     break
                 await edit_message.remove_reaction(reaction, ctx.author)
@@ -308,7 +310,9 @@ class ProfileTemplates(utils.Cog):
 
         # Wait for a response
         try:
-            reaction, _ = await self.bot.wait_for("reaction_add", check=lambda r, u: u.id == ctx.author.id and r.message.id == attribute_message.id and str(r) in valid_emoji, timeout=120)
+            check = lambda p: p.user_id == ctx.author.id and p.message_id == attribute_message.id and str(p.emoji) in valid_emoji
+            payload = await self.bot.wait_for("raw_reaction_add", check=check, timeout=120)
+            reaction = str(payload.emoji)
         except asyncio.TimeoutError:
             await ctx.send("Timed out waiting for field attribute.")
             return None
@@ -322,7 +326,7 @@ class ProfileTemplates(utils.Cog):
                 "4\N{COMBINING ENCLOSING KEYCAP}": (None, str),
                 self.CROSS_EMOJI: None,
             }
-            attr, converter = available_reactions[str(reaction)]
+            attr, converter = available_reactions[reaction]
         except TypeError:
             await ctx.channel.purge(check=lambda m: m.id in [i.id for i in messages_to_delete], bulk=ctx.channel.permissions_for(ctx.guild.me).manage_messages)
             return False
@@ -385,9 +389,9 @@ class ProfileTemplates(utils.Cog):
         for e in valid_reactions:
             await delete_confirmation_message.add_reaction(e)
         try:
-            r, _ = await self.bot.wait_for(
-                "reaction_add", timeout=120.0,
-                check=lambda r, u: r.message.id == delete_confirmation_message.id and str(r.emoji) in valid_reactions and u.id == ctx.author.id
+            r = await self.bot.wait_for(
+                "raw_reaction_add", timeout=120.0,
+                check=lambda p: p.message_id == delete_confirmation_message.id and str(p.emoji) in valid_reactions and p.user_id == ctx.author.id
             )
         except asyncio.TimeoutError:
             try:
@@ -500,7 +504,7 @@ class ProfileTemplates(utils.Cog):
 
         # Here are some things we can use later
         message_check = lambda m: m.author == ctx.author and m.channel == ctx.channel
-        okay_reaction_check = lambda r, u: str(r.emoji) in prompt_emoji and u.id == ctx.author.id
+        okay_reaction_check = lambda p: str(p.emoji) in prompt_emoji and p.user_id == ctx.author.id
         prompt_emoji = [self.TICK_EMOJI, self.CROSS_EMOJI]
         messages_to_delete = []
 
@@ -521,7 +525,7 @@ class ProfileTemplates(utils.Cog):
 
             # Here's us waiting for the "do you want to make a new field" reaction
             try:
-                reaction, _ = await self.bot.wait_for('reaction_add', check=okay_reaction_check, timeout=120)
+                reaction = await self.bot.wait_for('raw_reaction_add', check=okay_reaction_check, timeout=120)
             except asyncio.TimeoutError:
                 try:
                     await ctx.send("Creating a new field has timed out. The profile is being created with the fields currently added.")
@@ -587,7 +591,7 @@ class ProfileTemplates(utils.Cog):
             for e in prompt_emoji:
                 await prompt_message.add_reaction(e)
             try:
-                field_optional_reaction, _ = await self.bot.wait_for('reaction_add', check=okay_reaction_check, timeout=120)
+                field_optional_reaction = await self.bot.wait_for('raw_reaction_add', check=okay_reaction_check, timeout=120)
                 field_optional_emoji = str(field_optional_reaction.emoji)
             except asyncio.TimeoutError:
                 field_optional_emoji = self.CROSS_EMOJI
@@ -629,9 +633,9 @@ class ProfileTemplates(utils.Cog):
 
             # See what they said
             field_type_emoji = [self.NUMBERS_EMOJI, self.LETTERS_EMOJI, self.PICTURE_EMOJI]  # self.TICK_EMOJI
-            field_type_check = lambda r, u: str(r.emoji) in field_type_emoji and u == ctx.author
+            field_type_check = lambda p: str(p.emoji) in field_type_emoji and p.user_id == ctx.author.id
             try:
-                reaction, _ = await self.bot.wait_for('reaction_add', check=field_type_check, timeout=120)
+                reaction = await self.bot.wait_for('raw_reaction_add', check=field_type_check, timeout=120)
                 emoji = str(reaction.emoji)
             except asyncio.TimeoutError:
                 try:

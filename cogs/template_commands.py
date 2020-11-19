@@ -122,7 +122,7 @@ class ProfileTemplates(utils.Cog):
                 # Wait for a response
                 try:
                     check = lambda p: p.user_id == ctx.author.id and p.message_id == edit_message.id and str(p.emoji) in valid_emoji
-                    reaction = await self.bot.wait_for("raw_reaction_add", check=check, timeout=120)
+                    payload = await self.bot.wait_for("raw_reaction_add", check=check, timeout=120)
                     reaction = str(payload.emoji)
                 except asyncio.TimeoutError:
                     return await ctx.send("Timed out waiting for edit response.")

@@ -495,7 +495,7 @@ class ProfileTemplates(utils.Cog):
         #     pass
         await ctx.invoke(self.bot.get_command("edittemplate"), template)
 
-    async def create_new_field(self, ctx:utils.Context, template:localutils.Template, index:int, image_set:bool=False, prompt_for_creation:bool=True, delete_messages:bool=False) -> typing.Optional[utils.Field]:
+    async def create_new_field(self, ctx:utils.Context, template:localutils.Template, index:int, image_set:bool=False, prompt_for_creation:bool=True, delete_messages:bool=False) -> typing.Optional[localutils.Field]:
         """Talk a user through creating a new field for their template"""
 
         # Here are some things we can use later

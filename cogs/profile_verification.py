@@ -16,7 +16,7 @@ class ProfileVerification(utils.Cog):
         """Sends a profile in to the template's verification channel
 
         Args:
-            user_profile (utils.UserProfile): The profile to be submitted
+            user_profile (localutils.UserProfile): The profile to be submitted
             target_user (discord.Member): The owner of the profile
 
         Returns:
@@ -67,7 +67,7 @@ class ProfileVerification(utils.Cog):
         Yes, archivation is a word
 
         Args:
-            user_profile (utils.UserProfile): The profile to be submitted
+            user_profile (localutils.UserProfile): The profile to be submitted
             target_user (discord.Member): The owner of the profile
 
         Returns:
@@ -102,7 +102,7 @@ class ProfileVerification(utils.Cog):
         """Add the profile roles to a given user
 
         Args:
-            user_profile (utils.UserProfile): The profile to be submitted
+            user_profile (localutils.UserProfile): The profile to be submitted
             target_user (discord.Member): The owner of the profile
 
         Returns:
@@ -134,7 +134,7 @@ class ProfileVerification(utils.Cog):
 
         Args:
             ctx (utils.Context): The command invocation for the user setting the profile
-            user_profile (utils.UserProfile): The profile being sent
+            user_profile (localutils.UserProfile): The profile being sent
             target_user (discord.Member): The owner of the profile (may not be the same as ctx.author)
 
         Returns:

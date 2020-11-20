@@ -397,32 +397,39 @@ class ProfileTemplates(utils.Cog):
     async def deletetemplate(self, ctx:utils.Context, template:localutils.Template):
         """Deletes a template for your guild"""
 
-        # Ask for confirmation
-        delete_confirmation_message = await ctx.send("By doing this, you'll delete all of the created profiles under this template as well. Would you like to proceed?")
-        valid_reactions = [self.TICK_EMOJI, self.CROSS_EMOJI]
-        for e in valid_reactions:
-            await delete_confirmation_message.add_reaction(e)
-        try:
-            r = await self.bot.wait_for(
-                "raw_reaction_add", timeout=120.0,
-                check=lambda p: p.message_id == delete_confirmation_message.id and str(p.emoji) in valid_reactions and p.user_id == ctx.author.id
-            )
-        except asyncio.TimeoutError:
+        # See if they're already editing that template
+        if self.template_editing_locks[ctx.guild.id].locked():
+            return await ctx.send("You're already editing a template.")
+
+        # Grab the template edit lock
+        async with self.template_editing_locks[ctx.guild.id]:
+
+            # Ask for confirmation
+            delete_confirmation_message = await ctx.send("By doing this, you'll delete all of the created profiles under this template as well. Would you like to proceed?")
+            valid_reactions = [self.TICK_EMOJI, self.CROSS_EMOJI]
+            for e in valid_reactions:
+                await delete_confirmation_message.add_reaction(e)
             try:
-                await ctx.send("Template delete timed out - please try again later.")
-            except discord.Forbidden:
-                pass
-            return
+                r = await self.bot.wait_for(
+                    "raw_reaction_add", timeout=120.0,
+                    check=lambda p: p.message_id == delete_confirmation_message.id and str(p.emoji) in valid_reactions and p.user_id == ctx.author.id
+                )
+            except asyncio.TimeoutError:
+                try:
+                    await ctx.send("Template delete timed out - please try again later.")
+                except discord.Forbidden:
+                    pass
+                return
 
-        # Check if they said no
-        if str(r.emoji) == self.CROSS_EMOJI:
-            return await ctx.send("Got it, cancelling template delete.")
+            # Check if they said no
+            if str(r.emoji) == self.CROSS_EMOJI:
+                return await ctx.send("Got it, cancelling template delete.")
 
-        # Delete it from the database
-        async with self.bot.database() as db:
-            await db("DELETE FROM template WHERE template_id=$1", template.template_id)
-        self.logger.info(f"Template '{template.name}' deleted on guild {ctx.guild.id}")
-        await ctx.send(f"All relevant data for template **{template.name}** (`{template.template_id}`) has been deleted.")
+            # Delete it from the database
+            async with self.bot.database() as db:
+                await db("DELETE FROM template WHERE template_id=$1", template.template_id)
+            self.logger.info(f"Template '{template.name}' deleted on guild {ctx.guild.id}")
+            await ctx.send(f"All relevant data for template **{template.name}** (`{template.template_id}`) has been deleted.")
 
     @utils.command()
     @commands.has_guild_permissions(manage_roles=True)

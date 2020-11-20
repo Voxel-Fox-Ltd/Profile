@@ -239,8 +239,11 @@ class ProfileTemplates(utils.Cog):
             pass
         await ctx.send("Done editing template.")
 
-    async def edit_field(self, ctx:utils.Context, template:localutils.Template, guild_settings:dict):
-        """Talk the user through editing a field of a template"""
+    async def edit_field(self, ctx:utils.Context, template:localutils.Template, guild_settings:dict) -> bool:
+        """
+        Talk the user through editing a field of a template.
+        Returns whether or not the template display needs to be updated.
+        """
 
         # Ask which index they want to edit
         if len(template.fields) == 0:
@@ -290,11 +293,15 @@ class ProfileTemplates(utils.Cog):
                         if field is None:
                             return None
                         async with self.bot.database() as db:
-                            await db(
-                                """INSERT INTO field (field_id, name, index, prompt, timeout, field_type, optional, template_id)
-                                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)""",
-                                field.field_id, field.name, field.index, field.prompt, field.timeout, field.field_type.name, field.optional, field.template_id
-                            )
+                            try:
+                                await db(
+                                    """INSERT INTO field (field_id, name, index, prompt, timeout, field_type, optional, template_id)
+                                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)""",
+                                    field.field_id, field.name, field.index, field.prompt, field.timeout, field.field_type.name, field.optional, field.template_id
+                                )
+                            except asyncpg.ForeignKeyViolationError:
+                                # The template was deleted while it was being edited
+                                return True
                         return True
 
                     # They want a new field but they're at the max

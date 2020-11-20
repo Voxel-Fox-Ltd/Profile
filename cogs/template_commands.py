@@ -7,6 +7,7 @@ import collections
 import discord
 from discord.ext import commands
 import voxelbotutils as utils
+import asyncpg
 
 from cogs import utils as localutils
 
@@ -125,7 +126,10 @@ class ProfileTemplates(utils.Cog):
                     payload = await self.bot.wait_for("raw_reaction_add", check=check, timeout=120)
                     reaction = str(payload.emoji)
                 except asyncio.TimeoutError:
-                    return await ctx.send("Timed out waiting for edit response.")
+                    try:
+                        return await ctx.send("Timed out waiting for edit response.")
+                    except Exception:
+                        return
 
                 # See what they reacted with
                 try:
@@ -164,7 +168,10 @@ class ProfileTemplates(utils.Cog):
                 try:
                     value_message = await self.bot.wait_for("message", check=lambda m: m.author.id == ctx.author.id and m.channel.id == ctx.channel.id, timeout=120)
                 except asyncio.TimeoutError:
-                    return await ctx.send("Timed out waiting for edit response.")
+                    try:
+                        return await ctx.send("Timed out waiting for edit response.")
+                    except Exception:
+                        return
                 messages_to_delete.append(value_message)
 
                 # Convert the response

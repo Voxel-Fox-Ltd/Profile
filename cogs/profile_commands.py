@@ -298,7 +298,7 @@ class ProfileCreation(utils.Cog):
             else:
                 await ctx.author.send(f"Now talking you through editing {target_user.mention}'s **{template.name}** profile.", allowed_mentions=discord.AllowedMentions(users=False))
             await ctx.send("Sent you a PM!")
-        except Exception:
+        except discord.HTTPException:
             return await ctx.send("I'm unable to send you a DM to set up the profile :/")
 
         # Drag them into a lock

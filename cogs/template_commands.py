@@ -25,6 +25,10 @@ class ProfileTemplates(utils.Cog):
         super().__init__(bot)
         self.template_editing_locks: typing.Dict[int, asyncio.Lock] = collections.defaultdict(asyncio.Lock)  # guild_id: asyncio.Lock
 
+    @staticmethod
+    def is_valid_template_name(template_name):
+        return len([i for i in template_name if i not in string.ascii_letters + string.digits]) == 0
+
     @utils.command()
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
@@ -128,7 +132,7 @@ class ProfileTemplates(utils.Cog):
                 except asyncio.TimeoutError:
                     try:
                         return await ctx.send("Timed out waiting for edit response.")
-                    except Exception:
+                    except discord.HTTPException:
                         return
 
                 # See what they reacted with
@@ -170,7 +174,7 @@ class ProfileTemplates(utils.Cog):
                 except asyncio.TimeoutError:
                     try:
                         return await ctx.send("Timed out waiting for edit response.")
-                    except Exception:
+                    except discord.HTTPException:
                         return
                 messages_to_delete.append(value_message)
 
@@ -316,9 +320,20 @@ class ProfileTemplates(utils.Cog):
                     continue
 
         # Ask what part of it they want to edit
-        attribute_message: discord.Message = await ctx.send(f"Alright, editing the field **{field_to_edit.name}**. What part do you want to edit? Its name (1\N{COMBINING ENCLOSING KEYCAP}), prompt (2\N{COMBINING ENCLOSING KEYCAP}), whether or not it's optional (3\N{COMBINING ENCLOSING KEYCAP}), or delete it entirely (4\N{COMBINING ENCLOSING KEYCAP})?", allowed_mentions=discord.AllowedMentions(users=False, roles=False, everyone=False))
+        attribute_message: discord.Message = await ctx.send(
+            (
+                f"Alright, editing the field **{field_to_edit.name}**. What part do you want to edit? "
+                "Its name (1\N{COMBINING ENCLOSING KEYCAP}), prompt (2\N{COMBINING ENCLOSING KEYCAP}), "
+                "whether or not it's optional (3\N{COMBINING ENCLOSING KEYCAP}), its type (4\N{COMBINING ENCLOSING KEYCAP}), "
+                "or delete it entirely (5\N{COMBINING ENCLOSING KEYCAP})?"
+            ), allowed_mentions=discord.AllowedMentions(users=False, roles=False, everyone=False)
+        )
         messages_to_delete.append(attribute_message)
-        valid_emoji = ["1\N{COMBINING ENCLOSING KEYCAP}", "2\N{COMBINING ENCLOSING KEYCAP}", "3\N{COMBINING ENCLOSING KEYCAP}", "4\N{COMBINING ENCLOSING KEYCAP}", self.CROSS_EMOJI]
+        valid_emoji = [
+            "1\N{COMBINING ENCLOSING KEYCAP}", "2\N{COMBINING ENCLOSING KEYCAP}",
+            "3\N{COMBINING ENCLOSING KEYCAP}", "4\N{COMBINING ENCLOSING KEYCAP}",
+            "5\N{COMBINING ENCLOSING KEYCAP}", self.CROSS_EMOJI
+        ]
         for e in valid_emoji:
             await attribute_message.add_reaction(e)
 
@@ -331,52 +346,90 @@ class ProfileTemplates(utils.Cog):
             await ctx.send("Timed out waiting for field attribute.")
             return None
 
+        # Let's set up our validity converters for each of the fields
+        def name_validity_checker(given_value):
+            if len(given_value) > 256 or len(given_value) <= 0:
+                return "Your given field name is too long. Please provide another."
+            return True
+
         # See what they reacted with
         try:
             available_reactions = {
-                "1\N{COMBINING ENCLOSING KEYCAP}": ('name', str),
-                "2\N{COMBINING ENCLOSING KEYCAP}": ('prompt', str),
-                "3\N{COMBINING ENCLOSING KEYCAP}": ('optional', str),
-                "4\N{COMBINING ENCLOSING KEYCAP}": (None, str),
+                "1\N{COMBINING ENCLOSING KEYCAP}": (
+                    "name", str, None,
+                    lambda given: "Your given field name is too long. Please provide another." if len(given) > 256 or len(given) <= 0 else True,
+                    lambda given: given,
+                ),
+                "2\N{COMBINING ENCLOSING KEYCAP}": (
+                    "prompt", str, None,
+                    lambda given: "Your given field prompt is too short. Please provide another." if len(given) == 0 else True,
+                    lambda given: given,
+                ),
+                "3\N{COMBINING ENCLOSING KEYCAP}": (
+                    "optional", str, "Do you want this field to be optional? Type **yes** or **no**.",
+                    lambda given: "You need to say either **yes** or **no** for this field." if given.lower() not in ['yes', 'no'] else True,
+                    lambda given: {'yes': True, 'false': False}[given],
+                ),
+                "4\N{COMBINING ENCLOSING KEYCAP}": (
+                    "field_type", str, "What type do you want this field to have? Type **text**, or **number**.",
+                    lambda given: "You need to say either **text** or **number** for this field." if given.lower() not in ['text', 'number'] else True,
+                    lambda given: {'text': '1000-CHAR', 'number': 'INT'}[given],
+                ),
+                "5\N{COMBINING ENCLOSING KEYCAP}": None,
                 self.CROSS_EMOJI: None,
             }
-            attr, converter = available_reactions[reaction]
-        except TypeError:
+            if str(reaction.emoji) == self.CROSS_EMOJI:
+                raise ValueError()  # Cancel
+            attr, value_converter, prompt, value_check, post_conversion_fixer = available_reactions[reaction]
+        except ValueError:
             await ctx.channel.purge(check=lambda m: m.id in [i.id for i in messages_to_delete], bulk=ctx.channel.permissions_for(ctx.guild.me).manage_messages)
             return False
+        except TypeError:
+            attr, value_converter, prompt, value_check = None, None, None, None  # Delete field
 
-        # And work with it accordingly
+        # Get the value they asked for
         field_value_message = None
         if attr:
+
+            # Loop so we can deal with invalid values
             while True:
-                if attr == 'optional':
-                    v = await ctx.send("Do you want this field to be optional? Type **yes** or **no**.")
-                else:
-                    v = await ctx.send(f"What do you want to set the {attr} to?")
+
+                # Send the prompt
+                if prompt is None:
+                    prompt = f"What do you want to set the {attr} to?"
+                v = await ctx.send(prompt)
                 messages_to_delete.append(v)
+
+                # Ask the user for some content
                 try:
-                    field_value_message = await self.bot.wait_for("message", check=lambda m: m.author.id == ctx.author.id and m.channel.id == ctx.channel.id, timeout=120)
+                    check = lambda m: m.author.id == ctx.author.id and m.channel.id == ctx.channel.id
+                    field_value_message = await self.bot.wait_for("message", check=check, timeout=120)
                     messages_to_delete.append(field_value_message)
-                    field_value = converter(field_value_message.content)
-                except asyncio.TimeoutError:
-                    await ctx.send("Timed out waiting for field value.")
-                    return None
+                    field_value = value_converter(field_value_message.content)
+
+                # Value failed to convert
                 except ValueError:
                     v = await ctx.send("I couldn't convert your provided value properly. Please provide another.")
                     messages_to_delete.append(v)
                     continue
 
+                # Timed out
+                except asyncio.TimeoutError:
+                    try:
+                        await ctx.send("Timed out waiting for field value.")
+                    except discord.HTTPException:
+                        pass
+                    return None
+
                 # Fix up the inputs
-                if attr == 'name' and not 256 >= len(field_value) > 0:
-                    v = await ctx.send("That field name is too long. Please provide another.")
+                value_is_valid = value_check(field_value)
+                if isinstance(value_is_valid, str) or isinstance(value_is_valid, bool) and value_is_valid is False:
+                    v = await ctx.send(value_is_valid or "Your provided value is invalid. Please provide another.")
                     messages_to_delete.append(v)
                     continue
-                if attr == 'prompt' and not 2000 >= len(field_value) > 0:
-                    v = await ctx.send("That field prompt is too long. Please provide another.")
-                    messages_to_delete.append(v)
-                    continue
-                if attr == 'optional':
-                    field_value = field_value.lower() == 'yes'
+
+                # And continue
+                field_value = post_conversion_fixer(field_value)
                 break
 
         # Save the data
@@ -473,7 +526,7 @@ class ProfileTemplates(utils.Cog):
                     template_name = name_message.content
 
                 # Check name for characters
-                if [i for i in template_name if i not in string.ascii_letters + string.digits]:
+                if not self.is_valid_template_name(template_name):
                     await ctx.send("You can only use normal lettering and digits in your command name. Please run this command again to set a new one.")
                     return
 

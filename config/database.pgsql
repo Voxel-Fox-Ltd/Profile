@@ -91,6 +91,8 @@ CREATE TABLE IF NOT EXISTS created_profile(
     name VARCHAR(1000),
     template_id UUID REFERENCES template(template_id) ON DELETE CASCADE,
     verified BOOLEAN DEFAULT FALSE,
+    posted_message_id BIGINT,
+    posted_channel_id BIGINT,
     PRIMARY KEY (user_id, name, template_id)
 );
 -- A table describing an entire profile filled by a user

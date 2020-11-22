@@ -12,16 +12,19 @@ class ProfileVerification(utils.Cog):
     TICK_EMOJI = "<:tick_yes:596096897995899097>"
     CROSS_EMOJI = "<:cross_no:596096897769275402>"
 
-    async def send_profile_verification(self, user_profile:localutils.UserProfile, target_user:discord.Member) -> bool:
+    async def send_profile_verification(self, user_profile:localutils.UserProfile, target_user:discord.Member) -> typing.Optional[discord.Message]:
         """
         Sends a profile in to the template's verification channel.
 
         Args:
-            user_profile (localutils.UserProfile): The profile to be submitted
-            target_user (discord.Member): The owner of the profile
+            user_profile (localutils.UserProfile): The profile to be submitted.
+            target_user (discord.Member): The owner of the profile.
 
         Returns:
-            bool: Whether or not the verification send was successful
+            typing.Optional[discord.Message]: The message that was sent into the verification channel by the bot.
+
+        Raises:
+            localutils.errors.TemplateVerificationChannelError: The bot encountered an error sending a message to the verification channel.
         """
 
         # Grab the verification channel ID
@@ -60,9 +63,9 @@ class ProfileVerification(utils.Cog):
             raise localutils.errors.TemplateVerificationChannelError(f"I can't add reactions in {channel.mention}.")
 
         # Wew nice we're done
-        return True
+        return v
 
-    async def send_profile_archivation(self, user_profile:localutils.UserProfile, target_user:discord.Member) -> bool:
+    async def send_profile_archivation(self, user_profile:localutils.UserProfile, target_user:discord.Member) -> typing.Optional[discord.Message]:
         """
         Send a profile to the template's archive channel.
         This will also add the given role to the user.
@@ -93,23 +96,20 @@ class ProfileVerification(utils.Cog):
         # Send the data
         embed: utils.Embed = user_profile.build_embed(target_user)
         try:
-            await channel.send(target_user.mention, embed=embed)
+            return await channel.send(target_user.mention, embed=embed)
         except discord.HTTPException:
             raise localutils.errors.TemplateArchiveChannelError(f"I can't send messages to {channel.mention}.")
 
-        # Wew nice we're done
-        return True
-
-    async def add_profile_user_roles(self, user_profile:localutils.UserProfile, target_user:discord.Member) -> bool:
+    async def add_profile_user_roles(self, user_profile:localutils.UserProfile, target_user:discord.Member) -> None:
         """
         Add the profile roles to a given user.
 
         Args:
-            user_profile (localutils.UserProfile): The profile to be submitted
-            target_user (discord.Member): The owner of the profile
+            user_profile (localutils.UserProfile): The profile to be submitted.
+            target_user (discord.Member): The owner of the profile.
 
-        Returns:
-            bool: Whether or not the role add was successful
+        Raises:
+            localutils.errors.TemplateRoleAddError: The bot encountered some error or another adding the roles to the user.
         """
 
         # Grab the role ID
@@ -129,38 +129,36 @@ class ProfileVerification(utils.Cog):
         except AttributeError:
             raise localutils.errors.TemplateRoleAddError(f"I couldn't find a role on this server with the ID `{role_id}`.")
 
-        # Wew we're done
-        return True
-
-    async def send_profile_submission(self, ctx:utils.Context, user_profile:localutils.UserProfile, target_user:discord.Member) -> bool:
+    async def send_profile_submission(self, ctx:utils.Context, user_profile:localutils.UserProfile, target_user:discord.Member) -> typing.Optional[discord.Message]:
         """
         Send a profile verification OR archive message for a given profile. Returns whether or not the sending was a success.
 
         Args:
-            ctx (utils.Context): The command invocation for the user setting the profile
-            user_profile (localutils.UserProfile): The profile being sent
-            target_user (discord.Member): The owner of the profile (may not be the same as ctx.author)
+            ctx (utils.Context): The command invocation for the user setting the profile.
+            user_profile (localutils.UserProfile): The profile being sent.
+            target_user (discord.Member): The owner of the profile (may not be the same as ctx.author).
 
         Returns:
-            bool: Whether or not sending the profile verification succeeds. 0 if any errors were found, 1 if it worked fine
+            typing.Optional[discord.Message]: The message that was sent by the bot containing the user's profile.
         """
 
         # Grab the template
         template = user_profile.template
+        return_message = None
 
         # Run each of the items
         try:
             if template.verification_channel_id:
-                await self.send_profile_verification(user_profile, target_user)
+                return_message = await self.send_profile_verification(user_profile, target_user)
             else:
-                await self.send_profile_archivation(user_profile, target_user)
+                return_message = await self.send_profile_archivation(user_profile, target_user)
                 await self.add_profile_user_roles(user_profile, target_user)
         except localutils.errors.TemplateSendError as e:
             await ctx.author.send(str(e))
-            return False
+            return None
 
         # Wew it worked
-        return True
+        return return_message
 
     @utils.Cog.listener('on_raw_reaction_add')
     async def verification_emoji_check(self, payload:discord.RawReactionActionEvent):

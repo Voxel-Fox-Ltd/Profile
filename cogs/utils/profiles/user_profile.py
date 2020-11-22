@@ -11,20 +11,23 @@ from cogs.utils.profiles.command_processor import CommandProcessor, InvalidComma
 
 
 class UserProfile(object):
-    """A filled user template
-    This represents a template filled by a user containing all of their relevant information
+    """
+    A filled user template.
+    This represents a template filled by a user containing all of their relevant information.
     This class itself does not contain the user's data, but rather the metadata about their given profile,
     eg whether it's been verified etc; the user's data is stored inthe FilledField objects associated
-    with this
+    with this.
     """
 
-    __slots__ = ("user_id", "name", "template_id", "verified", "all_filled_fields", "template")
+    __slots__ = ("user_id", "name", "template_id", "verified", "all_filled_fields", "template", "posted_message_id", "posted_channel_id")
 
-    def __init__(self, user_id:int, name:str, template_id:uuid.UUID, verified:bool, template:Template=None):
+    def __init__(self, user_id:int, name:str, template_id:uuid.UUID, verified:bool, posted_message_id:int, posted_channel_id:int, template:Template=None):
         self.user_id: int = user_id
         self.name: str = name
         self.template_id: uuid.UUID = template_id
         self.verified: bool = verified
+        self.posted_message_id = posted_message_id
+        self.posted_channel_id = posted_channel_id
         self.all_filled_fields: typing.Dict[uuid.UUID, FilledField] = dict()
         self.template: Template = template
 
@@ -42,18 +45,44 @@ class UserProfile(object):
         return self.all_filled_fields
 
     async def fetch_template(self, db, *, fetch_fields:bool=True) -> Template:
-        """Fetch the template for this field and store it in .template"""
+        """
+        Fetch the template for this field and store it in .template.
+        """
 
         template = await Template.fetch_template_by_id(db, self.template_id, fetch_fields=fetch_fields)
         self.template = template
         return template
+
+    async def fetch_message(self, bot) -> typing.Optional[discord.Message]:
+        """
+        Fetch the message associated with this profile's archivation/submission.
+
+        Args:
+            bot (discord.ext.commands.Bot): The bot instance that can fetch this message.
+
+        Returns:
+            typing.Optional[discord.Message]: The message associated with the profile. May be None.
+        """
+
+        # See if we should bother asking the API
+        if self.posted_channel_id is None or self.posted_message_id is None:
+            return None
+
+        # I'm not even gonna bother fetching the channel, I'll just get request it right here
+        try:
+            return bot.http.get_message(self.posted_channel_id, self.posted_message_id)
+        except discord.HTTPException:
+            pass
+        return None
 
     @property
     def filled_fields(self) -> typing.Dict[uuid.UUID, FilledField]:
         return {i: o for i, o in self.all_filled_fields.items() if o.field is not None and o.field.deleted is False and o.value is not None}
 
     def build_embed(self, member:typing.Optional[discord.Member]=None) -> utils.Embed:
-        """Converts the filled profile into an embed"""
+        """
+        Converts the filled profile into an embed.
+        """
 
         # See if they're the right person
         if member and member.id != self.user_id:

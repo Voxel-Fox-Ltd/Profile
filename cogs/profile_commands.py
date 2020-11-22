@@ -223,16 +223,27 @@ class ProfileCreation(utils.Cog):
         except discord.HTTPException as e:
             return await ctx.author.send(f"Your profile couldn't be sent to you - `{e}`.\nPlease try again later.")
 
+        # Delete the currently archived message, should one exist
+        current_profile_message = await user_profile.fetch_message(self.bot)
+        if current_profile_message:
+            try:
+                await current_profile_message.delete()
+            except discord.HTTPException:
+                pass
+
         # Let's see if this worked
-        if await self.bot.get_cog("ProfileVerification").send_profile_submission(ctx, user_profile, target_user) is False:
+        sent_profile_message = await self.bot.get_cog("ProfileVerification").send_profile_submission(ctx, user_profile, target_user)
+        if sent_profile_message is None:
             return
 
         # Database me up daddy
         async with self.bot.database() as db:
             await db(
-                """INSERT INTO created_profile (user_id, name, template_id, verified) VALUES ($1, $2, $3, $4)
-                ON CONFLICT (user_id, name, template_id) DO UPDATE SET verified=excluded.verified""",
-                user_profile.user_id, user_profile.name, user_profile.template.template_id, user_profile.verified
+                """INSERT INTO created_profile (user_id, name, template_id, verified, posted_message_id, posted_channel_id)
+                VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (user_id, name, template_id)
+                DO UPDATE SET verified=excluded.verified, posted_message_id=excluded.posted_message_id, posted_channel_id=excluded.posted_channel_id""",
+                user_profile.user_id, user_profile.name, user_profile.template.template_id, user_profile.verified,
+                sent_profile_message.id, sent_profile_message.channel.id
             )
             for field in filled_field_dict.values():
                 await db(
@@ -380,16 +391,34 @@ class ProfileCreation(utils.Cog):
         except discord.HTTPException as e:
             return await ctx.author.send(f"Your profile couldn't be sent to you, so the embed was probably hecked - `{e}`.\nPlease try again later.")
 
-        # Let's see if this worked
-        if await self.bot.get_cog("ProfileVerification").send_profile_submission(ctx, user_profile, target_user) is False:
+        # Delete the currently archived message, should one exist
+        current_profile_message = await user_profile.fetch_message(self.bot)
+        if current_profile_message:
+            try:
+                await current_profile_message.delete()
+            except discord.HTTPException:
+                pass
+
+        # Send profile over to the mods
+        sent_profile_message = await self.bot.get_cog("ProfileVerification").send_profile_submission(ctx, user_profile, target_user)
+        if sent_profile_message is None:
             return
 
         # Database me up daddy
         async with self.bot.database() as db:
-            if user_profile.verified is False:
-                await db("INSERT INTO created_profile (user_id, name, template_id, verified) VALUES ($1, $2, $3, $4) ON CONFLICT (user_id, name, template_id) DO UPDATE SET verified=excluded.verified", user_profile.user_id, user_profile.name, user_profile.template.template_id, user_profile.verified)
+            await db(
+                """INSERT INTO created_profile (user_id, name, template_id, verified, posted_message_id, posted_channel_id)
+                VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (user_id, name, template_id)
+                DO UPDATE SET verified=excluded.verified, posted_message_id=excluded.posted_message_id, posted_channel_id=excluded.posted_channel_id""",
+                user_profile.user_id, user_profile.name, user_profile.template.template_id, user_profile.verified,
+                sent_profile_message.id, sent_profile_message.channel.id,
+            )
             for field in user_profile.all_filled_fields.values():
-                await db("INSERT INTO filled_field (user_id, name, field_id, value) VALUES ($1, $2, $3, $4) ON CONFLICT (user_id, name, field_id) DO UPDATE SET value=excluded.value", field.user_id, user_profile.name, field.field_id, field.value)
+                await db(
+                    """INSERT INTO filled_field (user_id, name, field_id, value) VALUES ($1, $2, $3, $4)
+                    ON CONFLICT (user_id, name, field_id) DO UPDATE SET value=excluded.value""",
+                    field.user_id, user_profile.name, field.field_id, field.value
+                )
 
         # Respond to user
         await ctx.author.send("Your profile has been edited and saved.")
@@ -433,7 +462,15 @@ class ProfileCreation(utils.Cog):
                     await ctx.send(f"You don't have a profile for **{template.name}**.")
             return
 
-        # Database it babey
+        # Delete the currently archived message, should one exist
+        current_profile_message = await user_profile.fetch_message(self.bot)
+        if current_profile_message:
+            try:
+                await current_profile_message.delete()
+            except discord.HTTPException:
+                pass
+
+        # Remove it from the database
         user = user or ctx.author
         async with self.bot.database() as db:
             await db("DELETE FROM created_profile WHERE user_id=$1 AND template_id=$2 AND name=$3", user.id, template.template_id, user_profile.name)

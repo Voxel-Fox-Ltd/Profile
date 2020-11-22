@@ -88,7 +88,15 @@ class ProfileTemplates(utils.Cog):
 
             # Set up our initial vars so we can edit them later
             template_display_edit_message = await ctx.send("Loading template...")
-            template_options_edit_message = await ctx.send("Loading edit options...")
+            template_options_edit_message = await ctx.send((
+                "**Select the emoji next to the item you want to edit:**\n"
+                "1\u20e3 Template name\n"
+                "2\u20e3 Verification channel (where profiles are sent to be verified by staff)\n"
+                "3\u20e3 Archive channel (where profiles are sent once verified)\n"
+                "4\u20e3 Set a role to be given to users upon completing a profile\n"
+                "5\u20e3 Template fields/questions\n"
+                "6\u20e3 Max profile count\n"
+            ))
             messages_to_delete = []
             should_edit = True
             should_add_reactions = True
@@ -98,15 +106,6 @@ class ProfileTemplates(utils.Cog):
 
                 # Ask what they want to edit
                 if should_edit:
-                    content = (
-                        "**Select the emoji next to the item you want to edit:**\n"
-                        "1\u20e3 Template name\n"
-                        "2\u20e3 Verification channel (where profiles are sent to be verified by staff)\n"
-                        "3\u20e3 Archive channel (where profiles are sent once verified)\n"
-                        "4\u20e3 Set a role to be given to users upon completing a profile\n"
-                        "5\u20e3 Template fields/questions\n"
-                        "6\u20e3 Max profile count\n"
-                    )
                     try:
                         await template_display_edit_message.edit(
                             content=None,

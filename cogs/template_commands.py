@@ -367,13 +367,13 @@ class ProfileTemplates(utils.Cog):
                 ),
                 "3\N{COMBINING ENCLOSING KEYCAP}": (
                     "optional", str, "Do you want this field to be optional? Type **yes** or **no**.",
-                    lambda given: "You need to say either **yes** or **no** for this field." if given.lower() not in ['yes', 'no'] else True,
-                    lambda given: {'yes': True, 'false': False}[given],
+                    lambda given: "You need to say either **yes** or **no** for this field." if given.lower() not in ['yes', 'no', 'true', 'false'] else True,
+                    lambda given: {'yes': True, 'no': False, 'true': True, 'false': False}[given.lower()],
                 ),
                 "4\N{COMBINING ENCLOSING KEYCAP}": (
                     "field_type", str, "What type do you want this field to have? Type **text**, or **number**.",
-                    lambda given: "You need to say either **text** or **number** for this field." if given.lower() not in ['text', 'number'] else True,
-                    lambda given: {'text': '1000-CHAR', 'number': 'INT'}[given],
+                    lambda given: "You need to say either **text** or **number** for this field." if given.lower() not in ['text', 'number', 'numbers', 'int', 'integer'] else True,
+                    lambda given: {'text': '1000-CHAR', 'number': 'INT', 'numbers': 'INT', 'int': 'INT', 'integer': 'INT'}[given.lower()],
                 ),
                 "5\N{COMBINING ENCLOSING KEYCAP}": None,
                 self.CROSS_EMOJI: None,

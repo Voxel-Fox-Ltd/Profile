@@ -128,7 +128,15 @@ class ProfileTemplates(utils.Cog):
                 valid_emoji.append(self.TICK_EMOJI)
                 if should_add_reactions:
                     for e in valid_emoji:
-                        await template_options_edit_message.add_reaction(e)
+                        try:
+                            await template_options_edit_message.add_reaction(e)
+                        except discord.HTTPException:
+                            try:
+                                await template_display_edit_message.delete()
+                                await template_options_edit_message.edit(content="I'm unable to add reactions to my messages.")
+                            except discord.HTTPException:
+                                pass
+                            return
                     should_add_reactions = False
 
                 # Wait for a response
@@ -469,7 +477,14 @@ class ProfileTemplates(utils.Cog):
             delete_confirmation_message = await ctx.send("By doing this, you'll delete all of the created profiles under this template as well. Would you like to proceed?")
             valid_reactions = [self.TICK_EMOJI, self.CROSS_EMOJI]
             for e in valid_reactions:
-                await delete_confirmation_message.add_reaction(e)
+                try:
+                    await delete_confirmation_message.add_reaction(e)
+                except discord.HTTPException:
+                    try:
+                        await delete_confirmation_message.edit(content="I'm unable to add reactions to my messages.")
+                    except discord.HTTPException:
+                        pass
+                    return
             try:
                 r = await self.bot.wait_for(
                     "raw_reaction_add", timeout=120.0,

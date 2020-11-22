@@ -87,7 +87,8 @@ class ProfileTemplates(utils.Cog):
             guild_settings = guild_settings_rows[0]
 
             # Set up our initial vars so we can edit them later
-            edit_message = await ctx.send("Loading...")
+            template_display_edit_message = await ctx.send("Loading template...")
+            template_options_edit_message = await ctx.send("Loading edit options...")
             messages_to_delete = []
             should_edit = True
             should_add_reactions = True
@@ -106,11 +107,14 @@ class ProfileTemplates(utils.Cog):
                         "5\u20e3 Template fields/questions\n"
                         "6\u20e3 Max profile count\n"
                     )
-                    await edit_message.edit(
-                        content=content,
-                        embed=template.build_embed(brief=True),
-                        allowed_mentions=discord.AllowedMentions(roles=False),
-                    )
+                    try:
+                        await template_display_edit_message.edit(
+                            content=None,
+                            embed=template.build_embed(brief=True),
+                            allowed_mentions=discord.AllowedMentions(roles=False),
+                        )
+                    except discord.HTTPException:
+                        return
                     should_edit = False
 
                 # Add reactions if there aren't any
@@ -121,12 +125,12 @@ class ProfileTemplates(utils.Cog):
                 valid_emoji.append(self.TICK_EMOJI)
                 if should_add_reactions:
                     for e in valid_emoji:
-                        await edit_message.add_reaction(e)
+                        await template_options_edit_message.add_reaction(e)
                     should_add_reactions = False
 
                 # Wait for a response
                 try:
-                    check = lambda p: p.user_id == ctx.author.id and p.message_id == edit_message.id and str(p.emoji) in valid_emoji
+                    check = lambda p: p.user_id == ctx.author.id and p.message_id == template_options_edit_message.id and str(p.emoji) in valid_emoji
                     payload = await self.bot.wait_for("raw_reaction_add", check=check, timeout=120)
                     reaction = str(payload.emoji)
                 except asyncio.TimeoutError:
@@ -149,13 +153,12 @@ class ProfileTemplates(utils.Cog):
                     attr, converter = available_reactions[reaction]
                 except TypeError:
                     break
-                await edit_message.remove_reaction(reaction, ctx.author)
+                await template_options_edit_message.remove_reaction(reaction, ctx.author)
 
                 # If they want to edit a field, we go through this section
                 if attr is None:
                     fields_have_changed = await converter
                     if fields_have_changed is None:
-                        # return
                         pass
                     if fields_have_changed:
                         async with self.bot.database() as db:
@@ -233,12 +236,7 @@ class ProfileTemplates(utils.Cog):
 
         # Tell them it's done
         try:
-            await edit_message.edit(
-                content=None,
-                embed=template.build_embed(brief=True),
-                allowed_mentions=discord.AllowedMentions(roles=False),
-            )
-            await edit_message.clear_reactions()
+            await template_options_edit_message.delete()
         except discord.HTTPException:
             pass
         await ctx.send("Done editing template.")
@@ -285,6 +283,7 @@ class ProfileTemplates(utils.Cog):
                 if len(template.fields) == 0 or field_index_message.content.lower() == "new":
                     if len(template.fields) < guild_settings['max_template_field_count'] or ctx.original_author_id in self.bot.owner_ids:
                         image_field_exists: bool = any([i for i in template.fields.values() if isinstance(i.field_type, localutils.ImageField)])
+                        self.bot.loop.create_task(self.purge_message_list(ctx.channel, messages_to_delete))
                         field: localutils.Field = await self.create_new_field(
                             ctx=ctx,
                             template=template,
@@ -293,7 +292,6 @@ class ProfileTemplates(utils.Cog):
                             prompt_for_creation=False,
                             delete_messages=True
                         )
-                        await ctx.channel.purge(check=lambda m: m.id in [i.id for i in messages_to_delete], bulk=ctx.channel.permissions_for(ctx.guild.me).manage_messages)
                         if field is None:
                             return None
                         async with self.bot.database() as db:
@@ -322,10 +320,12 @@ class ProfileTemplates(utils.Cog):
         # Ask what part of it they want to edit
         attribute_message: discord.Message = await ctx.send(
             (
-                f"Alright, editing the field **{field_to_edit.name}**. What part do you want to edit? "
-                "Its name (1\N{COMBINING ENCLOSING KEYCAP}), prompt (2\N{COMBINING ENCLOSING KEYCAP}), "
-                "whether or not it's optional (3\N{COMBINING ENCLOSING KEYCAP}), its type (4\N{COMBINING ENCLOSING KEYCAP}), "
-                "or delete it entirely (5\N{COMBINING ENCLOSING KEYCAP})?"
+                f"Editing the field **{field_to_edit.name}**. Which part would you like to edit?\n"
+                "1\N{COMBINING ENCLOSING KEYCAP} Field name\n"
+                "2\N{COMBINING ENCLOSING KEYCAP} Field prompt\n"
+                "3\N{COMBINING ENCLOSING KEYCAP} Whether or not the field is optional\n"
+                "4\N{COMBINING ENCLOSING KEYCAP} Field type\n"
+                "5\N{COMBINING ENCLOSING KEYCAP} Delete field entierly\n"
             ), allowed_mentions=discord.AllowedMentions(users=False, roles=False, everyone=False)
         )
         messages_to_delete.append(attribute_message)
@@ -382,7 +382,7 @@ class ProfileTemplates(utils.Cog):
                 raise ValueError()  # Cancel
             attr, value_converter, prompt, value_check, post_conversion_fixer = available_reactions[emoji]
         except ValueError:
-            await ctx.channel.purge(check=lambda m: m.id in [i.id for i in messages_to_delete], bulk=ctx.channel.permissions_for(ctx.guild.me).manage_messages)
+            await self.purge_message_list(ctx.channel, messages_to_delete)
             return False
         except TypeError:
             attr, value_converter, prompt, value_check = None, None, None, None  # Delete field
@@ -440,7 +440,7 @@ class ProfileTemplates(utils.Cog):
                 await db("UPDATE field SET deleted=true WHERE field_id=$1", field_to_edit.field_id)
 
         # And done
-        await ctx.channel.purge(check=lambda m: m.id in [i.id for i in messages_to_delete], bulk=ctx.channel.permissions_for(ctx.guild.me).manage_messages)
+        await self.purge_message_list(ctx.channel, messages_to_delete)
         return True
 
     @utils.command()
@@ -748,7 +748,7 @@ class ProfileTemplates(utils.Cog):
 
         # See if we need to delete things
         if delete_messages:
-            await ctx.channel.purge(check=lambda m: m.id in [i.id for i in messages_to_delete], bulk=ctx.channel.permissions_for(ctx.guild.me).manage_messages)
+            await self.purge_message_list(ctx.channel, messages_to_delete)
 
         # And we done
         return field

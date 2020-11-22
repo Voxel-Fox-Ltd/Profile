@@ -242,7 +242,12 @@ class ProfileTemplates(utils.Cog):
             await template_options_edit_message.delete()
         except discord.HTTPException:
             pass
-        await ctx.send("Done editing template.")
+        await ctx.send(
+            (
+                f"Finished editing template. Users can create profiles with `{ctx.clean_prefix}set{template.name.lower()}`, "
+                f"edit with `{ctx.clean_prefix}edit{template.name.lower()}`, and show them with `{ctx.clean_prefix}get{template.name.lower()}`."
+            )
+        )
 
     async def edit_field(self, ctx:utils.Context, template:localutils.Template, guild_settings:dict) -> bool:
         """

@@ -13,7 +13,8 @@ class ProfileVerification(utils.Cog):
     CROSS_EMOJI = "<:cross_no:596096897769275402>"
 
     async def send_profile_verification(self, user_profile:localutils.UserProfile, target_user:discord.Member) -> bool:
-        """Sends a profile in to the template's verification channel
+        """
+        Sends a profile in to the template's verification channel.
 
         Args:
             user_profile (localutils.UserProfile): The profile to be submitted
@@ -62,9 +63,10 @@ class ProfileVerification(utils.Cog):
         return True
 
     async def send_profile_archivation(self, user_profile:localutils.UserProfile, target_user:discord.Member) -> bool:
-        """Send a profile to the template's archive channel
-        This will also add the given role to the user
-        Yes, archivation is a word
+        """
+        Send a profile to the template's archive channel.
+        This will also add the given role to the user.
+        Yes, archivation is a word.
 
         Args:
             user_profile (localutils.UserProfile): The profile to be submitted
@@ -99,7 +101,8 @@ class ProfileVerification(utils.Cog):
         return True
 
     async def add_profile_user_roles(self, user_profile:localutils.UserProfile, target_user:discord.Member) -> bool:
-        """Add the profile roles to a given user
+        """
+        Add the profile roles to a given user.
 
         Args:
             user_profile (localutils.UserProfile): The profile to be submitted
@@ -130,7 +133,8 @@ class ProfileVerification(utils.Cog):
         return True
 
     async def send_profile_submission(self, ctx:utils.Context, user_profile:localutils.UserProfile, target_user:discord.Member) -> bool:
-        """Send a profile verification OR archive message for a given profile. Returns whether or not the sending was a success
+        """
+        Send a profile verification OR archive message for a given profile. Returns whether or not the sending was a success.
 
         Args:
             ctx (utils.Context): The command invocation for the user setting the profile
@@ -160,7 +164,9 @@ class ProfileVerification(utils.Cog):
 
     @utils.Cog.listener('on_raw_reaction_add')
     async def verification_emoji_check(self, payload:discord.RawReactionActionEvent):
-        """Triggered when a reaction is added or removed, check for profile verification"""
+        """
+        Triggered when a reaction is added or removed, check for profile verification.
+        """
 
         # Check that both the channel and the message are readable
         try:

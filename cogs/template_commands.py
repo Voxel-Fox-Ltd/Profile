@@ -371,8 +371,8 @@ class ProfileTemplates(utils.Cog):
                 ),
                 "4\N{COMBINING ENCLOSING KEYCAP}": (
                     "field_type", str, "What type do you want this field to have? Type **text**, or **number**.",
-                    lambda given: "You need to say either **text** or **number** for this field." if given.lower() not in ['text', 'number', 'numbers', 'int', 'integer'] else True,
-                    lambda given: {'text': '1000-CHAR', 'number': 'INT', 'numbers': 'INT', 'int': 'INT', 'integer': 'INT'}[given.lower()],
+                    lambda given: "You need to say either **text** or **number** for this field." if given.lower() not in ['text', 'number', 'numbers', 'int', 'integer', 'str', 'string'] else True,
+                    lambda given: {'text': '1000-CHAR', 'number': 'INT', 'numbers': 'INT', 'int': 'INT', 'integer': 'INT', 'str': '1000-CHAR', 'string': '1000-CHAR'}[given.lower()],
                 ),
                 "5\N{COMBINING ENCLOSING KEYCAP}": None,
                 self.CROSS_EMOJI: None,

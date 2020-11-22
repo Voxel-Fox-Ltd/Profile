@@ -28,7 +28,9 @@ class ProfileCreation(utils.Cog):
 
     @utils.Cog.listener()
     async def on_command_error(self, ctx:utils.Context, error:commands.CommandError):
-        """CommandNotFound handler so the bot can search for that custom command"""
+        """
+        CommandNotFound handler so the bot can search for that custom command.
+        """
 
         # Handle commandnotfound which is really just handling the set/get/delete/etc commands
         if not isinstance(error, commands.CommandNotFound):
@@ -68,7 +70,9 @@ class ProfileCreation(utils.Cog):
     @commands.guild_only()
     @utils.checks.meta_command()
     async def set_profile_meta(self, ctx:utils.Context, target_user:typing.Optional[discord.Member]):
-        """Talks a user through setting up a profile on a given server"""
+        """
+        Talks a user through setting up a profile on a given server.
+        """
 
         # Set up some variables
         target_user: discord.Member = target_user or ctx.author
@@ -248,7 +252,9 @@ class ProfileCreation(utils.Cog):
     @commands.guild_only()
     @utils.checks.meta_command()
     async def edit_profile_meta(self, ctx:utils.Context, target_user:typing.Optional[discord.Member], *, profile_name:str=None):
-        """Talks a user through setting up a profile on a given server"""
+        """
+        Talks a user through setting up a profile on a given server.
+        """
 
         # Set up some variables
         target_user = target_user or ctx.author
@@ -393,7 +399,9 @@ class ProfileCreation(utils.Cog):
     @commands.guild_only()
     @utils.checks.meta_command()
     async def delete_profile_meta(self, ctx:utils.Context, user:typing.Optional[discord.Member], *, profile_name:str=None):
-        """Handles deleting a profile"""
+        """
+        Handles deleting a profile.
+        """
 
         # You can only delete someone else's profile if you're a moderator
         if user and ctx.author != user and not localutils.checks.member_is_moderator(self.bot, ctx.author):
@@ -436,7 +444,9 @@ class ProfileCreation(utils.Cog):
     @commands.guild_only()
     @utils.checks.meta_command()
     async def get_profile_meta(self, ctx:utils.Context, user:typing.Optional[discord.Member], *, profile_name:str=None):
-        """Gets a profile for a given member"""
+        """
+        Gets a profile for a given member.
+        """
 
         # See if there's a set profile
         template: localutils.Template = ctx.template
@@ -479,7 +489,9 @@ class ProfileCreation(utils.Cog):
     @commands.is_owner()
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def forcegetprofile(self, ctx:utils.Context, template:localutils.Template, user:utils.converters.UserID, name:str='default'):
-        """Get the profile of a user"""
+        """
+        Get the profile of a user.
+        """
 
         async with self.bot.database() as db:
             profile: localutils.UserProfile = await template.fetch_profile_for_user(db, user, name, fetch_filled_fields=True)

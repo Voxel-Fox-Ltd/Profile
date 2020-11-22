@@ -70,7 +70,7 @@ class UserProfile(object):
 
         # I'm not even gonna bother fetching the channel, I'll just get request it right here
         try:
-            return bot.http.get_message(self.posted_channel_id, self.posted_message_id)
+            return await bot.http.get_message(self.posted_channel_id, self.posted_message_id)
         except discord.HTTPException:
             pass
         return None

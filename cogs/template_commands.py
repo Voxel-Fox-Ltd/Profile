@@ -229,7 +229,7 @@ class ProfileTemplates(utils.Cog):
                     if ctx.original_author_id in self.bot.owner_ids:
                         pass
                     else:
-                        converted = max([min([converted, guild_settings['max_profile_count']]), 1])
+                        converted = max([min([converted, guild_settings['max_profile_count']]), 0])
 
                 # Store our new shit
                 setattr(template, attr, converted)

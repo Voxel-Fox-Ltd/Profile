@@ -90,6 +90,9 @@ class ProfileCreation(utils.Cog):
         async with self.bot.database() as db:
             await template.fetch_fields(db)
             user_profiles: typing.List[localutils.UserProfile] = await template.fetch_all_profiles_for_user(db, target_user.id)
+        if template.max_profile_count == 0:
+            await ctx.send(f"Currently the template **{template.name}** is not accepting any more applications.")
+            return
         if len(user_profiles) >= template.max_profile_count:
             if target_user == ctx.author:
                 await ctx.send(f"You're already at the maximum number of profiles set for **{template.name}**.")
@@ -270,6 +273,11 @@ class ProfileCreation(utils.Cog):
         # Set up some variables
         target_user = target_user or ctx.author
         template = ctx.template
+
+        # See if they're allowed to edit their profile
+        if template.max_profile_count == 0:
+            await ctx.send(f"Currently the template **{template.name}** is not accepting any more applications, and you can't edit profiles while that's disabled.")
+            return
 
         # See if the user is already setting up a profile
         if self.set_profile_locks[ctx.author.id].locked():

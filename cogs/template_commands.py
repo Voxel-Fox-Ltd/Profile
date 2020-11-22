@@ -341,7 +341,7 @@ class ProfileTemplates(utils.Cog):
         try:
             check = lambda p: p.user_id == ctx.author.id and p.message_id == attribute_message.id and str(p.emoji) in valid_emoji
             reaction = await self.bot.wait_for("raw_reaction_add", check=check, timeout=120)
-            emoji = str(payload.emoji)
+            emoji = str(reaction.emoji)
         except asyncio.TimeoutError:
             await ctx.send("Timed out waiting for field attribute.")
             return None

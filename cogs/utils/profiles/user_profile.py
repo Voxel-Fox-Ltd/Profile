@@ -68,11 +68,19 @@ class UserProfile(object):
         if self.posted_channel_id is None or self.posted_message_id is None:
             return None
 
-        # I'm not even gonna bother fetching the channel, I'll just get request it right here
+        # Get channel
         try:
-            return await bot.http.get_message(self.posted_channel_id, self.posted_message_id)
+            channel = bot.get_channel(self.posted_channel_id) or await bot.fetch_channel(self.posted_channel_id)
+        except discord.HTTPException:
+            return None
+
+        # Get message
+        try:
+            return await channel.fetch_message(self.posted_message_id)
         except discord.HTTPException:
             pass
+
+        # Oh well
         return None
 
     @property

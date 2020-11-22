@@ -58,7 +58,11 @@ class ProfileTemplates(utils.Cog):
     async def describetemplate(self, ctx:utils.Context, template:localutils.Template, brief:bool=True):
         """Describe a template and its fields"""
 
-        return await ctx.send(embed=template.build_embed(brief=brief))
+        embed = template.build_embed(brief=brief)
+        async with self.bot.database() as db:
+            user_profiles = await template.fetch_all_profiles(db, fetch_filled_fields=False)
+        embed.description += f"\nCurrently there are **{len(user_profiles)}** created profiles for this template."
+        return await ctx.send(embed=embed)
 
     async def purge_message_list(self, channel:discord.TextChannel, message_list:typing.List[discord.Message]):
         """Delete a list of messages from the channel"""

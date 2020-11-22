@@ -37,8 +37,9 @@ class TemplateRoleAddError(TemplateSendError):
 
 
 class Template(object):
-    """A class for an abstract template object that's saved to guild
-    This contains no user data, but rather the metadata for the template itself
+    """
+    A class for an abstract template object that's saved to guild.
+    This contains no user data, but rather the metadata for the template itself.
     """
 
     TEMPLATE_ID_REGEX = re.compile(r"^(?P<uuid>.{8}-.{4}-.{4}-.{4}-.{12})$")
@@ -57,22 +58,30 @@ class Template(object):
         self.all_fields: typing.Dict[uuid.UUID, Field] = dict()
 
     def get_verification_channel_id(self, member:discord.Member) -> typing.Optional[int]:
-        """Get the correct verification channel ID for the given member"""
+        """
+        Get the correct verification channel ID for the given member.
+        """
 
         return self._get_id_from_command(self.verification_channel_id, member)
 
     def get_archive_channel_id(self, member:discord.Member) -> typing.Optional[int]:
-        """Get the correct archive channel ID for a given member"""
+        """
+        Get the correct archive channel ID for a given member.
+        """
 
         return self._get_id_from_command(self.archive_channel_id, member)
 
     def get_role_id(self, member:discord.Member) -> typing.Optional[int]:
-        """Get the correct role ID for a given member"""
+        """
+        Get the correct role ID for a given member.
+        """
 
         return self._get_id_from_command(self.role_id, member)
 
     def _get_id_from_command(self, text:str, member:discord.Member) -> typing.Optional[int]:
-        """Get the ID from either a command or as a straight value"""
+        """
+        Get the ID from either a command or as a straight value.
+        """
 
         # Given as a straight int
         if text is None:
@@ -88,20 +97,27 @@ class Template(object):
 
     @property
     def fields(self) -> typing.Dict[uuid.UUID, Field]:
-        """Returns a list of utils.Field objects for this particular profile"""
+        """
+        Returns a list of `utils.Field` objects for this particular profile.
+        """
 
         return {i: o for i, o in self.all_fields.items() if o.deleted is False}
 
     async def fetch_profile_for_user(self, db, user_id:int, profile_name:str=None, *, fetch_filled_fields:bool=True) -> 'cogs.utils.profiles.user_profile.UserProfile':
-        """Gets the filled profile for a given user
+        """
+        Gets the filled profile for a given user.
 
         Args:
-            db (cogs.utils.database.DatabaseConnection): Description
-            user_id (int): Description
-            fetch_filled_fields (bool, optional): Description
+            db (cogs.utils.database.DatabaseConnection): An active connection to the database.
+            user_id (int): The ID of the user you want to grab the information for.
+            profile_name (str, optional): The name of the profile you want to grab.
+            fetch_filled_fields (bool, optional): Whether or not to populate the filled fields for the UserProfile.
 
         Returns:
-            cogs.utils.profiles.user_profile.UserProfile: Description
+            cogs.utils.profiles.user_profile.UserProfile: The user profile that you asked for.
+
+        Raises:
+            ValueError: If no profile name was provided and multiple profiles were retrieved.
         """
 
         # Grab our imports here to avoid circular importing
@@ -125,12 +141,12 @@ class Template(object):
         """Gets the filled profile for a given user
 
         Args:
-            db (cogs.utils.database.DatabaseConnection): Description
-            user_id (int): Description
-            fetch_filled_fields (bool, optional): Description
+            db (cogs.utils.database.DatabaseConnection): An active connection to the database.
+            user_id (int): The ID of the user you want to grab the information for.
+            fetch_filled_fields (bool, optional): Whether or not to populate the filled fields for the UserProfile.
 
         Returns:
-            cogs.utils.profiles.user_profile.UserProfile: Description
+            typing.List['cogs.utils.profiles.user_profile.UserProfile']: A list of UserProfiles for the given user.
         """
 
         # Grab our imports here to avoid circular importing
@@ -143,9 +159,32 @@ class Template(object):
             [await i.fetch_filled_fields(db) for i in profiles]
         return profiles
 
+    async def fetch_all_profiles(self, db,  *, fetch_filled_fields:bool=True) -> typing.List['cogs.utils.profiles.user_profile.UserProfile']:
+        """Gets the filled profile for a given user
+
+        Args:
+            db (cogs.utils.database.DatabaseConnection): An active connection to the database.
+            fetch_filled_fields (bool, optional): Whether or not to populate the filled fields for the UserProfile.
+
+        Returns:
+            typing.List['cogs.utils.profiles.user_profile.UserProfile']: A list of UserProfiles for the given template.
+        """
+
+        # Grab our imports here to avoid circular importing
+        from cogs.utils.profiles.user_profile import UserProfile
+
+        # Grab the user profile
+        profile_rows = await db("SELECT * FROM created_profile WHERE template_id=$1", self.template_id)
+        profiles = [UserProfile(**i, template=self) for i in profile_rows]
+        if fetch_filled_fields:
+            [await i.fetch_filled_fields(db) for i in profiles]
+        return profiles
+
     @classmethod
     async def fetch_template_by_id(cls, db, template_id:uuid.UUID, *, fetch_fields:bool=True) -> typing.Optional['Template']:
-        """Get a template from the database via its ID"""
+        """
+        Get a template from the database via its ID.
+        """
 
         # Grab the template
         template_rows = await db("SELECT * FROM template WHERE template_id=$1", template_id)
@@ -158,7 +197,9 @@ class Template(object):
 
     @classmethod
     async def fetch_template_by_name(cls, db, guild_id:int, template_name:str, *, fetch_fields:bool=True) -> typing.Optional['Template']:
-        """Get a template from the database via its name"""
+        """
+        Get a template from the database via its name.
+        """
 
         # Grab the template
         template_rows = await db("SELECT * FROM template WHERE guild_id=$1 AND LOWER(name)=LOWER($2)", guild_id, template_name)
@@ -170,7 +211,9 @@ class Template(object):
         return template
 
     async def fetch_fields(self, db) -> typing.Dict[uuid.UUID, FilledField]:
-        """Fetch the fields for this template and store them in .all_fields"""
+        """
+        Fetch the fields for this template and store them in .all_fields.
+        """
 
         field_rows = await db("SELECT * FROM field WHERE template_id=$1", self.template_id)
         self.all_fields.clear()
@@ -181,7 +224,9 @@ class Template(object):
 
     @classmethod
     async def convert(cls, ctx, argument:str):
-        """The Discord.py convert method for getting a template"""
+        """
+        The Discord.py convert method for getting a template.
+        """
 
         match = cls.TEMPLATE_ID_REGEX.search(argument)
         async with ctx.bot.database() as db:
@@ -196,7 +241,9 @@ class Template(object):
         return v
 
     def build_embed(self, brief:bool=False) -> utils.Embed:
-        """Create an embed to visualise all of the created fields and given information"""
+        """
+        Create an embed to visualise all of the created fields and given information.
+        """
 
         # Create the initial embed
         fields: typing.List[Field] = sorted(self.fields.values(), key=lambda x: x.index)

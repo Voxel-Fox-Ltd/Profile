@@ -33,7 +33,7 @@ class ProfileVerification(utils.Cog):
 
         # Check if there's a verification channel
         if verification_channel_id is None:
-            return True
+            return None
 
         # Get the channel
         try:
@@ -85,7 +85,7 @@ class ProfileVerification(utils.Cog):
 
         # Check if there's an archive channel set
         if archive_channel_id is None:
-            return True
+            return None
 
         # Get the channel
         try:

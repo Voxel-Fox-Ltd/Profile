@@ -340,8 +340,8 @@ class ProfileTemplates(utils.Cog):
         # Wait for a response
         try:
             check = lambda p: p.user_id == ctx.author.id and p.message_id == attribute_message.id and str(p.emoji) in valid_emoji
-            payload = await self.bot.wait_for("raw_reaction_add", check=check, timeout=120)
-            reaction = str(payload.emoji)
+            reaction = await self.bot.wait_for("raw_reaction_add", check=check, timeout=120)
+            emoji = str(payload.emoji)
         except asyncio.TimeoutError:
             await ctx.send("Timed out waiting for field attribute.")
             return None
@@ -378,9 +378,9 @@ class ProfileTemplates(utils.Cog):
                 "5\N{COMBINING ENCLOSING KEYCAP}": None,
                 self.CROSS_EMOJI: None,
             }
-            if str(reaction.emoji) == self.CROSS_EMOJI:
+            if emoji == self.CROSS_EMOJI:
                 raise ValueError()  # Cancel
-            attr, value_converter, prompt, value_check, post_conversion_fixer = available_reactions[reaction]
+            attr, value_converter, prompt, value_check, post_conversion_fixer = available_reactions[emoji]
         except ValueError:
             await ctx.channel.purge(check=lambda m: m.id in [i.id for i in messages_to_delete], bulk=ctx.channel.permissions_for(ctx.guild.me).manage_messages)
             return False

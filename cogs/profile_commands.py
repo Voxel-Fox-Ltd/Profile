@@ -236,7 +236,7 @@ class ProfileCreation(utils.Cog):
 
         # Let's see if this worked
         sent_profile_message = await self.bot.get_cog("ProfileVerification").send_profile_submission(ctx, user_profile, target_user)
-        if sent_profile_message is None:
+        if user_profile.template.should_send_message and sent_profile_message is None:
             return
 
         # Database me up daddy
@@ -409,7 +409,7 @@ class ProfileCreation(utils.Cog):
 
         # Send profile over to the mods
         sent_profile_message = await self.bot.get_cog("ProfileVerification").send_profile_submission(ctx, user_profile, target_user)
-        if sent_profile_message is None:
+        if user_profile.template.should_send_message and sent_profile_message is None:
             return
 
         # Database me up daddy

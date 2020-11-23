@@ -57,6 +57,15 @@ class Template(object):
         self.max_profile_count: int = max_profile_count
         self.all_fields: typing.Dict[uuid.UUID, Field] = dict()
 
+    @property
+    def should_send_message(self) -> bool:
+        """
+        Says whether or not this template should send a message (verification/archivation) on its submission
+        """
+
+        return bool(self.verification_channel_id or self.archive_channel_id)
+
+
     def get_verification_channel_id(self, member:discord.Member) -> typing.Optional[int]:
         """
         Get the correct verification channel ID for the given member.

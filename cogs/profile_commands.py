@@ -238,6 +238,11 @@ class ProfileCreation(utils.Cog):
         sent_profile_message = await self.bot.get_cog("ProfileVerification").send_profile_submission(ctx, user_profile, target_user)
         if user_profile.template.should_send_message and sent_profile_message is None:
             return
+        send_profile_message_id = None
+        send_profile_channel_id = None
+        if sent_profile_message:
+            send_profile_message_id = sent_profile_message.id
+            send_profile_channel_id = sent_profile_message.channel.id
 
         # Database me up daddy
         async with self.bot.database() as db:
@@ -246,7 +251,7 @@ class ProfileCreation(utils.Cog):
                 VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (user_id, name, template_id)
                 DO UPDATE SET verified=excluded.verified, posted_message_id=excluded.posted_message_id, posted_channel_id=excluded.posted_channel_id""",
                 user_profile.user_id, user_profile.name, user_profile.template.template_id, user_profile.verified,
-                sent_profile_message.id, sent_profile_message.channel.id
+                send_profile_message_id, send_profile_channel_id
             )
             for field in filled_field_dict.values():
                 await db(
@@ -411,6 +416,11 @@ class ProfileCreation(utils.Cog):
         sent_profile_message = await self.bot.get_cog("ProfileVerification").send_profile_submission(ctx, user_profile, target_user)
         if user_profile.template.should_send_message and sent_profile_message is None:
             return
+        send_profile_message_id = None
+        send_profile_channel_id = None
+        if sent_profile_message:
+            send_profile_message_id = sent_profile_message.id
+            send_profile_channel_id = sent_profile_message.channel.id
 
         # Database me up daddy
         async with self.bot.database() as db:
@@ -419,7 +429,7 @@ class ProfileCreation(utils.Cog):
                 VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (user_id, name, template_id)
                 DO UPDATE SET verified=excluded.verified, posted_message_id=excluded.posted_message_id, posted_channel_id=excluded.posted_channel_id""",
                 user_profile.user_id, user_profile.name, user_profile.template.template_id, user_profile.verified,
-                sent_profile_message.id, sent_profile_message.channel.id,
+                send_profile_message_id, send_profile_channel_id,
             )
             for field in user_profile.all_filled_fields.values():
                 await db(

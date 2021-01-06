@@ -99,7 +99,7 @@ class ProfileTemplates(utils.Cog):
                 "3\u20e3 Archive channel (where profiles are sent once verified)\n"
                 "4\u20e3 Set a role to be given to users upon completing a profile\n"
                 "5\u20e3 Template fields/questions\n"
-                "6\u20e3 Max profile count\n"
+                "6\u20e3 Maximum profile count per user\n"
             ))
             messages_to_delete = []
             should_edit = True

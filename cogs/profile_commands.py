@@ -126,7 +126,7 @@ class ProfileCreation(utils.Cog):
                     else:
                         break
             else:
-                await ctx.author.send(f"What name would you like to give this profile? This won't be shown, but will be used to get the profile information (eg for the name \"test\", you could run `get{template.name.lower()} test`).")
+                await ctx.author.send(f"What name would you like to give this profile? This will be used to get the profile information (eg for the name \"test\", you could run `get{template.name.lower()} test`).")
                 while True:
                     try:
                         user_message = await self.bot.wait_for(

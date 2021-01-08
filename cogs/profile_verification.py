@@ -148,7 +148,7 @@ class ProfileVerification(utils.Cog):
 
         # Run each of the items
         try:
-            if template.verification_channel_id:
+            if template.get_verification_channel_id(target_user):
                 return_message = await self.send_profile_verification(user_profile, target_user)
             else:
                 return_message = await self.send_profile_archivation(user_profile, target_user)

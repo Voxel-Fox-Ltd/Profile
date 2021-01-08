@@ -65,7 +65,6 @@ class Template(object):
 
         return bool(self.verification_channel_id or self.archive_channel_id)
 
-
     def get_verification_channel_id(self, member:discord.Member) -> typing.Optional[int]:
         """
         Get the correct verification channel ID for the given member.
@@ -87,7 +86,8 @@ class Template(object):
 
         return self._get_id_from_command(self.role_id, member)
 
-    def _get_id_from_command(self, text:str, member:discord.Member) -> typing.Optional[int]:
+    @staticmethod
+    def _get_id_from_command(text:str, member:discord.Member) -> typing.Optional[int]:
         """
         Get the ID from either a command or as a straight value.
         """

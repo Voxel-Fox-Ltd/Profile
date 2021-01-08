@@ -261,7 +261,7 @@ class ProfileCreation(utils.Cog):
                 )
 
         # Respond to user
-        if template.verification_channel_id:
+        if template.get_verification_channel_id(target_user):
             await ctx.author.send(f"Your profile has been sent to the **{ctx.guild.name}** staff team for verification - please hold tight!")
         else:
             await ctx.author.send("Your profile has been created and saved.")

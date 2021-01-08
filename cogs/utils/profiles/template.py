@@ -102,6 +102,8 @@ class Template(object):
         return_value = CommandProcessor.get_value(text, member)
         if return_value.isdigit():
             return int(return_value)
+        if return_value == "continue":
+            return None
         raise InvalidCommandText()
 
     @property

@@ -281,7 +281,10 @@ class ProfileTemplates(utils.Cog):
                     field_index_message: discord.Message = await self.bot.wait_for("message", check=lambda m: m.author.id == ctx.author.id and m.channel.id == ctx.channel.id, timeout=120)
                     messages_to_delete.append(field_index_message)
                 except asyncio.TimeoutError:
-                    await ctx.send("Timed out waiting for field index.")
+                    try:
+                        await ctx.send("Timed out waiting for field index.")
+                    except discord.HTTPException:
+                        pass
                     return None
 
             # Grab the field they want to edit
@@ -359,7 +362,10 @@ class ProfileTemplates(utils.Cog):
             reaction = await self.bot.wait_for("raw_reaction_add", check=check, timeout=120)
             emoji = str(reaction.emoji)
         except asyncio.TimeoutError:
-            await ctx.send("Timed out waiting for field attribute.")
+            try:
+                await ctx.send("Timed out waiting for field attribute.")
+            except discord.HTTPException:
+                pass
             return None
 
         # Let's set up our validity converters for each of the fields

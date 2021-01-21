@@ -44,9 +44,9 @@ class Template(object):
 
     TEMPLATE_ID_REGEX = re.compile(r"^(?P<uuid>.{8}-.{4}-.{4}-.{4}-.{12})$")
 
-    __slots__ = ("template_id", "colour", "guild_id", "verification_channel_id", "name", "archive_channel_id", "role_id", "max_profile_count", "all_fields")
+    __slots__ = ("template_id", "colour", "guild_id", "verification_channel_id", "name", "archive_channel_id", "role_id", "max_profile_count", "max_field_count", "all_fields",)
 
-    def __init__(self, template_id:uuid.UUID, colour:int, guild_id:int, verification_channel_id:str, name:str, archive_channel_id:str, role_id:str, max_profile_count:int):
+    def __init__(self, template_id:uuid.UUID, colour:int, guild_id:int, verification_channel_id:str, name:str, archive_channel_id:str, role_id:str, max_profile_count:int, max_field_count:int):
         self.template_id: uuid.UUID = template_id
         self.colour: int = colour
         self.guild_id: int = guild_id
@@ -55,6 +55,7 @@ class Template(object):
         self.archive_channel_id: str = archive_channel_id
         self.role_id: str = role_id
         self.max_profile_count: int = max_profile_count
+        self.max_field_count: int = max_field_count
         self.all_fields: typing.Dict[uuid.UUID, Field] = dict()
 
     @property

@@ -237,7 +237,7 @@ class ProfileTemplates(utils.Cog):
                     if ctx.original_author_id in self.bot.owner_ids:
                         pass
                     else:
-                        converted = max([min([converted, guild_settings['max_profile_count']]), 0])
+                        converted = max([min([converted, guild_settings['max_template_profile_count']]), 0])
 
                 # Store our new shit
                 setattr(template, attr, converted)
@@ -266,7 +266,7 @@ class ProfileTemplates(utils.Cog):
         # Ask which index they want to edit
         if len(template.fields) == 0:
             ask_field_edit_message: discord.Message = await ctx.send("Now talking you through creating a new field.")
-        elif len(template.fields) >= guild_settings['max_template_field_count'] and ctx.original_author_id not in self.bot.owner_ids:
+        elif len(template.fields) >= max([guild_settings['max_template_field_count'], template.max_field_count]) and ctx.original_author_id not in self.bot.owner_ids:
             ask_field_edit_message: discord.Message = await ctx.send("What is the index of the field you want to edit?")
         else:
             ask_field_edit_message: discord.Message = await ctx.send("What is the index of the field you want to edit? If you want to add a *new* field, type **new**.")
@@ -300,7 +300,7 @@ class ProfileTemplates(utils.Cog):
 
                 # They want to create a new field
                 if len(template.fields) == 0 or field_index_message.content.lower() == "new":
-                    if len(template.fields) < guild_settings['max_template_field_count'] or ctx.original_author_id in self.bot.owner_ids:
+                    if len(template.fields) < max([guild_settings['max_template_field_count'], template.max_field_count]) or ctx.original_author_id in self.bot.owner_ids:
                         image_field_exists: bool = any([i for i in template.fields.values() if isinstance(i.field_type, localutils.ImageField)])
                         self.bot.loop.create_task(self.purge_message_list(ctx.channel, messages_to_delete))
                         field: localutils.Field = await self.create_new_field(

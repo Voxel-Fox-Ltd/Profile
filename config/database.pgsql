@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS guild_settings(
     prefix VARCHAR(30),
     max_template_count SMALLINT DEFAULT 3,
     max_template_field_count SMALLINT DEFAULT 10,
-    max_profile_count SMALLINT DEFAULT 5
+    max_template_profile_count SMALLINT DEFAULT 5
 );
 
 
@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS template(
     verification_channel_id TEXT,
     archive_channel_id TEXT,
     role_id TEXT,
+    max_field_count SMALLINT DEFAULT 10,
     max_profile_count SMALLINT DEFAULT 5,
     UNIQUE (guild_id, name)
 );

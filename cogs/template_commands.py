@@ -584,6 +584,7 @@ class ProfileTemplates(utils.Cog):
                 archive_channel_id=None,
                 role_id=None,
                 max_profile_count=1,
+                max_field_count=10,
             )
 
         # Save it all to database

@@ -8,6 +8,7 @@ import string
 import discord
 from discord.ext import commands
 import voxelbotutils as utils
+import asyncpg
 
 from cogs import utils as localutils
 
@@ -246,13 +247,16 @@ class ProfileCreation(utils.Cog):
 
         # Database me up daddy
         async with self.bot.database() as db:
-            await db(
-                """INSERT INTO created_profile (user_id, name, template_id, verified, posted_message_id, posted_channel_id)
-                VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (user_id, name, template_id)
-                DO UPDATE SET verified=excluded.verified, posted_message_id=excluded.posted_message_id, posted_channel_id=excluded.posted_channel_id""",
-                user_profile.user_id, user_profile.name, user_profile.template.template_id, user_profile.verified,
-                send_profile_message_id, send_profile_channel_id
-            )
+            try:
+                await db(
+                    """INSERT INTO created_profile (user_id, name, template_id, verified, posted_message_id, posted_channel_id)
+                    VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (user_id, name, template_id)
+                    DO UPDATE SET verified=excluded.verified, posted_message_id=excluded.posted_message_id, posted_channel_id=excluded.posted_channel_id""",
+                    user_profile.user_id, user_profile.name, user_profile.template.template_id, user_profile.verified,
+                    send_profile_message_id, send_profile_channel_id
+                )
+            except asyncpg.ForeignKeyViolationError:
+                return await ctx.author.send("Unfortunately, it looks like the template was deleted while you were setting up your profile.")
             for field in filled_field_dict.values():
                 await db(
                     """INSERT INTO filled_field (user_id, name, field_id, value) VALUES ($1, $2, $3, $4)

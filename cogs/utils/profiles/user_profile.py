@@ -87,7 +87,7 @@ class UserProfile(object):
     def filled_fields(self) -> typing.Dict[uuid.UUID, FilledField]:
         return {i: o for i, o in self.all_filled_fields.items() if o.field is not None and o.field.deleted is False and o.value is not None}
 
-    def build_embed(self, member:typing.Optional[discord.Member]=None) -> utils.Embed:
+    def build_embed(self, bot, member:typing.Optional[discord.Member]=None) -> utils.Embed:
         """
         Converts the filled profile into an embed.
         """
@@ -128,6 +128,9 @@ class UserProfile(object):
                 embed.set_image(url=field_value)
             else:
                 embed.add_field(name=f.field.name, value=field_value, inline=len(field_value) <= 100)
+
+        # Add a footer to our embed
+        bot.set_footer_from_config(embed)
 
         # Return embed
         return embed

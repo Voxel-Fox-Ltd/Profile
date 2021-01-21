@@ -223,7 +223,7 @@ class ProfileCreation(utils.Cog):
 
         # Make sure the bot can send the embed at all
         try:
-            await ctx.author.send(embed=user_profile.build_embed(target_user))
+            await ctx.author.send(embed=user_profile.build_embed(self.bot, target_user))
         except discord.HTTPException as e:
             return await ctx.author.send(f"Your profile couldn't be sent to you - `{e}`.\nPlease try again later.")
 
@@ -404,7 +404,7 @@ class ProfileCreation(utils.Cog):
 
         # Make sure the bot can send the embed at all
         try:
-            await ctx.author.send(embed=user_profile.build_embed(target_user))
+            await ctx.author.send(embed=user_profile.build_embed(self.bot, target_user))
         except discord.HTTPException as e:
             return await ctx.author.send(f"Your profile couldn't be sent to you, so the embed was probably hecked - `{e}`.\nPlease try again later.")
 
@@ -535,7 +535,7 @@ class ProfileCreation(utils.Cog):
 
         # See if verified
         if user_profile.verified or localutils.checks.member_is_moderator(ctx.bot, ctx.author):
-            return await ctx.send(embed=user_profile.build_embed(user or ctx.author))
+            return await ctx.send(embed=user_profile.build_embed(self.bot, user or ctx.author))
 
         # Not verified
         if user:
@@ -558,7 +558,7 @@ class ProfileCreation(utils.Cog):
             return await ctx.send("No profile found.")
         guild = self.bot.get_guild(template.guild_id) or await self.bot.fetch_guild(template.guild_id)
         member = guild.get_member(user) or await guild.fetch_member(user)
-        return await ctx.send(embed=profile.build_embed(member))
+        return await ctx.send(embed=profile.build_embed(self.bot, member))
 
 
 def setup(bot:utils.Bot):

@@ -58,7 +58,7 @@ class ProfileTemplates(utils.Cog):
     async def describetemplate(self, ctx:utils.Context, template:localutils.Template, brief:bool=True):
         """Describe a template and its fields"""
 
-        embed = template.build_embed(brief=brief)
+        embed = template.build_embed(self.bot, brief=brief)
         async with self.bot.database() as db:
             user_profiles = await template.fetch_all_profiles(db, fetch_filled_fields=False)
         embed.description += f"\nCurrently there are **{len(user_profiles)}** created profiles for this template."
@@ -113,7 +113,7 @@ class ProfileTemplates(utils.Cog):
                     try:
                         await template_display_edit_message.edit(
                             content=None,
-                            embed=template.build_embed(brief=True),
+                            embed=template.build_embed(self.bot, brief=True),
                             allowed_mentions=discord.AllowedMentions(roles=False),
                         )
                     except discord.HTTPException:
@@ -613,7 +613,7 @@ class ProfileTemplates(utils.Cog):
 
         # Ask if they want a new field
         if prompt_for_creation:
-            field_message = await ctx.send("Do you want to make a new field for your profile?", embed=template.build_embed())
+            field_message = await ctx.send("Do you want to make a new field for your profile?", embed=template.build_embed(self.bot))
             messages_to_delete.append(field_message)
             for e in prompt_emoji:
                 try:

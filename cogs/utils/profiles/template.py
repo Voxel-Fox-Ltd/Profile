@@ -252,7 +252,7 @@ class Template(object):
             raise TemplateNotFoundError(argument.lower())
         return v
 
-    def build_embed(self, brief:bool=False) -> utils.Embed:
+    def build_embed(self, bot, brief:bool=False) -> utils.Embed:
         """
         Create an embed to visualise all of the created fields and given information.
         """
@@ -358,6 +358,9 @@ class Template(object):
                     value='\n'.join(text),
                     inline=False,
                 )
+
+        # Add a footer to our embed
+        bot.set_footer_from_config(embed)
 
         # Return embed
         return embed

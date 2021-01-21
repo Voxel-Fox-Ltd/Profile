@@ -44,7 +44,7 @@ class ProfileVerification(utils.Cog):
             raise localutils.errors.TemplateVerificationChannelError(f"I can't reach a channel with the ID `{verification_channel_id}`.")
 
         # Send the data
-        embed: utils.Embed = user_profile.build_embed(target_user)
+        embed: utils.Embed = user_profile.build_embed(self.bot, target_user)
         embed.set_footer(text=f'{template.name} // Verification Check')
         try:
             v = await channel.send(f"New **{template.name}** submission from <@{user_profile.user_id}>\n{user_profile.user_id}/{template.template_id}/{user_profile.name}", embed=embed)
@@ -94,7 +94,7 @@ class ProfileVerification(utils.Cog):
             raise localutils.errors.TemplateArchiveChannelError(f"I can't reach a channel with the ID `{archive_channel_id}`.")
 
         # Send the data
-        embed: utils.Embed = user_profile.build_embed(target_user)
+        embed: utils.Embed = user_profile.build_embed(self.bot, target_user)
         try:
             return await channel.send(target_user.mention, embed=embed)
         except discord.HTTPException:
@@ -248,7 +248,7 @@ class ProfileVerification(utils.Cog):
             profile_user = None
         if profile_user:
             try:
-                embed: localutils.Embed = user_profile.build_embed(profile_user)
+                embed: localutils.Embed = user_profile.build_embed(self.bot, profile_user)
                 if verify:
                     await profile_user.send(f"Your profile for **{user_profile.template.name}** (`{user_profile.name}`) on `{guild.name}` has been verified.", embed=embed)
                 else:

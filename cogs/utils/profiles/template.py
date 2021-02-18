@@ -262,7 +262,12 @@ class Template(object):
         embed = utils.Embed(use_random_colour=True, title=self.name)
 
         # Work out what goes in the description
-        description_lines = [f"Template ID: `{self.template_id}`", f"Guild ID: `{self.guild_id}`", f"Maximum allowed profiles: `{self.max_profile_count}`",]
+        description_lines = [
+            f"Template ID: `{self.template_id}`",
+            f"Guild ID: `{self.guild_id}`",
+            f"Maximum allowed profiles: `{self.max_profile_count}`",
+            f"Maximum field count: `{self.max_field_count}`",
+        ]
 
         # Add verification channel ID
         if self.verification_channel_id:

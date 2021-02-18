@@ -89,6 +89,14 @@ class ProfileTemplates(utils.Cog):
         if self.template_editing_locks[ctx.guild.id].locked():
             return await ctx.send("You're already editing a template.")
 
+        # See if they're bot support
+        is_bot_support = False
+        try:
+            await utils.checks.is_bot_support().predicate(ctx)
+            is_bot_support = True
+        except commands.CommandError:
+            pass
+
         # Grab the template edit lock
         async with self.template_editing_locks[ctx.guild.id]:
 
@@ -100,7 +108,7 @@ class ProfileTemplates(utils.Cog):
 
             # Set up our initial vars so we can edit them later
             template_display_edit_message = await ctx.send("Loading template...")
-            template_options_edit_message = await ctx.send((
+            template_options_text = (
                 "**Select the emoji next to the item you want to edit:**\n"
                 "1\u20e3 Template name\n"
                 "2\u20e3 Verification channel (where profiles are sent to be verified by staff)\n"
@@ -108,7 +116,10 @@ class ProfileTemplates(utils.Cog):
                 "4\u20e3 Set a role to be given to users upon completing a profile\n"
                 "5\u20e3 Template fields/questions\n"
                 "6\u20e3 Maximum profile count per user\n"
-            ))
+            )
+            if is_bot_support:
+                template_options_text += "7\u20e3 Maximum field count\n"
+            template_options_edit_message = await ctx.send(template_options_text)
             messages_to_delete = []
             should_edit = True
             should_add_reactions = True
@@ -133,6 +144,8 @@ class ProfileTemplates(utils.Cog):
                     "1\N{COMBINING ENCLOSING KEYCAP}", "2\N{COMBINING ENCLOSING KEYCAP}", "3\N{COMBINING ENCLOSING KEYCAP}",
                     "4\N{COMBINING ENCLOSING KEYCAP}", "5\N{COMBINING ENCLOSING KEYCAP}", "6\N{COMBINING ENCLOSING KEYCAP}",
                 ]
+                if is_bot_support:
+                    valid_emoji.append("7\N{COMBINING ENCLOSING KEYCAP}")
                 valid_emoji.append(self.TICK_EMOJI)
                 if should_add_reactions:
                     for e in valid_emoji:
@@ -165,8 +178,9 @@ class ProfileTemplates(utils.Cog):
                         "2\N{COMBINING ENCLOSING KEYCAP}": ('verification_channel_id', commands.TextChannelConverter()),
                         "3\N{COMBINING ENCLOSING KEYCAP}": ('archive_channel_id', commands.TextChannelConverter()),
                         "4\N{COMBINING ENCLOSING KEYCAP}": ('role_id', commands.RoleConverter()),
-                        "5\N{COMBINING ENCLOSING KEYCAP}": (None, self.edit_field(ctx, template, guild_settings)),
+                        "5\N{COMBINING ENCLOSING KEYCAP}": (None, self.edit_field(ctx, template, guild_settings, is_bot_support)),
                         "6\N{COMBINING ENCLOSING KEYCAP}": ('max_profile_count', int),
+                        "7\N{COMBINING ENCLOSING KEYCAP}": ('max_field_count', int),
                         self.TICK_EMOJI: None,
                     }
                     attr, converter = available_reactions[reaction]
@@ -248,13 +262,23 @@ class ProfileTemplates(utils.Cog):
 
                 # Validate profile count
                 if attr == 'max_profile_count':
-                    if ctx.original_author_id in self.bot.owner_ids:
+                    if is_bot_support:
                         pass
                     else:
                         original_converted = converted
                         converted = max([min([converted, guild_settings['max_template_profile_count']]), 0])
                         if original_converted > converted:
                             await ctx.send(f"Your max profile count has been set to **{guild_settings['max_template_profile_count']}** instead of **{original_converted}**.", delete_after=3)
+
+                # Validate field count
+                if attr == 'max_field_count':
+                    if is_bot_support:
+                        pass
+                    else:
+                        original_converted = converted
+                        converted = max([min([converted, guild_settings['max_template_field_count']]), 0])
+                        if original_converted > converted:
+                            await ctx.send(f"Your max field count has been set to **{guild_settings['max_template_field_count']}** instead of **{original_converted}**.", delete_after=3)
 
                 # Store our new shit
                 setattr(template, attr, converted)
@@ -274,7 +298,7 @@ class ProfileTemplates(utils.Cog):
             )
         )
 
-    async def edit_field(self, ctx:utils.Context, template:localutils.Template, guild_settings:dict) -> bool:
+    async def edit_field(self, ctx:utils.Context, template:localutils.Template, guild_settings:dict, is_bot_support:bool) -> bool:
         """
         Talk the user through editing a field of a template.
         Returns whether or not the template display needs to be updated.
@@ -283,7 +307,7 @@ class ProfileTemplates(utils.Cog):
         # Ask which index they want to edit
         if len(template.fields) == 0:
             ask_field_edit_message: discord.Message = await ctx.send("Now talking you through creating a new field.")
-        elif len(template.fields) >= max([guild_settings['max_template_field_count'], template.max_field_count]) and ctx.original_author_id not in self.bot.owner_ids:
+        elif len(template.fields) >= max([guild_settings['max_template_field_count'], template.max_field_count]) and not is_bot_support:
             ask_field_edit_message: discord.Message = await ctx.send("What is the index of the field you want to edit?")
         else:
             ask_field_edit_message: discord.Message = await ctx.send("What is the index of the field you want to edit? If you want to add a *new* field, type **new**.")

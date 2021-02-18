@@ -341,7 +341,7 @@ class ProfileTemplates(utils.Cog):
 
                 # They want to create a new field
                 if len(template.fields) == 0 or field_index_message.content.lower() == "new":
-                    if len(template.fields) < max([guild_settings['max_template_field_count'], template.max_field_count]) or ctx.original_author_id in self.bot.owner_ids:
+                    if len(template.fields) < max([guild_settings['max_template_field_count'], template.max_field_count]) or is_bot_support:
                         image_field_exists: bool = any([i for i in template.fields.values() if isinstance(i.field_type, localutils.ImageField)])
                         self.bot.loop.create_task(self.purge_message_list(ctx.channel, messages_to_delete))
                         field: localutils.Field = await self.create_new_field(

@@ -217,7 +217,7 @@ class ProfileTemplates(utils.Cog):
                         if is_command and is_valid_command:
                             converted = value_message.content
                         else:
-                            await self.purge_message_list(ctx.channel, messages_to_delete)
+                            self.bot.loop.create_task(self.purge_message_list(ctx.channel, messages_to_delete))
                             continue
 
                 # It isn't a converter object
@@ -225,11 +225,11 @@ class ProfileTemplates(utils.Cog):
                     try:
                         converted = converter(value_message.content)
                     except ValueError:
-                        await self.purge_message_list(ctx.channel, messages_to_delete)
+                        self.bot.loop.create_task(self.purge_message_list(ctx.channel, messages_to_delete))
                         continue
 
                 # Delete the messages we don't need any more
-                await self.purge_message_list(ctx.channel, messages_to_delete)
+                self.bot.loop.create_task(self.purge_message_list(ctx.channel, messages_to_delete))
 
                 # Validate if they provided a new name
                 if attr == 'name':
@@ -421,7 +421,7 @@ class ProfileTemplates(utils.Cog):
                 raise ValueError()  # Cancel
             attr, value_converter, prompt, value_check, post_conversion_fixer = available_reactions[emoji]
         except ValueError:
-            await self.purge_message_list(ctx.channel, messages_to_delete)
+            self.bot.loop.create_task(self.purge_message_list(ctx.channel, messages_to_delete))
             return False
         except TypeError:
             attr, value_converter, prompt, value_check = None, None, None, None  # Delete field
@@ -479,7 +479,7 @@ class ProfileTemplates(utils.Cog):
                 await db("UPDATE field SET deleted=true WHERE field_id=$1", field_to_edit.field_id)
 
         # And done
-        await self.purge_message_list(ctx.channel, messages_to_delete)
+        self.bot.loop.create_task(self.purge_message_list(ctx.channel, messages_to_delete))
         return True
 
     @utils.command()
@@ -797,7 +797,7 @@ class ProfileTemplates(utils.Cog):
 
         # See if we need to delete things
         if delete_messages:
-            await self.purge_message_list(ctx.channel, messages_to_delete)
+            self.bot.loop.create_task(self.purge_message_list(ctx.channel, messages_to_delete))
 
         # And we done
         return field

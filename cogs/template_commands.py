@@ -33,7 +33,9 @@ class ProfileTemplates(utils.Cog):
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     async def templates(self, ctx:utils.Context, guild_id:int=None):
-        """Lists the templates that have been created for this server"""
+        """
+        Lists the templates that have been created for this server.
+        """
 
         # See if they're allowed to get from another guild ID
         if guild_id is not None and guild_id != ctx.guild.id and self.bot.config.get('bot_support_role_id') not in ctx.author._roles:
@@ -56,7 +58,9 @@ class ProfileTemplates(utils.Cog):
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @commands.guild_only()
     async def describetemplate(self, ctx:utils.Context, template:localutils.Template, brief:bool=True):
-        """Describe a template and its fields"""
+        """
+        Describe a template and its fields.
+        """
 
         embed = template.build_embed(self.bot, brief=brief)
         async with self.bot.database() as db:
@@ -65,7 +69,9 @@ class ProfileTemplates(utils.Cog):
         return await ctx.send(embed=embed)
 
     async def purge_message_list(self, channel:discord.TextChannel, message_list:typing.List[discord.Message]):
-        """Delete a list of messages from the channel"""
+        """
+        Delete a list of messages from the channel.
+        """
 
         await channel.purge(check=lambda m: m.id in [i.id for i in message_list], bulk=channel.permissions_for(channel.guild.me).manage_messages)
         message_list.clear()
@@ -75,7 +81,9 @@ class ProfileTemplates(utils.Cog):
     @commands.bot_has_permissions(send_messages=True, external_emojis=True, add_reactions=True, manage_messages=True)
     @commands.guild_only()
     async def edittemplate(self, ctx:utils.Context, template:localutils.Template):
-        """Edits a template for your guild"""
+        """
+        Edits a template for your guild.
+        """
 
         # See if they're already editing that template
         if self.template_editing_locks[ctx.guild.id].locked():
@@ -232,12 +240,21 @@ class ProfileTemplates(utils.Cog):
                             ctx.guild.id, converted, template.template_id,
                         )
                         if name_in_use:
+                            await ctx.send("That template name is already in use.", delete_after=3)
                             continue
+                    if 30 < len(converted) < 1:
+                        await ctx.send("That template name is invalid - not within 1 and 30 characters in length.", delete_after=3)
+                        continue
+
+                # Validate profile count
                 if attr == 'max_profile_count':
                     if ctx.original_author_id in self.bot.owner_ids:
                         pass
                     else:
+                        original_converted = converted
                         converted = max([min([converted, guild_settings['max_template_profile_count']]), 0])
+                        if original_converted > converted:
+                            await ctx.send(f"Your max profile count has been set to **{guild_settings['max_template_profile_count']}** instead of **{original_converted}**.", delete_after=3)
 
                 # Store our new shit
                 setattr(template, attr, converted)
@@ -326,7 +343,7 @@ class ProfileTemplates(utils.Cog):
                         return True
 
                     # They want a new field but they're at the max
-                    v = await ctx.send("You're already at the maximum amount of fields for this template - please provide a field index to edit.")
+                    v = await ctx.send("You're already at the maximum number of fields for this template - please provide a field index to edit.")
                     messages_to_delete.append(v)
                     continue
 
@@ -470,7 +487,9 @@ class ProfileTemplates(utils.Cog):
     @commands.bot_has_permissions(send_messages=True, external_emojis=True, add_reactions=True)
     @commands.guild_only()
     async def deletetemplate(self, ctx:utils.Context, template:localutils.Template):
-        """Deletes a template for your guild"""
+        """
+        Deletes a template from your guild.
+        """
 
         # See if they're already editing that template
         if self.template_editing_locks[ctx.guild.id].locked():
@@ -518,7 +537,9 @@ class ProfileTemplates(utils.Cog):
     @commands.bot_has_permissions(send_messages=True, manage_messages=True, external_emojis=True, add_reactions=True, embed_links=True)
     @commands.guild_only()
     async def createtemplate(self, ctx:utils.Context, template_name:str=None):
-        """Creates a new template for your guild"""
+        """
+        Creates a new template for your guild.
+        """
 
         # Only allow them to make one template at once
         if self.template_editing_locks[ctx.guild.id].locked():
@@ -597,14 +618,12 @@ class ProfileTemplates(utils.Cog):
 
         # Output to user
         self.logger.info(f"New template '{template.name}' created on guild {ctx.guild.id}")
-        # try:
-        #     await ctx.send(f"Your template has been created with {len(template.fields)} fields. Users can now run `{ctx.prefix}set{template.name.lower()}` to set a profile, or `{ctx.prefix}get{template.name.lower()} @User` to get the profile of another user.")
-        # except (discord.Forbidden, discord.NotFound):
-        #     pass
         await ctx.invoke(self.bot.get_command("edittemplate"), template)
 
     async def create_new_field(self, ctx:utils.Context, template:localutils.Template, index:int, image_set:bool=False, prompt_for_creation:bool=True, delete_messages:bool=False) -> typing.Optional[localutils.Field]:
-        """Talk a user through creating a new field for their template"""
+        """
+        Talk a user through creating a new field for their template.
+        """
 
         # Here are some things we can use later
         message_check = lambda m: m.author == ctx.author and m.channel == ctx.channel

@@ -96,7 +96,7 @@ class ProfileVerification(utils.Cog):
         # Send the data
         embed: utils.Embed = user_profile.build_embed(self.bot, target_user)
         try:
-            return await channel.send(target_user.mention, embed=embed)
+            return await channel.send(None if target_user is None else target_user.mention, embed=embed)
         except discord.HTTPException:
             raise localutils.errors.TemplateArchiveChannelError(f"I can't send messages to {channel.mention}.")
 

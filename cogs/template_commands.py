@@ -247,6 +247,7 @@ class ProfileTemplates(utils.Cog):
 
                 # Validate if they provided a new name
                 if attr == 'name':
+                    converted = converted.replace(" ", "")
                     async with self.bot.database() as db:
                         name_in_use = await db(
                             """SELECT * FROM template WHERE guild_id=$1 AND LOWER(name)=LOWER($2)

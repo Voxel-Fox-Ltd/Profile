@@ -148,11 +148,14 @@ class ProfileTemplates(utils.Cog):
                     valid_emoji.append("7\N{COMBINING ENCLOSING KEYCAP}")
                 valid_emoji.append(self.TICK_EMOJI)
                 if should_add_reactions:
+                    add_reaction_tasks = []
                     for e in valid_emoji:
                         try:
-                            await template_options_edit_message.add_reaction(e)
+                            add_reaction_tasks.append(self.bot.loop.create_task(template_options_edit_message.add_reaction(e)))
                         except discord.HTTPException:
                             try:
+                                for i in add_reaction_tasks:
+                                    i.cancel()
                                 await template_display_edit_message.delete()
                                 await template_options_edit_message.edit(content="I'm unable to add reactions to my messages.")
                             except discord.HTTPException:

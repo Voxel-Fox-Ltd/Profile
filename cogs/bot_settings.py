@@ -58,4 +58,4 @@ class BotSettings(utils.Cog):
 
 def setup(bot:utils.Bot):
     x = BotSettings(bot)
-    x.add_cog(x)
+    bot.add_cog(x)

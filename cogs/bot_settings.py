@@ -11,6 +11,7 @@ class BotSettings(utils.Cog):
         """
 
         menu = utils.SettingsMenu()
+        settings_mention = utils.SettingsMenuOption.get_guild_settings_mention
         menu.add_multiple_options(
             utils.SettingsMenuOption(
                 ctx=ctx,

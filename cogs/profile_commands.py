@@ -114,9 +114,14 @@ class ProfileCreation(utils.Cog):
         # See if you we can send them the PM
         try:
             if target_user == ctx.author:
-                await ctx.author.send(f"Now talking you through setting up your **{template.name}** profile.")
+                await ctx.author.send(
+                    f"Now talking you through setting up your **{template.name}** profile.",
+                )
             else:
-                await ctx.author.send(f"Now talking you through setting up {target_user.mention}'s **{template.name}** profile.", allowed_mentions=discord.AllowedMentions(users=False))
+                await ctx.author.send(
+                    f"Now talking you through setting up {target_user.mention}'s **{template.name}** profile.",
+                    allowed_mentions=discord.AllowedMentions(users=False),
+                )
             await ctx.send("Sent you a DM!")
         except discord.Forbidden:
             return await ctx.send("I'm unable to send you DMs to set up the profile :/")
@@ -137,7 +142,10 @@ class ProfileCreation(utils.Cog):
                     else:
                         break
             else:
-                await ctx.author.send(f"What name would you like to give this profile? This will be used to get the profile information (eg for the name \"test\", you could run `get{template.name.lower()} test`).")
+                await ctx.author.send(
+                    f"What name would you like to give this profile? This will be used to get the "
+                    "profile information (eg for the name \"test\", you could run `get{template.name.lower()} test`).",
+                )
                 while True:
                     try:
                         user_message = await self.bot.wait_for(
@@ -146,7 +154,10 @@ class ProfileCreation(utils.Cog):
                         )
                     except asyncio.TimeoutError:
                         try:
-                            return await ctx.author.send(f"Your input for this field has timed out. Please try running `set{template.name}` on your server again.")
+                            return await ctx.author.send(
+                                f"Your input for this field has timed out. Please try running `set{template.name}` "
+                                "on your server again.",
+                            )
                         except discord.Forbidden:
                             return
                     try:
@@ -156,15 +167,22 @@ class ProfileCreation(utils.Cog):
 
                         # They've misunderstood
                         if f"get{template.name.lower()} " in name_content.lower():
-                            raise localutils.errors.FieldCheckFailure(f"Please provide the name for your profile _without_ the command call, eg if you wanted to run `get{template.name.lower()} test`, just say \"test\".")
+                            raise localutils.errors.FieldCheckFailure(
+                                f"Please provide the name for your profile _without_ the command call, "
+                                f"eg if you wanted to run `get{template.name.lower()} test`, just say \"test\".",
+                            )
 
                         # See if they're already using the name
                         if name_content.lower() in [i.name.lower() for i in user_profiles]:
-                            raise localutils.errors.FieldCheckFailure("You're already using that name for this template. Please provide an alternative.")
+                            raise localutils.errors.FieldCheckFailure(
+                                "You're already using that name for this template. Please provide an alternative.",
+                            )
 
                         # See if the characters used are invalid
                         if any([i for i in name_content if i not in string.ascii_letters + string.digits + ' ']):
-                            raise localutils.errors.FieldCheckFailure("You can only use standard lettering and digits in your profile name. Please provide an alternative.")
+                            raise localutils.errors.FieldCheckFailure(
+                                "You can only use standard lettering and digits in your profile name. Please provide an alternative.",
+                            )
                         break
 
                     except localutils.errors.FieldCheckFailure as e:
@@ -200,7 +218,10 @@ class ProfileCreation(utils.Cog):
                         )
                     except asyncio.TimeoutError:
                         try:
-                            return await ctx.author.send(f"Your input for this field has timed out. Running `set{template.name}` on your server again to go back through this setup.")
+                            return await ctx.author.send(
+                                f"Your input for this field has timed out. Running `set{template.name}` on your server "
+                                "again to go back through this setup.",
+                            )
                         except discord.Forbidden:
                             return
                     try:
@@ -261,12 +282,15 @@ class ProfileCreation(utils.Cog):
                 await db(
                     """INSERT INTO created_profile (user_id, name, template_id, verified, posted_message_id, posted_channel_id)
                     VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (user_id, name, template_id)
-                    DO UPDATE SET verified=excluded.verified, posted_message_id=excluded.posted_message_id, posted_channel_id=excluded.posted_channel_id""",
+                    DO UPDATE SET verified=excluded.verified, posted_message_id=excluded.posted_message_id,
+                    posted_channel_id=excluded.posted_channel_id""",
                     user_profile.user_id, user_profile.name, user_profile.template.template_id, user_profile.verified,
                     send_profile_message_id, send_profile_channel_id
                 )
             except asyncpg.ForeignKeyViolationError:
-                return await ctx.author.send("Unfortunately, it looks like the template was deleted while you were setting up your profile.")
+                return await ctx.author.send(
+                    "Unfortunately, it looks like the template was deleted while you were setting up your profile.",
+                )
             for field in filled_field_dict.values():
                 await db(
                     """INSERT INTO filled_field (user_id, name, field_id, value) VALUES ($1, $2, $3, $4)
@@ -295,8 +319,10 @@ class ProfileCreation(utils.Cog):
 
         # See if they're allowed to edit their profile
         if template.max_profile_count == 0:
-            await ctx.send(f"Currently the template **{template.name}** is not accepting any more applications, and you can't edit profiles while that's disabled.")
-            return
+            return await ctx.send(
+                f"Currently the template **{template.name}** is not accepting any more applications, "
+                "and you can't edit profiles while that's disabled.",
+            )
 
         # See if the user is already setting up a profile
         if self.set_profile_locks[ctx.author.id].locked():
@@ -327,12 +353,18 @@ class ProfileCreation(utils.Cog):
                 if target_user == ctx.author:
                     await ctx.send(f"You don't have a profile for **{template.name}** with the name **{profile_name}**.")
                 else:
-                    await ctx.send(f"{target_user.mention} doesn't have a profile for **{template.name}** with the name **{profile_name}**.", allowed_mentions=discord.AllowedMentions(users=False))
+                    await ctx.send(
+                        f"{target_user.mention} doesn't have a profile for **{template.name}** with the name **{profile_name}**.",
+                        allowed_mentions=discord.AllowedMentions(users=False),
+                    )
             else:
                 if target_user == ctx.author:
                     await ctx.send(f"You don't have a profile for **{template.name}**.")
                 else:
-                    await ctx.send(f"{target_user.mention} doesn't have a profile for **{template.name}**.", allowed_mentions=discord.AllowedMentions(users=False))
+                    await ctx.send(
+                        f"{target_user.mention} doesn't have a profile for **{template.name}**.",
+                        allowed_mentions=discord.AllowedMentions(users=False),
+                    )
             return
 
         # See if you we can send them the PM
@@ -340,7 +372,10 @@ class ProfileCreation(utils.Cog):
             if target_user == ctx.author:
                 await ctx.author.send(f"Now talking you through editing your **{template.name}** profile.")
             else:
-                await ctx.author.send(f"Now talking you through editing {target_user.mention}'s **{template.name}** profile.", allowed_mentions=discord.AllowedMentions(users=False))
+                await ctx.author.send(
+                    f"Now talking you through editing {target_user.mention}'s **{template.name}** profile.",
+                    allowed_mentions=discord.AllowedMentions(users=False),
+                )
             await ctx.send("Sent you a PM!")
         except discord.HTTPException:
             return await ctx.send("I'm unable to send you a DM to set up the profile :/")
@@ -377,7 +412,10 @@ class ProfileCreation(utils.Cog):
                     else:
                         await ctx.author.send(field.prompt)
                 else:
-                    await ctx.author.send(f"{field.prompt.rstrip('.')}. The current value for this field is `{current_value or 'empty'}`. Type **pass** to leave the value as it currently is.")
+                    await ctx.author.send(
+                        f"{field.prompt.rstrip('.')}. The current value for this field is `{current_value or 'empty'}`. "
+                        "Type **pass** to leave the value as it currently is.",
+                    )
 
                 # Get user input
                 while True:
@@ -388,7 +426,9 @@ class ProfileCreation(utils.Cog):
                         )
                     except asyncio.TimeoutError:
                         try:
-                            return await ctx.author.send(f"Your input for this field has timed out. Please try running `set{template.name}` on your server again.")
+                            return await ctx.author.send(
+                                f"Your input for this field has timed out. Please try running `set{template.name}` on your server again.",
+                            )
                         except discord.Forbidden:
                             return
                     if user_message.content.lower() == "pass" and (current_filled_field or field.optional):
@@ -441,7 +481,8 @@ class ProfileCreation(utils.Cog):
             await db(
                 """INSERT INTO created_profile (user_id, name, template_id, verified, posted_message_id, posted_channel_id)
                 VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (user_id, name, template_id)
-                DO UPDATE SET verified=excluded.verified, posted_message_id=excluded.posted_message_id, posted_channel_id=excluded.posted_channel_id""",
+                DO UPDATE SET verified=excluded.verified, posted_message_id=excluded.posted_message_id,
+                posted_channel_id=excluded.posted_channel_id""",
                 user_profile.user_id, user_profile.name, user_profile.template.template_id, user_profile.verified,
                 send_profile_message_id, send_profile_channel_id,
             )
@@ -484,12 +525,18 @@ class ProfileCreation(utils.Cog):
         if user_profile is None:
             if profile_name:
                 if user:
-                    await ctx.send(f"{user.mention} doesn't have a profile for **{template.name}** with the name **{profile_name}**.", allowed_mentions=discord.AllowedMentions(users=False))
+                    await ctx.send(
+                        f"{user.mention} doesn't have a profile for **{template.name}** with the name **{profile_name}**.",
+                        allowed_mentions=discord.AllowedMentions(users=False),
+                    )
                 else:
                     await ctx.send(f"You don't have a profile for **{template.name}** with the name **{profile_name}**.")
             else:
                 if user:
-                    await ctx.send(f"{user.mention} doesn't have a profile for **{template.name}**.", allowed_mentions=discord.AllowedMentions(users=False))
+                    await ctx.send(
+                        f"{user.mention} doesn't have a profile for **{template.name}**.",
+                        allowed_mentions=discord.AllowedMentions(users=False),
+                    )
                 else:
                     await ctx.send(f"You don't have a profile for **{template.name}**.")
             return
@@ -533,12 +580,18 @@ class ProfileCreation(utils.Cog):
         if user_profile is None:
             if profile_name:
                 if user:
-                    await ctx.send(f"{user.mention} doesn't have a profile for **{template.name}** with the name **{profile_name}**.", allowed_mentions=discord.AllowedMentions(users=False))
+                    await ctx.send(
+                        f"{user.mention} doesn't have a profile for **{template.name}** with the name **{profile_name}**.",
+                        allowed_mentions=discord.AllowedMentions(users=False),
+                    )
                 else:
                     await ctx.send(f"You don't have a profile for **{template.name}** with the name **{profile_name}**.")
             else:
                 if user:
-                    await ctx.send(f"{user.mention} doesn't have a profile for **{template.name}**.", allowed_mentions=discord.AllowedMentions(users=False))
+                    await ctx.send(
+                        f"{user.mention} doesn't have a profile for **{template.name}**.",
+                        allowed_mentions=discord.AllowedMentions(users=False),
+                    )
                 else:
                     await ctx.send(f"You don't have a profile for **{template.name}**.")
             return
@@ -549,26 +602,13 @@ class ProfileCreation(utils.Cog):
 
         # Not verified
         if user:
-            await ctx.send(f"{user.mention}'s profile hasn't been verified yet, and thus can't be sent.", allowed_mentions=discord.AllowedMentions(users=False))
+            await ctx.send(
+                f"{user.mention}'s profile hasn't been verified yet, and thus can't be sent.",
+                allowed_mentions=discord.AllowedMentions(users=False),
+            )
         else:
             await ctx.send("Your profile hasn't been verified yet, and thus can't be sent.")
         return
-
-    @utils.command(hidden=True)
-    @commands.is_owner()
-    @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    async def forcegetprofile(self, ctx:utils.Context, template:localutils.Template, user:utils.converters.UserID, name:str='default'):
-        """
-        Get the profile of a user.
-        """
-
-        async with self.bot.database() as db:
-            profile: localutils.UserProfile = await template.fetch_profile_for_user(db, user, name, fetch_filled_fields=True)
-        if not profile:
-            return await ctx.send("No profile found.")
-        guild = self.bot.get_guild(template.guild_id) or await self.bot.fetch_guild(template.guild_id)
-        member = guild.get_member(user) or await guild.fetch_member(user)
-        return await ctx.send(embed=profile.build_embed(self.bot, member))
 
 
 def setup(bot:utils.Bot):

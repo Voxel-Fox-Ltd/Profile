@@ -204,12 +204,19 @@ class ProfileTemplates(utils.Cog):
 
                 # Ask what they want to set things to
                 if isinstance(converter, commands.Converter):
-                    v = await ctx.send(f"What do you want to set the template's **{' '.join(attr.split('_')[:-1])}** to? You can give a name, a ping, or an ID, or say `continue` to set the value to null. " + ("Note that any current pending profiles will _not_ be able to be approved after moving the channel" if attr == 'verification_channel_id' else ''))
+                    note = ""
+                    if attr == "verification_channel_id":
+                        note = "Note that any current pending profiles will _not_ be able to be approved after moving the channel"
+                    v = await ctx.send(
+                        f"What do you want to set the template's **{' '.join(attr.split('_')[:-1])}** to? You can give a name, "
+                        f"a ping, or an ID, or say `continue` to set the value to null. {note}",
+                    )
                 else:
                     v = await ctx.send(f"What do you want to set the template's **{attr.replace('_', ' ')}** to?")
                 messages_to_delete.append(v)
                 try:
-                    value_message = await self.bot.wait_for("message", check=lambda m: m.author.id == ctx.author.id and m.channel.id == ctx.channel.id, timeout=120)
+                    check = lambda m: m.author.id == ctx.author.id and m.channel.id == ctx.channel.id
+                    value_message = await self.bot.wait_for("message", check=check, timeout=120)
                 except asyncio.TimeoutError:
                     try:
                         return await ctx.send("Timed out waiting for edit response.")
@@ -272,7 +279,11 @@ class ProfileTemplates(utils.Cog):
                         original_converted = converted
                         converted = max([min([converted, guild_settings['max_template_profile_count']]), 0])
                         if original_converted > converted:
-                            await ctx.send(f"Your max profile count has been set to **{guild_settings['max_template_profile_count']}** instead of **{original_converted}**.", delete_after=3)
+                            await ctx.send(
+                                f"Your max profile count has been set to **{guild_settings['max_template_profile_count']}** instead "
+                                f"of **{original_converted}**.",
+                                delete_after=3,
+                            )
 
                 # Validate field count
                 if attr == 'max_field_count':
@@ -282,7 +293,11 @@ class ProfileTemplates(utils.Cog):
                         original_converted = converted
                         converted = max([min([converted, guild_settings['max_template_field_count']]), 0])
                         if original_converted > converted:
-                            await ctx.send(f"Your max field count has been set to **{guild_settings['max_template_field_count']}** instead of **{original_converted}**.", delete_after=3)
+                            await ctx.send(
+                                f"Your max field count has been set to **{guild_settings['max_template_field_count']}** instead "
+                                f"of **{original_converted}**.",
+                                delete_after=3,
+                            )
 
                 # Store our new shit
                 setattr(template, attr, converted)
@@ -314,7 +329,9 @@ class ProfileTemplates(utils.Cog):
         elif len(template.fields) >= max([guild_settings['max_template_field_count'], template.max_field_count]) and not is_bot_support:
             ask_field_edit_message: discord.Message = await ctx.send("What is the index of the field you want to edit?")
         else:
-            ask_field_edit_message: discord.Message = await ctx.send("What is the index of the field you want to edit? If you want to add a *new* field, type **new**.")
+            ask_field_edit_message: discord.Message = await ctx.send(
+                "What is the index of the field you want to edit? If you want to add a *new* field, type **new**.",
+            )
         messages_to_delete = [ask_field_edit_message]
 
         # Start our infinite loop
@@ -323,7 +340,8 @@ class ProfileTemplates(utils.Cog):
             # Wait for them to say which field they want to edit
             if len(template.fields) > 0:
                 try:
-                    field_index_message: discord.Message = await self.bot.wait_for("message", check=lambda m: m.author.id == ctx.author.id and m.channel.id == ctx.channel.id, timeout=120)
+                    check = lambda m: m.author.id == ctx.author.id and m.channel.id == ctx.channel.id
+                    field_index_message: discord.Message = await self.bot.wait_for("message", check=check, timeout=120)
                     messages_to_delete.append(field_index_message)
                 except asyncio.TimeoutError:
                     try:
@@ -363,7 +381,8 @@ class ProfileTemplates(utils.Cog):
                                 await db(
                                     """INSERT INTO field (field_id, name, index, prompt, timeout, field_type, optional, template_id)
                                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)""",
-                                    field.field_id, field.name, field.index, field.prompt, field.timeout, field.field_type.name, field.optional, field.template_id
+                                    field.field_id, field.name, field.index, field.prompt, field.timeout, field.field_type.name,
+                                    field.optional, field.template_id,
                                 )
                             except asyncpg.ForeignKeyViolationError:
                                 # The template was deleted while it was being edited
@@ -527,7 +546,9 @@ class ProfileTemplates(utils.Cog):
         async with self.template_editing_locks[ctx.guild.id]:
 
             # Ask for confirmation
-            delete_confirmation_message = await ctx.send("By doing this, you'll delete all of the created profiles under this template as well. Would you like to proceed?")
+            delete_confirmation_message = await ctx.send(
+                "By doing this, you'll delete all of the created profiles under this template as well. Would you like to proceed?",
+            )
             valid_reactions = [self.TICK_EMOJI, self.CROSS_EMOJI]
             for e in valid_reactions:
                 try:
@@ -578,14 +599,20 @@ class ProfileTemplates(utils.Cog):
             template_list = await db("SELECT template_id FROM template WHERE guild_id=$1", ctx.guild.id)
             guild_settings = await db("SELECT * FROM guild_settings WHERE guild_id=$1 OR guild_id=0 ORDER BY guild_id DESC", ctx.guild.id)
         if len(template_list) >= guild_settings[0]['max_template_count']:
-            return await ctx.send(f"You already have {guild_settings[0]['max_template_count']} templates set for this server, which is the maximum number allowed.")
+            return await ctx.send(
+                f"You already have {guild_settings[0]['max_template_count']} templates set for this server, which is the maximum number allowed.",
+            )
 
         # And now we start creating the template itself
         async with self.template_editing_locks[ctx.guild.id]:
 
             # Send the flavour text behind getting a template name
             if template_name is None:
-                await ctx.send(f"What name do you want to give this template? This will be used for the set and get commands; eg if the name of your template is `test`, the commands generated will be `{ctx.prefix}settest` to set a profile, `{ctx.prefix}gettest` to get a profile, and `{ctx.prefix}deletetest` to delete a profile. A profile name is case insensitive when used in commands.")
+                await ctx.send(
+                    f"What name do you want to give this template? This will be used for the set and get commands; eg if the name "
+                    f"of your template is `test`, the commands generated will be `{ctx.prefix}settest` to set a profile, `{ctx.prefix}gettest` "
+                    f"to get a profile, and `{ctx.prefix}deletetest` to delete a profile. A profile name is case insensitive when used in commands.",
+                )
 
             # Get name from the messages they send
             while True:
@@ -593,7 +620,8 @@ class ProfileTemplates(utils.Cog):
                 # Get message
                 if template_name is None:
                     try:
-                        name_message = await self.bot.wait_for('message', check=lambda m: m.author == ctx.author and m.channel == ctx.channel, timeout=120)
+                        check = lambda m: m.author == ctx.author and m.channel == ctx.channel
+                        name_message = await self.bot.wait_for('message', check=check, timeout=120)
 
                     # Catch timeout
                     except asyncio.TimeoutError:
@@ -619,7 +647,10 @@ class ProfileTemplates(utils.Cog):
                 async with self.bot.database() as db:
                     template_exists = await db("SELECT * FROM template WHERE guild_id=$1 AND LOWER(name)=LOWER($2)", ctx.guild.id, template_name)
                 if template_exists:
-                    await ctx.send(f"This server already has a template with name **{template_name}**. Please run this command again to provide another one.")
+                    await ctx.send(
+                        f"This server already has a template with name **{template_name}**. "
+                        "Please run this command again to provide another one.",
+                    )
                     return
                 break
 
@@ -641,7 +672,8 @@ class ProfileTemplates(utils.Cog):
             await db(
                 """INSERT INTO template (template_id, name, colour, guild_id, verification_channel_id, archive_channel_id)
                 VALUES ($1, $2, $3, $4, $5, $6)""",
-                template.template_id, template.name, template.colour, template.guild_id, template.verification_channel_id, template.archive_channel_id
+                template.template_id, template.name, template.colour, template.guild_id,
+                template.verification_channel_id, template.archive_channel_id,
             )
 
         # Output to user
@@ -684,7 +716,9 @@ class ProfileTemplates(utils.Cog):
                 messages_to_delete.append(v)
         field_name = field_name_message.content
 
-    async def create_new_field(self, ctx:utils.Context, template:localutils.Template, index:int, image_set:bool=False, prompt_for_creation:bool=True, delete_messages:bool=False) -> typing.Optional[localutils.Field]:
+    async def create_new_field(
+            self, ctx:utils.Context, template:localutils.Template, index:int, image_set:bool=False,
+            prompt_for_creation:bool=True, delete_messages:bool=False) -> typing.Optional[localutils.Field]:
         """
         Talk a user through creating a new field for their template.
         """
@@ -707,7 +741,10 @@ class ProfileTemplates(utils.Cog):
                         await field_message.delete()
                     except discord.NotFound:
                         pass
-                    await ctx.send("I tried to add a reaction to my message, but I was unable to. Please update my permissions for this channel and try again.")
+                    await ctx.send(
+                        "I tried to add a reaction to my message, but I was unable to. "
+                        "Please update my permissions for this channel and try again.",
+                    )
                     return None
 
             # Here's us waiting for the "do you want to make a new field" reaction

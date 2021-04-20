@@ -43,7 +43,9 @@ class CommandProcessor(object):
 
     @classmethod
     def get_is_command(cls, text:str) -> typing.Tuple[bool, bool]:
-        """Returns whether or not the given text is a command as well as whether or not it's a _valid_ command"""
+        """
+        Returns whether or not the given text is a command as well as whether or not it's a _valid_ command.
+        """
 
         return (
             cls.COMMAND_REGEX.search(text) is not None,
@@ -52,7 +54,9 @@ class CommandProcessor(object):
 
     @classmethod
     def get_value(cls, text:str, member:typing.Optional[discord.Member]=None) -> typing.Optional[str]:
-        """Return the value for a field"""
+        """
+        Return the value for a field.
+        """
 
         # See if it's a command
         valid_command = cls.VALID_COMMAND_REGEX.search(text)

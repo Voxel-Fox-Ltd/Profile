@@ -4,9 +4,10 @@ from cogs.utils.profiles.field_type import FieldType, TextField, ImageField, Num
 
 
 class Field(object):
-    """The abstract field object for a given template
+    """
+    The abstract field object for a given template.
     This itself does not store any user information, but rather the meta information associated with
-    a field from a template
+    a field from a template.
 
     Args:
         field_id (uuid.UUID): the ID of the field

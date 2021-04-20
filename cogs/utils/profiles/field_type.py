@@ -8,7 +8,9 @@ class FieldCheckFailure(Exception):
 
 
 class FieldType(object):
-    """The typing of a given profile field"""
+    """
+    The typing of a given profile field.
+    """
 
     name = None
 
@@ -17,24 +19,36 @@ class FieldType(object):
 
     @classmethod
     def convert_to_python(cls, value:str):
-        """Converts the given value into the valid field type"""
+        """
+        Converts the given value into the valid field type.
+        """
+
         return str(value)
 
     @classmethod
     def convert_to_database(cls, value) -> str:
-        """Converts the given value into a database-safe string"""
+        """
+        Converts the given value into a database-safe string.
+        """
+
         return str(value)
 
     @classmethod
     def check(cls, value):
-        """Returns true if the given value is valid for the field type, or raises FieldCheckFailure"""
+        """
+        Returns true if the given value is valid for the field type, or raises FieldCheckFailure.
+        """
+
         if len(value) > 1:
             return True
         raise FieldCheckFailure("No text was provided in the message.")
 
     @classmethod
     def get_from_message(cls, message):
-        """Gets the content from the given message"""
+        """
+        Gets the content from the given message.
+        """
+
         cls.check(message.content)
         return message.content
 
@@ -52,7 +66,6 @@ The available types:
 
 
 class TextField(FieldType):
-
     name = '1000-CHAR'
 
     @classmethod
@@ -63,7 +76,6 @@ class TextField(FieldType):
 
 
 class NumberField(FieldType):
-
     name = 'INT'
 
     @classmethod
@@ -85,7 +97,6 @@ class NumberField(FieldType):
 
 
 class ImageField(FieldType):
-
     name = 'IMAGE'
     matcher = re.compile(r"^(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png|jpeg|gif)$")
 
@@ -106,7 +117,6 @@ class ImageField(FieldType):
 
 
 class BooleanField(FieldType):
-
     name = 'BOOLEAN'
 
     @classmethod

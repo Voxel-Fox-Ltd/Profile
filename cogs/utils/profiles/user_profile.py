@@ -21,7 +21,9 @@ class UserProfile(object):
 
     __slots__ = ("user_id", "name", "template_id", "verified", "all_filled_fields", "template", "posted_message_id", "posted_channel_id")
 
-    def __init__(self, user_id:int, name:str, template_id:uuid.UUID, verified:bool, posted_message_id:int=None, posted_channel_id:int=None, template:Template=None):
+    def __init__(
+            self, user_id:int, name:str, template_id:uuid.UUID, verified:bool, posted_message_id:int=None, posted_channel_id:int=None,
+            template:Template=None):
         self.user_id: int = user_id
         self.name: str = name
         self.template_id: uuid.UUID = template_id
@@ -32,11 +34,16 @@ class UserProfile(object):
         self.template: Template = template
 
     async def fetch_filled_fields(self, db) -> typing.Dict[uuid.UUID, FilledField]:
-        """Fetch the fields for this profile and store them in .all_filled_fields"""
+        """
+        Fetch the fields for this profile and store them in .all_filled_fields.
+        """
 
         if self.template is None or len(self.template.all_fields) == 0:
             await self.fetch_template(db, fetch_fields=True)
-        field_rows = await db("SELECT * FROM filled_field WHERE user_id=$1 AND name=$2 AND field_id=ANY($3::UUID[])", self.user_id, self.name, self.template.all_fields.keys())
+        field_rows = await db(
+            "SELECT * FROM filled_field WHERE user_id=$1 AND name=$2 AND field_id=ANY($3::UUID[])",
+            self.user_id, self.name, self.template.all_fields.keys(),
+        )
         self.all_filled_fields.clear()
         for f in field_rows:
             filled = FilledField(**f)

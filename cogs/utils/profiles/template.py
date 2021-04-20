@@ -61,7 +61,7 @@ class Template(object):
     @property
     def should_send_message(self) -> bool:
         """
-        Says whether or not this template should send a message (verification/archivation) on its submission
+        Says whether or not this template should send a message (verification/archivation) on its submission.
         """
 
         return bool(self.verification_channel_id or self.archive_channel_id)
@@ -150,7 +150,8 @@ class Template(object):
         return user_profile
 
     async def fetch_all_profiles_for_user(self, db, user_id:int, *, fetch_filled_fields:bool=True) -> typing.List['cogs.utils.profiles.user_profile.UserProfile']:
-        """Gets the filled profile for a given user
+        """
+        Gets the filled profile for a given user.
 
         Args:
             db (cogs.utils.database.DatabaseConnection): An active connection to the database.
@@ -171,8 +172,9 @@ class Template(object):
             [await i.fetch_filled_fields(db) for i in profiles]
         return profiles
 
-    async def fetch_all_profiles(self, db,  *, fetch_filled_fields:bool=True) -> typing.List['cogs.utils.profiles.user_profile.UserProfile']:
-        """Gets the filled profile for a given user
+    async def fetch_all_profiles(self, db, *, fetch_filled_fields:bool=True) -> typing.List['cogs.utils.profiles.user_profile.UserProfile']:
+        """
+        Gets the filled profile for a given user
 
         Args:
             db (cogs.utils.database.DatabaseConnection): An active connection to the database.

@@ -297,8 +297,8 @@ class ProfileTemplates(utils.Cog):
             pass
         await ctx.send(
             (
-                f"Finished editing template. Users can create profiles with `{ctx.clean_prefix}set{template.name.lower()}`, "
-                f"edit with `{ctx.clean_prefix}edit{template.name.lower()}`, and show them with `{ctx.clean_prefix}get{template.name.lower()}`."
+                f"Finished editing template. Users can create profiles with `{ctx.clean_prefix}{template.name.lower()} set`, "
+                f"edit with `{ctx.clean_prefix}{template.name.lower()} edit`, and show them with `{ctx.clean_prefix}{template.name.lower()} get`."
             )
         )
 
@@ -648,6 +648,42 @@ class ProfileTemplates(utils.Cog):
         self.logger.info(f"New template '{template.name}' created on guild {ctx.guild.id}")
         await ctx.invoke(self.bot.get_command("edittemplate"), template)
 
+    async def get_field_name(self, ctx, messages_to_delete:list) -> typing.Optional[str]:
+        """
+        A method for use in template creation - asks the user for the name of the field they want to add.
+        """
+
+        # Get a name for the new field
+        v = await ctx.send(
+            "What name should this field have? This is the name shown on the embed, "
+            "so it should be something like 'Name', 'Age', 'Gender', etc."
+        )
+        messages_to_delete.append(v)
+        while True:
+            try:
+                field_name_message = await self.bot.wait_for('message', check=message_check, timeout=120)
+                messages_to_delete.append(field_name_message)
+            except asyncio.TimeoutError:
+                try:
+                    await ctx.send(
+                        "Creating a new field has timed out. The profile "
+                        "is being created with the fields currently added."
+                    )
+                except (discord.Forbidden, discord.NotFound):
+                    pass
+                return None
+
+            # Check if if name is too long
+            if 256 >= len(field_name_message.content) >= 1:
+                break
+            else:
+                v = await ctx.send(
+                    "The maximum length of a field name is 256 characters. "
+                    "Please provide another name."
+                )
+                messages_to_delete.append(v)
+        field_name = field_name_message.content
+
     async def create_new_field(self, ctx:utils.Context, template:localutils.Template, index:int, image_set:bool=False, prompt_for_creation:bool=True, delete_messages:bool=False) -> typing.Optional[localutils.Field]:
         """
         Talk a user through creating a new field for their template.
@@ -690,29 +726,15 @@ class ProfileTemplates(utils.Cog):
             await field_message.edit(content=field_message.content, embed=None)
 
         # Get a name for the new field
-        v = await ctx.send("What name should this field have? This is the name shown on the embed, so it should be something like 'Name', 'Age', 'Gender', etc.")
-        messages_to_delete.append(v)
-        while True:
-            try:
-                field_name_message = await self.bot.wait_for('message', check=message_check, timeout=120)
-                messages_to_delete.append(field_name_message)
-            except asyncio.TimeoutError:
-                try:
-                    await ctx.send("Creating a new field has timed out. The profile is being created with the fields currently added.")
-                except (discord.Forbidden, discord.NotFound):
-                    pass
-                return None
-
-            # Check if if name is too long
-            if 256 >= len(field_name_message.content) >= 1:
-                break
-            else:
-                v = await ctx.send("The maximum length of a field name is 256 characters. Please provide another name.")
-                messages_to_delete.append(v)
-        field_name = field_name_message.content
+        field_name = await self.get_field_name(ctx, messages_to_delete)
+        if field_name is None:
+            return
 
         # Get a prompt for the field
-        v = await ctx.send("What message should I send when I'm asking people to fill out this field? This should be a question or prompt, eg 'What is your name/age/gender/etc'.")
+        v = await ctx.send(
+            "What message should I send when I'm asking people to fill out this field? "
+            "This should be a question or prompt, eg 'What is your name/age/gender/etc'."
+        )
         messages_to_delete.append(v)
         while True:
             try:
@@ -720,7 +742,10 @@ class ProfileTemplates(utils.Cog):
                 messages_to_delete.append(field_prompt_message)
             except asyncio.TimeoutError:
                 try:
-                    await ctx.send("Creating a new field has timed out. The profile is being created with the fields currently added.")
+                    await ctx.send(
+                        "Creating a new field has timed out. The profile is being "
+                        "created with the fields currently added."
+                    )
                 except (discord.Forbidden, discord.NotFound):
                     pass
                 return None
@@ -749,14 +774,19 @@ class ProfileTemplates(utils.Cog):
             field_optional = field_optional_emoji == self.TICK_EMOJI
 
             # Get timeout
-            v = await ctx.send("How many seconds should I wait for people to fill out this field (I recommend 120 - that's 2 minutes)? The minimum is 30, and the maximum is 600.")
+            v = await ctx.send(
+                "How many seconds should I wait for people to fill out this field (I recommend 120 - "
+                "that's 2 minutes)? The minimum is 30, and the maximum is 600."
+            )
             messages_to_delete.append(v)
             while True:
                 try:
                     field_timeout_message = await self.bot.wait_for('message', check=message_check, timeout=120)
                     messages_to_delete.append(field_timeout_message)
                 except asyncio.TimeoutError:
-                    await ctx.send("Creating a new field has timed out. The profile is being created with the fields currently added.")
+                    await ctx.send(
+                        "Creating a new field has timed out. The profile is being created with the fields currently added."
+                    )
                     return None
                 try:
                     timeout = int(field_timeout_message.content)
@@ -764,7 +794,9 @@ class ProfileTemplates(utils.Cog):
                         raise ValueError()
                     break
                 except ValueError:
-                    v = await ctx.send("I couldn't convert your message into a valid number - the minimum is 30 seconds. Please try again.")
+                    v = await ctx.send(
+                        "I couldn't convert your message into a valid number - the minimum is 30 seconds. Please try again."
+                    )
                     messages_to_delete.append(v)
             field_timeout = min([timeout, 600])
 
@@ -772,7 +804,10 @@ class ProfileTemplates(utils.Cog):
             if image_set:
                 text = f"What type is this field? Will you be getting numbers ({self.NUMBERS_EMOJI}), or any text ({self.LETTERS_EMOJI})?"
             else:
-                text = f"What type is this field? Will you be getting numbers ({self.NUMBERS_EMOJI}), any text ({self.LETTERS_EMOJI}), or an image ({self.PICTURE_EMOJI})?"
+                text = (
+                    f"What type is this field? Will you be getting numbers ({self.NUMBERS_EMOJI}), any text ({self.LETTERS_EMOJI}), or "
+                    f"an image ({self.PICTURE_EMOJI})?"
+                )
             field_type_message = await ctx.send(text)
             messages_to_delete.append(field_type_message)
 

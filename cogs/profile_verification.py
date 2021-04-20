@@ -47,7 +47,11 @@ class ProfileVerification(utils.Cog):
         embed: utils.Embed = user_profile.build_embed(self.bot, target_user)
         embed.set_footer(text=f'{template.name} // Verification Check')
         try:
-            v = await channel.send(f"New **{template.name}** submission from <@{user_profile.user_id}>\n{user_profile.user_id}/{template.template_id}/{user_profile.name}", embed=embed)
+            v = await channel.send(
+                f"New **{template.name}** submission from <@{user_profile.user_id}>\n{user_profile.user_id}/"
+                f"{template.template_id}/{user_profile.name}",
+                embed=embed,
+            )
         except discord.HTTPException:
             raise localutils.errors.TemplateVerificationChannelError(f"I can't send messages to {channel.mention}.")
 
@@ -129,7 +133,8 @@ class ProfileVerification(utils.Cog):
         except AttributeError:
             raise localutils.errors.TemplateRoleAddError(f"I couldn't find a role on this server with the ID `{role_id}`.")
 
-    async def send_profile_submission(self, ctx:utils.Context, user_profile:localutils.UserProfile, target_user:discord.Member) -> typing.Optional[discord.Message]:
+    async def send_profile_submission(
+            self, ctx:utils.Context, user_profile:localutils.UserProfile, target_user:discord.Member) -> typing.Optional[discord.Message]:
         """
         Send a profile verification OR archive message for a given profile. Returns whether or not the sending was a success.
 
@@ -218,9 +223,15 @@ class ProfileVerification(utils.Cog):
             template = await localutils.Template.fetch_template_by_id(db, template_id)
             user_profile = await template.fetch_profile_for_user(db, profile_user_id, profile_name)
             if verify:
-                await db("UPDATE created_profile SET verified=true WHERE user_id=$1 AND template_id=$2 AND name=$3", profile_user_id, template_id, profile_name)
+                await db(
+                    "UPDATE created_profile SET verified=true WHERE user_id=$1 AND template_id=$2 AND name=$3",
+                    profile_user_id, template_id, profile_name,
+                )
             else:
-                await db("DELETE FROM created_profile WHERE user_id=$1 AND template_id=$2 AND name=$3", profile_user_id, template_id, profile_name)
+                await db(
+                    "DELETE FROM created_profile WHERE user_id=$1 AND template_id=$2 AND name=$3",
+                    profile_user_id, template_id, profile_name,
+                )
 
         # See if we need to say anything
         if user_profile is None:
@@ -250,11 +261,22 @@ class ProfileVerification(utils.Cog):
             try:
                 embed: localutils.Embed = user_profile.build_embed(self.bot, profile_user)
                 if verify:
-                    await profile_user.send(f"Your profile for **{user_profile.template.name}** (`{user_profile.name}`) on `{guild.name}` has been verified.", embed=embed)
+                    await profile_user.send(
+                        f"Your profile for **{user_profile.template.name}** (`{user_profile.name}`) on "
+                        f"`{guild.name}` has been verified.",
+                        embed=embed,
+                    )
                 else:
-                    await profile_user.send(f"Your profile for **{user_profile.template.name}** (`{user_profile.name}`) on `{guild.name}` has been denied with the reason `{denial_reason}`.", embed=embed)
+                    await profile_user.send(
+                        f"Your profile for **{user_profile.template.name}** (`{user_profile.name}`) on "
+                        f"`{guild.name}` has been denied with the reason `{denial_reason}`.",
+                        embed=embed,
+                    )
             except discord.HTTPException:
-                self.logger.info(f"Couldn't DM user {user_profile.user_id} about their '{user_profile.template.name}' profile verification on {guild.id}")
+                self.logger.info(
+                    f"Couldn't DM user {user_profile.user_id} about their '{user_profile.template.name}' "
+                    f"profile verification on {guild.id}"
+                )
                 pass  # Can't send the user a DM, let's just ignore it
 
         # Archive and add roles

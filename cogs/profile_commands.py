@@ -18,8 +18,12 @@ class ProfileCreation(utils.Cog):
     TICK_EMOJI = "<:tick_yes:596096897995899097>"
     CROSS_EMOJI = "<:cross_no:596096897769275402>"
 
+    OLD_COMMAND_REGEX = re.compile(
+        r"^(?P<command>set|get|delete|edit)(?P<template>\S{1,30})(?P<args> ?.*)$",
+        re.IGNORECASE
+    )
     COMMAND_REGEX = re.compile(
-        r"^(?P<command>set|get|delete|edit)(?P<template>\S{1,30})( .*)?$",
+        r"^(?P<template>\S{1,30}) (?P<command>set|get|delete|edit)(?P<args> ?.*)$",
         re.IGNORECASE
     )
 
@@ -38,7 +42,13 @@ class ProfileCreation(utils.Cog):
             return
 
         # Get the command and used template
-        matches = self.COMMAND_REGEX.search(ctx.message.content[len(ctx.prefix):])
+        prefixless_content = ctx.message.content[len(ctx.prefix):]
+        matches = self.COMMAND_REGEX.search(prefixless_content)
+        if matches is None:
+            matches = self.OLD_COMMAND_REGEX.search(prefixless_content)
+            if matches is None:
+                return
+            matches = self.OLD_COMMAND_REGEX.search(f"{matches.group('command')}{matches.group('template')}{matches.group('args')}")
         if not matches:
             return
         command_operator = matches.group("command")  # get/get/delete/edit

@@ -1,6 +1,6 @@
 # Profile
 
-Profile is a powerful Discord bot used to help handle storing for your servers. 
+Profile is a powerful Discord bot used to help handle storing for your servers.
 
 ## What does it do?
 
@@ -33,12 +33,12 @@ Only users with the `manage roles` permission are able to run these commands.
 
 ### Managing profiles
 
-* `,setcharacter`
+* `,character set`
     * This will set up a profile for the `Character` template on your server.
-* `,getcharacter [@User#0001]`
+* `,character get [@User#0001]`
     * This will get the `Character` profile for a given user.
     * If the user has multiple profiles, you can pick which one you want to see by just giving its name.
-* `,editcharacter`
+* `,character edit`
     * This will edit your `Character` profile.
-* `,deletecharacter`
+* `,character delete`
     * This will delete your `Character` profile.

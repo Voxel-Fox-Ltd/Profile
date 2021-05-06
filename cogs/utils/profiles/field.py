@@ -23,7 +23,9 @@ class Field(object):
 
     __slots__ = ("field_id", "index", "name", "prompt", "timeout", "field_type", "template_id", "optional", "deleted")
 
-    def __init__(self, field_id:uuid.UUID, name:str, index:int, prompt:str, timeout:int, field_type:FieldType, template_id:uuid.UUID, optional:bool, deleted:bool):
+    def __init__(
+            self, field_id:uuid.UUID, name:str, index:int, prompt:str, timeout:int, field_type:FieldType,
+            template_id:uuid.UUID, optional:bool, deleted:bool):
         self.field_id: uuid.UUID = field_id
         self.index: int = index
         self.name: str = name

@@ -19,7 +19,9 @@ class UserProfile(object):
     with this.
     """
 
-    __slots__ = ("user_id", "name", "template_id", "verified", "all_filled_fields", "template", "posted_message_id", "posted_channel_id")
+    __slots__ = (
+        "user_id", "name", "template_id", "verified", "all_filled_fields", "template", "posted_message_id", "posted_channel_id",
+    )
 
     def __init__(
             self, user_id:int, name:str, template_id:uuid.UUID, verified:bool, posted_message_id:int=None, posted_channel_id:int=None,

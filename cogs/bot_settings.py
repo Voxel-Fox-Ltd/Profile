@@ -5,7 +5,7 @@ class BotSettings(utils.Cog):
 
     @utils.command(aliases=['settings'])
     @utils.checks.is_bot_support()
-    async def setup(self, ctx:utils.Context):
+    async def setup(self, ctx: utils.Context):
         """
         Set up individual settings for each guild.
         """
@@ -57,6 +57,6 @@ class BotSettings(utils.Cog):
             pass
 
 
-def setup(bot:utils.Bot):
+def setup(bot: utils.Bot):
     x = BotSettings(bot)
     bot.add_cog(x)

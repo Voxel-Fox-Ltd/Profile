@@ -12,7 +12,8 @@ class ProfileVerification(utils.Cog):
     TICK_EMOJI = "<:tick_yes:596096897995899097>"
     CROSS_EMOJI = "<:cross_no:596096897769275402>"
 
-    async def send_profile_verification(self, user_profile:localutils.UserProfile, target_user:discord.Member) -> typing.Optional[discord.Message]:
+    async def send_profile_verification(
+            self, user_profile: localutils.UserProfile, target_user: discord.Member) -> typing.Optional[discord.Message]:
         """
         Sends a profile in to the template's verification channel.
 
@@ -69,7 +70,8 @@ class ProfileVerification(utils.Cog):
         # Wew nice we're done
         return v
 
-    async def send_profile_archivation(self, user_profile:localutils.UserProfile, target_user:discord.Member) -> typing.Optional[discord.Message]:
+    async def send_profile_archivation(
+            self, user_profile: localutils.UserProfile, target_user: discord.Member) -> typing.Optional[discord.Message]:
         """
         Send a profile to the template's archive channel.
         This will also add the given role to the user.
@@ -104,7 +106,8 @@ class ProfileVerification(utils.Cog):
         except discord.HTTPException:
             raise localutils.errors.TemplateArchiveChannelError(f"I can't send messages to {channel.mention}.")
 
-    async def add_profile_user_roles(self, user_profile:localutils.UserProfile, target_user:discord.Member) -> None:
+    async def add_profile_user_roles(
+            self, user_profile: localutils.UserProfile, target_user: discord.Member) -> None:
         """
         Add the profile roles to a given user.
 
@@ -134,7 +137,8 @@ class ProfileVerification(utils.Cog):
             raise localutils.errors.TemplateRoleAddError(f"I couldn't find a role on this server with the ID `{role_id}`.")
 
     async def send_profile_submission(
-            self, ctx:utils.Context, user_profile:localutils.UserProfile, target_user:discord.Member) -> typing.Optional[discord.Message]:
+            self, ctx: utils.Context, user_profile: localutils.UserProfile,
+            target_user: discord.Member) -> typing.Optional[discord.Message]:
         """
         Send a profile verification OR archive message for a given profile. Returns whether or not the sending was a success.
 
@@ -166,7 +170,7 @@ class ProfileVerification(utils.Cog):
         return return_message
 
     @utils.Cog.listener('on_raw_reaction_add')
-    async def verification_emoji_check(self, payload:discord.RawReactionActionEvent):
+    async def verification_emoji_check(self, payload: discord.RawReactionActionEvent):
         """
         Triggered when a reaction is added or removed, check for profile verification.
         """
@@ -302,6 +306,6 @@ class ProfileVerification(utils.Cog):
             await channel.purge(check=lambda m: m.id in [i.id for i in messages_to_delete], bulk=channel.permissions_for(guild.me).manage_messages)
 
 
-def setup(bot:utils.Bot):
+def setup(bot: utils.Bot):
     x = ProfileVerification(bot)
     bot.add_cog(x)

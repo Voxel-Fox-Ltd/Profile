@@ -26,20 +26,30 @@ class ProfileTemplates(utils.Cog):
         self.template_editing_locks: typing.Dict[int, asyncio.Lock] = collections.defaultdict(asyncio.Lock)  # guild_id: asyncio.Lock
 
     @staticmethod
-    def is_valid_template_name(template_name):
+    def is_valid_template_name(template_name: str) -> bool:
+        """
+        Returns whether a template name is technically valid.
+
+        Args:
+            template_name (str): The template name you want to check.
+
+        Returns:
+            bool: Whether or not the given template name is valid.
+        """
+
         return len([i for i in template_name if i not in string.ascii_letters + string.digits]) == 0
 
     @utils.command()
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
-    async def templates(self, ctx:utils.Context, guild_id:int=None):
+    async def templates(self, ctx: utils.Context, guild_id: int = None):
         """
         Lists the templates that have been created for this server.
         """
 
         # See if they're allowed to get from another guild ID
-        if guild_id is not None and guild_id != ctx.guild.id and self.bot.config.get('bot_support_role_id') not in ctx.author._roles:
-            raise commands.MissingRole("Bot Support Team")
+        if guild_id is not None and guild_id != ctx.guild.id:
+            await utils.checks.is_bot_support().predicate(ctx)
 
         # Grab the templates
         async with self.bot.database() as db:
@@ -52,12 +62,13 @@ class ProfileTemplates(utils.Cog):
 
         if not templates:
             return await ctx.send("There are no created templates for this guild.")
-        return await ctx.send('\n'.join([f"**{row['name']}** (`{row['template_id']}`, `{row['count']}` created profiles)" for row in templates]))
+        template_names = [f"**{row['name']}** (`{row['template_id']}`, `{row['count']}` created profiles)" for row in templates]
+        return await ctx.send('\n'.join(template_names))
 
     @utils.command(aliases=['describe'])
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @commands.guild_only()
-    async def describetemplate(self, ctx:utils.Context, template:localutils.Template, brief:bool=True):
+    async def describetemplate(self, ctx: utils.Context, template: localutils.Template, brief: bool = True):
         """
         Describe a template and its fields.
         """
@@ -68,19 +79,21 @@ class ProfileTemplates(utils.Cog):
         embed.description += f"\nCurrently there are **{len(user_profiles)}** created profiles for this template."
         return await ctx.send(embed=embed)
 
-    async def purge_message_list(self, channel:discord.TextChannel, message_list:typing.List[discord.Message]):
+    async def purge_message_list(self, channel: discord.TextChannel, message_list: typing.List[discord.Message]):
         """
         Delete a list of messages from the channel.
         """
 
-        await channel.purge(check=lambda m: m.id in [i.id for i in message_list], bulk=channel.permissions_for(channel.guild.me).manage_messages)
+        check = lambda m: m.id in [i.id for i in message_list]
+        bulk = channel.permissions_for(channel.guild.me).manage_messages
+        await channel.purge(check=check, bulk=bulk)
         message_list.clear()
 
     @utils.command()
     @commands.has_guild_permissions(manage_roles=True)
     @commands.bot_has_permissions(send_messages=True, external_emojis=True, add_reactions=True, manage_messages=True)
     @commands.guild_only()
-    async def edittemplate(self, ctx:utils.Context, template:localutils.Template):
+    async def edittemplate(self, ctx: utils.Context, template: localutils.Template):
         """
         Edits a template for your guild.
         """
@@ -103,7 +116,10 @@ class ProfileTemplates(utils.Cog):
             # Get the template fields
             async with self.bot.database() as db:
                 await template.fetch_fields(db)
-                guild_settings_rows = await db("SELECT * FROM guild_settings WHERE guild_id=$1 OR guild_id=0 ORDER BY guild_id DESC", ctx.guild.id)
+                guild_settings_rows = await db(
+                    """SELECT * FROM guild_settings WHERE guild_id=$1 OR guild_id=0 ORDER BY guild_id DESC""",
+                    ctx.guild.id,
+                )
             guild_settings = guild_settings_rows[0]
 
             # Set up our initial vars so we can edit them later
@@ -317,7 +333,9 @@ class ProfileTemplates(utils.Cog):
             )
         )
 
-    async def edit_field(self, ctx:utils.Context, template:localutils.Template, guild_settings:dict, is_bot_support:bool) -> bool:
+    async def edit_field(
+            self, ctx: utils.Context, template: localutils.Template, guild_settings: dict,
+            is_bot_support: bool) -> bool:
         """
         Talk the user through editing a field of a template.
         Returns whether or not the template display needs to be updated.
@@ -325,13 +343,12 @@ class ProfileTemplates(utils.Cog):
 
         # Ask which index they want to edit
         if len(template.fields) == 0:
-            ask_field_edit_message: discord.Message = await ctx.send("Now talking you through creating a new field.")
+            text = "Now talking you through creating a new field."
         elif len(template.fields) >= max([guild_settings['max_template_field_count'], template.max_field_count]) and not is_bot_support:
-            ask_field_edit_message: discord.Message = await ctx.send("What is the index of the field you want to edit?")
+            text = "What is the index of the field you want to edit?"
         else:
-            ask_field_edit_message: discord.Message = await ctx.send(
-                "What is the index of the field you want to edit? If you want to add a *new* field, type **new**.",
-            )
+            text = "What is the index of the field you want to edit? If you want to add a *new* field, type **new**."
+        ask_field_edit_message: discord.Message = await ctx.send(text)
         messages_to_delete = [ask_field_edit_message]
 
         # Start our infinite loop
@@ -533,7 +550,7 @@ class ProfileTemplates(utils.Cog):
     @commands.has_guild_permissions(manage_roles=True)
     @commands.bot_has_permissions(send_messages=True, external_emojis=True, add_reactions=True)
     @commands.guild_only()
-    async def deletetemplate(self, ctx:utils.Context, template:localutils.Template):
+    async def deletetemplate(self, ctx: utils.Context, template: localutils.Template):
         """
         Deletes a template from your guild.
         """
@@ -585,7 +602,7 @@ class ProfileTemplates(utils.Cog):
     @commands.has_guild_permissions(manage_roles=True)
     @commands.bot_has_permissions(send_messages=True, manage_messages=True, external_emojis=True, add_reactions=True, embed_links=True)
     @commands.guild_only()
-    async def createtemplate(self, ctx:utils.Context, template_name:str=None):
+    async def createtemplate(self, ctx: utils.Context, template_name: str = None):
         """
         Creates a new template for your guild.
         """
@@ -680,7 +697,7 @@ class ProfileTemplates(utils.Cog):
         self.logger.info(f"New template '{template.name}' created on guild {ctx.guild.id}")
         await ctx.invoke(self.bot.get_command("edittemplate"), template)
 
-    async def get_field_name(self, ctx, messages_to_delete:list) -> typing.Optional[str]:
+    async def get_field_name(self, ctx: utils.Context, messages_to_delete: list) -> typing.Optional[str]:
         """
         A method for use in template creation - asks the user for the name of the field they want to add.
         """
@@ -717,8 +734,8 @@ class ProfileTemplates(utils.Cog):
         field_name = field_name_message.content
 
     async def create_new_field(
-            self, ctx:utils.Context, template:localutils.Template, index:int, image_set:bool=False,
-            prompt_for_creation:bool=True, delete_messages:bool=False) -> typing.Optional[localutils.Field]:
+            self, ctx: utils.Context, template: localutils.Template, index: int, image_set: bool = False,
+            prompt_for_creation: bool = True, delete_messages: bool = False) -> typing.Optional[localutils.Field]:
         """
         Talk a user through creating a new field for their template.
         """
@@ -903,6 +920,6 @@ class ProfileTemplates(utils.Cog):
         return field
 
 
-def setup(bot:utils.Bot):
+def setup(bot: utils.Bot):
     x = ProfileTemplates(bot)
     bot.add_cog(x)

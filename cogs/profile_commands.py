@@ -32,7 +32,7 @@ class ProfileCreation(utils.Cog):
         self.set_profile_locks: typing.Dict[int, asyncio.Lock] = collections.defaultdict(asyncio.Lock)
 
     @utils.Cog.listener()
-    async def on_command_error(self, ctx:utils.Context, error:commands.CommandError):
+    async def on_command_error(self, ctx: utils.Context, error: commands.CommandError):
         """
         CommandNotFound handler so the bot can search for that custom command.
         """
@@ -80,7 +80,7 @@ class ProfileCreation(utils.Cog):
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     @utils.checks.meta_command()
-    async def set_profile_meta(self, ctx:utils.Context, target_user:typing.Optional[discord.Member]):
+    async def set_profile_meta(self, ctx: utils.Context, target_user: typing.Optional[discord.Member]):
         """
         Talks a user through setting up a profile on a given server.
         """
@@ -308,7 +308,9 @@ class ProfileCreation(utils.Cog):
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     @utils.checks.meta_command()
-    async def edit_profile_meta(self, ctx:utils.Context, target_user:typing.Optional[discord.Member], *, profile_name:str=None):
+    async def edit_profile_meta(
+            self, ctx: utils.Context, target_user: typing.Optional[discord.Member], *,
+            profile_name: str = None):
         """
         Talks a user through setting up a profile on a given server.
         """
@@ -500,7 +502,8 @@ class ProfileCreation(utils.Cog):
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     @utils.checks.meta_command()
-    async def delete_profile_meta(self, ctx:utils.Context, user:typing.Optional[discord.Member], *, profile_name:str=None):
+    async def delete_profile_meta(
+            self, ctx: utils.Context, user: typing.Optional[discord.Member], *, profile_name: str = None):
         """
         Handles deleting a profile.
         """
@@ -559,7 +562,8 @@ class ProfileCreation(utils.Cog):
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @commands.guild_only()
     @utils.checks.meta_command()
-    async def get_profile_meta(self, ctx:utils.Context, user:typing.Optional[discord.Member], *, profile_name:str=None):
+    async def get_profile_meta(
+            self, ctx: utils.Context, user: typing.Optional[discord.Member], *, profile_name: str = None):
         """
         Gets a profile for a given member.
         """
@@ -611,6 +615,6 @@ class ProfileCreation(utils.Cog):
         return
 
 
-def setup(bot:utils.Bot):
+def setup(bot: utils.Bot):
     x = ProfileCreation(bot)
     bot.add_cog(x)

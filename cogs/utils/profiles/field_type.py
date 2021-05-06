@@ -18,7 +18,7 @@ class FieldType(object):
         return self.name
 
     @classmethod
-    def convert_to_python(cls, value:str):
+    def convert_to_python(cls, value: str):
         """
         Converts the given value into the valid field type.
         """

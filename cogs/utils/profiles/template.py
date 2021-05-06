@@ -12,7 +12,7 @@ from cogs.utils.profiles.command_processor import CommandProcessor, InvalidComma
 
 
 class TemplateNotFoundError(commands.BadArgument):
-    def __init__(self, template_name:str=None):
+    def __init__(self, template_name: str = None):
         if template_name:
             message = f"There's no template with the name `{template_name}` on this guild."
         else:
@@ -50,8 +50,8 @@ class Template(object):
     )
 
     def __init__(
-            self, template_id:uuid.UUID, colour:int, guild_id:int, verification_channel_id:str, name:str, archive_channel_id:str,
-            role_id:str, max_profile_count:int, max_field_count:int):
+            self, template_id: uuid.UUID, colour: int, guild_id: int, verification_channel_id: str,
+            name: str, archive_channel_id: str, role_id: str, max_profile_count: int, max_field_count: int):
         self.template_id: uuid.UUID = template_id
         self.colour: int = colour
         self.guild_id: int = guild_id
@@ -71,21 +71,21 @@ class Template(object):
 
         return bool(self.verification_channel_id or self.archive_channel_id)
 
-    def get_verification_channel_id(self, member:discord.Member) -> typing.Optional[int]:
+    def get_verification_channel_id(self, member: discord.Member) -> typing.Optional[int]:
         """
         Get the correct verification channel ID for the given member.
         """
 
         return self._get_id_from_command(self.verification_channel_id, member)
 
-    def get_archive_channel_id(self, member:discord.Member) -> typing.Optional[int]:
+    def get_archive_channel_id(self, member: discord.Member) -> typing.Optional[int]:
         """
         Get the correct archive channel ID for a given member.
         """
 
         return self._get_id_from_command(self.archive_channel_id, member)
 
-    def get_role_id(self, member:discord.Member) -> typing.Optional[int]:
+    def get_role_id(self, member: discord.Member) -> typing.Optional[int]:
         """
         Get the correct role ID for a given member.
         """
@@ -93,7 +93,7 @@ class Template(object):
         return self._get_id_from_command(self.role_id, member)
 
     @staticmethod
-    def _get_id_from_command(text:str, member:discord.Member) -> typing.Optional[int]:
+    def _get_id_from_command(text: str, member: discord.Member) -> typing.Optional[int]:
         """
         Get the ID from either a command or as a straight value.
         """
@@ -120,7 +120,9 @@ class Template(object):
 
         return {i: o for i, o in self.all_fields.items() if o.deleted is False}
 
-    async def fetch_profile_for_user(self, db, user_id:int, profile_name:str=None, *, fetch_filled_fields:bool=True) -> 'cogs.utils.profiles.user_profile.UserProfile':
+    async def fetch_profile_for_user(
+            self, db, user_id:int, profile_name: str = None,
+            *, fetch_filled_fields: bool = True) -> 'cogs.utils.profiles.user_profile.UserProfile':
         """
         Gets the filled profile for a given user.
 
@@ -142,9 +144,14 @@ class Template(object):
 
         # Grab the user profile
         if profile_name is None:
-            profile_rows = await db("SELECT * FROM created_profile WHERE template_id=$1 AND user_id=$2", self.template_id, user_id)
+            profile_rows = await db(
+                """SELECT * FROM created_profile WHERE template_id=$1 AND user_id=$2""", self.template_id, user_id,
+            )
         else:
-            profile_rows = await db("SELECT * FROM created_profile WHERE template_id=$1 AND user_id=$2 AND LOWER(name)=LOWER($3)", self.template_id, user_id, profile_name)
+            profile_rows = await db(
+                """SELECT * FROM created_profile WHERE template_id=$1 AND user_id=$2 AND LOWER(name)=LOWER($3)""",
+                self.template_id, user_id, profile_name,
+            )
         if not profile_rows:
             return None
         if profile_name is None and len(profile_rows) > 1:
@@ -154,7 +161,8 @@ class Template(object):
             await user_profile.fetch_filled_fields(db)
         return user_profile
 
-    async def fetch_all_profiles_for_user(self, db, user_id:int, *, fetch_filled_fields:bool=True) -> typing.List['cogs.utils.profiles.user_profile.UserProfile']:
+    async def fetch_all_profiles_for_user(
+            self, db, user_id: int, *, fetch_filled_fields: bool = True) -> typing.List['cogs.utils.profiles.user_profile.UserProfile']:
         """
         Gets the filled profile for a given user.
 
@@ -177,7 +185,7 @@ class Template(object):
             [await i.fetch_filled_fields(db) for i in profiles]
         return profiles
 
-    async def fetch_all_profiles(self, db, *, fetch_filled_fields:bool=True) -> typing.List['cogs.utils.profiles.user_profile.UserProfile']:
+    async def fetch_all_profiles(self, db, *, fetch_filled_fields: bool = True) -> typing.List['cogs.utils.profiles.user_profile.UserProfile']:
         """
         Gets the filled profile for a given user
 
@@ -200,7 +208,7 @@ class Template(object):
         return profiles
 
     @classmethod
-    async def fetch_template_by_id(cls, db, template_id:uuid.UUID, *, fetch_fields:bool=True) -> typing.Optional['Template']:
+    async def fetch_template_by_id(cls, db, template_id: uuid.UUID, *, fetch_fields: bool = True) -> typing.Optional['Template']:
         """
         Get a template from the database via its ID.
         """
@@ -215,7 +223,7 @@ class Template(object):
         return template
 
     @classmethod
-    async def fetch_template_by_name(cls, db, guild_id:int, template_name:str, *, fetch_fields:bool=True) -> typing.Optional['Template']:
+    async def fetch_template_by_name(cls, db, guild_id: int, template_name: str, *, fetch_fields: bool = True) -> typing.Optional['Template']:
         """
         Get a template from the database via its name.
         """
@@ -242,7 +250,7 @@ class Template(object):
         return self.all_fields
 
     @classmethod
-    async def convert(cls, ctx, argument:str):
+    async def convert(cls, ctx, argument: str):
         """
         The Discord.py convert method for getting a template.
         """
@@ -259,7 +267,7 @@ class Template(object):
             raise TemplateNotFoundError(argument.lower())
         return v
 
-    def build_embed(self, bot, brief:bool=False) -> utils.Embed:
+    def build_embed(self, bot, brief: bool = False) -> utils.Embed:
         """
         Create an embed to visualise all of the created fields and given information.
         """

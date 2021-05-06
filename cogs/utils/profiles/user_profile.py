@@ -24,8 +24,8 @@ class UserProfile(object):
     )
 
     def __init__(
-            self, user_id:int, name:str, template_id:uuid.UUID, verified:bool, posted_message_id:int=None, posted_channel_id:int=None,
-            template:Template=None):
+            self, user_id: int, name: str, template_id: uuid.UUID, verified: bool, posted_message_id: int = None,
+            posted_channel_id: int = None, template: Template = None):
         self.user_id: int = user_id
         self.name: str = name
         self.template_id: uuid.UUID = template_id
@@ -53,7 +53,7 @@ class UserProfile(object):
             self.all_filled_fields[filled.field_id] = filled
         return self.all_filled_fields
 
-    async def fetch_template(self, db, *, fetch_fields:bool=True) -> Template:
+    async def fetch_template(self, db, *, fetch_fields: bool = True) -> Template:
         """
         Fetch the template for this field and store it in .template.
         """
@@ -96,7 +96,7 @@ class UserProfile(object):
     def filled_fields(self) -> typing.Dict[uuid.UUID, FilledField]:
         return {i: o for i, o in self.all_filled_fields.items() if o.field is not None and o.field.deleted is False and o.value is not None}
 
-    def build_embed(self, bot, member:typing.Optional[discord.Member]=None) -> utils.Embed:
+    def build_embed(self, bot, member: typing.Optional[discord.Member] = None) -> utils.Embed:
         """
         Converts the filled profile into an embed.
         """

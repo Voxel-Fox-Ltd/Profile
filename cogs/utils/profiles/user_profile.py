@@ -92,6 +92,19 @@ class UserProfile(object):
         # Oh well
         return None
 
+    async def delete_message(self, bot) -> None:
+        """
+        Delete the posted archive message.
+        """
+
+        m = await self.fetch_message(bot)
+        if not m:
+            return
+        try:
+            await m.delete()
+        except discord.HTTPException:
+            pass
+
     @property
     def filled_fields(self) -> typing.Dict[uuid.UUID, FilledField]:
         return {i: o for i, o in self.all_filled_fields.items() if o.field is not None and o.field.deleted is False and o.value is not None}

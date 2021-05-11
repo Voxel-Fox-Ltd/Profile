@@ -89,6 +89,17 @@ class ProfileTemplates(utils.Cog):
         await channel.purge(check=check, bulk=bulk)
         message_list.clear()
 
+    async def user_is_bot_support(self, ctx: utils.Context) -> bool:
+        """
+        Returns whether or not the user calling the command is bot support.
+        """
+
+        try:
+            await utils.checks.is_bot_support().predicate(ctx)
+            return True
+        except commands.CommandError:
+            return False
+
     @utils.command()
     @commands.has_guild_permissions(manage_roles=True)
     @commands.bot_has_permissions(send_messages=True, external_emojis=True, add_reactions=True, manage_messages=True)
@@ -103,12 +114,7 @@ class ProfileTemplates(utils.Cog):
             return await ctx.send("You're already editing a template.")
 
         # See if they're bot support
-        is_bot_support = False
-        try:
-            await utils.checks.is_bot_support().predicate(ctx)
-            is_bot_support = True
-        except commands.CommandError:
-            pass
+        is_bot_support = await self.user_is_bot_support(ctx)
 
         # Grab the template edit lock
         async with self.template_editing_locks[ctx.guild.id]:

@@ -536,9 +536,15 @@ class ProfileTemplates(utils.Cog):
         # Save the data
         async with self.bot.database() as db:
             if attr:
-                await db("UPDATE field SET {0}=$2 WHERE field_id=$1".format(attr), field_to_edit.field_id, field_value)
+                await db(
+                    """UPDATE field SET {0}=$2 WHERE field_id=$1""".format(attr),
+                    field_to_edit.field_id, field_value,
+                )
             else:
-                await db("UPDATE field SET deleted=true WHERE field_id=$1", field_to_edit.field_id)
+                await db(
+                    """UPDATE field SET deleted=true WHERE field_id=$1""",
+                    field_to_edit.field_id,
+                )
 
         # And done
         self.purge_message_list(ctx.channel, messages_to_delete)
@@ -665,10 +671,13 @@ class ProfileTemplates(utils.Cog):
                         pass
                     return
             try:
-                r = await self.bot.wait_for(
-                    "raw_reaction_add", timeout=120.0,
-                    check=lambda p: p.message_id == delete_confirmation_message.id and str(p.emoji) in valid_reactions and p.user_id == ctx.author.id
-                )
+                def check(payload):
+                    return all([
+                        payload.message_id == delete_confirmation_message.id,
+                        str(payload.emoji) in valid_reactions,
+                        payload.user_id == ctx.author.id,
+                    ])
+                r = await self.bot.wait_for("raw_reaction_add", timeout=120.0, check=check,)
             except asyncio.TimeoutError:
                 try:
                     await ctx.send("Template delete timed out - please try again later.")
@@ -713,11 +722,13 @@ class ProfileTemplates(utils.Cog):
 
             # Send the flavour text behind getting a template name
             if template_name is None:
-                await ctx.send(
-                    f"What name do you want to give this template? This will be used for the set and get commands; eg if the name "
-                    f"of your template is `test`, the commands generated will be `{ctx.prefix}settest` to set a profile, `{ctx.prefix}gettest` "
-                    f"to get a profile, and `{ctx.prefix}deletetest` to delete a profile. A profile name is case insensitive when used in commands.",
-                )
+                await ctx.send((
+                    f"What name do you want to give this template? This will be used for the set "
+                    f"and get commands; eg if the name of your template is `test`, the commands generated "
+                    f"will be `{ctx.prefix}settest` to set a profile, `{ctx.prefix}gettest` to get a "
+                    f"profile, and `{ctx.prefix}deletetest` to delete a profile. A profile name is case "
+                    f"insensitive when used in commands."
+                ))
 
             # Get name from the messages they send
             while True:
@@ -731,14 +742,20 @@ class ProfileTemplates(utils.Cog):
                     # Catch timeout
                     except asyncio.TimeoutError:
                         try:
-                            return await ctx.send(f"{ctx.author.mention}, your template creation has timed out after 2 minutes of inactivity.")
+                            return await ctx.send((
+                                f"{ctx.author.mention}, your template creation has "
+                                f"timed out after 2 minutes of inactivity."
+                            ))
                         except discord.Forbidden:
                             return
                     template_name = name_message.content
 
                 # Check name for characters
                 if not self.is_valid_template_name(template_name):
-                    await ctx.send("You can only use normal lettering and digits in your command name. Please run this command again to set a new one.")
+                    await ctx.send((
+                        "You can only use normal lettering and digits in your command name. "
+                        "Please run this command again to set a new one."
+                    ))
                     return
 
                 # Check name for length
@@ -750,12 +767,15 @@ class ProfileTemplates(utils.Cog):
 
                 # Check name is unique
                 async with self.bot.database() as db:
-                    template_exists = await db("SELECT * FROM template WHERE guild_id=$1 AND LOWER(name)=LOWER($2)", ctx.guild.id, template_name)
-                if template_exists:
-                    await ctx.send(
-                        f"This server already has a template with name **{template_name}**. "
-                        "Please run this command again to provide another one.",
+                    template_exists = await db(
+                        """SELECT * FROM template WHERE guild_id=$1 AND LOWER(name)=LOWER($2)""",
+                        ctx.guild.id, template_name,
                     )
+                if template_exists:
+                    await ctx.send((
+                        f"This server already has a template with name **{template_name}**. "
+                        "Please run this command again to provide another one."
+                    ))
                     return
                 break
 

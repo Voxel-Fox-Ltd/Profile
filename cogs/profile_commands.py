@@ -15,9 +15,6 @@ from cogs import utils as localutils
 
 class ProfileCreation(utils.Cog):
 
-    TICK_EMOJI = "<:tick_yes:596096897995899097>"
-    CROSS_EMOJI = "<:cross_no:596096897769275402>"
-
     OLD_COMMAND_REGEX = re.compile(
         r"^(?P<command>set|get|delete|edit)(?P<template>\S{1,30})(?P<args> ?.*)$",
         re.IGNORECASE

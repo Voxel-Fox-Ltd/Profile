@@ -14,9 +14,6 @@ from cogs import utils as localutils
 
 class ProfileTemplates(utils.Cog):
 
-    TICK_EMOJI = "<:tick_yes:596096897995899097>"
-    CROSS_EMOJI = "<:cross_no:596096897769275402>"
-
     NUMBERS_EMOJI = "\U00000031\U000020e3"
     LETTERS_EMOJI = "\U0001F170"
     PICTURE_EMOJI = "\U0001f5bc"
@@ -133,21 +130,22 @@ class ProfileTemplates(utils.Cog):
             guild_settings = guild_settings_rows[0]
 
             # Set up our initial vars so we can edit them later
-            template_display_edit_message = await ctx.send("Loading template...")
-            template_options_text = (
-                "**Select the emoji next to the item you want to edit:**\n"
-                "1\u20e3 Template name\n"
-                "2\u20e3 Verification channel (where profiles are sent to be verified by staff)\n"
-                "3\u20e3 Archive channel (where profiles are sent once verified)\n"
-                "4\u20e3 Set a role to be given to users upon completing a profile\n"
-                "5\u20e3 Template fields/questions\n"
-                "6\u20e3 Maximum profile count per user\n"
+            template_display_edit_message = await ctx.send("Loading template...")  # The message with the template
+            components = utils.MessageComponents.add_buttons_with_rows(
+                utils.Button("Template name", custom_id="1\N{COMBINING ENCLOSING KEYCAP}"),
+                utils.Button("Profile verification channel", custom_id="2\N{COMBINING ENCLOSING KEYCAP}"),
+                utils.Button("Profile archive channel", custom_id="3\N{COMBINING ENCLOSING KEYCAP}"),
+                utils.Button("Profile completion role", custom_id="4\N{COMBINING ENCLOSING KEYCAP}"),
+                utils.Button("Template fields", custom_id="5\N{COMBINING ENCLOSING KEYCAP}"),
+                utils.Button("Profile count per user", custom_id="6\N{COMBINING ENCLOSING KEYCAP}"),
             )
             if is_bot_support:
-                template_options_text += "7\u20e3 Maximum field count\n"
-            template_options_edit_message = await ctx.send(template_options_text)  # Send our initial message
-            should_edit = True  # Whether or not the initial message shoudl be edited
-            should_add_reactions = True  # Whether or not the reactions should be added to the message
+                components.components[-1].add_component(
+                    utils.Button("Maximum field count", custom_id="7\N{COMBINING ENCLOSING KEYCAP}"),
+                )
+            components.components[-1].add_component(utils.Button("Done", custom_id="DONE", style=utils.ButtonStyle.SUCCESS))
+            template_options_edit_message = await ctx.send("What would you like to edit?", components=components)
+            should_edit = True  # Whether or not the template display message should be edited
 
             # Start our edit loop
             while True:
@@ -164,43 +162,10 @@ class ProfileTemplates(utils.Cog):
                         return
                     should_edit = False
 
-                # Get our valid emojis
-                valid_emoji = [
-                    "1\N{COMBINING ENCLOSING KEYCAP}", "2\N{COMBINING ENCLOSING KEYCAP}",
-                    "3\N{COMBINING ENCLOSING KEYCAP}", "4\N{COMBINING ENCLOSING KEYCAP}",
-                    "5\N{COMBINING ENCLOSING KEYCAP}", "6\N{COMBINING ENCLOSING KEYCAP}",
-                ]
-                if is_bot_support:
-                    valid_emoji.append("7\N{COMBINING ENCLOSING KEYCAP}")
-                valid_emoji.append(self.TICK_EMOJI)
-
-                # Add the reactions to the message
-                if should_add_reactions:
-                    add_reaction_tasks = []
-                    for e in valid_emoji:
-                        try:
-                            add_reaction_tasks.append(self.bot.loop.create_task(template_options_edit_message.add_reaction(e)))
-                        except discord.HTTPException:
-                            try:
-                                for i in add_reaction_tasks:
-                                    i.cancel()
-                                await template_display_edit_message.delete()
-                                await template_options_edit_message.edit(content="I'm unable to add reactions to my messages.")
-                            except discord.HTTPException:
-                                pass
-                            return
-                    should_add_reactions = False
-
                 # Wait for a response from the user
                 try:
-                    def check(payload):
-                        return all([
-                            payload.user_id == ctx.author.id,
-                            payload.message_id == template_options_edit_message.id,
-                            str(p.emoji) in valid_emoji,
-                        ])
-                    payload = await self.bot.wait_for("raw_reaction_add", check=check, timeout=120)
-                    reaction = str(payload.emoji)
+                    payload = template_options_edit_message.wait_for_button_click(check=lambda p: p.user_id == ctx.author.id, timeout=120)
+                    reaction = payload.button.custom_id
                 except asyncio.TimeoutError:
                     try:
                         return await ctx.send("Timed out waiting for edit response.")
@@ -217,12 +182,11 @@ class ProfileTemplates(utils.Cog):
                         "5\N{COMBINING ENCLOSING KEYCAP}": (None, self.edit_field(ctx, template, guild_settings, is_bot_support)),
                         "6\N{COMBINING ENCLOSING KEYCAP}": ("max_profile_count", int),
                         "7\N{COMBINING ENCLOSING KEYCAP}": ("max_field_count", int),
-                        self.TICK_EMOJI: None,
+                        "DONE": None,
                     }
                     attr, converter = available_reactions[reaction]
                 except TypeError:
                     break
-                await template_options_edit_message.remove_reaction(reaction, ctx.author)
 
                 # If they want to edit a field, we go through this section
                 if attr is None:
@@ -408,34 +372,26 @@ class ProfileTemplates(utils.Cog):
             return field_to_edit
 
         # Ask what part of it they want to edit
-        attribute_message: discord.Message = await ctx.send((
-            f"Editing the field **{field_to_edit.name}**. Which part would you like to edit?\n"
-            "1\N{COMBINING ENCLOSING KEYCAP} Field name\n"
-            "2\N{COMBINING ENCLOSING KEYCAP} Field prompt\n"
-            "3\N{COMBINING ENCLOSING KEYCAP} Whether or not the field is optional\n"
-            "4\N{COMBINING ENCLOSING KEYCAP} Field type\n"
-            "5\N{COMBINING ENCLOSING KEYCAP} Delete field entierly\n"),
+        components = utils.MessageComponents.add_buttons_with_rows(
+            utils.Button("Field name", custom_id="1\N{COMBINING ENCLOSING KEYCAP}"),
+            utils.Button("Field prompt", custom_id="2\N{COMBINING ENCLOSING KEYCAP}"),
+            utils.Button("Field being optional", custom_id="3\N{COMBINING ENCLOSING KEYCAP}"),
+            utils.Button("Field type", custom_id="4\N{COMBINING ENCLOSING KEYCAP}"),
+            utils.Button("Delete field", style=utils.ButtonStyle.DANGER, custom_id="5\N{COMBINING ENCLOSING KEYCAP}"),
+            utils.Button("Cancel", style=utils.ButtonStyle.SECONDARY, custom_id="CANCEL"),
+        )
+        attribute_message: discord.Message = await ctx.send(
+            f"Editing the field **{field_to_edit.name}**. Which part would you like to edit?",
             allowed_mentions=discord.AllowedMentions.none(),
+            components=components
         )
         messages_to_delete.append(attribute_message)
-        valid_emoji = [
-            "1\N{COMBINING ENCLOSING KEYCAP}", "2\N{COMBINING ENCLOSING KEYCAP}",
-            "3\N{COMBINING ENCLOSING KEYCAP}", "4\N{COMBINING ENCLOSING KEYCAP}",
-            "5\N{COMBINING ENCLOSING KEYCAP}", self.CROSS_EMOJI
-        ]
-        for e in valid_emoji:
-            self.bot.loop.create_task(attribute_message.add_reaction(e))
 
         # Wait for a response
         try:
-            def check(payload):
-                return all([
-                    payload.user_id == ctx.author.id,
-                    payload.message_id == attribute_message.id,
-                    str(p.emoji) in valid_emoji,
-                ])
-            reaction = await self.bot.wait_for("raw_reaction_add", check=check, timeout=120)
-            emoji = str(reaction.emoji)
+            payload = await attribute_message.wait_for_button_click(check=lambda p: p.user_id == ctx.author.id, timeout=120)
+            await payload.ack()
+            emoji = payload.button.custom_id
         except asyncio.TimeoutError:
             try:
                 await ctx.send("Timed out waiting for field attribute.")
@@ -473,9 +429,9 @@ class ProfileTemplates(utils.Cog):
                     lambda given: {'text': '1000-CHAR', 'number': 'INT', 'numbers': 'INT', 'int': 'INT', 'integer': 'INT', 'str': '1000-CHAR', 'string': '1000-CHAR'}[given.lower()],
                 ),
                 "5\N{COMBINING ENCLOSING KEYCAP}": None,
-                self.CROSS_EMOJI: None,
+                "CANCEL": None,
             }
-            if emoji == self.CROSS_EMOJI:
+            if emoji == "CANCEL":
                 raise ValueError()  # Cancel
             attr, value_converter, prompt, value_check, post_conversion_fixer = available_reactions[emoji]
         except ValueError:
@@ -659,25 +615,11 @@ class ProfileTemplates(utils.Cog):
             # Ask for confirmation
             delete_confirmation_message = await ctx.send(
                 "By doing this, you'll delete all of the created profiles under this template as well. Would you like to proceed?",
+                components=utils.MessageComponents.boolean_buttons()
             )
-            valid_reactions = [self.TICK_EMOJI, self.CROSS_EMOJI]
-            for e in valid_reactions:
-                try:
-                    await delete_confirmation_message.add_reaction(e)
-                except discord.HTTPException:
-                    try:
-                        await delete_confirmation_message.edit(content="I'm unable to add reactions to my messages.")
-                    except discord.HTTPException:
-                        pass
-                    return
             try:
-                def check(payload):
-                    return all([
-                        payload.message_id == delete_confirmation_message.id,
-                        str(payload.emoji) in valid_reactions,
-                        payload.user_id == ctx.author.id,
-                    ])
-                r = await self.bot.wait_for("raw_reaction_add", timeout=120.0, check=check,)
+                payload = await delete_confirmation_message.wait_for_button_click(check=lambda p: p.user_id == ctx.author.id, timeout=120.0)
+                await payload.ack()
             except asyncio.TimeoutError:
                 try:
                     await ctx.send("Template delete timed out - please try again later.")
@@ -686,7 +628,7 @@ class ProfileTemplates(utils.Cog):
                 return
 
             # Check if they said no
-            if str(r.emoji) == self.CROSS_EMOJI:
+            if payload.button.custom_id == "NO":
                 return await ctx.send("Got it, cancelling template delete.")
 
             # Delete it from the database
@@ -850,31 +792,21 @@ class ProfileTemplates(utils.Cog):
 
         # Here are some things we can use later
         message_check = lambda m: m.author == ctx.author and m.channel == ctx.channel
-        okay_reaction_check = lambda p: str(p.emoji) in prompt_emoji and p.user_id == ctx.author.id
-        prompt_emoji = [self.TICK_EMOJI, self.CROSS_EMOJI]
         messages_to_delete = []
 
         # Ask if they want a new field
         if prompt_for_creation:
-            field_message = await ctx.send("Do you want to make a new field for your profile?", embed=template.build_embed(self.bot))
+            field_message = await ctx.send(
+                "Do you want to make a new field for your profile?",
+                embed=template.build_embed(self.bot),
+                components=utils.MessageComponents.boolean_buttons(),
+            )
             messages_to_delete.append(field_message)
-            for e in prompt_emoji:
-                try:
-                    await field_message.add_reaction(e)
-                except discord.Forbidden:
-                    try:
-                        await field_message.delete()
-                    except discord.NotFound:
-                        pass
-                    await ctx.send(
-                        "I tried to add a reaction to my message, but I was unable to. "
-                        "Please update my permissions for this channel and try again.",
-                    )
-                    return None
 
             # Here's us waiting for the "do you want to make a new field" reaction
             try:
-                reaction = await self.bot.wait_for('raw_reaction_add', check=okay_reaction_check, timeout=120)
+                payload = await field_message.wait_for_button_click(check=lambda p: p.user_id == ctx.author.id, timeout=120)
+                await payload.ack()
             except asyncio.TimeoutError:
                 try:
                     await ctx.send("Creating a new field has timed out. The profile is being created with the fields currently added.")
@@ -883,7 +815,7 @@ class ProfileTemplates(utils.Cog):
                 return None
 
             # See if they don't wanna continue
-            if str(reaction.emoji) == self.CROSS_EMOJI:
+            if payload.button.custom_id == "NO":
                 return None
             await field_message.edit(content=field_message.content, embed=None)
 
@@ -893,10 +825,10 @@ class ProfileTemplates(utils.Cog):
             return
 
         # Get a prompt for the field
-        v = await ctx.send(
+        v = await ctx.send((
             "What message should I send when I'm asking people to fill out this field? "
             "This should be a question or prompt, eg 'What is your name/age/gender/etc'."
-        )
+        ))
         messages_to_delete.append(v)
         while True:
             try:
@@ -924,22 +856,24 @@ class ProfileTemplates(utils.Cog):
         if not prompt_is_command:
 
             # Get field optional
-            prompt_message = await ctx.send("Is this field optional?")
+            prompt_message = await ctx.send(
+                "Is this field optional?",
+                components=components=utils.MessageComponents.boolean_buttons(),
+            )
             messages_to_delete.append(prompt_message)
-            for e in prompt_emoji:
-                await prompt_message.add_reaction(e)
             try:
-                field_optional_reaction = await self.bot.wait_for('raw_reaction_add', check=okay_reaction_check, timeout=120)
-                field_optional_emoji = str(field_optional_reaction.emoji)
+                payload = await prompt_message.wait_for_button_click(check=lambda p: p.user_id == ctx.author.id, timeout=120)
+                await payload.ack()
+                field_optional_emoji = payload.button.custom_id
             except asyncio.TimeoutError:
-                field_optional_emoji = self.CROSS_EMOJI
-            field_optional = field_optional_emoji == self.TICK_EMOJI
+                field_optional_emoji = "NO"
+            field_optional = field_optional_emoji "YES"
 
             # Get timeout
-            v = await ctx.send(
+            v = await ctx.send((
                 "How many seconds should I wait for people to fill out this field (I recommend 120 - "
                 "that's 2 minutes)? The minimum is 30, and the maximum is 600."
-            )
+            ))
             messages_to_delete.append(v)
             while True:
                 try:
@@ -962,29 +896,21 @@ class ProfileTemplates(utils.Cog):
                     messages_to_delete.append(v)
             field_timeout = min([timeout, 600])
 
-            # Ask for field type
-            if image_set:
-                text = f"What type is this field? Will you be getting numbers ({self.NUMBERS_EMOJI}), or any text ({self.LETTERS_EMOJI})?"
-            else:
-                text = (
-                    f"What type is this field? Will you be getting numbers ({self.NUMBERS_EMOJI}), any text ({self.LETTERS_EMOJI}), or "
-                    f"an image ({self.PICTURE_EMOJI})?"
-                )
-            field_type_message = await ctx.send(text)
+            # Ask for a field type
+            action_row = utils.ActionRow()
+            action_row.add_component(utils.Button("Numbers", emoji=self.NUMBERS_EMOJI))
+            action_row.add_component(utils.Button("Text", emoji=self.LETTERS_EMOJI))
+            if not image_set:
+                action_row.add_component(utils.Button("Image", emoji=self.PICTURE_EMOJI))
+            components = utils.MessageComponents(action_row)
+            field_type_message = await ctx.send("What type is this field?", components=components)
             messages_to_delete.append(field_type_message)
 
-            # Add reactions
-            await field_type_message.add_reaction(self.NUMBERS_EMOJI)
-            await field_type_message.add_reaction(self.LETTERS_EMOJI)
-            if not image_set:
-                await field_type_message.add_reaction(self.PICTURE_EMOJI)
-
             # See what they said
-            field_type_emoji = [self.NUMBERS_EMOJI, self.LETTERS_EMOJI, self.PICTURE_EMOJI]  # self.TICK_EMOJI
-            field_type_check = lambda p: str(p.emoji) in field_type_emoji and p.user_id == ctx.author.id
             try:
-                reaction = await self.bot.wait_for('raw_reaction_add', check=field_type_check, timeout=120)
-                emoji = str(reaction.emoji)
+                payload = await field_type_message.wait_for_button_click(check=lambda p: p.user_id == ctx.author.id, timeout=120)
+                await payload.ack()
+                emoji = str(payload.button.emoji)
             except asyncio.TimeoutError:
                 try:
                     await ctx.send("Picking a field type has timed out - defaulting to text.")

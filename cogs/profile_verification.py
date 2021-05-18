@@ -48,11 +48,15 @@ class ProfileVerification(utils.Cog):
         embed: utils.Embed = user_profile.build_embed(self.bot, target_user)
         embed.set_footer(text=f'{template.name} // Verification Check')
         try:
+            components = utils.MessageComponents.add_buttons_with_rows(
+                utils.Button("Approve", style=utils.ButtonStyle.SUCCESS, custom_id="VERIFY PROFILE YES"),
+                utils.Button("Decline", style=utils.ButtonStyle.DANGER, custom_id="VERIFY PROFILE NO"),
+            )
             v = await channel.send(
                 f"New **{template.name}** submission from <@{user_profile.user_id}>\n{user_profile.user_id}/"
                 f"{template.template_id}/{user_profile.name}",
                 embed=embed,
-                components=utils.MessageComponents.boolean_buttons("VERIFY PROFILE YES", "VERIFY PROFILE NO")
+                components=components
             )
         except discord.HTTPException:
             raise localutils.errors.TemplateVerificationChannelError(f"I can't send messages to {channel.mention}.")
@@ -201,49 +205,6 @@ class ProfileVerification(utils.Cog):
 
         # Check what they reacted with
         verify = str(payload.emoji) == self.TICK_EMOJI
-
-    @utils.Cog.listener('on_raw_reaction_add')
-    async def verification_emoji_check(self, payload: discord.RawReactionActionEvent):
-        """
-        Triggered when a reaction is added or removed, check for profile verification.
-        """
-
-        # Check that both the channel and the message are readable
-        try:
-            channel: discord.TextChannel = self.bot.get_channel(payload.channel_id) or await self.bot.fetch_channel(payload.channel_id)
-            message: discord.Message = await channel.fetch_message(payload.message_id)
-        except discord.HTTPException:
-            return
-
-        # Check that the message was sent by the bot
-        if message.author.id != self.bot.user.id:
-            return
-
-        # Check the message's embed
-        if not message.embeds:
-            return
-        embed: discord.Embed = message.embeds[0]
-        if not embed.footer:
-            return
-        if not embed.footer.text:
-            return
-        if 'Verification Check' not in embed.footer.text:
-            return
-
-        # Get the member who added the reaction
-        guild: discord.Guild = self.bot.get_guild(payload.guild_id) or await self.bot.fetch_guild(payload.guild_id)
-        moderator: discord.Member = guild.get_member(payload.user_id) or await guild.fetch_member(payload.user_id)
-        if moderator.bot:
-            return
-        if not localutils.checks.member_is_moderator(self.bot, moderator):
-            return
-
-        # And FINALLY we can check their emoji
-        if payload.emoji.id and str(payload.emoji) not in [self.TICK_EMOJI, self.CROSS_EMOJI]:
-            return
-
-        # Check what they reacted with
-        verify = str(payload.emoji) == self.TICK_EMOJI
         return await self.perform_verify(message, channel, guild, moderator)
 
     @utils.Cog.listener('on_button_click')
@@ -251,6 +212,10 @@ class ProfileVerification(utils.Cog):
         """
         Triggered when a reaction is added or removed, check for profile verification.
         """
+
+        # Make sure that the button is something we want to deal with
+        if not payload.component.custom_id.startswith("VERIFY PROFILE"):
+            return
 
         # Check that both the channel and the message are readable
         try:
@@ -283,7 +248,8 @@ class ProfileVerification(utils.Cog):
             return
 
         # Check what they reacted with
-        verify = payload.button.custom_id == "VERIFY PROFILE YES"
+        await payload.ack()
+        verify = payload.component.custom_id == "VERIFY PROFILE YES"
         return await self.perform_verify(message, channel, guild, moderator)
 
     async def perform_verify(self, message, channel, guild, moderator):

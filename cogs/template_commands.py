@@ -165,7 +165,7 @@ class ProfileTemplates(utils.Cog):
                 # Wait for a response from the user
                 try:
                     payload = template_options_edit_message.wait_for_button_click(check=lambda p: p.user_id == ctx.author.id, timeout=120)
-                    reaction = payload.button.custom_id
+                    reaction = payload.component.custom_id
                 except asyncio.TimeoutError:
                     try:
                         return await ctx.send("Timed out waiting for edit response.")
@@ -391,7 +391,7 @@ class ProfileTemplates(utils.Cog):
         try:
             payload = await attribute_message.wait_for_button_click(check=lambda p: p.user_id == ctx.author.id, timeout=120)
             await payload.ack()
-            emoji = payload.button.custom_id
+            emoji = payload.component.custom_id
         except asyncio.TimeoutError:
             try:
                 await ctx.send("Timed out waiting for field attribute.")
@@ -628,7 +628,7 @@ class ProfileTemplates(utils.Cog):
                 return
 
             # Check if they said no
-            if payload.button.custom_id == "NO":
+            if payload.component.custom_id == "NO":
                 return await ctx.send("Got it, cancelling template delete.")
 
             # Delete it from the database
@@ -815,7 +815,7 @@ class ProfileTemplates(utils.Cog):
                 return None
 
             # See if they don't wanna continue
-            if payload.button.custom_id == "NO":
+            if payload.component.custom_id == "NO":
                 return None
             await field_message.edit(content=field_message.content, embed=None)
 
@@ -864,7 +864,7 @@ class ProfileTemplates(utils.Cog):
             try:
                 payload = await prompt_message.wait_for_button_click(check=lambda p: p.user_id == ctx.author.id, timeout=120)
                 await payload.ack()
-                field_optional_emoji = payload.button.custom_id
+                field_optional_emoji = payload.component.custom_id
             except asyncio.TimeoutError:
                 field_optional_emoji = "NO"
             field_optional = field_optional_emoji "YES"
@@ -910,7 +910,7 @@ class ProfileTemplates(utils.Cog):
             try:
                 payload = await field_type_message.wait_for_button_click(check=lambda p: p.user_id == ctx.author.id, timeout=120)
                 await payload.ack()
-                emoji = str(payload.button.emoji)
+                emoji = str(payload.component.emoji)
             except asyncio.TimeoutError:
                 try:
                     await ctx.send("Picking a field type has timed out - defaulting to text.")

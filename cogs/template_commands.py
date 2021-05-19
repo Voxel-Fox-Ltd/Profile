@@ -141,7 +141,7 @@ class ProfileTemplates(utils.Cog):
                     utils.Button("Maximum field count", custom_id="7\N{COMBINING ENCLOSING KEYCAP}"),
                 )
             components.components[-1].add_component(utils.Button("Done", custom_id="DONE", style=utils.ButtonStyle.SUCCESS))
-            template_options_edit_message = await ctx.send("What would you like to edit?", components=components)
+            template_options_edit_message = None
             should_edit = True  # Whether or not the template display message should be edited
 
             # Start our edit loop
@@ -161,7 +161,10 @@ class ProfileTemplates(utils.Cog):
 
                 # Wait for a response from the user
                 try:
-                    await template_options_edit_message.edit(components=components.enable_components())
+                    if template_options_edit_message:
+                        await template_options_edit_message.edit(components=components.enable_components())
+                    else:
+                        template_options_edit_message = await ctx.send("What would you like to edit?", components=components)
                     payload = await template_options_edit_message.wait_for_button_click(check=lambda p: p.user.id == ctx.author.id, timeout=120)
                     await payload.ack()
                     reaction = payload.component.custom_id

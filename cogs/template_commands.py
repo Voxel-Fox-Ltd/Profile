@@ -3,6 +3,7 @@ import string
 import uuid
 import typing
 import collections
+import operator
 
 import discord
 from discord.ext import commands
@@ -366,8 +367,8 @@ class ProfileTemplates(utils.Cog):
             components = None
         else:
             field_name_buttons = [
-                utils.Button(field_object.name[:25], style=utils.ButtonStyle.SECONDARY, custom_id=field_id)
-                for field_id, field_object in template.fields.items()
+                utils.Button(field.name[:25], style=utils.ButtonStyle.SECONDARY, custom_id=field.id)
+                for field in sorted(template.fields.values(), key=operator.attrgetter("index"))
             ]
             if len(template.fields) < max([guild_settings['max_template_field_count'], template.max_field_count]) or is_bot_support:
                 components = utils.MessageComponents.add_buttons_with_rows(

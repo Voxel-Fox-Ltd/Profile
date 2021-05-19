@@ -867,7 +867,7 @@ class ProfileTemplates(utils.Cog):
                 field_optional_emoji = payload.component.custom_id
             except asyncio.TimeoutError:
                 field_optional_emoji = "NO"
-            field_optional = field_optional_emoji "YES"
+            field_optional = field_optional_emoji == "YES"
 
             # Get timeout
             v = await ctx.send((

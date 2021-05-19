@@ -16,11 +16,11 @@ from cogs import utils as localutils
 class ProfileCreation(utils.Cog):
 
     OLD_COMMAND_REGEX = re.compile(
-        r"^(?P<command>set|get|delete|edit)(?P<template>\S{1,30})(?P<args> ?.*)$",
+        r"^(?P<command>set|get|delete|edit)(?P<template>\S{1,30})(?:\s?(?P<args>.*))$",
         re.IGNORECASE
     )
     COMMAND_REGEX = re.compile(
-        r"^(?P<template>\S{1,30}) (?P<command>set|get|delete|edit)(?P<args> ?.*)$",
+        r"^(?P<template>\S{1,30}) (?P<command>set|get|delete|edit)(?:\s?(?P<args>.*))$",
         re.IGNORECASE
     )
 
@@ -34,6 +34,10 @@ class ProfileCreation(utils.Cog):
         CommandNotFound handler so the bot can search for that custom command.
         """
 
+        # Filter out DMs
+        if isinstance(ctx.channel, discord.DMChannel):
+            return  # Fail silently on DM invocation
+
         # Handle commandnotfound which is really just handling the set/get/delete/etc commands
         if not isinstance(error, commands.CommandNotFound):
             return
@@ -45,15 +49,9 @@ class ProfileCreation(utils.Cog):
             matches = self.OLD_COMMAND_REGEX.search(prefixless_content)
             if matches is None:
                 return
-            matches = self.OLD_COMMAND_REGEX.search(f"{matches.group('command')}{matches.group('template')}{matches.group('args')}")
-        if not matches:
-            return
+        ctx.message.content = f"MetaCommandInvoke {matches.group('args')}"
         command_operator = matches.group("command")  # get/get/delete/edit
         template_name = matches.group("template")  # template name
-
-        # Filter out DMs
-        if isinstance(ctx.channel, discord.DMChannel):
-            return  # Fail silently on DM invocation
 
         # Find the template they asked for on their server
         async with self.bot.database() as db:

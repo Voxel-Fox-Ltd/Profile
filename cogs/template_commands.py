@@ -924,20 +924,20 @@ class ProfileTemplates(utils.Cog):
             try:
                 payload = await field_type_message.wait_for_button_click(check=lambda p: p.user.id == ctx.author.id, timeout=120)
                 await payload.ack()
-                emoji = str(payload.component.emoji)
+                key = payload.component.custom_id
             except asyncio.TimeoutError:
                 try:
                     await ctx.send("Picking a field type has timed out - defaulting to text.")
                 except (discord.Forbidden, discord.NotFound):
                     pass
-                emoji = "TEXT"
+                key = "TEXT"
 
             # Change that emoji into a datatype
             field_type = {
                 "NUMBERS": localutils.NumberField,
                 "TEXT": localutils.TextField,
                 "IMAGE": localutils.ImageField,
-            }[emoji]
+            }[key]
             if isinstance(field_type, localutils.ImageField) and image_set:
                 raise Exception("You shouldn't be able to set two image fields.")
 

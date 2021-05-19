@@ -365,13 +365,16 @@ class ProfileTemplates(utils.Cog):
 
         # Ask which index they want to edit
         if len(template.fields) == 0:
-            text = "Now talking you through creating a new field."
+            text = None
         elif len(template.fields) >= max([guild_settings['max_template_field_count'], template.max_field_count]) and not is_bot_support:
             text = "What is the index of the field you want to edit?"
         else:
             text = "What is the index of the field you want to edit? If you want to add a *new* field, type **new**."
-        ask_field_edit_message: discord.Message = await ctx.send(text)
-        messages_to_delete = [ask_field_edit_message]
+        if text:
+            ask_field_edit_message: discord.Message = await ctx.send(text)
+            messages_to_delete = [ask_field_edit_message]
+        else:
+            messages_to_delete = []
 
         # Get field index message
         field_to_edit = await self.get_field_to_edit(ctx, template, guild_settings, is_bot_support)
@@ -892,6 +895,9 @@ class ProfileTemplates(utils.Cog):
             except asyncio.TimeoutError:
                 field_optional_emoji = "NO"
             field_optional = field_optional_emoji == "YES"
+            self.bot.loop.create_task(payload.message.edit(
+                components=utils.MessageComponents.boolean_buttons().disable_components(),
+            ))
 
             # Get timeout
             v = await ctx.send((
@@ -922,10 +928,10 @@ class ProfileTemplates(utils.Cog):
 
             # Ask for a field type
             action_row = utils.ActionRow()
-            action_row.add_component(utils.Button("Numbers", emoji=self.NUMBERS_EMOJI))
-            action_row.add_component(utils.Button("Text", emoji=self.LETTERS_EMOJI))
+            action_row.add_component(utils.Button("Numbers"))  # , emoji=self.NUMBERS_EMOJI))
+            action_row.add_component(utils.Button("Text"))  # , emoji=self.LETTERS_EMOJI))
             if not image_set:
-                action_row.add_component(utils.Button("Image", emoji=self.PICTURE_EMOJI))
+                action_row.add_component(utils.Button("Image"))  # , emoji=self.PICTURE_EMOJI))
             components = utils.MessageComponents(action_row)
             field_type_message = await ctx.send("What type is this field?", components=components)
             messages_to_delete.append(field_type_message)

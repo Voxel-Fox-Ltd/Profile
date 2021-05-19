@@ -205,7 +205,7 @@ class ProfileVerification(utils.Cog):
 
         # Check what they reacted with
         verify = str(payload.emoji) == self.TICK_EMOJI
-        return await self.perform_verify(message, channel, guild, moderator)
+        return await self.perform_verify(message, channel, guild, verify, moderator)
 
     @utils.Cog.listener('on_button_click')
     async def verification_emoji_check(self, payload: utils.ComponentInteractionPayload):
@@ -250,9 +250,9 @@ class ProfileVerification(utils.Cog):
         # Check what they reacted with
         await payload.ack()
         verify = payload.component.custom_id == "VERIFY PROFILE YES"
-        return await self.perform_verify(message, channel, guild, moderator)
+        return await self.perform_verify(message, channel, guild, verify, moderator)
 
-    async def perform_verify(self, message, channel, guild, moderator):
+    async def perform_verify(self, message, channel, guild, verify, moderator):
         """
         """
 

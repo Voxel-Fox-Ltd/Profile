@@ -163,7 +163,7 @@ class ProfileTemplates(utils.Cog):
                 try:
                     self.bot.loop.create_task(template_options_edit_message.edit(components=components.enable_components()))
                     payload = await template_options_edit_message.wait_for_button_click(check=lambda p: p.user.id == ctx.author.id, timeout=120)
-                    self.bot.loop.create_task(payload.ack())
+                    await payload.ack()
                     reaction = payload.component.custom_id
                 except asyncio.TimeoutError:
                     try:

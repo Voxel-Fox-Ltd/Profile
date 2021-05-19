@@ -213,10 +213,6 @@ class ProfileTemplates(utils.Cog):
                 should_edit = await self.change_template_attribute(ctx, template, is_bot_support, attr, converter)
 
         # Tell them it's done
-        try:
-            await template_options_edit_message.delete()
-        except discord.HTTPException:
-            pass
         await template_options_edit_message.edit(
             content=(
                 f"Finished editing template. Users can create profiles with `{ctx.clean_prefix}{template.name.lower()} set`, "

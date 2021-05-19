@@ -573,7 +573,7 @@ class ProfileTemplates(utils.Cog):
                 return template.fields[payload.component.custom_id]
 
             # They either gave an invalid number or want to make a new field
-            except (ValueError, IndexError):
+            except (ValueError, KeyError):
 
                 # See if an iamge field already exists
                 image_field_exists: bool = any([i for i in template.fields.values() if isinstance(i.field_type, localutils.ImageField)])

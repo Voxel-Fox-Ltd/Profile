@@ -147,7 +147,10 @@ class ProfileCreation(utils.Cog):
         # And return the name given
         return name_content
 
-    async def get_field_content(self, ctx: utils.Context, field: localutils.Field, target_user: discord.User) -> localutils.FilledField:
+    @staticmethod
+    async def get_field_content(
+            self, ctx: utils.Context, profile_name: str, field: localutils.Field,
+            target_user: discord.User) -> localutils.FilledField:
         """
         Ask the user for a the content of a field.
         """
@@ -157,7 +160,7 @@ class ProfileCreation(utils.Cog):
         if localutils.CommandProcessor.COMMAND_REGEX.search(field.prompt):
             return localutils.FilledField(
                 user_id=target_user.id,
-                name=name_content,
+                name=profile_name,
                 field_id=field.field_id,
                 value="Could not get field information",
                 field=field,
@@ -175,7 +178,7 @@ class ProfileCreation(utils.Cog):
 
             # Wait for the user's input
             try:
-                user_message = await self.bot.wait_for(
+                user_message = await ctx.bot.wait_for(
                     "message", timeout=field.timeout,
                     check=lambda m: m.author == ctx.author and isinstance(m.channel, discord.DMChannel)
                 )
@@ -204,7 +207,7 @@ class ProfileCreation(utils.Cog):
         # Add their filled field object to the list of data
         return localutils.FilledField(
             user_id=target_user.id,
-            name=name_content,
+            name=profile_name,
             field_id=field.field_id,
             value=field_content,
             field=field,

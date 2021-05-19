@@ -149,7 +149,7 @@ class ProfileCreation(utils.Cog):
 
     @staticmethod
     async def get_field_content(
-            self, ctx: utils.Context, profile_name: str, field: localutils.Field,
+            ctx: utils.Context, profile_name: str, field: localutils.Field,
             target_user: discord.User) -> localutils.FilledField:
         """
         Ask the user for a the content of a field.
@@ -268,14 +268,14 @@ class ProfileCreation(utils.Cog):
         async with self.set_profile_locks[ctx.author.id]:
 
             # Get a name for the profile
-            name_content = await self.get_profile_name(ctx, template, user_profiles)
-            if not name_content:
+            profile_name = await self.get_profile_name(ctx, template, user_profiles)
+            if not profile_name:
                 return
 
             # Talk the user through each field
             filled_field_dict = {}
             for field in sorted(template.fields.values(), key=lambda x: x.index):
-                response_field = await self.get_field_content(ctx, field, target_user)
+                response_field = await self.get_field_content(ctx, profile_name, field, target_user)
                 if not response_field:
                     return
                 filled_field_dict[field.field_id] = response_field
@@ -283,7 +283,7 @@ class ProfileCreation(utils.Cog):
         # Make the user profile object and add all of the filled fields
         user_profile = localutils.UserProfile(
             user_id=target_user.id,
-            name=name_content,
+            name=profile_name,
             template_id=template.template_id,
             verified=template.verification_channel_id is None
         )

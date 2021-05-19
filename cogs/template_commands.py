@@ -167,7 +167,6 @@ class ProfileTemplates(utils.Cog):
                     self.bot.loop.create_task(template_options_edit_message.edit(components=components.enable_components()))
                     payload = await template_options_edit_message.wait_for_button_click(check=lambda p: p.user.id == ctx.author.id, timeout=120)
                     self.bot.loop.create_task(payload.ack())
-                    self.bot.loop.create_task(template_options_edit_message.edit(components=components.disable_components()))
                     reaction = payload.component.custom_id
                 except asyncio.TimeoutError:
                     try:
@@ -192,7 +191,10 @@ class ProfileTemplates(utils.Cog):
                     }
                     attr, converter = available_reactions[reaction]
                 except TypeError:
-                    break
+                    break  # They're done
+
+                # Disable the components
+                self.bot.loop.create_task(template_options_edit_message.edit(components=components.disable_components()))
 
                 # If they want to edit a field, we go through this section
                 if attr is None:
@@ -365,30 +367,42 @@ class ProfileTemplates(utils.Cog):
 
         # Ask which index they want to edit
         if len(template.fields) == 0:
-            text = None
+            components = None
         elif len(template.fields) >= max([guild_settings['max_template_field_count'], template.max_field_count]) and not is_bot_support:
-            text = "What is the index of the field you want to edit?"
+            components = utils.MessageComponents.add_buttons_with_rows(*[
+                utils.Button(field_object.name[:25], custom_id=field_id) for field_id, field_object in template.fields.items()
+            ])
         else:
-            text = "What is the index of the field you want to edit? If you want to add a *new* field, type **new**."
-        if text:
-            ask_field_edit_message: discord.Message = await ctx.send(text)
+            components = utils.MessageComponents.add_buttons_with_rows(
+                utils.Button("New", style=utils.ButtonStyle.SECONDARY, custom_id="NEW"),
+                *[
+                    utils.Button(field_object.name[:25], custom_id=field_id) for field_id, field_object in template.fields.items()
+                ],
+            )
+        if components:
+            ask_field_edit_message: discord.Message = await ctx.send("Which field do you want to edit?", components=components)
             messages_to_delete = [ask_field_edit_message]
         else:
+            ask_field_edit_message = None
             messages_to_delete = []
 
         # Get field index message
-        field_to_edit = await self.get_field_to_edit(ctx, template, guild_settings, is_bot_support)
+        field_to_edit = await self.get_field_to_edit(ctx, template, ask_field_edit_message, guild_settings, is_bot_support)
         if not isinstance(field_to_edit, localutils.Field):
             return field_to_edit
 
         # Ask what part of it they want to edit
-        components = utils.MessageComponents.add_buttons_with_rows(
-            utils.Button("Field name", custom_id="1\N{COMBINING ENCLOSING KEYCAP}"),
-            utils.Button("Field prompt", custom_id="2\N{COMBINING ENCLOSING KEYCAP}"),
-            utils.Button("Field being optional", custom_id="3\N{COMBINING ENCLOSING KEYCAP}"),
-            utils.Button("Field type", custom_id="4\N{COMBINING ENCLOSING KEYCAP}"),
-            utils.Button("Delete field", style=utils.ButtonStyle.DANGER, custom_id="5\N{COMBINING ENCLOSING KEYCAP}"),
-            utils.Button("Cancel", style=utils.ButtonStyle.SECONDARY, custom_id="CANCEL"),
+        components = utils.MessageComponents(
+            utils.ActionRow(
+                utils.Button("Field name", custom_id="1\N{COMBINING ENCLOSING KEYCAP}"),
+                utils.Button("Field prompt", custom_id="2\N{COMBINING ENCLOSING KEYCAP}"),
+                utils.Button("Field being optional", custom_id="3\N{COMBINING ENCLOSING KEYCAP}"),
+                utils.Button("Field type", custom_id="4\N{COMBINING ENCLOSING KEYCAP}"),
+            ),
+            utils.ActionRow(
+                utils.Button("Delete field", style=utils.ButtonStyle.DANGER, custom_id="5\N{COMBINING ENCLOSING KEYCAP}"),
+                utils.Button("Cancel", style=utils.ButtonStyle.SECONDARY, custom_id="CANCEL"),
+            ),
         )
         attribute_message: discord.Message = await ctx.send(
             f"Editing the field **{field_to_edit.name}**. Which part would you like to edit?",
@@ -517,8 +531,8 @@ class ProfileTemplates(utils.Cog):
         return True
 
     async def get_field_to_edit(
-            self, ctx: utils.Context, template: localutils.Template, guild_settings: dict,
-            is_bot_support: bool) -> localutils.Field:
+            self, ctx: utils.Context, template: localutils.Template, sent_message: discord.Message,
+            guild_settings: dict, is_bot_support: bool) -> localutils.Field:
         """
         Get the index of the field that we want to edit. Either returns the field that the user wants to edit,
         True if a new field was successfully created, or None if the user timed out.
@@ -531,16 +545,12 @@ class ProfileTemplates(utils.Cog):
             # Wait for them to say which field they want to edit
             if len(template.fields) > 0:
                 try:
-                    def check(message):
-                        return all([
-                            message.author.id == ctx.author.id,
-                            message.channel.id == ctx.channel.id,
-                        ])
-                    field_index_message: discord.Message = await self.bot.wait_for("message", check=check, timeout=120)
-                    messages_to_delete.append(field_index_message)
+                    payload = await sent_message.wait_for_button_click(check=lambda p: p.user.id == ctx.author.id, timeout=120)
+                    await payload.ack()
+                    await payload.message.delete()
                 except asyncio.TimeoutError:
                     try:
-                        await ctx.send("Timed out waiting for field index.")
+                        await sent_message.edit(content="Timed out waiting for field index.", components=None)
                     except discord.HTTPException:
                         pass
                     return None
@@ -549,62 +559,40 @@ class ProfileTemplates(utils.Cog):
             try:
                 if len(template.fields) == 0:
                     raise ValueError()
-                field_index: int = int(field_index_message.content.lstrip('#'))
-                return [i for i in template.fields.values() if i.index == field_index and i.deleted is False][0]
+                return template.fields[payload.component.custom_id]
 
             # They either gave an invalid number or want to make a new field
             except (ValueError, IndexError):
 
-                # They want to create a new field
-                if len(template.fields) == 0 or field_index_message.content.lower() == "new":
+                # See if an iamge field already exists
+                image_field_exists: bool = any([i for i in template.fields.values() if isinstance(i.field_type, localutils.ImageField)])
 
-                    # Make sure they're able to add new fields
-                    if len(template.fields) < max([guild_settings['max_template_field_count'], template.max_field_count]) or is_bot_support:
+                # Talk the user through creating a new field
+                field: localutils.Field = await self.create_new_field(
+                    ctx=ctx,
+                    template=template,
+                    index=len(template.all_fields),
+                    image_set=image_field_exists,
+                    prompt_for_creation=False,
+                    delete_messages=True
+                )
 
-                        # See if an iamge field already exists
-                        image_field_exists: bool = any([i for i in template.fields.values() if isinstance(i.field_type, localutils.ImageField)])
-                        self.purge_message_list(ctx.channel, messages_to_delete)
+                # If they errored on setting up then we can exit here
+                if field is None:
+                    return None
 
-                        # Talk the user through creating a new field
-                        field: localutils.Field = await self.create_new_field(
-                            ctx=ctx,
-                            template=template,
-                            index=len(template.all_fields),
-                            image_set=image_field_exists,
-                            prompt_for_creation=False,
-                            delete_messages=True
+                # Save the new field into the database
+                async with self.bot.database() as db:
+                    try:
+                        await db(
+                            """INSERT INTO field (field_id, name, index, prompt, timeout, field_type, optional, template_id)
+                            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)""",
+                            field.field_id, field.name, field.index, field.prompt, field.timeout, field.field_type.name,
+                            field.optional, field.template_id,
                         )
-
-                        # If they errored on setting up then we can exit here
-                        if field is None:
-                            return None
-
-                        # Save the new field into the database
-                        async with self.bot.database() as db:
-                            try:
-                                await db(
-                                    """INSERT INTO field (field_id, name, index, prompt, timeout, field_type, optional, template_id)
-                                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)""",
-                                    field.field_id, field.name, field.index, field.prompt, field.timeout, field.field_type.name,
-                                    field.optional, field.template_id,
-                                )
-                            except asyncpg.ForeignKeyViolationError:
-                                return True  # The template was deleted while it was being edited
-                        return True
-
-                    # They want a new field but they're at the max
-                    v = await ctx.send((
-                        "You're already at the maximum number of fields for this template - "
-                        "please provide a field index to edit."
-                    ))
-                    messages_to_delete.append(v)
-                    continue
-
-                # If they just messed up the field creation
-                else:
-                    v = await ctx.send("That isn't a valid index number - please provide another.")
-                    messages_to_delete.append(v)
-                    continue
+                    except asyncpg.ForeignKeyViolationError:
+                        return True  # The template was deleted while it was being edited
+                return True
 
     @utils.command()
     @commands.has_guild_permissions(manage_roles=True)

@@ -115,7 +115,7 @@ class Template(object):
     @property
     def fields(self) -> typing.Dict[uuid.UUID, Field]:
         """
-        Returns a list of `utils.Field` objects for this particular profile.
+        Returns a dict of `utils.Field` objects for this particular profile.
         """
 
         return {i: o for i, o in self.all_fields.items() if o.deleted is False}

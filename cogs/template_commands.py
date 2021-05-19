@@ -367,7 +367,7 @@ class ProfileTemplates(utils.Cog):
             components = None
         else:
             field_name_buttons = [
-                utils.Button(field.name[:25], style=utils.ButtonStyle.SECONDARY, custom_id=field.id)
+                utils.Button(field.name[:25], style=utils.ButtonStyle.SECONDARY, custom_id=field.field_id)
                 for field in sorted(template.fields.values(), key=operator.attrgetter("index"))
             ]
             if len(template.fields) < max([guild_settings['max_template_field_count'], template.max_field_count]) or is_bot_support:

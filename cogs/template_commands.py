@@ -622,10 +622,15 @@ class ProfileTemplates(utils.Cog):
                 await payload.ack()
             except asyncio.TimeoutError:
                 try:
+                    await delete_confirmation_message.edit(components=utils.MessageComponents.boolean_buttons().disable_components())
+                except discord.HTTPException:
+                    pass
+                try:
                     await ctx.send("Template delete timed out - please try again later.")
                 except discord.Forbidden:
                     pass
                 return
+            await payload.message.edit(components=utils.MessageComponents.boolean_buttons().disable_components())
 
             # Check if they said no
             if payload.component.custom_id == "NO":

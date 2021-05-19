@@ -765,6 +765,13 @@ class ProfileTemplates(utils.Cog):
         A method for use in template creation - asks the user for the name of the field they want to add.
         """
 
+        # Set up a check we can use later
+        def message_check(message):
+            return all([
+                message.author.id == ctx.author.id,
+                message.channel.id == ctx.channel.id,
+            ])
+
         # Get a name for the new field
         v = await ctx.send(
             "What name should this field have? This is the name shown on the embed, "
@@ -804,7 +811,11 @@ class ProfileTemplates(utils.Cog):
         """
 
         # Here are some things we can use later
-        message_check = lambda m: m.author == ctx.author and m.channel == ctx.channel
+        def message_check(message):
+            return all([
+                message.author.id == ctx.author.id,
+                message.channel.id == ctx.channel.id,
+            ])
         messages_to_delete = []
 
         # Ask if they want a new field

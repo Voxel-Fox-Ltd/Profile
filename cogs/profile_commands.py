@@ -328,7 +328,7 @@ class ProfileCreation(utils.Cog):
                 await db(
                     """INSERT INTO filled_field (user_id, name, field_id, value) VALUES ($1, $2, $3, $4)
                     ON CONFLICT (user_id, name, field_id) DO UPDATE SET value=excluded.value""",
-                    field.user_id, name_content, field.field_id, field.value
+                    field.user_id, profile_name, field.field_id, field.value
                 )
 
         # Respond to user

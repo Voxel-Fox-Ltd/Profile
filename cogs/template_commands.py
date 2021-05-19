@@ -374,7 +374,7 @@ class ProfileTemplates(utils.Cog):
         messages_to_delete = [ask_field_edit_message]
 
         # Get field index message
-        field_to_edit = await self.get_field_to_edit(ctx, template, is_bot_support)
+        field_to_edit = await self.get_field_to_edit(ctx, template, guild_settings, is_bot_support)
         if not isinstance(field_to_edit, localutils.Field):
             return field_to_edit
 
@@ -514,7 +514,7 @@ class ProfileTemplates(utils.Cog):
         return True
 
     async def get_field_to_edit(
-            self, ctx: utils.Context, template: localutils.Template,
+            self, ctx: utils.Context, template: localutils.Template, guild_settings: dict,
             is_bot_support: bool) -> localutils.Field:
         """
         Get the index of the field that we want to edit. Either returns the field that the user wants to edit,

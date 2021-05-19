@@ -494,8 +494,8 @@ class ProfileTemplates(utils.Cog):
                         field_value = {
                             "YES": True,
                             "NO": False,
-                            "TEXT": localutils.TextField,
-                            "NUMBERS": localutils.NumberField,
+                            "TEXT": localutils.TextField.name,
+                            "NUMBERS": localutils.NumberField.name,
                         }[payload.component.custom_id]
                     else:
                         raise Exception("You shouldn't be able to get here.")

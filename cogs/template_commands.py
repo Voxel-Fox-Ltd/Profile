@@ -185,7 +185,7 @@ class ProfileTemplates(utils.Cog):
                         "2\N{COMBINING ENCLOSING KEYCAP}": ("verification_channel_id", commands.TextChannelConverter()),
                         "3\N{COMBINING ENCLOSING KEYCAP}": ("archive_channel_id", commands.TextChannelConverter()),
                         "4\N{COMBINING ENCLOSING KEYCAP}": ("role_id", commands.RoleConverter()),
-                        "5\N{COMBINING ENCLOSING KEYCAP}": (None, asyncio.Task(self.edit_field(ctx, template, guild_settings, is_bot_support))),
+                        "5\N{COMBINING ENCLOSING KEYCAP}": (None, self.edit_field(ctx, template, guild_settings, is_bot_support)),
                         "6\N{COMBINING ENCLOSING KEYCAP}": ("max_profile_count", int),
                         "7\N{COMBINING ENCLOSING KEYCAP}": ("max_field_count", int),
                         "DONE": None,

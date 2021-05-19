@@ -858,7 +858,7 @@ class ProfileTemplates(utils.Cog):
             # Get field optional
             prompt_message = await ctx.send(
                 "Is this field optional?",
-                components=components=utils.MessageComponents.boolean_buttons(),
+                components=utils.MessageComponents.boolean_buttons(),
             )
             messages_to_delete.append(prompt_message)
             try:

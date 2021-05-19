@@ -241,7 +241,7 @@ class ProfileVerification(utils.Cog):
 
         # Get the member who added the reaction
         guild: discord.Guild = payload.guild
-        moderator: discord.Member = guild.get_member(payload.user_id) or await guild.fetch_member(payload.user_id)
+        moderator: discord.Member = guild.get_member(payload.user.id) or await guild.fetch_member(payload.user.id)
         if moderator.bot:
             return
         if not localutils.checks.member_is_moderator(self.bot, moderator):

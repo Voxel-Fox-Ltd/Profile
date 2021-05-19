@@ -801,7 +801,7 @@ class ProfileTemplates(utils.Cog):
                     "Please provide another name."
                 )
                 messages_to_delete.append(v)
-        field_name = field_name_message.content
+        return field_name_message.content
 
     async def create_new_field(
             self, ctx: utils.Context, template: localutils.Template, index: int, image_set: bool = False,

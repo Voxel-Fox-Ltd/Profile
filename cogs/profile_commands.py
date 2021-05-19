@@ -553,37 +553,56 @@ class ProfileCreation(utils.Cog):
         if user and ctx.author != user and not localutils.checks.member_is_moderator(self.bot, ctx.author):
             raise commands.MissingPermissions(["manage_roles"])
 
-        # Check it exists
+        # Get the profile
         template: localutils.Template = ctx.template
         async with self.bot.database() as db:
+
+            # They gave no name and they only have one profile
             try:
-                user_profile = await template.fetch_profile_for_user(db, (user or ctx.author).id, profile_name, fetch_filled_fields=False)
+                user_profile = await template.fetch_profile_for_user(db, (user or ctx.author).id, profile_name, fetch_filled_fields=True)
+
+            # They gave no name and they have multiple profiles
             except ValueError:
                 user_profiles: typing.List[localutils.UserProfile] = await template.fetch_all_profiles_for_user(db, (user or ctx.author).id)
                 profile_names_string = [f'"{o}"' for o in [i.name.replace('*', '\\*').replace('`', '\\`').replace('_', '\\_') for i in user_profiles]]
                 if user:
-                    await ctx.send(f"{user.mention} has multiple profiles set for the template **{template.name}** - {', '.join(profile_names_string)}.")
+                    await ctx.send((
+                        f"{user.mention} has multiple profiles set for the template "
+                        f"**{template.name}** - {', '.join(profile_names_string)}."
+                    ))
                 else:
                     await ctx.send(f"You have multiple profiles set for the template **{template.name}** - {', '.join(profile_names_string)}.")
                 return
+
+        # There's no profile with that name given
         if user_profile is None:
-            if profile_name:
-                if user:
-                    await ctx.send(
-                        f"{user.mention} doesn't have a profile for **{template.name}** with the name **{profile_name}**.",
-                        allowed_mentions=discord.AllowedMentions(users=False),
-                    )
-                else:
-                    await ctx.send(f"You don't have a profile for **{template.name}** with the name **{profile_name}**.")
+            if profile_name and user:
+                text = f"{user.mention} doesn't have a profile for **{template.name}** with the name **{profile_name}**."
+            elif profile_name:
+                text = f"You don't have a profile for **{template.name}** with the name **{profile_name}**."
+            elif user:
+                text = f"{user.mention} doesn't have a profile for **{template.name}**."
             else:
-                if user:
-                    await ctx.send(
-                        f"{user.mention} doesn't have a profile for **{template.name}**.",
-                        allowed_mentions=discord.AllowedMentions(users=False),
-                    )
-                else:
-                    await ctx.send(f"You don't have a profile for **{template.name}**.")
+                text = f"You don't have a profile for **{template.name}**."
+            return await ctx.send(text, allowed_mentions=discord.AllowedMentions.none())
+
+        # Ask if they're sure
+        are_you_sure_message = await ctx.send(
+            "Are you sure you want to delete this profile?",
+            embed=user_profile.build_embed(self.bot, user or ctx.author),
+            components=utils.MessageComponents.boolean_buttons(),
+        )
+        try:
+            payload = await are_you_sure_message.wait_for_button_click(check=lambda p: p.user.id == ctx.author.id, timeout=120)
+            await payload.ack()
+        except asyncio.TimeoutError:
+            try:
+                await are_you_sure_message.edit(content="Timed out waiting for confirmation on profile delete.", embed=None, components=None)
+            except discord.HTTPException:
+                pass
             return
+        if payload.component.custom_id == "NO":
+            return await payload.message.edit(content="Alright, cancelled profile delete.", embed=None, components=None)
 
         # Delete the currently archived message, should one exist
         current_profile_message = await user_profile.fetch_message(self.bot)
@@ -596,8 +615,11 @@ class ProfileCreation(utils.Cog):
         # Remove it from the database
         user = user or ctx.author
         async with self.bot.database() as db:
-            await db("DELETE FROM created_profile WHERE user_id=$1 AND template_id=$2 AND name=$3", user.id, template.template_id, user_profile.name)
-        await ctx.send("This profile has been deleted.")
+            await db(
+                """DELETE FROM created_profile WHERE user_id=$1 AND template_id=$2 AND name=$3""",
+                user.id, template.template_id, user_profile.name,
+            )
+        await payload.message.edit(content="This profile has been deleted.", embed=None, components=None)
 
     @utils.command(hidden=True)
     @commands.bot_has_permissions(send_messages=True, embed_links=True)

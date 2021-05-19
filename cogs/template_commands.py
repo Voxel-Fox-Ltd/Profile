@@ -164,7 +164,7 @@ class ProfileTemplates(utils.Cog):
 
                 # Wait for a response from the user
                 try:
-                    payload = template_options_edit_message.wait_for_button_click(check=lambda p: p.user.id == ctx.author.id, timeout=120)
+                    payload = await template_options_edit_message.wait_for_button_click(check=lambda p: p.user.id == ctx.author.id, timeout=120)
                     reaction = payload.component.custom_id
                 except asyncio.TimeoutError:
                     try:

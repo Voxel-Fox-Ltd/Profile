@@ -164,7 +164,7 @@ class ProfileTemplates(utils.Cog):
 
                 # Wait for a response from the user
                 try:
-                    payload = template_options_edit_message.wait_for_button_click(check=lambda p: p.user_id == ctx.author.id, timeout=120)
+                    payload = template_options_edit_message.wait_for_button_click(check=lambda p: p.user.id == ctx.author.id, timeout=120)
                     reaction = payload.component.custom_id
                 except asyncio.TimeoutError:
                     try:
@@ -389,7 +389,7 @@ class ProfileTemplates(utils.Cog):
 
         # Wait for a response
         try:
-            payload = await attribute_message.wait_for_button_click(check=lambda p: p.user_id == ctx.author.id, timeout=120)
+            payload = await attribute_message.wait_for_button_click(check=lambda p: p.user.id == ctx.author.id, timeout=120)
             await payload.ack()
             emoji = payload.component.custom_id
         except asyncio.TimeoutError:
@@ -618,7 +618,7 @@ class ProfileTemplates(utils.Cog):
                 components=utils.MessageComponents.boolean_buttons()
             )
             try:
-                payload = await delete_confirmation_message.wait_for_button_click(check=lambda p: p.user_id == ctx.author.id, timeout=120.0)
+                payload = await delete_confirmation_message.wait_for_button_click(check=lambda p: p.user.id == ctx.author.id, timeout=120.0)
                 await payload.ack()
             except asyncio.TimeoutError:
                 try:
@@ -805,7 +805,7 @@ class ProfileTemplates(utils.Cog):
 
             # Here's us waiting for the "do you want to make a new field" reaction
             try:
-                payload = await field_message.wait_for_button_click(check=lambda p: p.user_id == ctx.author.id, timeout=120)
+                payload = await field_message.wait_for_button_click(check=lambda p: p.user.id == ctx.author.id, timeout=120)
                 await payload.ack()
             except asyncio.TimeoutError:
                 try:
@@ -862,7 +862,7 @@ class ProfileTemplates(utils.Cog):
             )
             messages_to_delete.append(prompt_message)
             try:
-                payload = await prompt_message.wait_for_button_click(check=lambda p: p.user_id == ctx.author.id, timeout=120)
+                payload = await prompt_message.wait_for_button_click(check=lambda p: p.user.id == ctx.author.id, timeout=120)
                 await payload.ack()
                 field_optional_emoji = payload.component.custom_id
             except asyncio.TimeoutError:
@@ -908,7 +908,7 @@ class ProfileTemplates(utils.Cog):
 
             # See what they said
             try:
-                payload = await field_type_message.wait_for_button_click(check=lambda p: p.user_id == ctx.author.id, timeout=120)
+                payload = await field_type_message.wait_for_button_click(check=lambda p: p.user.id == ctx.author.id, timeout=120)
                 await payload.ack()
                 emoji = str(payload.component.emoji)
             except asyncio.TimeoutError:

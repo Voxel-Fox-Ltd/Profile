@@ -285,7 +285,7 @@ class ProfileTemplates(utils.Cog):
         self.purge_message_list(ctx.channel, messages_to_delete)
 
         # Validate the given information
-        converted = await self.validate_given_attribute(ctx, attribute, converted)
+        converted = await self.validate_given_attribute(ctx, template, attribute, converted)
         if converted is None:
             return False
 
@@ -295,7 +295,9 @@ class ProfileTemplates(utils.Cog):
             await db("UPDATE template SET {0}=$1 WHERE template_id=$2".format(attribute), converted, template.template_id)
         return True
 
-    async def validate_given_attribute(self, ctx: utils.Context, attribute: str, converted: str) -> str:
+    async def validate_given_attribute(
+            self, ctx: utils.Context, template: localutils.Template, attribute: str,
+            converted: str) -> str:
         """
         Validates the given information from the user as to whether their attribute should be changed.
         Returns either

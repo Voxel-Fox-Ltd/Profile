@@ -622,25 +622,26 @@ class ProfileTemplates(utils.Cog):
                 await payload.ack()
             except asyncio.TimeoutError:
                 try:
-                    await delete_confirmation_message.edit(components=utils.MessageComponents.boolean_buttons().disable_components())
+                    await delete_confirmation_message.edit(
+                        content="Template delete timed out - please try again later.",
+                        components=utils.MessageComponents.boolean_buttons().disable_components(),
+                    )
                 except discord.HTTPException:
                     pass
-                try:
-                    await ctx.send("Template delete timed out - please try again later.")
-                except discord.Forbidden:
-                    pass
                 return
-            await payload.message.edit(components=utils.MessageComponents.boolean_buttons().disable_components())
 
             # Check if they said no
             if payload.component.custom_id == "NO":
-                return await ctx.send("Got it, cancelling template delete.")
+                return await payload.message.delete()
 
             # Delete it from the database
             async with self.bot.database() as db:
                 await db("DELETE FROM template WHERE template_id=$1", template.template_id)
             self.logger.info(f"Template '{template.name}' deleted on guild {ctx.guild.id}")
-            await ctx.send(f"All relevant data for template **{template.name}** (`{template.template_id}`) has been deleted.")
+            return await payload.message.edit(
+                content=f"All relevant data for template **{template.name}** (`{template.template_id}`) has been deleted.",
+                components=None,
+            )
 
     @utils.command()
     @commands.has_guild_permissions(manage_roles=True)

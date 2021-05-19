@@ -147,7 +147,7 @@ class ProfileCreation(utils.Cog):
         # And return the name given
         return name_content
 
-    async def get_field_content(self, ctx: utils.Context, field: localutils.Field) -> localutils.FilledField:
+    async def get_field_content(self, ctx: utils.Context, field: localutils.Field, target_user: discord.User) -> localutils.FilledField:
         """
         Ask the user for a the content of a field.
         """
@@ -272,7 +272,7 @@ class ProfileCreation(utils.Cog):
             # Talk the user through each field
             filled_field_dict = {}
             for field in sorted(template.fields.values(), key=lambda x: x.index):
-                response_field = await self.get_field_content(ctx, field)
+                response_field = await self.get_field_content(ctx, field, target_user)
                 if not response_field:
                     return
                 filled_field_dict[field.field_id] = response_field

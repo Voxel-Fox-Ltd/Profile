@@ -28,7 +28,7 @@ class UserProfile(object):
             posted_channel_id: int = None, template: Template = None):
         self.user_id: int = user_id
         self.name: str = name
-        self.template_id: uuid.UUID = template_id
+        self.template_id: uuid.UUID = str(template_id)
         self.verified: bool = verified
         self.posted_message_id = posted_message_id
         self.posted_channel_id = posted_channel_id

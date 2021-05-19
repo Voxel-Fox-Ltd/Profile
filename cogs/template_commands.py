@@ -165,10 +165,14 @@ class ProfileTemplates(utils.Cog):
                 # Wait for a response from the user
                 try:
                     payload = await template_options_edit_message.wait_for_button_click(check=lambda p: p.user.id == ctx.author.id, timeout=120)
+                    await payload.ack()
                     reaction = payload.component.custom_id
                 except asyncio.TimeoutError:
                     try:
-                        return await ctx.send("Timed out waiting for edit response.")
+                        return await template_options_edit_message.edit(
+                            content="Timed out waiting for edit response.",
+                            components=None,
+                        )
                     except discord.HTTPException:
                         return
 
@@ -211,11 +215,14 @@ class ProfileTemplates(utils.Cog):
             await template_options_edit_message.delete()
         except discord.HTTPException:
             pass
-        await ctx.send((
-            f"Finished editing template. Users can create profiles with `{ctx.clean_prefix}{template.name.lower()} set`, "
-            f"edit with `{ctx.clean_prefix}{template.name.lower()} edit`, and show them with "
-            f"`{ctx.clean_prefix}{template.name.lower()} get`."
-        ))
+        await template_options_edit_message.edit(
+            content=(
+                f"Finished editing template. Users can create profiles with `{ctx.clean_prefix}{template.name.lower()} set`, "
+                f"edit with `{ctx.clean_prefix}{template.name.lower()} edit`, and show them with "
+                f"`{ctx.clean_prefix}{template.name.lower()} get`."
+            ),
+            components=None,
+        )
 
     async def change_template_attribute(
             self, ctx: utils.Context, template: localutils.Template, is_bot_support: bool, attribute: str,

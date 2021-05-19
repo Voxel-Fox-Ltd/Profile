@@ -361,20 +361,23 @@ class ProfileTemplates(utils.Cog):
         Returns whether or not the template display needs to be updated, or None for an error (like a timeout).
         """
 
-        # Ask which index they want to edit
+        # Create some components to add to the message
         if len(template.fields) == 0:
             components = None
-        elif len(template.fields) >= max([guild_settings['max_template_field_count'], template.max_field_count]) and not is_bot_support:
-            components = utils.MessageComponents.add_buttons_with_rows(*[
-                utils.Button(field_object.name[:25], custom_id=field_id) for field_id, field_object in template.fields.items()
-            ])
         else:
-            components = utils.MessageComponents.add_buttons_with_rows(
-                utils.Button("New", style=utils.ButtonStyle.SECONDARY, custom_id="NEW"),
-                *[
-                    utils.Button(field_object.name[:25], custom_id=field_id) for field_id, field_object in template.fields.items()
-                ],
-            )
+            field_name_buttons = [
+                utils.Button(field_object.name[:25], style=utils.ButtonStyle.SECONDARY, custom_id=field_id)
+                for field_id, field_object in template.fields.items()
+            ]
+            if len(template.fields) < max([guild_settings['max_template_field_count'], template.max_field_count]) or is_bot_support:
+                components = utils.MessageComponents.add_buttons_with_rows(
+                    utils.Button("New", custom_id="NEW"),
+                    *field_name_buttons
+                )
+            else:
+                components = utils.MessageComponents.add_buttons_with_rows(*field_name_buttons)
+
+        # Send a message asking what they want to edit
         if components:
             ask_field_edit_message: discord.Message = await ctx.send("Which field do you want to edit?", components=components)
             messages_to_delete = [ask_field_edit_message]
@@ -383,20 +386,23 @@ class ProfileTemplates(utils.Cog):
             messages_to_delete = []
 
         # Get field index message
-        field_to_edit = await self.get_field_to_edit(ctx, template, ask_field_edit_message, guild_settings, is_bot_support)
+        field_to_edit: localutils.Field = await self.get_field_to_edit(
+            ctx, template, ask_field_edit_message, guild_settings, is_bot_support,
+        )
         if not isinstance(field_to_edit, localutils.Field):
-            return field_to_edit
+            self.purge_message_list(ctx.channel, messages_to_delete)
+            return field_to_edit  # A new field was created - let's just exit here
 
         # Ask what part of it they want to edit
         components = utils.MessageComponents(
             utils.ActionRow(
-                utils.Button("Field name", custom_id="1\N{COMBINING ENCLOSING KEYCAP}"),
-                utils.Button("Field prompt", custom_id="2\N{COMBINING ENCLOSING KEYCAP}"),
-                utils.Button("Field being optional", custom_id="3\N{COMBINING ENCLOSING KEYCAP}"),
-                utils.Button("Field type", custom_id="4\N{COMBINING ENCLOSING KEYCAP}"),
+                utils.Button("Field name", custom_id="NAME"),
+                utils.Button("Field prompt", custom_id="PROMPT"),
+                utils.Button("Field being optional", custom_id="OPTIONAL"),
+                utils.Button("Field type", custom_id="TYPE"),
             ),
             utils.ActionRow(
-                utils.Button("Delete field", style=utils.ButtonStyle.DANGER, custom_id="5\N{COMBINING ENCLOSING KEYCAP}"),
+                utils.Button("Delete field", style=utils.ButtonStyle.DANGER, custom_id="DELETE"),
                 utils.Button("Cancel", style=utils.ButtonStyle.SECONDARY, custom_id="CANCEL"),
             ),
         )
@@ -407,17 +413,22 @@ class ProfileTemplates(utils.Cog):
         )
         messages_to_delete.append(attribute_message)
 
-        # Wait for a response
+        # Wait for them to say what they want to edit
         try:
             payload = await attribute_message.wait_for_button_click(check=lambda p: p.user.id == ctx.author.id, timeout=120)
             await payload.ack()
-            emoji = payload.component.custom_id
+            payload_id = payload.component.custom_id
         except asyncio.TimeoutError:
             try:
-                await ctx.send("Timed out waiting for field attribute.")
+                await attribute_message.edit(content="Timed out waiting for field attribute.", components=None)
             except discord.HTTPException:
                 pass
             return None
+
+        # See if they want to cancel
+        if payload_id == "CANCEL":
+            self.purge_message_list(ctx.channel, messages_to_delete)
+            return False
 
         # Let's set up our validity converters for each of the fields
         def name_validity_checker(given_value):
@@ -428,61 +439,66 @@ class ProfileTemplates(utils.Cog):
         # See what they reacted with
         try:
             available_reactions = {
-                "1\N{COMBINING ENCLOSING KEYCAP}": (
-                    "name", str, None,
-                    lambda given: "Your given field name is too long. Please provide another." if len(given) > 256 or len(given) <= 0 else True,
-                    lambda given: given,
+                "NAME": (
+                    "name", "What do you want to set the name of this field to?",
+                    lambda given: "Your given field name is too long. Please provide another." if 0 >= len(given) > 256 else True,
+                    None,
                 ),
-                "2\N{COMBINING ENCLOSING KEYCAP}": (
-                    "prompt", str, None,
+                "PROMPT": (
+                    "prompt", "What do you want to set the prompt for this field to?",
                     lambda given: "Your given field prompt is too short. Please provide another." if len(given) == 0 else True,
-                    lambda given: given,
+                    None,
                 ),
-                "3\N{COMBINING ENCLOSING KEYCAP}": (
-                    "optional", str, "Do you want this field to be optional? Type **yes** or **no**.",
-                    lambda given: "You need to say either **yes** or **no** for this field." if given.lower() not in ['yes', 'no', 'true', 'false'] else True,
-                    lambda given: {'yes': True, 'no': False, 'true': True, 'false': False}[given.lower()],
+                "OPTIONAL": (
+                    "optional", "Do you want this field to be optional?",
+                    None,
+                    utils.MessageComponents.boolean_buttons(),
                 ),
-                "4\N{COMBINING ENCLOSING KEYCAP}": (
-                    "field_type", str, "What type do you want this field to have? Type **text**, or **number**.",
-                    lambda given: "You need to say either **text** or **number** for this field." if given.lower() not in ['text', 'number', 'numbers', 'int', 'integer', 'str', 'string'] else True,
-                    lambda given: {'text': '1000-CHAR', 'number': 'INT', 'numbers': 'INT', 'int': 'INT', 'integer': 'INT', 'str': '1000-CHAR', 'string': '1000-CHAR'}[given.lower()],
+                "TYPE": (
+                    "field_type", "What type do you want this field to have?",
+                    None,
+                    utils.MessageComponents(utils.ActionRow(utils.Button("Text", "TEXT"), utils.Button("Numbers", "NUMBERS"))),
                 ),
-                "5\N{COMBINING ENCLOSING KEYCAP}": None,
-                "CANCEL": None,
+                "DELETE": None,
+                # "CANCEL": None,
             }
-            if emoji == "CANCEL":
-                raise ValueError()  # Cancel
-            attr, value_converter, prompt, value_check, post_conversion_fixer = available_reactions[emoji]
-        except ValueError:
-            self.purge_message_list(ctx.channel, messages_to_delete)
-            return False
+            changed_attribute, prompt, value_check, components = available_reactions[payload_id]
         except TypeError:
-            attr, value_converter, prompt, value_check = None, None, None, None  # Delete field
+            changed_attribute = None  # Delete field
 
         # Get the value they asked for
         field_value_message = None
-        if attr:
+        if changed_attribute:
 
             # Loop so we can deal with invalid values
             while True:
 
                 # Send the prompt
-                if prompt is None:
-                    prompt = f"What do you want to set the {attr} to?"
-                v = await ctx.send(prompt)
+                v = await ctx.send(prompt, components=components)
                 messages_to_delete.append(v)
 
                 # Ask the user for some content
                 try:
-                    def check(message):
-                        return all([
-                            message.author.id == ctx.author.id,
-                            message.channel.id == ctx.channel.id,
-                        ])
-                    field_value_message = await self.bot.wait_for("message", check=check, timeout=120)
-                    messages_to_delete.append(field_value_message)
-                    field_value = value_converter(field_value_message.content)
+                    if value_check:
+                        def check(message):
+                            return all([
+                                message.author.id == ctx.author.id,
+                                message.channel.id == ctx.channel.id,
+                            ])
+                        field_value_message = await self.bot.wait_for("message", check=check, timeout=120)
+                        messages_to_delete.append(field_value_message)
+                        field_value = str(field_value_message.content)
+                    elif components:
+                        payload = await v.wait_for_button_click(check=lambda p: p.user.id == ctx.author.id, timeout=120)
+                        await payload.ack()
+                        field_value = {
+                            "YES": True,
+                            "NO": False,
+                            "TEXT": localutils.TextField,
+                            "NUMBERS": localutils.NumberField,
+                        }[payload.component.custom_id]
+                    else:
+                        raise Exception("You shouldn't be able to get here.")
 
                 # Value failed to convert
                 except ValueError:
@@ -499,21 +515,19 @@ class ProfileTemplates(utils.Cog):
                     return None
 
                 # Fix up the inputs
-                value_is_valid = value_check(field_value)
-                if isinstance(value_is_valid, str) or isinstance(value_is_valid, bool) and value_is_valid is False:
-                    v = await ctx.send(value_is_valid or "Your provided value is invalid. Please provide another.")
-                    messages_to_delete.append(v)
-                    continue
-
-                # And continue
-                field_value = post_conversion_fixer(field_value)
+                if value_check:
+                    value_is_valid = value_check(field_value)
+                    if isinstance(value_is_valid, str) or isinstance(value_is_valid, bool) and value_is_valid is False:
+                        v = await ctx.send(value_is_valid or "Your provided value is invalid. Please provide another.")
+                        messages_to_delete.append(v)
+                        continue
                 break
 
         # Save the data
         async with self.bot.database() as db:
-            if attr:
+            if changed_attribute:
                 await db(
-                    """UPDATE field SET {0}=$2 WHERE field_id=$1""".format(attr),
+                    """UPDATE field SET {0}=$2 WHERE field_id=$1""".format(changed_attribute),
                     field_to_edit.field_id, field_value,
                 )
             else:
@@ -543,7 +557,6 @@ class ProfileTemplates(utils.Cog):
                 try:
                     payload = await sent_message.wait_for_button_click(check=lambda p: p.user.id == ctx.author.id, timeout=120)
                     await payload.ack()
-                    await payload.message.delete()
                 except asyncio.TimeoutError:
                     try:
                         await sent_message.edit(content="Timed out waiting for field index.", components=None)

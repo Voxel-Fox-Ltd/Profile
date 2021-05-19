@@ -14,10 +14,6 @@ from cogs import utils as localutils
 
 class ProfileTemplates(utils.Cog):
 
-    NUMBERS_EMOJI = "\U00000031\U000020e3"
-    LETTERS_EMOJI = "\U0001F170"
-    PICTURE_EMOJI = "\U0001f5bc"
-
     def __init__(self, bot:utils.Bot):
         super().__init__(bot)
         self.template_editing_locks: typing.Dict[int, asyncio.Lock] = collections.defaultdict(asyncio.Lock)  # guild_id: asyncio.Lock
@@ -916,10 +912,10 @@ class ProfileTemplates(utils.Cog):
 
             # Ask for a field type
             action_row = utils.ActionRow()
-            action_row.add_component(utils.Button("Numbers"))  # , emoji=self.NUMBERS_EMOJI))
-            action_row.add_component(utils.Button("Text"))  # , emoji=self.LETTERS_EMOJI))
+            action_row.add_component(utils.Button("Text", custom_id="TEXT"))
+            action_row.add_component(utils.Button("Numbers", custom_id="NUMBERS"))
             if not image_set:
-                action_row.add_component(utils.Button("Image"))  # , emoji=self.PICTURE_EMOJI))
+                action_row.add_component(utils.Button("Image", custom_id="IMAGE"))
             components = utils.MessageComponents(action_row)
             field_type_message = await ctx.send("What type is this field?", components=components)
             messages_to_delete.append(field_type_message)
@@ -934,13 +930,13 @@ class ProfileTemplates(utils.Cog):
                     await ctx.send("Picking a field type has timed out - defaulting to text.")
                 except (discord.Forbidden, discord.NotFound):
                     pass
-                emoji = self.LETTERS_EMOJI
+                emoji = "TEXT"
 
             # Change that emoji into a datatype
             field_type = {
-                self.NUMBERS_EMOJI: localutils.NumberField,
-                self.LETTERS_EMOJI: localutils.TextField,
-                self.PICTURE_EMOJI: localutils.ImageField,
+                "NUMBERS": localutils.NumberField,
+                "TEXT": localutils.TextField,
+                "IMAGE": localutils.ImageField,
             }[emoji]
             if isinstance(field_type, localutils.ImageField) and image_set:
                 raise Exception("You shouldn't be able to set two image fields.")

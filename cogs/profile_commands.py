@@ -49,7 +49,6 @@ class ProfileCreation(utils.Cog):
             matches = self.OLD_COMMAND_REGEX.search(prefixless_content)
             if matches is None:
                 return
-        ctx.message.content = f"MetaCommandInvoke {matches.group('args')}"
         command_operator = matches.group("command")  # get/get/delete/edit
         template_name = matches.group("template")  # template name
 
@@ -65,6 +64,8 @@ class ProfileCreation(utils.Cog):
         ctx.command = metacommand
         ctx.template = template
         ctx.invoke_meta = True
+        ctx.invoked_with = f"{matches.group('template')} {matches.group('command')}"
+        ctx.message.content = f"MetaCommandInvoke {matches.group('args')}"
         try:
             self.bot.dispatch("command", ctx)
             await metacommand.invoke(ctx)  # This converts the args for me, which is nice
@@ -178,14 +179,14 @@ class ProfileCreation(utils.Cog):
             try:
                 user_message = await ctx.bot.wait_for(
                     "message", timeout=field.timeout,
-                    check=lambda m: m.author == ctx.author and isinstance(m.channel, discord.DMChannel)
+                    check=lambda m: m.author.id == ctx.author.id and isinstance(m.channel, discord.DMChannel)
                 )
 
             # We timed out waiting
             except asyncio.TimeoutError:
                 try:
                     await ctx.author.send(
-                        f"Your input for this field has timed out. Running `set{template.name}` on your server "
+                        f"Your input for this field has timed out. Running `{field.template.name} set` on your server "
                         "again to go back through this setup.",
                     )
                     return None
@@ -274,7 +275,7 @@ class ProfileCreation(utils.Cog):
             filled_field_dict = {}
             for field in sorted(template.fields.values(), key=lambda x: x.index):
                 response_field = await self.get_field_content(ctx, profile_name, field, target_user)
-                if not response_field:
+                if response_field is None:
                     return
                 filled_field_dict[field.field_id] = response_field
 

@@ -392,6 +392,7 @@ class ProfileTemplates(utils.Cog):
         if not isinstance(field_to_edit, localutils.Field):
             self.purge_message_list(ctx.channel, messages_to_delete)
             return field_to_edit  # A new field was created - let's just exit here
+        await ask_field_edit_message(components=components.disable_components())
 
         # Ask what part of it they want to edit
         components = utils.MessageComponents(
@@ -429,6 +430,7 @@ class ProfileTemplates(utils.Cog):
         if payload_id == "CANCEL":
             self.purge_message_list(ctx.channel, messages_to_delete)
             return False
+        await attribute_message.edit(components=components.disable_components())
 
         # Let's set up our validity converters for each of the fields
         def name_validity_checker(given_value):

@@ -372,7 +372,7 @@ class ProfileTemplates(utils.Cog):
             components = utils.MessageComponents.add_buttons_with_rows(
                 utils.Button("New", style=utils.ButtonStyle.SECONDARY, custom_id="NEW"),
                 *[
-                    utils.Button(field_object.name[:25], custom_id=field_id) for field_id, field_object in template.fields.items()
+                    utils.Button(field_object.name[:25], custom_id=str(field_id)) for field_id, field_object in template.fields.items()
                 ],
             )
         if components:

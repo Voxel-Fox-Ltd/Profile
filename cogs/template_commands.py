@@ -185,7 +185,7 @@ class ProfileTemplates(utils.Cog):
                         "2\N{COMBINING ENCLOSING KEYCAP}": ("verification_channel_id", commands.TextChannelConverter()),
                         "3\N{COMBINING ENCLOSING KEYCAP}": ("archive_channel_id", commands.TextChannelConverter()),
                         "4\N{COMBINING ENCLOSING KEYCAP}": ("role_id", commands.RoleConverter()),
-                        "5\N{COMBINING ENCLOSING KEYCAP}": (None, self.edit_field(ctx, template, guild_settings, is_bot_support)),
+                        "5\N{COMBINING ENCLOSING KEYCAP}": (None, asyncio.Task(self.edit_field(ctx, template, guild_settings, is_bot_support))),
                         "6\N{COMBINING ENCLOSING KEYCAP}": ("max_profile_count", int),
                         "7\N{COMBINING ENCLOSING KEYCAP}": ("max_field_count", int),
                         "DONE": None,
@@ -290,7 +290,7 @@ class ProfileTemplates(utils.Cog):
         self.purge_message_list(ctx.channel, messages_to_delete)
 
         # Validate the given information
-        converted = await self.validate_given_attribute(ctx, template, attribute, converted)
+        converted = await self.validate_given_attribute(ctx, template, attribute, converted, is_bot_support)
         if converted is None:
             return False
 
@@ -302,7 +302,7 @@ class ProfileTemplates(utils.Cog):
 
     async def validate_given_attribute(
             self, ctx: utils.Context, template: localutils.Template, attribute: str,
-            converted: str) -> str:
+            converted: str, is_bot_support: bool) -> str:
         """
         Validates the given information from the user as to whether their attribute should be changed.
         Returns either

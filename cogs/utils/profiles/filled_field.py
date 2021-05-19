@@ -21,6 +21,6 @@ class FilledField(object):
     def __init__(self, user_id: int, name: str, field_id: uuid.UUID, value: str, field: Field = None):
         self.user_id: int = user_id
         self.name: str = name
-        self.field_id: uuid.UUID = field_id
+        self.field_id: uuid.UUID = str(field_id)
         self.value: str = value
         self.field: Field = field

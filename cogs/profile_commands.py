@@ -65,7 +65,7 @@ class ProfileCreation(utils.Cog):
         ctx.template = template
         ctx.invoke_meta = True
         ctx.invoked_with = f"{matches.group('template')} {matches.group('command')}"
-        ctx.view = commands.view.StringView(f"MetaCommandInvoke {matches.group('args')}")
+        ctx.view = commands.view.StringView(matches.group('args'))
         try:
             self.bot.dispatch("command", ctx)
             await metacommand.invoke(ctx)  # This converts the args for me, which is nice

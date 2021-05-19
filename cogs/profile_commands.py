@@ -147,7 +147,6 @@ class ProfileCreation(utils.Cog):
         # And return the name given
         return name_content
 
-    @staticmethod
     async def get_field_content(self, ctx: utils.Context, field: localutils.Field) -> localutils.FilledField:
         """
         Ask the user for a the content of a field.

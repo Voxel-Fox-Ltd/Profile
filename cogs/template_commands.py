@@ -161,18 +161,16 @@ class ProfileTemplates(utils.Cog):
 
                 # Wait for a response from the user
                 try:
-                    self.bot.loop.create_task(template_options_edit_message.edit(components=components.enable_components()))
+                    await template_options_edit_message.edit(components=components.enable_components())
                     payload = await template_options_edit_message.wait_for_button_click(check=lambda p: p.user.id == ctx.author.id, timeout=120)
                     await payload.ack()
                     reaction = payload.component.custom_id
                 except asyncio.TimeoutError:
                     try:
-                        return await template_options_edit_message.edit(
-                            content="Timed out waiting for edit response.",
-                            components=None,
-                        )
+                        await template_options_edit_message.edit(content="Timed out waiting for edit response.", components=None)
                     except discord.HTTPException:
-                        return
+                        pass
+                    return
 
                 # See what they reacted with
                 try:
@@ -191,7 +189,7 @@ class ProfileTemplates(utils.Cog):
                     break  # They're done
 
                 # Disable the components
-                self.bot.loop.create_task(template_options_edit_message.edit(components=components.disable_components()))
+                await template_options_edit_message.edit(components=components.disable_components())
 
                 # If they want to edit a field, we go through this section
                 if attr is None:

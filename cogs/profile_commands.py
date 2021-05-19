@@ -203,7 +203,7 @@ class ProfileCreation(utils.Cog):
                 await ctx.author.send(e.message)
 
         # Add their filled field object to the list of data
-        return = localutils.FilledField(
+        return localutils.FilledField(
             user_id=target_user.id,
             name=name_content,
             field_id=field.field_id,

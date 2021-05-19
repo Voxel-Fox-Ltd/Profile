@@ -26,7 +26,7 @@ class Field(object):
     def __init__(
             self, field_id: uuid.UUID, name: str, index: int, prompt: str, timeout: int, field_type: FieldType,
             template_id: uuid.UUID, optional: bool, deleted: bool):
-        self.field_id: uuid.UUID = field_id
+        self.field_id: uuid.UUID = str(field_id)
         self.index: int = index
         self.name: str = name
         self.prompt: str = prompt
@@ -37,6 +37,6 @@ class Field(object):
             'IMAGE': ImageField(),
             'BOOLEAN': BooleanField(),
         }[getattr(field_type, 'name', field_type)]
-        self.template_id: uuid.UUID = template_id
+        self.template_id: uuid.UUID = str(template_id)
         self.optional: bool = optional
         self.deleted: bool = deleted

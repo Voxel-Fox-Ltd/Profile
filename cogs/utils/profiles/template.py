@@ -52,7 +52,7 @@ class Template(object):
     def __init__(
             self, template_id: uuid.UUID, colour: int, guild_id: int, verification_channel_id: str,
             name: str, archive_channel_id: str, role_id: str, max_profile_count: int, max_field_count: int):
-        self.template_id: uuid.UUID = template_id
+        self.template_id: uuid.UUID = str(template_id)
         self.colour: int = colour
         self.guild_id: int = guild_id
         self.verification_channel_id: str = verification_channel_id

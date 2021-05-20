@@ -369,7 +369,7 @@ class ProfileTemplates(utils.Cog):
         else:
             field_name_buttons = [
                 utils.Button(field.name[:25], style=utils.ButtonStyle.SECONDARY, custom_id=field.field_id)
-                for field in sorted(template.fields.values(), key=operator.attrgetter("index"))
+                for field in template.field_list
             ]
             if len(template.fields) < max([guild_settings['max_template_field_count'], template.max_field_count]) or is_bot_support:
                 components = utils.MessageComponents.add_buttons_with_rows(

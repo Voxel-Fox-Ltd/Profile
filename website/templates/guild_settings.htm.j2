@@ -2,12 +2,41 @@
 
 
 {% block head %}
-<link rel="stylesheet" type="text/css" href="{{ static('/css/guilds.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ static('/css/guild_settings.css') }}">
 {% endblock head %}
 
 
 {% block content %}
 <section id="main">
-    <h1>Guild settings</h1>
+    <h1 class="title">Guild settings</h1>
+    <div id="templates">
+        {% for template in templates %}
+            <div class="template" data-template-id="{{ template.template_id }}">
+                <h2 class="subtitle">{{ template.name }}</h2>
+                <table class="fields">
+                    <tr>
+                        <th class="name">Name</th>
+                        <th class="prompt">Prompt</th>
+                        <th class="right timeout">Timeout</th>
+                        <th class="type">Field Type</th>
+                        <th class="right optional">Optional</th>
+                    </tr>
+                    {% for field in template.fields.values() %}
+                        <tr data-field-id="{{ field.field_id }}">
+                            <td class="name">{{ field.name }}</td>
+                            {% if CommandProcessor.get_is_command(field.prompt)|select|first %}
+                                <td class="prompt"><pre><code>&lt;COMMAND&gt;</code></pre></td>
+                            {% else %}
+                                <td class="prompt">{{ field.prompt }}</td>
+                            {% endif %}
+                            <td class="right timeout">{{ field.timeout }}</td>
+                            <td class="type">{{ field.field_type }}</td>
+                            <td class="right optional">{{ field.optional }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        {% endfor %}
+    </div>
 </section>
 {% endblock content %}

@@ -1,5 +1,6 @@
 import typing
 import uuid
+import operator
 
 import discord
 import voxelbotutils as utils
@@ -121,7 +122,7 @@ class UserProfile(object):
             raise ValueError("Invalid member object passed to build embed")
 
         # Create the initial embed
-        fields: typing.List[FilledField] = sorted(self.filled_fields.values(), key=lambda x: x.field.index)
+        fields: typing.List[FilledField] = sorted(self.filled_fields.values(), key=operator.attrgetter("field.index"))
         embed = utils.Embed(use_random_colour=True)
         if not self.template:
             raise AttributeError("Missing template field for user profile")

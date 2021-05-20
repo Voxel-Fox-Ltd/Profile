@@ -71,10 +71,11 @@ async def guild_settings(request: Request):
     # Grab their current settings
     async with request.app['database']() as db:
         guild_rows = await db("SELECT * FROM guild_settings WHERE guild_id=$1 OR guild_id=0 ORDER BY guild_id DESC", guild.id)
-        template_rows = await db("SELECT * FROM template WHERE guild_id=$1", guild.id)
+        guild_templates = await localutils.Template.fetch_all_templates_for_guild(db, guild.id, fetch_fields=True)
 
     # Return the guild data
     return {
         "guild": guild_rows[0],
-        "templates": [localutils.Template(**i) for i in template_rows],
+        "templates": guild_templates,
+        "CommandProcessor": localutils.CommandProcessor
     }

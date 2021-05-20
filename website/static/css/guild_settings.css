@@ -1,0 +1,94 @@
+#templates {
+    width: 100%;
+}
+
+.template {
+    display: flex;
+    /*width: 400px;*/
+    width: 100%;
+    align-items: center;
+    margin-bottom: 10px;
+    color: white;
+    flex-direction: column;
+}
+
+.fields {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.fields th,
+.fields td {
+    padding: 5px;
+    border-style: solid;
+    border-color: white;
+    border-width: 0 1px;
+}
+
+.fields th:first-of-type,
+.fields td:first-of-type,
+.fields th:last-of-type,
+.fields td:last-of-type {
+    border: none;
+}
+
+.fields tr:first-of-type {
+    border-style: solid;
+    border-color: white;
+    border-width: 0 0 1px 0;
+}
+
+.fields th {
+    font-weight: bold;
+}
+
+.fields {
+    text-align: left;
+}
+
+.fields .right {
+    text-align: right;
+}
+
+.fields pre {
+    margin: 0;
+}
+
+.fields .name {
+    /*min-width: 100px;*/
+    width: 100px;
+    overflow: hidden;
+}
+
+.fields .prompt {
+    /*width: 100px;*/
+    overflow: hidden;
+}
+
+.fields .timeout {
+    width: 63px;
+    overflow: hidden;
+}
+
+.fields .type {
+    min-width: 100px;
+    width: 100px;
+    overflow: hidden;
+}
+
+.fields .optional {
+    width: 65px;
+    overflow: hidden;
+}
+
+@media screen and (max-width: 500px) {
+    .fields .optional,
+    .fields .type,
+    .fields .timeout {
+        display: none;
+    }
+
+    .fields .prompt {
+        border-right: 0;
+    }
+}

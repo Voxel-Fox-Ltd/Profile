@@ -23,3 +23,7 @@
 .guild .guild-icon rect {
     fill: var(--blurple);
 }
+
+.guild .name {
+    text-align: left;
+}

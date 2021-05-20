@@ -1,6 +1,7 @@
 import typing
 import uuid
 import re
+import operator
 
 import discord
 from discord.ext import commands
@@ -120,6 +121,14 @@ class Template(object):
 
         return {i: o for i, o in self.all_fields.items() if o.deleted is False}
 
+    @property
+    def field_list(self) -> typing.List[Field]:
+        """
+        Returns a list of `utils.Filed` objects - in order - for this profile.
+        """
+
+        return sorted(i.fields.values(), key=operator.attrgetter("index"))
+
     async def fetch_profile_for_user(
             self, db, user_id:int, profile_name: str = None,
             *, fetch_filled_fields: bool = True) -> 'cogs.utils.profiles.user_profile.UserProfile':
@@ -237,6 +246,20 @@ class Template(object):
             await template.fetch_fields(db)
         return template
 
+    @classmethod
+    async def fetch_all_templates_for_guild(cls, db, guild_id: int, *, fetch_fields: bool = True) -> typing.List['Template']:
+        """
+        Get all the templates for a given guild.
+        """
+
+        # Grab the template
+        template_rows = await db("SELECT * FROM template WHERE guild_id=$1", guild_id)
+        template_list = [cls(**i) for i in template_rows]
+        if fetch_fields:
+            for t in template_list:
+                await t.fetch_fields(db)
+        return template_list
+
     async def fetch_fields(self, db) -> typing.Dict[uuid.UUID, FilledField]:
         """
         Fetch the fields for this template and store them in .all_fields.
@@ -273,7 +296,7 @@ class Template(object):
         """
 
         # Create the initial embed
-        fields: typing.List[Field] = sorted(self.fields.values(), key=lambda x: x.index)
+        fields: typing.List[Field] = self.field_list
         embed = utils.Embed(use_random_colour=True, title=self.name)
 
         # Work out what goes in the description

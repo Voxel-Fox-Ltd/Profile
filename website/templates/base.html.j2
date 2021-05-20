@@ -2,8 +2,43 @@
 <html>
 <head>
     <title>Profile for Discord</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="{{ static('/css/main.css') }}" />
+    {% block head %}{% endblock head %}
 </head>
 <body>
 
+
+{%- block navbar -%}
+<nav class="navbar" role="navigation" aria-label="main navigation">
+    <div class="navbar-brand">
+        <a class="navbar-item" href="/">
+            <img src="https://raw.githubusercontent.com/Voxel-Fox-Ltd/Meta/master/assets/Profile/iconfinder_Graph-Magnifier_379472%20FULL%20IMAGE.png" id="navbar-brand-img">
+        </a>
+    </div>
+    <div id="navbar-menu" class="navbar-menu">
+        <div class="navbar-item navbar-end">
+            <div class="navbar-buttons">
+                {%- if session.logged_in -%}
+                    <a class="button" href="/settings">Settings</a>
+                    <a class="button" href="/logout">Log Out</a>
+                    <img src="{{ session.user_info.avatar_url }}?size=128" id="navbar-brand-img">
+                {%- else -%}
+                    <a class="button" href="/login">Log In</a>
+                {%- endif -%}
+            </div>
+        </div>
+    </div>
+</nav>
+{%- endblock navbar -%}
+
+
+<div id="content">
+
+
+{% block content %}
+{% endblock content %}
+
+</div>
 </body>
 </html>

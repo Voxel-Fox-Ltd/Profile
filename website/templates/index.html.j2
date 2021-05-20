@@ -1,1 +1,27 @@
 {% extends "base.html.j2" %}
+
+
+{% block head %}
+<link rel="stylesheet" type="text/css" href="{{ static('/css/index.css') }}">
+{% endblock head %}
+
+
+{% block content %}
+<section id="main">
+    <h1 class="title">Profile for Discord</h1>
+    <p class="subtitle">The best bot for creating profiles on Discord</p>
+    <img src="https://voxelfox.co.uk/static/images/profile/new/created_profile.png" />
+    <p>With Profile, your server's moderators are able to create, modify, and manage different forms for users to fill in. Systems like this are a great help to a variety of communities - from storing character information on roleplay servers to storing your fantasy football team.</p>
+</section>
+<hr id="testimonials-hr" />
+<section id="testimonials">
+    <p class="subtitle">Testimonials</p>
+    <div class="testimonial-images">
+        <img src="https://voxelfox.co.uk/static/images/profile/testimonials/0.png" />
+        <img src="https://voxelfox.co.uk/static/images/profile/testimonials/1.png" />
+        <img src="https://voxelfox.co.uk/static/images/profile/testimonials/2.png" />
+        <img src="https://voxelfox.co.uk/static/images/profile/testimonials/3.png" />
+        <img src="https://voxelfox.co.uk/static/images/profile/testimonials/4.png" />
+    </div>
+</section>
+{% endblock content %}

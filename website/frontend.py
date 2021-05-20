@@ -4,6 +4,8 @@ import aiohttp_session
 import discord
 from aiohttp_jinja2 import template
 
+from cogs import utils as localutils
+
 
 routes = RouteTableDef()
 
@@ -36,3 +38,43 @@ async def guilds(request: Request):
         "guilds": valid_guilds,
     }
 
+
+@routes.get(r"/guilds/{guild_id:\d+}")
+@webutils.requires_login()
+@template("guild_settings.htm.j2")
+@webutils.add_discord_arguments()
+async def guild_settings(request: Request):
+    """
+    The guild settings page for a given bot.
+    """
+
+    # Get the guild object
+    guild_id = int(request.match_info.get("guild_id"))
+    try:
+        guild = await request.app['bots']['bot'].fetch_guild(guild_id)
+    except discord.HTTPException:
+        return HTTPFound(location="/")
+
+    # Get the member object
+    session = await aiohttp_session.get_session(request)
+    try:
+        member = await guild.fetch_member(session['user_id'])
+    except discord.HTTPException:
+        return HTTPFound(location="/")
+
+    # Check the member has permissions to manage this guild
+    if guild.owner_id == member.id or member.guild_permissions.manage_guild:
+        pass
+    else:
+        return HTTPFound(location="/")
+
+    # Grab their current settings
+    async with request.app['database']() as db:
+        guild_rows = await db("SELECT * FROM guild_settings WHERE guild_id=$1 OR guild_id=0 ORDER BY guild_id DESC", guild.id)
+        template_rows = await db("SELECT * FROM template WHERE guild_id=$1", guild.id)
+
+    # Return the guild data
+    return {
+        "guild": guild_rows[0],
+        "templates": [localutils.Template(**i) for i in template_rows],
+    }

@@ -20,8 +20,8 @@
         <div class="navbar-item navbar-end">
             <div class="navbar-buttons">
                 {%- if session.logged_in -%}
-                    <a class="button" href="/settings">Settings</a>
-                    <a class="button" href="/logout">Log Out</a>
+                    <a class="button" href="/guilds">Guilds</a>
+                    <a class="button" href="/logout">Logout</a>
                     <img src="{{ session.user_info.avatar_url }}?size=128" id="navbar-brand-img">
                 {%- else -%}
                     <a class="button" href="/login">Log In</a>

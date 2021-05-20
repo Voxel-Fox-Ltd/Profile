@@ -1,0 +1,24 @@
+{% extends "base.htm.j2" %}
+
+
+{% block head %}
+<link rel="stylesheet" type="text/css" href="{{ static('/css/guilds.css') }}">
+{% endblock head %}
+
+
+{% block content %}
+<section id="main">
+    {% for guild in guilds %}
+        <a class="guild" href="/guilds/{{ guild.id }}">
+            {% if guild.icon %}
+                <img class="guild-icon" src="https://cdn.discordapp.com/icons/{{ guild.id }}/{{ guild.icon }}.png">
+            {% else %}
+                <svg class="guild-icon" width="128" height="128">
+                    <rect width="128" height="128" />
+                </svg>
+            {% endif %}
+            <p>{{ guild.name }}</p>
+        </a>
+    {% endfor %}
+</section>
+{% endblock content %}

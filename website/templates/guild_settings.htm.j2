@@ -8,7 +8,12 @@
 
 {% block content %}
 <section id="main">
-    <h1 class="title">Guild settings</h1>
+    <h1 class="title">{% if guild %}{{ guild.name }}{% else %}Unknown Guild{% endif %}</h1>
+    {% if guild is none %}
+        <p class="subtitle">
+            <a href="{{ app['bots']['bot'].get_invite_link(guild_id=guilds[0]['guild_id']) }}">Invite the bot</a>
+        </p>
+    {% endif %}
     <div id="templates">
         {% for template in templates %}
             <div class="template" data-template-id="{{ template.template_id }}">

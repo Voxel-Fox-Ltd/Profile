@@ -61,7 +61,7 @@ async def guild_settings(request: Request):
     session = await aiohttp_session.get_session(request)
     try:
         member = await guild.fetch_member(session['user_id'])
-    except discord.HTTPException:
+    except (discord.HTTPException, AttributeError):
         member = None
 
     # Check the member has permissions to manage this guild

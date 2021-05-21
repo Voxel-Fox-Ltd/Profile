@@ -69,7 +69,7 @@ async def guild_settings(request: Request):
         pass
     else:
         # See if they're bot support
-        ctx = await webutils.WebContext(bot, session['user_id'])
+        ctx = webutils.WebContext(bot, session['user_id'])
         if await botutils.checks.is_bot_support().predicate(ctx):
             pass
         else:

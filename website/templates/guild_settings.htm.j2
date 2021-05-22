@@ -58,7 +58,7 @@
                             {% if CommandProcessor.get_is_command(field.prompt)|select|first %}
                                 <td class="prompt"><pre><code>&lt;COMMAND&gt;</code></pre></td>
                             {% else %}
-                                <td class="prompt">{{ field.prompt }}</td>
+                                <td class="prompt">{{ field.prompt|display_emojis|markdown|safe }}</td>
                             {% endif %}
                             <td class="right timeout">{{ field.timeout }}</td>
                             <td class="type">{{ field.field_type }}</td>

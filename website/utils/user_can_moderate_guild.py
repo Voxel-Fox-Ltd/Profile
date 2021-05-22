@@ -36,12 +36,9 @@ async def user_can_moderate_guild(request: Request, guild_id: int):
     except IndexError:
         member = None
         guild = None
-    request.app['logger'].info(f"Guild {guild}")
-    request.app['logger'].info(f"Member {member}")
 
     # Check the member has permissions to manage this guild
     if member and guild and (guild.owner_id == member.id or member.guild_permissions.manage_guild):
-        request.app['logger'].info(f"can be here")
         pass
     else:
         # See if they're bot support
@@ -53,8 +50,6 @@ async def user_can_moderate_guild(request: Request, guild_id: int):
         ctx = webutils.WebContext(bot, user_id)
         try:
             await botutils.checks.is_bot_support().predicate(ctx)
-            request.app['logger'].info(f"is bot support")
         except commands.CheckFailure as e:
-            request.app['logger'].info(f"is not bot support - {e}")
             return False, guild, member
     return True, guild, member

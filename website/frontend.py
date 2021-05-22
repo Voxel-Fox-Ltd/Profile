@@ -3,6 +3,7 @@ import voxelbotutils as botutils
 from voxelbotutils import web as webutils
 import aiohttp_session
 import discord
+from discord.ext import commands
 from aiohttp_jinja2 import template
 
 from cogs import utils as localutils
@@ -70,9 +71,9 @@ async def guild_settings(request: Request):
     else:
         # See if they're bot support
         ctx = webutils.WebContext(bot, session['user_id'])
-        if await botutils.checks.is_bot_support().predicate(ctx):
-            pass
-        else:
+        try:
+            await botutils.checks.is_bot_support().predicate(ctx):
+        except commands.CheckFailure:
             return HTTPFound(location="/")
 
     # Grab their current settings

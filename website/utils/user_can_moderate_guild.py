@@ -45,7 +45,12 @@ async def user_can_moderate_guild(request: Request, guild_id: int):
         pass
     else:
         # See if they're bot support
-        ctx = webutils.WebContext(bot, session['user_id'])
+        try:
+            user_id = oauth_members[0].id
+        except IndexError:
+            session = await aiohttp_session.get_session(request)
+            user_id = session['user_id']
+        ctx = webutils.WebContext(bot, user_id)
         try:
             await botutils.checks.is_bot_support().predicate(ctx)
             request.app['logger'].info(f"is bot support")

@@ -7,6 +7,7 @@ from discord.ext import commands
 from aiohttp_jinja2 import template
 
 from cogs import utils as localutils
+from website import utils as localwebutils
 
 
 routes = RouteTableDef()
@@ -33,9 +34,7 @@ async def guilds(request: Request):
     """
 
     all_guilds = await webutils.get_user_guilds_from_session(request)
-    valid_guilds = [
-        i for i in all_guilds if i['owner'] or discord.Permissions(i['permissions']).manage_guild
-    ]
+    valid_guilds = [i.guild for i in all_guilds if i.guild_permissions.manage_guild or i.guild.owner_id == i.id]
     return {
         "guilds": valid_guilds,
     }
@@ -53,28 +52,9 @@ async def guild_settings(request: Request):
     # Get the guild object
     guild_id = int(request.match_info.get("guild_id"))
     bot: botutils.Bot = request.app['bots']['bot']
-    try:
-        guild = await bot.fetch_guild(guild_id)
-    except discord.HTTPException:
-        guild = None
-
-    # Get the member object
-    session = await aiohttp_session.get_session(request)
-    try:
-        member = await guild.fetch_member(session['user_id'])
-    except (discord.HTTPException, AttributeError):
-        member = None
-
-    # Check the member has permissions to manage this guild
-    if member and guild and (guild.owner_id == member.id or member.guild_permissions.manage_guild):
-        pass
-    else:
-        # See if they're bot support
-        ctx = webutils.WebContext(bot, session['user_id'])
-        try:
-            await botutils.checks.is_bot_support().predicate(ctx)
-        except commands.CheckFailure:
-            return HTTPFound(location="/")
+    user_can_moderate, guild, member = await localwebutils.user_can_moderate_guild(request, guild_id)
+    if not user_can_moderate:
+        return HTTPFound(location="/")
 
     # Grab their current settings
     async with request.app['database']() as db:

@@ -8,10 +8,6 @@ import discord
 from discord.ext import commands
 
 
-OauthMember = collections.namedtuple("OauthMember", ["id", "guild_permissions"])
-OauthGuild = discord.Object
-
-
 async def user_can_moderate_guild(request: Request, guild_id: int):
     """
     Returns whether or not the logged in user is making a valid request to the given

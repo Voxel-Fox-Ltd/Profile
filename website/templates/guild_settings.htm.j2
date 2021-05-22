@@ -52,7 +52,7 @@
                         <th class="type">Field Type</th>
                         <th class="right optional">Optional</th>
                     </tr>
-                    {% for field in template.fields.values() %}
+                    {% for field in template.field_list %}
                         <tr data-field-id="{{ field.field_id }}">
                             <td class="name">{{ field.name }}</td>
                             {% if CommandProcessor.get_is_command(field.prompt)|select|first %}

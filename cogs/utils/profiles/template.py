@@ -127,7 +127,7 @@ class Template(object):
         Returns a list of `utils.Filed` objects - in order - for this profile.
         """
 
-        return sorted(i.fields.values(), key=operator.attrgetter("index"))
+        return sorted(self.fields.values(), key=operator.attrgetter("index"))
 
     async def fetch_profile_for_user(
             self, db, user_id:int, profile_name: str = None,

@@ -54,7 +54,7 @@ async def guild_settings(request: Request):
     bot: botutils.Bot = request.app['bots']['bot']
     user_can_moderate, guild, member = await localwebutils.user_can_moderate_guild(request, guild_id)
     if not user_can_moderate:
-        return HTTPFound(location="/")
+        return HTTPFound(location="/guilds")
 
     # Grab their current settings
     async with request.app['database']() as db:

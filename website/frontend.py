@@ -72,7 +72,7 @@ async def guild_settings(request: Request):
         # See if they're bot support
         ctx = webutils.WebContext(bot, session['user_id'])
         try:
-            await botutils.checks.is_bot_support().predicate(ctx):
+            await botutils.checks.is_bot_support().predicate(ctx)
         except commands.CheckFailure:
             return HTTPFound(location="/")
 

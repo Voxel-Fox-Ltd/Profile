@@ -76,3 +76,33 @@ async def guild_settings(request: Request):
         "templates": guild_templates,
         "CommandProcessor": localutils.CommandProcessor,  # Throw in this whole class so we can use it in the template
     }
+
+
+@routes.get(r"/templates/{template_id:.+}")
+@webutils.requires_login()
+@template("template_edit.htm.j2")
+@webutils.add_discord_arguments()
+async def template_edit(request: Request):
+    """
+    The edit template page for the bot.
+    """
+
+    # Get the template object
+    template_id = request.match_info.get("template_id")
+    async with request.app['database']() as db:
+        template = await localutils.Template.fetch_template_by_id(db, template_id, fetch_fields=True)
+    if not template:
+        return HTTPFound(location="/guilds")
+
+    # See if they can moderate this template
+    guild_id = template.guild_id
+    bot: botutils.Bot = request.app['bots']['bot']
+    user_can_moderate, guild, member = await localwebutils.user_can_moderate_guild(request, guild_id)
+    if not user_can_moderate:
+        return HTTPFound(location="/guilds")
+
+    # Return the guild data
+    return {
+        "template": template,
+        "CommandProcessor": localutils.CommandProcessor,  # Throw in this whole class so we can use it in the template
+    }

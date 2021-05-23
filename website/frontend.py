@@ -61,14 +61,18 @@ async def guild_settings(request: Request):
         guild_rows = await db("SELECT * FROM guild_settings WHERE guild_id=$1 OR guild_id=0 ORDER BY guild_id DESC", guild_id)
         guild_templates = await localutils.Template.fetch_all_templates_for_guild(db, guild_id, fetch_fields=True)
 
+    # Upgrade the guild so we can see if the bot's in it
+    upgraded_guild = await guild.fetch_guild()
+
     # See if we want to invite the bot
-    if guild is None and not guild_templates:
+    if upgraded_guild is None and not guild_templates:
         return HTTPFound(location=bot.get_invite_link(guild_id=guild_id))
 
     # Return the guild data
     return {
-        "guild": guild_rows[0],
-        "guild_object": guild,
+        "guild": guild,
+        "bot_in_guild": upgraded_guild,
+        "guild_settings": guild_rows[0],
         "templates": guild_templates,
         "CommandProcessor": localutils.CommandProcessor,  # Throw in this whole class so we can use it in the template
     }

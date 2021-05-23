@@ -8,16 +8,20 @@
 
 {% block content %}
 <section id="main">
-    <h1 class="title">{% if guild_object %}{{ guild_object.name }}{% else %}Unknown Guild{% endif %}</h1>
-    {% if guild_object is none %}
+    <h1 class="title">{% if guild %}{{ guild.name }}{% else %}Unknown Guild{% endif %}</h1>
+    {% if not bot_in_guild %}
         <p>
-            <a href="{{ app['bots']['bot'].get_invite_link(guild_id=guild['guild_id']) }}">Click here to invite the bot</a>
+            <a href="{{ app['bots']['bot'].get_invite_link(guild_id=guild.id) }}">Click here to invite the bot</a>
         </p>
     {% endif %}
     <div id="templates">
         {% for template in templates %}
             <div class="template" data-template-id="{{ template.template_id }}">
-                <h2 class="template-name">{{ template.name }}</h2>
+                <h2 class="template-name">
+                    <span>{{ template.name }}</span>
+                    -
+                    <a href="/templates/{{ template.template_id }}">Edit</a>
+                </h2>
                 <div class="template-meta">
                     <div class="attribute">
                         <input name="template_id" value="{{ template.template_id }}" disabled />
@@ -56,9 +60,9 @@
                         <tr data-field-id="{{ field.field_id }}">
                             <td class="name">{{ field.name }}</td>
                             {% if CommandProcessor.get_is_command(field.prompt)|select|first %}
-                                <td class="prompt"><pre><code>&lt;COMMAND&gt;</code></pre></td>
+                                <td class="prompt" data-original="{{ field.prompt|replace('"', '\"') }}"><pre><code>&lt;COMMAND&gt;</code></pre></td>
                             {% else %}
-                                <td class="prompt">{{ field.prompt|display_emojis|markdown|safe }}</td>
+                                <td class="prompt" data-original="{{ field.prompt|replace('"', '\"') }}">{{ field.prompt|display_emojis|markdown|safe }}</td>
                             {% endif %}
                             <td class="right timeout">{{ field.timeout }}</td>
                             <td class="type">{{ field.field_type }}</td>

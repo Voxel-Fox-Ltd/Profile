@@ -24,8 +24,16 @@ a {
     margin: 10px 0;
 }
 
+.template .template-meta {
+    width: 100%;
+}
+
 .template .attribute input {
-    min-width: 200px;
+    box-sizing: border-box;
+    border-radius: 8px;
+    padding: 2px 5px;
+    min-width: 250px;
+    max-width: 100%;
 }
 
 .template .attribute input[disabled] {
@@ -131,12 +139,17 @@ table p {
         border-right: 0;
     }
 
+    .template .attribute {
+        margin-bottom: 10px;
+    }
+
     .template .attribute input {
-        width:  100%;
-        min-width: 0;
+        width: 100%;
     }
 
     .template .attribute label {
-        margin-left: 0;
+        margin-top: 5px;
+        width: 100%;
+        display: block;
     }
 }

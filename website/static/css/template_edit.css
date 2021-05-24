@@ -1,0 +1,42 @@
+.template-id {
+    font-size: 1em;
+    text-align: center;
+}
+
+.template .attributes {
+    width: 100%;
+}
+
+.template .attribute {
+    width: 100%;
+}
+
+.template .attribute p {
+    margin: 0 0 5px 0;
+    text-align: left;
+}
+
+.template .attribute input,
+.template .attribute select,
+.template .attribute textarea {
+    width: 100%;
+    padding: 5px;
+}
+
+.template .fields {
+    width: 100%;
+}
+
+.template .fields hr {
+    margin: 40px;
+    box-sizing: border-box;
+    width: auto;
+}
+
+.template .fields hr:last-of-type {
+    display: none;
+}
+
+.template .fields .field .index {
+    margin: 0 0 15px 0;
+}

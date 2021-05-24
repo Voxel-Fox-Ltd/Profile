@@ -28,15 +28,19 @@ a {
     width: 100%;
 }
 
-.template .attribute input {
+.template .attribute input,
+.template .attribute select,
+.template .attribute textarea {
     box-sizing: border-box;
     border-radius: 8px;
     padding: 2px 5px;
     min-width: 250px;
     max-width: 100%;
+    resize: none;
 }
 
-.template .attribute input[disabled] {
+.template .attribute input[disabled],
+.template .attribute select[disabled] {
     background: lightgray;
 }
 

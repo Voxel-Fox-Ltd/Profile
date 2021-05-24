@@ -18,9 +18,7 @@
         {% for template in templates %}
             <div class="template" data-template-id="{{ template.template_id }}">
                 <h2 class="template-name">
-                    <span>{{ template.name }}</span>
-                    -
-                    <a href="/templates/{{ template.template_id }}">Edit</a>
+                    {{ template.name }} - <a href="/templates/{{ template.template_id }}">edit</a>
                 </h2>
                 <div class="template-meta">
                     <div class="attribute">

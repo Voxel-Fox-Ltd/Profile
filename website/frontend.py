@@ -78,7 +78,7 @@ async def guild_settings(request: Request):
     }
 
 
-@routes.get(r"/templates/{template_id:.+}")
+@routes.get(r"/templates/{template_id:[a-zA-Z0-9\-]+?}")
 @webutils.requires_login()
 @template("template_edit.htm.j2")
 @webutils.add_discord_arguments()
@@ -87,10 +87,29 @@ async def template_edit(request: Request):
     The edit template page for the bot.
     """
 
+    return await get_template_data(request)
+
+
+@routes.get(r"/templates/{template_id:[a-zA-Z0-9\-]+?}/advanced")
+@webutils.requires_login()
+@template("advanced_template_edit.htm.j2")
+@webutils.add_discord_arguments()
+async def template_edit(request: Request):
+    """
+    The edit template page for the bot.
+    """
+
+    return await get_template_data(request)
+
+
+async def get_template_data(request: Request):
+
     # Get the template object
     template_id = request.match_info.get("template_id")
     async with request.app['database']() as db:
         template = await localutils.Template.fetch_template_by_id(db, template_id, fetch_fields=True)
+        if template:
+            guild_rows = await db("SELECT * FROM guild_settings WHERE guild_id=$1 OR guild_id=0 ORDER BY guild_id DESC", template.guild_id)
     if not template:
         return HTTPFound(location="/guilds")
 
@@ -99,10 +118,22 @@ async def template_edit(request: Request):
     bot: botutils.Bot = request.app['bots']['bot']
     user_can_moderate, guild, member = await localwebutils.user_can_moderate_guild(request, guild_id)
     if not user_can_moderate:
-        return HTTPFound(location="/guilds")
+        return HTTPFound(location=f"/guilds/{template.guild_id}")
+
+    # Grab the guild object
+    try:
+        guild_object = await bot.fetch_guild(guild_id)
+    except discord.HTTPException:
+        return HTTPFound(location=bot.get_invite_link(guild_id=guild_id))
+    channels = await guild_object.fetch_channels()
+    guild_object._channels = {i.id: i for i in channels}
+    roles = await guild_object.fetch_roles()
+    guild_object._roles = {i.id: i for i in roles}
 
     # Return the guild data
     return {
         "template": template,
+        "guild": guild_object,
+        "guild_settings": guild_rows[0],
         "CommandProcessor": localutils.CommandProcessor,  # Throw in this whole class so we can use it in the template
     }

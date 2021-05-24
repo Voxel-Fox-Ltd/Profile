@@ -3,66 +3,149 @@
 
 {% block head %}
 <link rel="stylesheet" type="text/css" href="{{ static('/css/guild_settings.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ static('/css/template_edit.css') }}">
 {% endblock head %}
 
 
 {% block content %}
 <section id="main">
+    <h1 class="title">{{ template.name }}</h1>
+    <h2 class="template-id">
+        <pre style="margin: 0;"><code>{{ template.template_id }}</code></pre>
+        <a style="display: block;" href="/guilds/{{ template.guild_id }}">Return to guild</a>
+        {# <a style="display: block;" href="/templates/{{ template.template_id }}/advanced">Advanced editing</a> #}
+    </h2>
     <div id="templates">
         <div class="template" data-template-id="{{ template.template_id }}">
-            <h2 class="template-name">
-                <span>{{ template.name }}</span>
-                -
-                <a href="/templates/{{ template.template_id }}">Edit</a>
-            </h2>
-            <div class="template-meta">
+            <div class="attributes">
                 <div class="attribute">
-                    <input name="template_id" value="{{ template.template_id }}" disabled />
-                    <label for="template_id">Template ID</label>
+                    <p>Verification Channel ID</p>
+                    <select
+                            name="verification_channel_id"
+                            data-original="{{ template.verification_channel_id or '' }}" >
+                        <option value="" selected></option>
+                        {% for category, channels in guild.by_category() %}
+                            <optgroup label="{{ category or 'Uncategorized' }}">
+                                {% for c in channels %}
+                                    {% set compare = c.id|string() %}
+                                    <option
+                                            value="{{ c.id }}"
+                                            {% if compare == template.verification_channel_id %}selected{% endif %}>
+                                        #{{ c.name }}
+                                    </option>
+                                {% endfor %}
+                            </optgroup>
+                        {% endfor %}
+                    </select>
                 </div>
                 <div class="attribute">
-                    <input name="verification_channel_id" value="{{ template.verification_channel_id or '' }}" disabled />
-                    <label for="verification_channel_id">Verification Channel ID</label>
+                    <p>Archive Channel ID</p>
+                    <select
+                            name="archive_channel_id"
+                            data-original="{{ template.archive_channel_id or '' }}" >
+                        <option value="" selected></option>
+                        {% for category, channels in guild.by_category() %}
+                            <optgroup label="{{ category or 'Uncategorized' }}">
+                                {% for c in channels %}
+                                    {% set compare = c.id|string() %}
+                                    <option
+                                            value="{{ c.id }}"
+                                            {% if compare == template.archive_channel_id %}selected{% endif %}>
+                                        #{{ c.name }}
+                                    </option>
+                                {% endfor %}
+                            </optgroup>
+                        {% endfor %}
+                    </select>
                 </div>
                 <div class="attribute">
-                    <input name="archive_channel_id" value="{{ template.archive_channel_id or '' }}" disabled />
-                    <label for="archive_channel_id">Archive Channel ID</label>
+                    <p>Role ID</p>
+                    <select
+                            name="role_id"
+                            data-original="{{ template.role_id or '' }}" >
+                        <option value="" selected></option>
+                        {% for r in guild.roles[::-1] %}
+                            {% set compare = r.id|string() %}
+                            <option
+                                    value="{{ r.id }}"
+                                    {% if compare == template.role_id %}selected{% endif %}>
+                                {{ r.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
                 </div>
                 <div class="attribute">
-                    <input name="role_id" value="{{ template.role_id or '' }}" disabled />
-                    <label for="role_id">Role ID</label>
-                </div>
-                <div class="attribute">
-                    <input name="max_field_count" value="{{ template.max_field_count or '' }}" disabled />
-                    <label for="max_field_count">Max Field Count</label>
-                </div>
-                <div class="attribute">
-                    <input name="max_profile_count" value="{{ template.max_profile_count or '' }}" disabled />
-                    <label for="max_profile_count">Max Profile Count</label>
+                    <p>Max Profile Count</p>
+                    <select
+                            name="max_profile_count"
+                            data-original="{{ template.max_profile_count or '' }}" >
+                        {% for i in range(0, 26) %}
+                            <option
+                                    value="{{ i }}"
+                                    {% if i == template.max_profile_count %}selected{% endif %}
+                                    {% if i > guild_settings.max_template_profile_count %}disabled{% endif %} >
+                                {{ i }}{% if i > guild_settings.max_template_profile_count %} - premium{% endif %}
+                            </option>
+                        {% endfor %}
+                    </select>
                 </div>
             </div>
-            <table class="fields">
-                <tr>
-                    <th class="name">Name</th>
-                    <th class="prompt">Prompt</th>
-                    <th class="right timeout">Timeout</th>
-                    <th class="type">Field Type</th>
-                    <th class="right optional">Optional</th>
-                </tr>
+        </div>
+        <div class="template">
+            <div class="fields">
                 {% for field in template.field_list %}
-                    <tr data-field-id="{{ field.field_id }}">
-                        <td class="name">{{ field.name }}</td>
-                        {% if CommandProcessor.get_is_command(field.prompt)|select|first %}
-                            <td class="prompt" data-original="{{ field.prompt|replace('"', '\"') }}"><pre><code>&lt;COMMAND&gt;</code></pre></td>
-                        {% else %}
-                            <td class="prompt" data-original="{{ field.prompt|replace('"', '\"') }}">{{ field.prompt|display_emojis|markdown|safe }}</td>
-                        {% endif %}
-                        <td class="right timeout">{{ field.timeout }}</td>
-                        <td class="type">{{ field.field_type }}</td>
-                        <td class="right optional">{{ field.optional }}</td>
-                    </tr>
+                    <div class="field">
+                        <h3 class="index">Field Index #{{ field.index }}</h3>
+                        <div class="attribute">
+                            <p>Name</p>
+                            <textarea
+                                    name="name"
+                                    type="text"
+                                    data-original="{{ field.name }}"
+                                    rows="2"
+                                    required>
+                                {{- field.name -}}
+                            </textarea>
+                        </div>
+                        <div class="attribute">
+                            <p>Prompt</p>
+                            <textarea
+                                    name="prompt"
+                                    type="text"
+                                    data-original="{{ field.prompt }}"
+                                    rows="4"
+                                    required>
+                                {{- field.prompt -}}
+                            </textarea>
+                        </div>
+                        <div class="attribute">
+                            <p>Timeout</p>
+                            <input
+                                    name="timeout"
+                                    type="number"
+                                    value="{{ field.timeout }}"
+                                    data-original="{{ field.timeout }}"
+                                    required />
+                        </div>
+                        <div class="attribute">
+                            <p>Type</p>
+                            <select name="type">
+                                <option value="1000-CHAR" {% if field.type == "1000-CHAR" %}selected{% endif %}>Text</option>
+                                <option value="INT" {% if field.type == "INT" %}selected{% endif %}>Number</option>
+                                <option value="IMAGE" {% if field.type == "IMAGE" %}selected{% endif %}>Image</option>
+                            </select>
+                        </div>
+                        <div class="attribute">
+                            <p>Optional</p>
+                            <select name="optional">
+                                <option value="1" {% if field.optional %}selected{% endif %}>Yes</option>
+                                <option value="0" {% if field.optional %}selected{% endif %}>No</option>
+                            </select>
+                        </div>
+                    </div>
+                    <hr />
                 {% endfor %}
-            </table>
+            </div>
         </div>
     </div>
 </section>

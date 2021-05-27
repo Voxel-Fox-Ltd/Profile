@@ -210,7 +210,7 @@ class ProfileTemplates(utils.Cog):
                     continue
 
                 # Change the given attribute
-                should_edit = await self.change_template_attribute(ctx, template, is_bot_support, attr, converter)
+                should_edit = await self.change_template_attribute(ctx, template, guild_settings, is_bot_support, attr, converter)
 
         # Tell them it's done
         await template_options_edit_message.edit(
@@ -223,7 +223,7 @@ class ProfileTemplates(utils.Cog):
         )
 
     async def change_template_attribute(
-            self, ctx: utils.Context, template: localutils.Template, is_bot_support: bool, attribute: str,
+            self, ctx: utils.Context, template: localutils.Template, guild_settings: dict, is_bot_support: bool, attribute: str,
             converter: typing.Union[commands.Converter, type]) -> bool:
         """
         Change the attributes of a given template. Returns whether or not the template has been changed, and should
@@ -290,7 +290,7 @@ class ProfileTemplates(utils.Cog):
         self.purge_message_list(ctx.channel, messages_to_delete)
 
         # Validate the given information
-        converted = await self.validate_given_attribute(ctx, template, attribute, converted, is_bot_support)
+        converted = await self.validate_given_attribute(ctx, template, attribute, converted, guild_settings, is_bot_support)
         if converted is None:
             return False
 
@@ -302,7 +302,7 @@ class ProfileTemplates(utils.Cog):
 
     async def validate_given_attribute(
             self, ctx: utils.Context, template: localutils.Template, attribute: str,
-            converted: str, is_bot_support: bool) -> str:
+            converted: str, guild_settings: dict, is_bot_support: bool) -> str:
         """
         Validates the given information from the user as to whether their attribute should be changed.
         Returns either

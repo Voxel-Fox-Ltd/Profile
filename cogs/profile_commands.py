@@ -186,7 +186,7 @@ class ProfileCreation(utils.Cog):
             except asyncio.TimeoutError:
                 try:
                     await ctx.author.send(
-                        f"Your input for this field has timed out. Running `{field.template.name} set` on your server "
+                        "Your input for this field has timed out. Set up your profile on your server "
                         "again to go back through this setup.",
                     )
                     return None

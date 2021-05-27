@@ -225,6 +225,8 @@ class ProfileVerification(utils.Cog):
             return
 
         # Check that the message was sent by the bot
+        if not isinstance(message, discord.Message):
+            message = await channel.fetch_message(message.id)
         if message.author.id != self.bot.user.id:
             return
 

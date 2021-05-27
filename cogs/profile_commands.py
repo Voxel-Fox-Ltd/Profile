@@ -186,7 +186,7 @@ class ProfileCreation(utils.Cog):
             except asyncio.TimeoutError:
                 try:
                     await ctx.author.send(
-                        f"Your input for this field has timed out. Running `{field.template.name} set` on your server "
+                        "Your input for this field has timed out. Set up your profile on your server "
                         "again to go back through this setup.",
                     )
                     return None
@@ -273,7 +273,7 @@ class ProfileCreation(utils.Cog):
 
             # Talk the user through each field
             filled_field_dict = {}
-            for field in sorted(template.fields.values(), key=lambda x: x.index):
+            for field in template.field_list:
                 response_field = await self.get_field_content(ctx, profile_name, field, target_user)
                 if response_field is None:
                     return
@@ -428,7 +428,7 @@ class ProfileCreation(utils.Cog):
 
             # Talk the user through each field
             user_profile.all_filled_fields: typing.Dict[uuid.UUID, localutils.FilledField] = user_profile.filled_fields
-            for field in sorted(template.fields.values(), key=lambda x: x.index):
+            for field in template.field_list:
 
                 # See if it's a command
                 if localutils.CommandProcessor.COMMAND_REGEX.search(field.prompt):

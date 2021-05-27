@@ -1,0 +1,29 @@
+#content section {
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.guild {
+    display: flex;
+    width: 400px;
+    align-items: center;
+    margin-bottom: 10px;
+    color: white;
+}
+
+.guild .guild-icon {
+    display: flex;
+    align-items: center;
+    height: auto;
+    max-width: 80px;
+    border-radius: 50%;
+    margin-right: 15px;
+}
+
+.guild .guild-icon rect {
+    fill: var(--blurple);
+}
+
+.guild .name {
+    text-align: left;
+}

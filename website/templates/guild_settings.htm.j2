@@ -1,0 +1,75 @@
+{% extends "base.htm.j2" %}
+
+
+{% block head %}
+<link rel="stylesheet" type="text/css" href="{{ static('/css/guild_settings.css') }}">
+{% endblock head %}
+
+
+{% block content %}
+<section id="main">
+    <h1 class="title">{% if guild %}{{ guild.name }}{% else %}Unknown Guild{% endif %}</h1>
+    {% if not bot_in_guild %}
+        <p>
+            <a href="{{ app['bots']['bot'].get_invite_link(guild_id=guild.id) }}">Click here to invite the bot</a>
+        </p>
+    {% endif %}
+    <div id="templates">
+        {% for template in templates %}
+            <div class="template" data-template-id="{{ template.template_id }}">
+                <h2 class="template-name">
+                    {{ template.name }} - <a href="/templates/{{ template.template_id }}">edit</a>
+                </h2>
+                <div class="template-meta">
+                    <div class="attribute">
+                        <input name="template_id" value="{{ template.template_id }}" disabled />
+                        <label for="template_id">Template ID</label>
+                    </div>
+                    <div class="attribute">
+                        <input name="verification_channel_id" value="{{ template.verification_channel_id or '' }}" disabled />
+                        <label for="verification_channel_id">Verification Channel ID</label>
+                    </div>
+                    <div class="attribute">
+                        <input name="archive_channel_id" value="{{ template.archive_channel_id or '' }}" disabled />
+                        <label for="archive_channel_id">Archive Channel ID</label>
+                    </div>
+                    <div class="attribute">
+                        <input name="role_id" value="{{ template.role_id or '' }}" disabled />
+                        <label for="role_id">Role ID</label>
+                    </div>
+                    <div class="attribute">
+                        <input name="max_field_count" value="{{ template.max_field_count or '' }}" disabled />
+                        <label for="max_field_count">Max Field Count</label>
+                    </div>
+                    <div class="attribute">
+                        <input name="max_profile_count" value="{{ template.max_profile_count or '' }}" disabled />
+                        <label for="max_profile_count">Max Profile Count</label>
+                    </div>
+                </div>
+                <table class="fields">
+                    <tr>
+                        <th class="name">Name</th>
+                        <th class="prompt">Prompt</th>
+                        <th class="right timeout">Timeout</th>
+                        <th class="type">Field Type</th>
+                        <th class="right optional">Optional</th>
+                    </tr>
+                    {% for field in template.field_list %}
+                        <tr data-field-id="{{ field.field_id }}">
+                            <td class="name">{{ field.name }}</td>
+                            {% if CommandProcessor.get_is_command(field.prompt)|select|first %}
+                                <td class="prompt" data-original="{{ field.prompt|replace('"', '\"') }}"><pre><code>&lt;COMMAND&gt;</code></pre></td>
+                            {% else %}
+                                <td class="prompt" data-original="{{ field.prompt|replace('"', '\"') }}">{{ field.prompt|display_emojis|markdown|safe }}</td>
+                            {% endif %}
+                            <td class="right timeout">{{ field.timeout }}</td>
+                            <td class="type">{{ field.field_type }}</td>
+                            <td class="right optional">{{ field.optional }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock content %}

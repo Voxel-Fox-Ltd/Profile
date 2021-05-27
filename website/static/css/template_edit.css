@@ -45,3 +45,20 @@
     margin-top: 10px;
     width: 100%;
 }
+
+.template.delete-section .attribute {
+    margin: 0;
+}
+
+.template.delete-section button {
+    background: red;
+    border-color: red;
+    margin: 0;
+    border-radius: 6px;
+    color: white;
+}
+
+.template.delete-section button[disabled] {
+    background: lightgray;
+    color: black;
+}

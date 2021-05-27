@@ -75,6 +75,7 @@ async function sendUpdateField(node) {
 window.addEventListener("beforeunload", function (e) {
     shouldPrevent = false;
     for(i of document.getElementsByClassName("submit-button")) {
+        if(i.className.includes("delete-button")) continue;
         if(!i.disabled) {
             shouldPrevent = true;
             break;

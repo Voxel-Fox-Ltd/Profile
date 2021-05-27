@@ -40,3 +40,8 @@
 .template .fields .field .index {
     margin: 0 0 15px 0;
 }
+
+.template .submit-button {
+    margin-top: 10px;
+    width: 100%;
+}

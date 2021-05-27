@@ -4,6 +4,7 @@
 {% block head %}
 <link rel="stylesheet" type="text/css" href="{{ static('/css/guild_settings.css') }}">
 <link rel="stylesheet" type="text/css" href="{{ static('/css/template_edit.css') }}">
+<script type="text/javascript" src="{{ static('/js/template_edit.js') }}"></script>
 {% endblock head %}
 
 
@@ -16,17 +17,22 @@
         {# <a style="display: block;" href="/templates/{{ template.template_id }}/advanced">Advanced editing</a> #}
     </h2>
     <div id="templates">
+
+        {# First we have the template data itself #}
         <div class="template" data-template-id="{{ template.template_id }}">
-            <div class="attributes">
+            <div class="attributes field">
+
+                {# Verification channel #}
                 <div class="attribute">
                     <p>Verification Channel ID</p>
                     <select
                             name="verification_channel_id"
-                            data-original="{{ template.verification_channel_id or '' }}" >
+                            data-original="{{ template.verification_channel_id or '' }}"
+                            oninput="enableFieldSubmitButton(this);" >
                         <option value="" selected></option>
                         {% for category, channels in guild.by_category() %}
                             <optgroup label="{{ category or 'Uncategorized' }}">
-                                {% for c in channels if c.type.name == "text" %}
+                                {% for c in channels if c.type.name in ["text"] %}
                                     {% set compare = c.id|string() %}
                                     <option
                                             value="{{ c.id }}"
@@ -38,15 +44,18 @@
                         {% endfor %}
                     </select>
                 </div>
+
+                {# Archive channel #}
                 <div class="attribute">
                     <p>Archive Channel ID</p>
                     <select
                             name="archive_channel_id"
-                            data-original="{{ template.archive_channel_id or '' }}" >
+                            data-original="{{ template.archive_channel_id or '' }}"
+                            oninput="enableFieldSubmitButton(this);" >
                         <option value="" selected></option>
                         {% for category, channels in guild.by_category() %}
                             <optgroup label="{{ category or 'Uncategorized' }}">
-                                {% for c in channels if c.type.name == "text" %}
+                                {% for c in channels if c.type.name in ["text"] %}
                                     {% set compare = c.id|string() %}
                                     <option
                                             value="{{ c.id }}"
@@ -58,11 +67,14 @@
                         {% endfor %}
                     </select>
                 </div>
+
+                {# Given role #}
                 <div class="attribute">
                     <p>Role ID</p>
                     <select
                             name="role_id"
-                            data-original="{{ template.role_id or '' }}" >
+                            data-original="{{ template.role_id or '' }}"
+                            oninput="enableFieldSubmitButton(this);" >
                         <option value="" selected></option>
                         {% for r in guild.roles[::-1] %}
                             {% set compare = r.id|string() %}
@@ -74,11 +86,14 @@
                         {% endfor %}
                     </select>
                 </div>
+
+                {# Max profile count #}
                 <div class="attribute">
                     <p>Max Profile Count</p>
                     <select
                             name="max_profile_count"
-                            data-original="{{ template.max_profile_count or '' }}" >
+                            data-original="{{ template.max_profile_count or '' }}"
+                            oninput="enableFieldSubmitButton(this);" >
                         {% for i in range(0, 26) %}
                             <option
                                     value="{{ i }}"
@@ -89,8 +104,16 @@
                         {% endfor %}
                     </select>
                 </div>
+
+                {# Submit changes button #}
+                <div class="attribute">
+                    <button class="submit-button" onclick="alert('test');" disabled>Submit changes</button>
+                </div>
+
             </div>
         </div>
+
+        {# And now we have all the fields #}
         <div class="template">
             <div class="fields">
                 {% for field in template.field_list %}
@@ -103,7 +126,8 @@
                                     type="text"
                                     data-original="{{ field.name }}"
                                     rows="2"
-                                    required>
+                                    oninput="enableFieldSubmitButton(this);"
+                                    required >
                                 {{- field.name -}}
                             </textarea>
                         </div>
@@ -114,7 +138,8 @@
                                     type="text"
                                     data-original="{{ field.prompt }}"
                                     rows="4"
-                                    required>
+                                    oninput="enableFieldSubmitButton(this);"
+                                    required >
                                 {{- field.prompt -}}
                             </textarea>
                         </div>
@@ -125,11 +150,12 @@
                                     type="number"
                                     value="{{ field.timeout }}"
                                     data-original="{{ field.timeout }}"
+                                    oninput="enableFieldSubmitButton(this);"
                                     required />
                         </div>
                         <div class="attribute">
                             <p>Type</p>
-                            <select name="type">
+                            <select name="type" oninput="enableFieldSubmitButton(this);">
                                 <option value="1000-CHAR" {% if field.type == "1000-CHAR" %}selected{% endif %}>Text</option>
                                 <option value="INT" {% if field.type == "INT" %}selected{% endif %}>Number</option>
                                 <option value="IMAGE" {% if field.type == "IMAGE" %}selected{% endif %}>Image</option>
@@ -137,16 +163,20 @@
                         </div>
                         <div class="attribute">
                             <p>Optional</p>
-                            <select name="optional">
+                            <select name="optional" oninput="enableFieldSubmitButton(this);">
                                 <option value="1" {% if field.optional %}selected{% endif %}>Yes</option>
                                 <option value="0" {% if field.optional %}selected{% endif %}>No</option>
                             </select>
+                        </div>
+                        <div class="attribute">
+                            <button class="submit-button" onclick="alert('test');" disabled>Submit changes</button>
                         </div>
                     </div>
                     <hr />
                 {% endfor %}
             </div>
         </div>
+
     </div>
 </section>
 {% endblock content %}

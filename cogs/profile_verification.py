@@ -208,7 +208,7 @@ class ProfileVerification(utils.Cog):
         return await self.perform_verify(message, channel, guild, verify, moderator)
 
     @utils.Cog.listener('on_button_click')
-    async def verification_emoji_check(self, payload: utils.ComponentInteractionPayload):
+    async def verification_button_check(self, payload: utils.ComponentInteractionPayload):
         """
         Triggered when a reaction is added or removed, check for profile verification.
         """

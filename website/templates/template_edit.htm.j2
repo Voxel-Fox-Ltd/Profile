@@ -22,6 +22,9 @@
         <div class="template" data-template-id="{{ template.template_id }}">
             <div class="attributes field">
 
+                {# Let's store the template ID here just for fun #}
+                <input type="hidden" value="{{ template.template_id }}" name="template_id" />
+
                 {# Verification channel #}
                 <div class="attribute">
                     <p>Verification Channel ID</p>
@@ -107,7 +110,7 @@
 
                 {# Submit changes button #}
                 <div class="attribute">
-                    <button class="submit-button" onclick="alert('test');" disabled>Submit changes</button>
+                    <button class="submit-button" onclick="sendUpdateTemplate(this);" disabled>Submit changes</button>
                 </div>
 
             </div>
@@ -118,6 +121,7 @@
             <div class="fields">
                 {% for field in template.field_list %}
                     <div class="field">
+                        <input type="hidden" value="{{ field.field_id }}" name="field_id" />
                         <h3 class="index">Field Index #{{ field.index }}</h3>
                         <div class="attribute">
                             <p>Name</p>
@@ -165,11 +169,11 @@
                             <p>Optional</p>
                             <select name="optional" oninput="enableFieldSubmitButton(this);">
                                 <option value="1" {% if field.optional %}selected{% endif %}>Yes</option>
-                                <option value="0" {% if field.optional %}selected{% endif %}>No</option>
+                                <option value="" {% if field.optional %}selected{% endif %}>No</option>
                             </select>
                         </div>
                         <div class="attribute">
-                            <button class="submit-button" onclick="alert('test');" disabled>Submit changes</button>
+                            <button class="submit-button" onclick="sendUpdateField(this);" disabled>Submit changes</button>
                         </div>
                     </div>
                     <hr />

@@ -26,7 +26,7 @@
                         <option value="" selected></option>
                         {% for category, channels in guild.by_category() %}
                             <optgroup label="{{ category or 'Uncategorized' }}">
-                                {% for c in channels if not c.bitrate %}
+                                {% for c in channels if c.type.name == "text" %}
                                     {% set compare = c.id|string() %}
                                     <option
                                             value="{{ c.id }}"

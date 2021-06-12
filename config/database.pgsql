@@ -113,3 +113,12 @@ CREATE TABLE IF NOT EXISTS filled_field(
 -- user_id - the user that filled in the field
 -- field_id - the field that's being filled in
 -- value - the value that the field was filled with (must be converted)
+
+
+CREATE TABLE IF NOT EXISTS guild_subscriptions(
+    guild_id BIGINT,
+    user_id BIGINT,
+    cancel_url TEXT,
+    PRIMARY KEY (guild_id)
+);
+-- A table for the users who are subcribing to the premium features

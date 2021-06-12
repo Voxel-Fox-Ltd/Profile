@@ -9,16 +9,23 @@
 {% block content %}
 <section id="main">
     {% for guild in guilds %}
-        <a class="guild" href="/guilds/{{ guild.id }}">
-            {% if guild.icon %}
-                <img class="guild-icon" src="https://cdn.discordapp.com/icons/{{ guild.id }}/{{ guild.icon }}.png">
-            {% else %}
-                <svg class="guild-icon" width="128" height="128">
-                    <rect width="128" height="128" />
-                </svg>
-            {% endif %}
-            <p class="name">{{ guild.name }}</p>
-        </a>
+        <div class="guild" href="/guilds/{{ guild.id }}">
+            <a href="/guilds/{{ guild.id }}">
+                {% if guild.icon %}
+                    <img class="guild-icon" src="https://cdn.discordapp.com/icons/{{ guild.id }}/{{ guild.icon }}.png" />
+                {% else %}
+                    <img class="guild-icon" src="https://cdn.discordapp.com/embed/avatars/1.png" />
+                {% endif %}
+            </a>
+            <div class="text">
+                <a href="/guilds/{{ guild.id }}">
+                    <p class="name">{{ guild.name }}</p>
+                </a>
+                <a href="/guilds/{{ guild.id }}">
+                    <p class="subscription" href="#">Get premium</p>
+                </a>
+            </div>
+        </div>
     {% endfor %}
 </section>
 {% endblock content %}

@@ -35,6 +35,19 @@ async def guilds(request: Request):
 
     all_guilds = await webutils.get_user_guilds_from_session(request)
     valid_guilds = [i.guild for i in all_guilds if i.guild_permissions.manage_guild or i.guild.owner_id == i.id]
+    async with request.app['database']() as db:
+        rows = await db(
+            """SELECT * FROM guild_subscriptions WHERE guild_id=ANY($1::BIGINT[])""",
+            [i.id for i in valid_guilds],
+        )
+    for i in valid_guilds:
+        i.premium = None
+    if rows:
+        for i in valid_guilds:
+            for r in rows:
+                if i.id == r['guild_id']:
+                    i.premium = dict(r)
+                    break
     return {
         "guilds": valid_guilds,
     }

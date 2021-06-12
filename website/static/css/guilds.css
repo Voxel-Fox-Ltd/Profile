@@ -8,7 +8,20 @@
     width: 400px;
     align-items: center;
     margin-bottom: 10px;
+}
+
+.guild * {
     color: white;
+}
+
+.guild .text {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+}
+
+.guild .text p {
+    margin: 4px;
 }
 
 .guild .guild-icon {

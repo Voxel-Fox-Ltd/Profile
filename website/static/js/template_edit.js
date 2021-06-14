@@ -1,3 +1,8 @@
+/**
+ * Gets the field object from the HTML by reccursively extending upwards.
+ * @param {Node} node The node that you want to extend upwards from.
+ * @return {Node} The field object.
+ */
 async function getField(node) {
     while(!node.className.includes("field")) {
         node = node.parentNode;
@@ -5,24 +10,42 @@ async function getField(node) {
     return node;
 }
 
+
+/**
+ * Find the submit button for a given field node.
+ * @param {Node} node The field node that you want to get the submit button for.
+ * @return {Node} The submit button for that given field.
+ */
 async function getFieldSubmitButton(node) {
     node = await getField(node);
-    return node.getElementsByClassName("submit-button")[0];
+    return node.getElementsByClassName("field-submit-button")[0];
 }
 
 
+/**
+ * Enable the submit button for a given field.
+ * @param {Node} The field node that you want to enable the submit button for.
+ */
 async function enableFieldSubmitButton(node) {
     b = await getFieldSubmitButton(node);
     b.disabled = false;
 }
 
 
+/**
+ * Disable the submit button for a given field.
+ * @param {Node} The field node that you want to disable the submit button for.
+ */
 async function disableFieldSubmitButton(node) {
     b = await getFieldSubmitButton(node);
     b.disabled = true;
 }
 
 
+/**
+ * Sends the POST request that updates the template information.
+ * @param {Node} The template node that you want to send an update for.
+ */
 async function sendUpdateTemplate(node) {
     field = await getField(node);
     data = {
@@ -43,6 +66,26 @@ async function sendUpdateTemplate(node) {
     else {
         body = await site.text()
         alert(`Failed to update template - ${body}.`);
+    }
+}
+
+
+/**
+ * Sends the DELETE request that removes the template.
+ * @param {string} The ID of the template that you want to send a DELETE request for.
+ */
+async function sendDeleteTemplate(templateId) {
+    site = await fetch("/api/update_template", {
+        method: "DELETE",
+        body: JSON.stringify({template_id: templateId})
+    });
+    if(site.ok) {
+        alert("Deleted template.");
+        location.href = document.getElementById("guild-base-url").href;
+    }
+    else {
+        body = await site.text()
+        alert(`Failed to delete template - ${body}.`);
     }
 }
 
@@ -68,6 +111,26 @@ async function sendUpdateField(node) {
     else {
         body = await site.text()
         alert(`Failed to update field - ${body}.`);
+    }
+}
+
+
+async function sendDeleteField(node) {
+    field = await getField(node);
+    site = await fetch("/api/update_template_field", {
+        method: "DELETE",
+        body: JSON.stringify({field_id: field.querySelector('[name=field_id]').value})
+    });
+    if(site.ok) {
+        alert("Deleted field.");
+        let hr = field.nextSibling.nextSibling;
+        field.parentNode.removeChild(field);
+        console.log(hr);
+        hr.parentNode.removeChild(hr);
+    }
+    else {
+        body = await site.text()
+        alert(`Failed to delete field - ${body}.`);
     }
 }
 

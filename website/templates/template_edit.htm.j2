@@ -13,7 +13,7 @@
     <h1 class="title">{{ template.name }}</h1>
     <h2 class="template-id">
         <pre style="margin: 0;"><code>{{ template.template_id }}</code></pre>
-        <a style="display: block;" href="/guilds/{{ template.guild_id }}">Return to guild</a>
+        <a id="guild-base-url" style="display: block;" href="/guilds/{{ template.guild_id }}">Return to guild</a>
         {# <a style="display: block;" href="/templates/{{ template.template_id }}/advanced">Advanced editing</a> #}
     </h2>
     <div id="templates">
@@ -118,11 +118,21 @@
 
         {# And now we have all the fields #}
         <div class="template">
-            <div class="fields">
+            <div class="fields" style="margin: 0;">
+                <div class="field">
+                    <div class="attribute">
+                        <button class="create-field-button" onclick="createField(this);">Create new field</button>
+                    </div>
+                </div>
+                <hr />
                 {% for field in template.field_list %}
                     <div class="field">
                         <input type="hidden" value="{{ field.field_id }}" name="field_id" />
-                        <h3 class="index">Field Index #{{ field.index }}</h3>
+                        <div class="info">
+                            <h3 class="index">Field Index #{{ field.index }}</h3>
+                            <button class="delete-button" onclick="sendDeleteField(this);">Delete field</button>
+                            <button class="field-submit-button" onclick="sendUpdateField(this);" disabled>Submit changes</button>
+                        </div>
                         <div class="attribute">
                             <p>Name</p>
                             <textarea
@@ -172,9 +182,9 @@
                                 <option value="" {% if field.optional %}selected{% endif %}>No</option>
                             </select>
                         </div>
-                        <div class="attribute">
+                        {# <div class="attribute">
                             <button class="submit-button" onclick="sendUpdateField(this);" disabled>Submit changes</button>
-                        </div>
+                        </div> #}
                     </div>
                     <hr />
                 {% endfor %}
@@ -182,9 +192,7 @@
         </div>
 
         <div class="template delete-section">
-            <div class="attribute">
-                <button class="submit-button delete-button" disabled>Delete template</button>
-            </div>
+            <button class="submit-button delete-button" onclick="sendDeleteTemplate(`{{ template.template_id }}`);">Delete template</button>
         </div>
 
     </div>

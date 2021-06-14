@@ -31,14 +31,19 @@
     margin: 40px;
     box-sizing: border-box;
     width: auto;
+    max-width: none;
 }
 
 .template .fields hr:last-of-type {
     display: none;
 }
 
-.template .fields .field .index {
-    margin: 0 0 15px 0;
+.template .info .index {
+    margin: 0 0 5px 0;
+}
+
+.template .info {
+    margin-bottom: 10px;
 }
 
 .template .submit-button {
@@ -46,19 +51,29 @@
     width: 100%;
 }
 
-.template.delete-section .attribute {
-    margin: 0;
+.template .create-field-button {
+    width: 100%;
 }
 
-.template.delete-section button {
+.template button {
+    margin: 0;
+    border-radius: 4px;
+    padding: 5px;
+}
+
+.template .delete-button {
     background: red;
     border-color: red;
-    margin: 0;
-    border-radius: 6px;
     color: white;
+    margin-top: 0;
 }
 
-.template.delete-section button[disabled] {
+.template .field-submit-button {
+    background: lightblue;
+    border-color: lightblue;
+}
+
+.template .delete-button[disabled] {
     background: lightgray;
     color: black;
 }

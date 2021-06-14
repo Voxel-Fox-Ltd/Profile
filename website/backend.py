@@ -160,3 +160,104 @@ async def update_template_field(request: Request):
 
     # Return
     return json_response({"error": ""}, status=200)
+
+
+@routes.delete("/api/update_template")
+async def update_template_delete(request: Request):
+    """
+    A route for handling deleting a template.
+    """
+
+    # Make sure the user is logged in
+    session = await aiohttp_session.get_session(request)
+    if not session.get("user_id"):
+        return json_response({"error": "Not logged in."}, status=401)
+
+    # Try and read the POST data from the user
+    try:
+        data = await request.json()
+        template_id = data['template_id']
+    except ValueError:
+        return json_response({"error": "Couldn't validate the given POST data."}, status=400)
+    except Exception:
+        return json_response({"error": "Could not read POST data."}, status=400)
+
+    # Now we want to check things with the database
+    async with request.app['database']() as db:
+
+        # Make sure the template exists
+        template = await localutils.Template.fetch_template_by_id(db, template_id, fetch_fields=False)
+        if not template:
+            return json_response({"error": "Template does not exist."}, status=400)
+
+        # Make sure the user is editing a template that they have permission to edit
+        try:
+            guild = await request.app['bots']['bot'].fetch_guild(template.guild_id)
+        except discord.HTTPException:
+            return json_response({"error": "Bot not in guild."}, status=401)
+        try:
+            member = await guild.fetch_member(session.get("user_id"))
+        except discord.HTTPException:
+            return json_response({"error": "User not in guild."}, status=401)
+        if not member.guild_permissions.manage_guild:
+            return json_response({"error": "Member cannot manage guild."}, status=401)
+
+        # Delete the template
+        await db("""DELETE FROM template WHERE template_id=$1""", template.template_id)
+
+    # Return
+    return json_response({"error": ""}, status=200)
+
+
+@routes.delete("/api/update_template_field")
+async def update_template_field_delete(request: Request):
+    """
+    The route that handles the updating of the template metadata.
+    """
+
+    # Make sure the user is logged in
+    session = await aiohttp_session.get_session(request)
+    if not session.get("user_id"):
+        return json_response({"error": "Not logged in."}, status=401)
+
+    # Try and read the POST data from the user
+    try:
+        data = await request.json()
+        field_id = data['field_id']
+    except ValueError:
+        return json_response({"error": "Couldn't validate the given POST data."}, status=400)
+    except Exception:
+        return json_response({"error": "Could not read POST data."}, status=400)
+
+    # Now we want to check things with the database
+    async with request.app['database']() as db:
+
+        # Make sure the template exists
+        field_rows = await db("""SELECT * FROM field WHERE field_id=$1""", field_id)
+        if not field_rows:
+            return json_response({"error": "Field does not exist."}, status=400)
+        field = localutils.Field(**field_rows[0])
+        template = await localutils.Template.fetch_template_by_id(db, field.template_id, fetch_fields=False)
+        if not template:
+            return json_response({"error": "Template does not exist."}, status=400)
+
+        # Make sure the user is editing a template that they have permission to edit
+        try:
+            guild = await request.app['bots']['bot'].fetch_guild(template.guild_id)
+        except discord.HTTPException:
+            return json_response({"error": "Bot not in guild."}, status=401)
+        try:
+            member = await guild.fetch_member(session.get("user_id"))
+        except discord.HTTPException:
+            return json_response({"error": "User not in guild."}, status=401)
+        if not member.guild_permissions.manage_guild:
+            return json_response({"error": "Member cannot manage guild."}, status=401)
+
+        # Update the template
+        updated_rows = await db(
+            """UPDATE field SET deleted=true WHERE field_id=$1""",
+            field_id,
+        )
+
+    # Return
+    return json_response({"error": ""}, status=200)

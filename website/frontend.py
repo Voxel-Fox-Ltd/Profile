@@ -91,7 +91,7 @@ async def guild_settings(request: Request):
     }
 
 
-@routes.get(r"/templates/{template_id:[a-zA-Z0-9\-]+?}")
+@routes.get(r"/guilds/{guild_id:\d+}/templates/{template_id:[a-zA-Z0-9\-]+?}")
 @webutils.requires_login()
 @template("template_edit.htm.j2")
 @webutils.add_discord_arguments()
@@ -103,7 +103,7 @@ async def template_edit(request: Request):
     return await get_template_data(request)
 
 
-@routes.get(r"/templates/{template_id:[a-zA-Z0-9\-]+?}/advanced")
+@routes.get(r"/guilds/{guild_id:\d+}/templates/{template_id:[a-zA-Z0-9\-]+?}/advanced")
 @webutils.requires_login()
 @template("advanced_template_edit.htm.j2")
 @webutils.add_discord_arguments()

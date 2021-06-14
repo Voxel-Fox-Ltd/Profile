@@ -1,3 +1,5 @@
+import uuid
+
 from aiohttp.web import HTTPFound, Request, Response, RouteTableDef, json_response
 from voxelbotutils import web as webutils
 import aiohttp_session
@@ -112,7 +114,7 @@ async def update_template_field(request: Request):
         return json_response({"error": "Not logged in."}, status=401)
 
     # Try and read the POST data from the user
-    required_fields = {"field_id", "name", "prompt", "timeout", "type", "optional"}
+    required_fields = {"template_id", "name", "prompt", "timeout", "type", "optional"}
     field_converters = {"timeout": int, "optional": bool}
     try:
         data = await request.json()
@@ -130,11 +132,13 @@ async def update_template_field(request: Request):
     async with request.app['database']() as db:
 
         # Make sure the template exists
-        field_rows = await db("""SELECT * FROM field WHERE field_id=$1""", data['field_id'])
-        if not field_rows:
-            return json_response({"error": "Field does not exist."}, status=400)
-        field = localutils.Field(**field_rows[0])
-        template = await localutils.Template.fetch_template_by_id(db, field.template_id, fetch_fields=False)
+        field = None
+        if data.get('field_id'):
+            field_rows = await db("""SELECT * FROM field WHERE field_id=$1""", data['field_id'])
+            if not field_rows:
+                return json_response({"error": "Field does not exist."}, status=400)
+            field = localutils.Field(**field_rows[0])
+        template = await localutils.Template.fetch_template_by_id(db, field.template_id if field else data['template_id'], fetch_fields=False)
         if not template:
             return json_response({"error": "Template does not exist."}, status=400)
 
@@ -151,15 +155,27 @@ async def update_template_field(request: Request):
             return json_response({"error": "Member cannot manage guild."}, status=401)
 
         # Update the template
-        updated_rows = await db(
-            """UPDATE field SET name=$2, prompt=$3, timeout=$4, field_type=$5,
-            optional=$6 WHERE field_id=$1""",
-            data['field_id'], data['name'], data['prompt'], data['timeout'],
-            data['type'], data['optional'],
-        )
+        if field:
+            updated_rows = await db(
+                """UPDATE field SET name=$2, prompt=$3, timeout=$4, field_type=$5,
+                optional=$6 WHERE field_id=$1 RETURNING *""",
+                data['field_id'], data['name'], data['prompt'], data['timeout'],
+                data['type'], data['optional'],
+            )
+        else:
+            updated_rows = await db(
+                """INSERT INTO field (field_id, name, prompt, timeout, field_type, optional, template_id, index)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, COALESCE((SELECT MAX(index) FROM field WHERE template_id=$7) + 1, 0))
+                RETURNING *""",
+                str(uuid.uuid4()), data['name'], data['prompt'], data['timeout'],
+                data['type'], data['optional'], template.template_id,
+            )
 
     # Return
-    return json_response({"error": ""}, status=200)
+    ret_data = dict(updated_rows[0])
+    ret_data['field_id'] = str(ret_data['field_id'])
+    ret_data['template_id'] = str(ret_data['template_id'])
+    return json_response({"error": "", "data": ret_data}, status=200)
 
 
 @routes.delete("/api/update_template")

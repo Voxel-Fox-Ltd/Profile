@@ -81,3 +81,7 @@
 select {
     cursor: pointer;
 }
+
+#base-field {
+    display: none;
+}

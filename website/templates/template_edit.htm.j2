@@ -8,6 +8,72 @@
 {% endblock head %}
 
 
+{% macro add_field_html(template_id, field, hidden=False) %}
+<div {% if hidden %}id="base-field" {% endif %}class="field">
+    <input type="hidden" value="{{ template_id }}" name="template_id" />
+    <input type="hidden" value="{{ field.field_id }}" name="field_id" />
+    <div class="info">
+        {% if hidden %}
+            <h3 class="index" name="index">Pending Field</h3>
+        {% else %}
+            <h3 class="index" name="index">Field Index #{{ field.index }}</h3>
+        {% endif %}
+        <button class="delete-button" onclick="sendDeleteField(this);">Delete field</button>
+        <button class="field-submit-button" onclick="sendUpdateField(this);" disabled>Submit changes</button>
+    </div>
+    <div class="attribute">
+        <p>Name</p>
+        <textarea
+                name="name"
+                type="text"
+                data-original="{{ field.name }}"
+                rows="2"
+                oninput="enableFieldSubmitButton(this);"
+                required >
+            {{- field.name -}}
+        </textarea>
+    </div>
+    <div class="attribute">
+        <p>Prompt</p>
+        <textarea
+                name="prompt"
+                type="text"
+                data-original="{{ field.prompt }}"
+                rows="4"
+                oninput="enableFieldSubmitButton(this);"
+                required >
+            {{- field.prompt -}}
+        </textarea>
+    </div>
+    <div class="attribute">
+        <p>Timeout</p>
+        <input
+                name="timeout"
+                type="number"
+                value="{{ field.timeout }}"
+                data-original="{{ field.timeout }}"
+                oninput="enableFieldSubmitButton(this);"
+                required />
+    </div>
+    <div class="attribute">
+        <p>Type</p>
+        <select name="type" oninput="enableFieldSubmitButton(this);">
+            <option value="1000-CHAR" {% if field.type == "1000-CHAR" %}selected{% endif %}>Text</option>
+            <option value="INT" {% if field.type == "INT" %}selected{% endif %}>Number</option>
+            <option value="IMAGE" {% if field.type == "IMAGE" %}selected{% endif %}>Image</option>
+        </select>
+    </div>
+    <div class="attribute">
+        <p>Optional</p>
+        <select name="optional" oninput="enableFieldSubmitButton(this);">
+            <option value="1" {% if field.optional %}selected{% endif %}>Yes</option>
+            <option value="" {% if field.optional %}selected{% endif %}>No</option>
+        </select>
+    </div>
+</div>
+{% endmacro %}
+
+
 {% block content %}
 <section id="main">
     <h1 class="title">{{ template.name }}</h1>
@@ -116,7 +182,6 @@
             </div>
         </div>
 
-        {# And now we have all the fields #}
         <div class="template">
             <div class="fields" style="margin: 0;">
                 <div class="field">
@@ -124,68 +189,15 @@
                         <button class="create-field-button" onclick="createField(this);">Create new field</button>
                     </div>
                 </div>
-                <hr />
+            </div>
+        </div>
+
+        {# And now we have all the fields #}
+        <div class="template">
+            <div class="fields" style="margin: 0;">
+                {{ add_field_html(template.template_id, None, True) }}
                 {% for field in template.field_list %}
-                    <div class="field">
-                        <input type="hidden" value="{{ field.field_id }}" name="field_id" />
-                        <div class="info">
-                            <h3 class="index">Field Index #{{ field.index }}</h3>
-                            <button class="delete-button" onclick="sendDeleteField(this);">Delete field</button>
-                            <button class="field-submit-button" onclick="sendUpdateField(this);" disabled>Submit changes</button>
-                        </div>
-                        <div class="attribute">
-                            <p>Name</p>
-                            <textarea
-                                    name="name"
-                                    type="text"
-                                    data-original="{{ field.name }}"
-                                    rows="2"
-                                    oninput="enableFieldSubmitButton(this);"
-                                    required >
-                                {{- field.name -}}
-                            </textarea>
-                        </div>
-                        <div class="attribute">
-                            <p>Prompt</p>
-                            <textarea
-                                    name="prompt"
-                                    type="text"
-                                    data-original="{{ field.prompt }}"
-                                    rows="4"
-                                    oninput="enableFieldSubmitButton(this);"
-                                    required >
-                                {{- field.prompt -}}
-                            </textarea>
-                        </div>
-                        <div class="attribute">
-                            <p>Timeout</p>
-                            <input
-                                    name="timeout"
-                                    type="number"
-                                    value="{{ field.timeout }}"
-                                    data-original="{{ field.timeout }}"
-                                    oninput="enableFieldSubmitButton(this);"
-                                    required />
-                        </div>
-                        <div class="attribute">
-                            <p>Type</p>
-                            <select name="type" oninput="enableFieldSubmitButton(this);">
-                                <option value="1000-CHAR" {% if field.type == "1000-CHAR" %}selected{% endif %}>Text</option>
-                                <option value="INT" {% if field.type == "INT" %}selected{% endif %}>Number</option>
-                                <option value="IMAGE" {% if field.type == "IMAGE" %}selected{% endif %}>Image</option>
-                            </select>
-                        </div>
-                        <div class="attribute">
-                            <p>Optional</p>
-                            <select name="optional" oninput="enableFieldSubmitButton(this);">
-                                <option value="1" {% if field.optional %}selected{% endif %}>Yes</option>
-                                <option value="" {% if field.optional %}selected{% endif %}>No</option>
-                            </select>
-                        </div>
-                        {# <div class="attribute">
-                            <button class="submit-button" onclick="sendUpdateField(this);" disabled>Submit changes</button>
-                        </div> #}
-                    </div>
+                    {{ add_field_html(template.template_id, field) }}
                     <hr />
                 {% endfor %}
             </div>

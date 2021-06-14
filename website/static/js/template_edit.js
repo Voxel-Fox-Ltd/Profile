@@ -4,7 +4,7 @@
  * @return {Node} The field object.
  */
 async function getField(node) {
-    while(!node.className.includes("field")) {
+    while(!node.className.split(" ").includes("field")) {
         node = node.parentNode;
     }
     return node;
@@ -93,6 +93,7 @@ async function sendDeleteTemplate(templateId) {
 async function sendUpdateField(node) {
     field = await getField(node);
     data = {
+        template_id: field.querySelector('[name=template_id]').value,
         field_id: field.querySelector('[name=field_id]').value,
         name: field.querySelector('[name=name]').value,
         prompt: field.querySelector('[name=prompt]').value,
@@ -104,34 +105,61 @@ async function sendUpdateField(node) {
         method: "POST",
         body: JSON.stringify(data)
     });
-    if(site.ok) {
-        alert("Updated field.");
-        node.disabled = true;
-    }
-    else {
+    if(!site.ok) {
         body = await site.text()
         alert(`Failed to update field - ${body}.`);
+        return;
     }
+    alert("Updated field.");
+    node.disabled = true;
+    response = await site.json();
+
+    // Update current fields
+    field.querySelector('[name=index]').innerHTML = `Field Index #${response.data.index}`;
+    field.querySelector('[name=field_id]').value = response.data.field_id;
+    field.querySelector('[name=name]').value = response.data.name;
+    field.querySelector('[name=prompt]').value = response.data.prompt;
+    field.querySelector('[name=timeout]').value = response.data.timeout;
+    field.querySelector('[name=type]').value = response.data.type;
+    field.querySelector('[name=optional]').value = response.data.optional;
+
 }
 
 
 async function sendDeleteField(node) {
     field = await getField(node);
-    site = await fetch("/api/update_template_field", {
-        method: "DELETE",
-        body: JSON.stringify({field_id: field.querySelector('[name=field_id]').value})
-    });
-    if(site.ok) {
-        alert("Deleted field.");
-        let hr = field.nextSibling.nextSibling;
-        field.parentNode.removeChild(field);
-        console.log(hr);
-        hr.parentNode.removeChild(hr);
+    fieldId = field.querySelector('[name=field_id]').value;
+    if(fieldId) {
+        let site = await fetch("/api/update_template_field", {
+            method: "DELETE",
+            body: JSON.stringify({field_id: fieldId})
+        });
+        if(!site.ok) {
+            body = await site.text()
+            alert(`Failed to delete field - ${body}.`);
+            return;
+        }
     }
-    else {
-        body = await site.text()
-        alert(`Failed to delete field - ${body}.`);
+    alert("Deleted field.");
+    hr = field.nextSibling;
+    while(hr.tagName != "HR") {
+        hr = hr.nextSibling;
     }
+    field.parentNode.removeChild(field);
+    console.log(hr);
+    hr.parentNode.removeChild(hr);
+}
+
+
+async function createField(node) {
+    fieldList = document.getElementsByClassName("fields");
+    fields = fieldList[fieldList.length - 1]
+    baseField = document.getElementById("base-field");
+    copyField = baseField.cloneNode(true);
+
+    copyField.id = null;
+    fields.appendChild(copyField)
+    fields.appendChild(document.createElement("HR"));
 }
 
 

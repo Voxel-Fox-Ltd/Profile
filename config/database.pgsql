@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS template(
     verification_channel_id TEXT,
     archive_channel_id TEXT,
     role_id TEXT,
-    max_field_count SMALLINT DEFAULT 10,
+    -- max_field_count SMALLINT DEFAULT 10,
     max_profile_count SMALLINT DEFAULT 5,
     UNIQUE (guild_id, name)
 );

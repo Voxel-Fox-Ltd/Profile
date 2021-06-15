@@ -151,7 +151,7 @@ class ProfileCreation(utils.Cog):
             ctx: utils.Context, profile_name: str, field: localutils.Field,
             target_user: discord.User) -> localutils.FilledField:
         """
-        Ask the user for a the content of a field.
+        Ask the user to fill in the content for a field given its prompt.
         """
 
         # See if the field is a command
@@ -167,12 +167,14 @@ class ProfileCreation(utils.Cog):
 
         # Send the user the prompt
         if field.optional:
-            await ctx.author.send(f"{field.prompt.rstrip('.')}. Type **pass** to skip this field.")
+            prompt = field.prompt
+            if prompt[-1] not in "?!.":
+                prompt += "."
+            await ctx.author.send(f"{propmt} Type **pass** to skip this field.")
         else:
             await ctx.author.send(field.prompt)
 
-        # Ask the user for their input
-        # Loop until they give something valid
+        # Ask the user for their input, loop until they give something valid
         while True:
 
             # Wait for the user's input

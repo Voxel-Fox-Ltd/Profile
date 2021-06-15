@@ -6,3 +6,4 @@ from cogs.utils.profiles.template import Template
 from cogs.utils.profiles.user_profile import UserProfile
 from cogs.utils.profiles.filled_field import FilledField
 from cogs.utils.profiles.command_processor import CommandProcessor
+from cogs.utils.perks_handler import GuildPerks, get_perks_for_guild

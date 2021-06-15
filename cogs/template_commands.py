@@ -124,6 +124,8 @@ class ProfileTemplates(utils.Cog):
                     """SELECT * FROM guild_settings WHERE guild_id=$1 OR guild_id=0 ORDER BY guild_id DESC""",
                     ctx.guild.id,
                 )
+                perks = await localutils.get_perks_for_guild(db, ctx.guild.id)
+            ctx.guild_perks = perks
             guild_settings = guild_settings_rows[0]
 
             # Set up our initial vars so we can edit them later
@@ -330,7 +332,14 @@ class ProfileTemplates(utils.Cog):
                 pass
             else:
                 original_converted = converted
-                converted = max([min([converted, guild_settings['max_template_profile_count']]), 0])
+                converted = max(
+                    min(
+                        converted,
+                        guild_settings['max_template_profile_count'],
+                        ctx.guild_perks.max_profile_count,
+                    ),
+                    0,
+                )
                 if original_converted > converted:
                     await ctx.send(
                         f"Your max profile count has been set to **{guild_settings['max_template_profile_count']}** instead "
@@ -344,7 +353,14 @@ class ProfileTemplates(utils.Cog):
                 pass
             else:
                 original_converted = converted
-                converted = max([min([converted, guild_settings['max_template_field_count']]), 0])
+                converted = max(
+                    min(
+                        converted,
+                        guild_settings['max_template_field_count'],
+                        ctx.guild_perks.max_field_count,
+                    ),
+                    0,
+                )
                 if original_converted > converted:
                     await ctx.send(
                         f"Your max field count has been set to **{guild_settings['max_template_field_count']}** instead "
@@ -371,7 +387,8 @@ class ProfileTemplates(utils.Cog):
                 utils.Button(field.name[:25], style=utils.ButtonStyle.SECONDARY, custom_id=field.field_id)
                 for field in template.field_list
             ]
-            if len(template.fields) < max([guild_settings['max_template_field_count'], template.max_field_count]) or is_bot_support:
+            max_field_count = max(guild_settings['max_template_field_count'], ctx.guild_perks.max_field_count)
+            if len(template.fields) < max_field_count or is_bot_support:
                 components = utils.MessageComponents.add_buttons_with_rows(
                     utils.Button("New", custom_id="NEW"),
                     *field_name_buttons
@@ -671,9 +688,11 @@ class ProfileTemplates(utils.Cog):
         async with self.bot.database() as db:
             template_list = await db("SELECT template_id FROM template WHERE guild_id=$1", ctx.guild.id)
             guild_settings = await db("SELECT * FROM guild_settings WHERE guild_id=$1 OR guild_id=0 ORDER BY guild_id DESC", ctx.guild.id)
-        if len(template_list) >= guild_settings[0]['max_template_count']:
+            perks = await localutils.get_perks_for_guild(db, ctx.guild.id)
+        max_template_count = max(guild_settings[0]['max_template_count'], perms.max_template_count)
+        if len(template_list) >= max_template_count:
             return await ctx.send(
-                f"You already have {guild_settings[0]['max_template_count']} templates set for this server, which is the maximum number allowed.",
+                f"You already have {max_template_count} templates set for this server, which is the maximum number you are allowed.",
             )
 
         # And now we start creating the template itself

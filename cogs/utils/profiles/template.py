@@ -45,14 +45,14 @@ class Template(object):
 
     __slots__ = (
         "template_id", "colour", "guild_id", "verification_channel_id", "name", "archive_channel_id", "role_id",
-        "max_profile_count", "max_field_count", "all_fields",
+        "max_profile_count", "all_fields",
     )
     TEMPLATE_ID_REGEX = re.compile(r"^(?P<uuid>.{8}-.{4}-.{4}-.{4}-.{12})$")
     SLASH_COMMAND_ARG_TYPE = utils.ApplicationCommandOptionType.STRING
 
     def __init__(
             self, template_id: uuid.UUID, colour: int, guild_id: int, verification_channel_id: str,
-            name: str, archive_channel_id: str, role_id: str, max_profile_count: int, max_field_count: int):
+            name: str, archive_channel_id: str, role_id: str, max_profile_count: int, max_field_count: int = None):
         self.template_id: uuid.UUID = str(template_id)
         self.colour: int = colour
         self.guild_id: int = guild_id
@@ -61,7 +61,7 @@ class Template(object):
         self.archive_channel_id: str = archive_channel_id
         self.role_id: str = role_id
         self.max_profile_count: int = max_profile_count
-        self.max_field_count: int = max_field_count
+        # self.max_field_count: int = max_field_count
         self.all_fields: typing.Dict[uuid.UUID, Field] = dict()
 
     @property
@@ -304,7 +304,7 @@ class Template(object):
             f"Template ID: `{self.template_id}`",
             f"Guild ID: `{self.guild_id}`",
             f"Maximum allowed profiles: `{self.max_profile_count}`",
-            f"Maximum field count: `{self.max_field_count}`",
+            # f"Maximum field count: `{self.max_field_count}`",
         ]
 
         # Add verification channel ID

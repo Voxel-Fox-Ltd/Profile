@@ -29,6 +29,8 @@
                 data-original="{{ field.name }}"
                 rows="2"
                 oninput="enableFieldSubmitButton(this);"
+                max="256"
+                min="1"
                 required >
             {{- field.name -}}
         </textarea>
@@ -41,6 +43,8 @@
                 data-original="{{ field.prompt }}"
                 rows="4"
                 oninput="enableFieldSubmitButton(this);"
+                max="1000"
+                min="1"
                 required >
             {{- field.prompt -}}
         </textarea>
@@ -53,6 +57,8 @@
                 value="{{ field.timeout }}"
                 data-original="{{ field.timeout }}"
                 oninput="enableFieldSubmitButton(this);"
+                max="600"
+                min="30"
                 required />
     </div>
     <div class="attribute">

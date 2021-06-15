@@ -191,6 +191,7 @@ async function createField(node) {
     // Add clone of base field to container
     fields.appendChild(copyField)
     fields.appendChild(document.createElement("HR"));
+    copyField.scrollIntoView(true);
 }
 
 

@@ -47,7 +47,10 @@ async function disableFieldSubmitButton(node) {
  * @param {Node} The template node that you want to send an update for.
  */
 async function sendUpdateTemplate(node) {
+    // Get the field object
     field = await getField(node);
+
+    // Work out the data we want to send
     data = {
         template_id: field.querySelector('[name=template_id]').value,
         verification_channel_id: field.querySelector('[name=verification_channel_id]').value,
@@ -55,18 +58,19 @@ async function sendUpdateTemplate(node) {
         role_id: field.querySelector('[name=role_id]').value,
         max_profile_count: field.querySelector('[name=max_profile_count]').value,
     };
+
+    // Update the template
     site = await fetch("/api/update_template", {
         method: "POST",
         body: JSON.stringify(data)
     });
-    if(site.ok) {
-        alert("Updated template.");
-        node.disabled = true;
-    }
-    else {
+    if(!site.ok) {
         body = await site.text()
         alert(`Failed to update template - ${body}.`);
+        return;
     }
+    alert("Updated template.");
+    node.disabled = true;
 }
 
 
@@ -79,19 +83,25 @@ async function sendDeleteTemplate(templateId) {
         method: "DELETE",
         body: JSON.stringify({template_id: templateId})
     });
-    if(site.ok) {
-        alert("Deleted template.");
-        location.href = document.getElementById("guild-base-url").href;
-    }
-    else {
+    if(!site.ok) {
         body = await site.text()
         alert(`Failed to delete template - ${body}.`);
+        return;
     }
+    alert("Deleted template.");
+    location.href = document.getElementById("guild-base-url").href;
 }
 
 
+/**
+ * Sends the POST request to update the given field.
+ * @param  {Node} node The button that initiated the request.
+ */
 async function sendUpdateField(node) {
+    // Get the field
     field = await getField(node);
+
+    // Work out the data you want to send
     data = {
         template_id: field.querySelector('[name=template_id]').value,
         field_id: field.querySelector('[name=field_id]').value,
@@ -101,6 +111,8 @@ async function sendUpdateField(node) {
         type: field.querySelector('[name=type]').value,
         optional: field.querySelector('[name=optional]').value,
     };
+
+    // Send POST request
     site = await fetch("/api/update_template_field", {
         method: "POST",
         body: JSON.stringify(data)
@@ -110,11 +122,10 @@ async function sendUpdateField(node) {
         alert(`Failed to update field - ${body}.`);
         return;
     }
-    alert("Updated field.");
-    node.disabled = true;
-    response = await site.json();
 
     // Update current fields
+    node.disabled = true;
+    response = await site.json();
     field.querySelector('[name=index]').innerHTML = `Field Index #${response.data.index}`;
     field.querySelector('[name=field_id]').value = response.data.field_id;
     field.querySelector('[name=name]').value = response.data.name;
@@ -123,11 +134,21 @@ async function sendUpdateField(node) {
     field.querySelector('[name=type]').value = response.data.type;
     field.querySelector('[name=optional]').value = response.data.optional;
 
+    // And tell the user
+    alert("Updated field.");
+
 }
 
 
+/**
+ * Send the DELETE request for the given field.
+ * @param  {Node} node The button node that initiated the request.
+ */
 async function sendDeleteField(node) {
+    // Get the field
     field = await getField(node);
+
+    // Get the field ID, if there is one (no field ID will be present for non-created fields)
     fieldId = field.querySelector('[name=field_id]').value;
     if(fieldId) {
         let site = await fetch("/api/update_template_field", {
@@ -140,29 +161,42 @@ async function sendDeleteField(node) {
             return;
         }
     }
-    alert("Deleted field.");
+
+    // Remove the field object from the DOM
     hr = field.nextSibling;
     while(hr.tagName != "HR") {
         hr = hr.nextSibling;
     }
     field.parentNode.removeChild(field);
-    console.log(hr);
     hr.parentNode.removeChild(hr);
+
+    // And tell the user
+    alert("Deleted field.");
 }
 
 
+/**
+ * Creates a new field node.
+ */
 async function createField(node) {
+    // Get the field container object
     fieldList = document.getElementsByClassName("fields");
     fields = fieldList[fieldList.length - 1]
+
+    // Get the base field
     baseField = document.getElementById("base-field");
     copyField = baseField.cloneNode(true);
-
     copyField.id = null;
+
+    // Add clone of base field to container
     fields.appendChild(copyField)
     fields.appendChild(document.createElement("HR"));
 }
 
 
+/**
+ * Stops the page from being leavable if the user has unsaved changes.
+ */
 window.addEventListener("beforeunload", function (e) {
     shouldPrevent = false;
     for(i of document.getElementsByClassName("submit-button")) {

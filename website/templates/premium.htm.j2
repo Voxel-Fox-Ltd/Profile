@@ -1,0 +1,121 @@
+{% extends "base.htm.j2" %}
+
+{%- block content -%}
+<section>
+    <div class="container">
+
+        {# Add the checkout stuff #}
+        <div class="columns is-multiline">
+            <div class="column is-6 is-offset-3" style="text-align: center;">
+
+                {# Say if we're subbed #}
+                {% if premium_data %}
+                    <h1 class="title"><i>{{ guild.name }}</i> is currently subscribed to Premium</h1>
+                {% else %}
+                    <h1 class="title">Subscribe <i>{{ guild.name }}</i> to Premium</h1>
+                    <h2 class="title" style="font-size: 2em;"><b>£5.00</b> monthly</h2>
+                {% endif %}
+                <a id="guild-base-url" style="display: block;" href="/guilds/{{ guild.id }}">Return to guild</a>
+
+                {# Describe the perks #}
+                <hr />
+                <p>Subscribing to Profile Premium gives you access to more features within Profile:</p>
+                <ul style="list-style: inside;">
+                    <li>Increased template limit</li>
+                    <li>Increased maximum profile limit</li>
+                    <li>Increased field limit for templates</li>
+                </ul>
+                <hr />
+
+                {# Show the relevant buttons #}
+                {% if premium_data %}
+                    <button
+                            class="button is-danger"
+                            onclick="fetch('/unsubscribe', {
+                                    method: 'POST',
+                                    body: JSON.stringify({
+                                        product_name: 'Profile Premium',
+                                        guild_id: '{{ guild.id }}',
+                                    })
+                                }).then(function (response) {
+                                    if(response.ok) {
+                                        alert('Done.');
+                                        window.location.href = '/guilds';
+                                    }
+                                    else {
+                                        window.reload();
+                                    }
+                                })"
+                            style="width: 50%; height: 3em;"
+                            {% if premium_data.user_id != session.user_id %}disabled{% endif %} >
+                        {% if premium_data.user_id == session.user_id %}
+                            Unsubscribe
+                        {% else %}
+                            Unsubscribe - Cannot unsubscribe for another user
+                        {% endif %}
+                    </button>
+
+                {% else %}
+                    <script src="https://js.stripe.com/v3/"></script>
+                    <section class="stripe-payment" style="padding: 0; margin-bottom: 5px;">
+                        <button type="button" id="stripe-checkout-button">Subscribe with Stripe</button>
+                    </section>
+                    <script type="text/javascript">
+                    var stripe = Stripe("pk_live_0Fx3FqHVF6tDXipvuUxdSDeu00egEyOnyO");
+                    document.getElementById("stripe-checkout-button").onclick = () => {
+                        fetch("https://voxelfox.co.uk/webhooks/stripe/create_checkout_session", {
+                            method: "POST",
+                            body: JSON.stringify({
+                                product_name: "Profile Premium",
+                                discord_user_id: "{{ session.user_id }}",
+                                discord_guild_id: "{{ guild.id }}",
+                            }),
+                        }).then(function (response) {
+                            return response.json();
+                        }).then(function (session) {
+                            return stripe.redirectToCheckout({ sessionId: session.id });
+                        }).then(function (result) {
+                            if (result.error) {
+                                alert(result.error.message);
+                            }
+                        }).catch(function (error) {
+                            console.error("Error:", error);
+                        });
+                    };
+                    </script>
+
+                    <script src="https://www.paypal.com/sdk/js?client-id=AZrQypK2Od7C44Y1JgQAStWunNw7puFjVx0ako0rCOl2zJWuRpMNnm35uvxMCsPa-vNmJFAiHq-o0q61&vault=true"></script>
+                    <section class="paypal-payment" style="padding: 0; margin-bottom: 5px;">
+                        <div class="paypal-button" id="paypal-plan-container-P-88H62461FR133924UMDPOFWY"></div>
+                    </section>
+                    <script>
+                        paypal.Buttons({
+                            style: {
+                                label: 'subscribe',
+                                color: 'gold',
+                                tagline: false,
+                                layout: 'horizontal',
+                            },
+                           createSubscription: function(data, actions) {
+                                return actions.subscription.create({
+                                   'plan_id': 'P-88H62461FR133924UMDPOFWY',
+                                   'custom_id': JSON.stringify({
+                                        discord_user_id: "{{ session.user_id }}",
+                                        guild_id: "{{ guild.id }}",
+                                    }),
+                                });
+                            },
+                            onApprove: function(data, actions) {
+                                alert(data.subscriptionID);
+                            }
+                        }).render('#paypal-plan-container-P-88H62461FR133924UMDPOFWY');
+                    </script>
+
+                {% endif %}
+
+            </div>
+        </div>
+
+    </div>
+</section>
+{%- endblock content -%}

@@ -21,15 +21,15 @@
                 <a href="/guilds/{{ guild.id }}">
                     <p class="name">{{ guild.name }}</p>
                 </a>
-                {% if guild.premium %}
-                    <div>
-                        <p class="subscription">Premium active</p>
-                    </div>
-                {% else %}
-                    <div>
-                        <p class="subscription">Get premium</p>
-                    </div>
-                {% endif %}
+                <div>
+                    <p class="subscription"><a href="/guilds/{{ guild.id }}/premium">
+                        {% if guild.premium %}
+                            Premium active
+                        {% else %}
+                            Get premium
+                        {% endif %}
+                    </a></p>
+                </div>
             </div>
         </div>
     {% endfor %}

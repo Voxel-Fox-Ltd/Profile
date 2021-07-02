@@ -119,6 +119,7 @@ CREATE TABLE IF NOT EXISTS guild_subscriptions(
     guild_id BIGINT,
     user_id BIGINT,
     cancel_url TEXT,
+    expiry_time TIMESTAMP,
     PRIMARY KEY (guild_id)
 );
 -- A table for the users who are subcribing to the premium features

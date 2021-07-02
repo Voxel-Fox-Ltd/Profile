@@ -14,9 +14,13 @@ oauth_scopes = [ "identify", "guilds", ]  # The scopes that should be added to t
     client_id = ""
     client_secret = ""
 
+[payments]
+    authorization = ""
+    notification_channel_id = 0
+
 # This data is passed directly over to asyncpg.connect()
 [database]
-    enabled = false
+    enabled = true
     user = "database_username"
     password = "database_password"
     database = "database_name"

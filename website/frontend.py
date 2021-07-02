@@ -24,6 +24,44 @@ async def index(request: Request):
     return {}
 
 
+@routes.get(r"/guilds/{guild_id:\d+}/premium")
+@template("premium.htm.j2")
+@webutils.add_discord_arguments()
+@webutils.requires_login()
+async def premium(request: Request):
+    """
+    The premium page for the website.
+    """
+
+    # Get the guild object
+    guild_id = int(request.match_info.get("guild_id"))
+    bot: botutils.Bot = request.app['bots']['bot']
+    user_can_moderate, guild, member = await localwebutils.user_can_moderate_guild(request, guild_id)
+    if guild is None or not user_can_moderate:
+        return HTTPFound(location=f"/guilds/{guild_id}")
+
+    # Grab their current settings
+    async with request.app['database']() as db:
+        guild_rows = await db("SELECT * FROM guild_settings WHERE guild_id=$1", guild_id)
+        guild_subscriptions = await db("SELECT * FROM guild_subscriptions WHERE guild_id=$1", guild_id)
+
+    # Upgrade the guild so we can see if the bot's in it
+    upgraded_guild = await guild.fetch_guild()
+    guild_rows = None if not guild_rows else guild_rows[0]
+    guild_subscriptions = None if not guild_subscriptions else guild_subscriptions[0]
+
+    # See if we want to invite the bot
+    if upgraded_guild is None:
+        return HTTPFound(location=f"/guilds/{guild_id}")
+
+    # Return the guild data
+    return {
+        "guild": upgraded_guild,
+        "guild_settings": guild_rows,
+        "premium_data": guild_subscriptions,
+    }
+
+
 @routes.get("/guilds")
 @webutils.requires_login()
 @template("guilds.htm.j2")
@@ -72,6 +110,7 @@ async def guild_settings(request: Request):
     # Grab their current settings
     async with request.app['database']() as db:
         guild_rows = await db("SELECT * FROM guild_settings WHERE guild_id=$1 OR guild_id=0 ORDER BY guild_id DESC", guild_id)
+        guild_subscriptions = await db("SELECT * FROM guild_subscriptions WHERE guild_id=$1", guild_id)
         guild_templates = await localutils.Template.fetch_all_templates_for_guild(db, guild_id, fetch_fields=True)
 
     # Upgrade the guild so we can see if the bot's in it
@@ -87,6 +126,7 @@ async def guild_settings(request: Request):
         "bot_in_guild": upgraded_guild,
         "guild_settings": guild_rows[0],
         "templates": guild_templates,
+        "has_premium": guild_subscriptions,
         "CommandProcessor": localutils.CommandProcessor,  # Throw in this whole class so we can use it in the template
     }
 

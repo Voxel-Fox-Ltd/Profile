@@ -40,3 +40,7 @@
 .guild .name {
     text-align: left;
 }
+
+.guild .subscription * {
+    color:  lightblue;
+}

@@ -8,6 +8,10 @@ a {
     color: lightblue;
 }
 
+h2 {
+    text-align: center;
+}
+
 .template {
     display: flex;
     /*align-items: center;*/

@@ -689,7 +689,7 @@ class ProfileTemplates(utils.Cog):
             template_list = await db("SELECT template_id FROM template WHERE guild_id=$1", ctx.guild.id)
             guild_settings = await db("SELECT * FROM guild_settings WHERE guild_id=$1 OR guild_id=0 ORDER BY guild_id DESC", ctx.guild.id)
             perks = await localutils.get_perks_for_guild(db, ctx.guild.id)
-        max_template_count = max(guild_settings[0]['max_template_count'], perms.max_template_count)
+        max_template_count = max(guild_settings[0]['max_template_count'], perks.max_template_count)
         if len(template_list) >= max_template_count:
             return await ctx.send(
                 f"You already have {max_template_count} templates set for this server, which is the maximum number you are allowed.",

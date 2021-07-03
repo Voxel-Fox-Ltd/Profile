@@ -137,12 +137,8 @@ class ProfileTemplates(utils.Cog):
                 utils.Button("Profile completion role", custom_id="4\N{COMBINING ENCLOSING KEYCAP}"),
                 utils.Button("Template fields", custom_id="5\N{COMBINING ENCLOSING KEYCAP}"),
                 utils.Button("Profile count per user", custom_id="6\N{COMBINING ENCLOSING KEYCAP}"),
+                utils.Button("Done", custom_id="DONE", style=utils.ButtonStyle.SUCCESS),
             )
-            if is_bot_support:
-                components.components[-1].add_component(
-                    utils.Button("Maximum field count", custom_id="7\N{COMBINING ENCLOSING KEYCAP}"),
-                )
-            components.components[-1].add_component(utils.Button("Done", custom_id="DONE", style=utils.ButtonStyle.SUCCESS))
             template_options_edit_message = None
             should_edit = True  # Whether or not the template display message should be edited
 
@@ -186,7 +182,6 @@ class ProfileTemplates(utils.Cog):
                         "4\N{COMBINING ENCLOSING KEYCAP}": ("role_id", commands.RoleConverter()),
                         "5\N{COMBINING ENCLOSING KEYCAP}": (None, self.edit_field(ctx, template, guild_settings, is_bot_support)),
                         "6\N{COMBINING ENCLOSING KEYCAP}": ("max_profile_count", int),
-                        "7\N{COMBINING ENCLOSING KEYCAP}": ("max_field_count", int),
                         "DONE": None,
                     }
                     attr, converter = available_reactions[reaction]
@@ -342,29 +337,11 @@ class ProfileTemplates(utils.Cog):
                 )
                 if original_converted > converted:
                     await ctx.send(
-                        f"Your max profile count has been set to **{guild_settings['max_template_profile_count']}** instead "
-                        f"of **{original_converted}**.",
-                        delete_after=3,
-                    )
-
-        # Validate field count
-        if attribute == 'max_field_count':
-            if is_bot_support:
-                pass
-            else:
-                original_converted = converted
-                converted = max(
-                    min(
-                        converted,
-                        guild_settings['max_template_field_count'],
-                        ctx.guild_perks.max_field_count,
-                    ),
-                    0,
-                )
-                if original_converted > converted:
-                    await ctx.send(
-                        f"Your max field count has been set to **{guild_settings['max_template_field_count']}** instead "
-                        f"of **{original_converted}**.",
+                        (
+                            f"Your max profile count has been set to **{converted}** instead "
+                            f"of **{original_converted}** - see `{ctx.clean_prefix}donate` to get a "
+                            "higher profile count for your server."
+                        ),
                         delete_after=3,
                     )
 
@@ -394,7 +371,10 @@ class ProfileTemplates(utils.Cog):
                     *field_name_buttons
                 )
             else:
-                components = utils.MessageComponents.add_buttons_with_rows(*field_name_buttons)
+                components = utils.MessageComponents.add_buttons_with_rows(
+                    utils.Button("New (unavailable)", custom_id="NEW"),
+                    *field_name_buttons
+                )
 
         # Send a message asking what they want to edit
         if components:
@@ -594,7 +574,15 @@ class ProfileTemplates(utils.Cog):
             # They either gave an invalid number or want to make a new field
             except (ValueError, KeyError):
 
-                # See if an iamge field already exists
+                # See if they're allowed to make a new one
+                if len(template.fields) >= ctx.guild_perks.max_template_count and not is_bot_support:
+                    await payload.send((
+                        "You need to be subscribed to premium add more templates - "
+                        f"see the `{ctx.clean_prefix}donate` command for more information."
+                    ))
+                    return True
+
+                # See if an image field already exists
                 image_field_exists: bool = any([i for i in template.fields.values() if isinstance(i.field_type, localutils.ImageField)])
 
                 # Talk the user through creating a new field
@@ -691,9 +679,16 @@ class ProfileTemplates(utils.Cog):
             perks = await localutils.get_perks_for_guild(db, ctx.guild.id)
         max_template_count = max(guild_settings[0]['max_template_count'], perms.max_template_count)
         if len(template_list) >= max_template_count:
-            return await ctx.send(
-                f"You already have {max_template_count} templates set for this server, which is the maximum number you are allowed.",
-            )
+            if perks.is_premium:
+                return await ctx.send((
+                    f"You already have {max_template_count} templates set for this server, which is the "
+                    "maximum number you are allowed."
+                ))
+            return await ctx.send((
+                f"You already have {max_template_count} templates set for this server, which is the "
+                f"maximum number you are allowed - see `{ctx.clean_prefix}donate` to get a "
+                "higher profile count for your server."
+            ))
 
         # And now we start creating the template itself
         async with self.template_editing_locks[ctx.guild.id]:

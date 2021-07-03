@@ -170,7 +170,7 @@ class ProfileCreation(utils.Cog):
             prompt = field.prompt
             if prompt[-1] not in "?!.":
                 prompt += "."
-            await ctx.author.send(f"{propmt} Type **pass** to skip this field.")
+            await ctx.author.send(f"{prompt} Type **pass** to skip this field.")
         else:
             await ctx.author.send(field.prompt)
 

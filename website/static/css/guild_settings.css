@@ -20,8 +20,9 @@ h2 {
     flex-direction: column;
     padding: 10px;
     border: 1px solid white;
-    border-radius: 15px;
-    background: #2b3644;
+    border-radius: 5px;
+    /*background: #2b3644;*/
+    background: #5865f255;
     /*box-shadow:
         4px 4px 4px white,
         -4px -4px 4px white,

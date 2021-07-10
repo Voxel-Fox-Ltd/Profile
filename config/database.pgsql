@@ -1,9 +1,9 @@
 CREATE TABLE IF NOT EXISTS guild_settings(
     guild_id BIGINT PRIMARY KEY,
     prefix VARCHAR(30),
-    max_template_count SMALLINT DEFAULT 3,
-    max_template_field_count SMALLINT DEFAULT 10,
-    max_template_profile_count SMALLINT DEFAULT 5
+    max_template_count SMALLINT DEFAULT 0,
+    max_template_field_count SMALLINT DEFAULT 0,
+    max_template_profile_count SMALLINT DEFAULT 0
 );
 
 

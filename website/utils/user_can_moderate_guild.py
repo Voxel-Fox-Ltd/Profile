@@ -1,10 +1,7 @@
 from aiohttp.web import Request
 import voxelbotutils as botutils
 from voxelbotutils import web as webutils
-import collections
-
 import aiohttp_session
-import discord
 from discord.ext import commands
 
 

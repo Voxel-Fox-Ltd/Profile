@@ -21,14 +21,14 @@
                 <hr />
                 <p>Subscribing to Profile Premium gives you access to more features within Profile:</p>
                 <ul style="list-style: inside;">
-                    <li>Increased template limit</li>
-                    <li>Increased maximum profile limit</li>
-                    <li>Increased field limit for templates</li>
+                    <li>Increased template limit (from {{ non_premium_perks.max_template_count }} to {{ premium_perks.max_template_count }})</li>
+                    <li>Increased maximum profile limit (from {{ non_premium_perks.max_profile_count }} to {{ premium_perks.max_profile_count }})</li>
+                    <li>Increased field limit for templates (from {{ non_premium_perks.max_field_count }} to {{ premium_perks.max_field_count }})</li>
                 </ul>
                 <hr />
 
                 {# Show the relevant buttons #}
-                {% if premium_data %}
+                {% if premium_data and not currently_expiring %}
                     <button
                             class="button is-danger"
                             onclick="fetch('/unsubscribe', {
@@ -55,6 +55,10 @@
                         {% endif %}
                     </button>
 
+                {% elif currently_expiring %}
+                    <button class="button is-danger" disabled style="width: 50%; height: 3em;">
+                        Premium for this guild will expire in {{ currently_expiring }}
+                    </button>
                 {% else %}
                     <script src="https://js.stripe.com/v3/"></script>
                     <section class="stripe-payment" style="padding: 0; margin-bottom: 5px;">

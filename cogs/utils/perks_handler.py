@@ -8,13 +8,13 @@ class GuildPerks(object):
     """
 
     guild_id: int
-    max_template_count: int = 0
-    max_field_count: int = 0
-    max_profile_count: int = 0
+    max_template_count: int
+    max_field_count: int
+    max_profile_count: int
 
 
-NO_GUILD_PERKS = GuildPerks(0, 0, 0, 0)
-SUBSCRIBED_GUILD_PERKS = GuildPerks(0, 10, 20, 10)
+NO_GUILD_PERKS = GuildPerks(0, 3, 10, 5)
+SUBSCRIBED_GUILD_PERKS = GuildPerks(0, 15, 20, 30)
 
 
 async def get_perks_for_guild(db, guild_id: int) -> GuildPerks:
@@ -35,14 +35,17 @@ async def get_perks_for_guild(db, guild_id: int) -> GuildPerks:
         guild_id=guild_id,
         max_template_count=max(
             guild_settings[0]['max_template_count'],
-            perks.max_template_count
+            perks.max_template_count,
+            NO_GUILD_PERKS.max_template_count,
         ),
         max_field_count=max(
             guild_settings[0]['max_template_field_count'],
-            perks.max_field_count
+            perks.max_field_count,
+            NO_GUILD_PERKS.max_field_count,
         ),
         max_profile_count=max(
             guild_settings[0]['max_template_profile_count'],
-            perks.max_profile_count
+            perks.max_profile_count,
+            NO_GUILD_PERKS.max_profile_count,
         ),
     )

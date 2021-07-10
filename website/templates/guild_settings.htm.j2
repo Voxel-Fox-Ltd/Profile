@@ -9,18 +9,19 @@
 {% block content %}
 <section id="main">
     <h1 class="title">{% if guild %}{{ guild.name }}{% else %}Unknown Guild{% endif %}</h1>
-    {% if not bot_in_guild %}
+    {% if bot_in_guild %}
+        <h2 style="margin-top: 0;"><a href="/guilds/{{ guild.id }}/premium">
+            {% if has_premium %}
+                Premium active
+            {% else %}
+                Get Premium for increased limits
+            {% endif %}
+        </a></h2>
+    {% else %}
         <h2>
             <a href="{{ app['bots']['bot'].get_invite_link(guild_id=guild.id) }}">Click here to invite the bot</a>
         </h2>
     {% endif %}
-    <h2 style="margin-top: 0;"><a href="/guilds/{{ guild.id }}/premium">
-        {% if has_premium %}
-            Premium active
-        {% else %}
-            Get Premium for increased limits
-        {% endif %}
-    </a></h2>
     <div id="templates">
         {% for template in templates %}
             <div class="template" data-template-id="{{ template.template_id }}">

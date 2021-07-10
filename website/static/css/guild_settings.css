@@ -14,14 +14,20 @@ h2 {
 
 .template {
     display: flex;
-    /*align-items: center;*/
     align-items: flex-start;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
     color: white;
     flex-direction: column;
     padding: 10px;
     border: 1px solid white;
     border-radius: 15px;
+    background: #2b3644;
+    /*box-shadow:
+        4px 4px 4px white,
+        -4px -4px 4px white,
+        4px -4px 4px white,
+        -4px 4px 4px white;*/
+    box-shadow: 0 0 15px white;
 }
 
 .template > * {

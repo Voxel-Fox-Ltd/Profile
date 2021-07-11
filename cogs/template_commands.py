@@ -575,7 +575,7 @@ class ProfileTemplates(utils.Cog):
             except (ValueError, KeyError):
 
                 # See if they're allowed to make a new one
-                if len(template.fields) >= ctx.guild_perks.max_template_count and not is_bot_support:
+                if len(template.fields) >= ctx.guild_perks.max_field_count and not is_bot_support:
                     await payload.send((
                         "You need to be subscribed to premium add more templates - "
                         f"see the `{ctx.clean_prefix}donate` command for more information."

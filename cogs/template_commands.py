@@ -288,7 +288,7 @@ class ProfileTemplates(utils.Cog):
 
         # Validate the given information
         converted = await self.validate_given_attribute(ctx, template, attribute, converted, guild_settings, is_bot_support)
-        if converted is None:
+        if converted is None and attribute in ["name", "max_profile_count"]:
             return False
 
         # Store our new shit

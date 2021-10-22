@@ -330,12 +330,14 @@ class ProfileTemplates(utils.Cog):
                 converted = max(
                     min(
                         converted,
-                        guild_settings['max_template_profile_count'],
-                        ctx.guild_perks.max_profile_count,
+                        max(
+                            guild_settings['max_template_profile_count'],
+                            ctx.guild_perks.max_profile_count,
+                        ),
                     ),
                     0,
                 )
-                if original_converted > converted:
+                if original_converted > converted and not ctx.guild_perks.is_premium:
                     await ctx.send(
                         (
                             f"Your max profile count has been set to **{converted}** instead "

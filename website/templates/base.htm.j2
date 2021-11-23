@@ -14,7 +14,7 @@
 <nav class="navbar" role="navigation" aria-label="main navigation">
     <div class="navbar-brand">
         <a class="navbar-item" href="/">
-            <img src="https://raw.githubusercontent.com/Voxel-Fox-Ltd/Meta/master/assets/Profile/iconfinder_Graph-Magnifier_379472%20FULL%20IMAGE.png" id="navbar-brand-img">
+            <img src="{{ static('/img/profilebot.png') }}" id="navbar-brand-img" alt="Profile bot logo">
         </a>
     </div>
     <div id="navbar-menu" class="navbar-menu">
@@ -23,7 +23,7 @@
                 {%- if session.logged_in -%}
                     <a class="button" href="/guilds">Guilds</a>
                     <a class="button" href="/logout">Logout</a>
-                    <img src="{{ session.user_info.avatar_url }}?size=128" id="navbar-brand-img">
+                    <img src="{{ session.user_info.avatar_url }}?size=128" id="navbar-brand-img" alt="Your avatar image">
                 {%- else -%}
                     <a class="button" href="/login">Log In</a>
                 {%- endif -%}

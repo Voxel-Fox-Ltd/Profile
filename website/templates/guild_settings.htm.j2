@@ -26,7 +26,7 @@
         {% for template in templates %}
             <div class="template" data-template-id="{{ template.template_id }}">
                 <h2 class="template-name">
-                    {{ template.name }} - <a href="/guilds/{{ template.guild_id }}/templates/{{ template.template_id }}">edit</a>
+                    {{ template.name }} [<a href="/guilds/{{ template.guild_id }}/templates/{{ template.template_id }}">edit</a>]
                 </h2>
                 <div class="template-meta">
                     <div class="attribute">
@@ -68,7 +68,7 @@
                             {% endif %}
                             <td class="right timeout">{{ field.timeout }}</td>
                             <td class="type">{{ field.field_type }}</td>
-                            <td class="right optional">{{ field.optional }}</td>
+                            <td class="right optional"><input type="checkbox" {% if field.optional %}checked{% endif %} disabled /></td>
                         </tr>
                     {% endfor %}
                 </table>

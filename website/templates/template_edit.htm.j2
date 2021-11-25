@@ -215,4 +215,13 @@
 
     </div>
 </section>
+
+{# Shows an unsaved changes overlay similar to discord ui #}
+<div id="unsaved" hidden>
+    <p>You have unsaved template edits.</p>
+    <div class="buttons">
+        <button class="submit-button" onclick="saveAllChanges()">Save</button>
+        <button class="reset-button" onclick="resetAllChanges()">Reset</button>
+    </div>
+</div>
 {% endblock content %}

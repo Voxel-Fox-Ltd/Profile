@@ -27,6 +27,7 @@ async function getFieldSubmitButton(node) {
  * @param {Node} The field node that you want to enable the submit button for.
  */
 async function enableFieldSubmitButton(node) {
+    enableUnsavedOverlay();
     b = await getFieldSubmitButton(node);
     b.disabled = false;
 }
@@ -194,6 +195,39 @@ async function createField(node) {
     copyField.scrollIntoView(true);
 }
 
+
+/**
+ * Shows the unsaved changes overlay
+ */
+ function enableUnsavedOverlay() {
+    document.getElementById("unsaved").hidden = false;
+}
+
+
+
+/**
+ * Saves all fields that have changed values
+ */
+function saveAllChanges() {
+    let fields = document.querySelectorAll(".fields > .field");
+    for (var i in fields) {
+        if (i == 0) continue; // ignore template field
+        let field = fields[i];
+        let submitButton = field.getElementsByClassName("info")?.[0].getElementsByClassName?.("field-submit-button")[0];
+        if (!submitButton) continue;
+        if (!submitButton.disabled) sendUpdateField(submitButton);
+    }
+    document.getElementById("unsaved").hidden = true;
+}
+
+
+/**
+ * Resets all fields to their initial values
+ */
+function resetAllChanges() {
+    // todo: refactor template editing
+    location.reload(); // lazy way to lose unsaved changes, until editing is refatored
+}
 
 /**
  * Stops the page from being leavable if the user has unsaved changes.

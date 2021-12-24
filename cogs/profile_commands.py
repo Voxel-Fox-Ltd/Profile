@@ -75,7 +75,7 @@ class ProfileCreation(utils.Cog):
     @staticmethod
     async def get_profile_name(
             ctx: utils.Context, template: localutils.Template,
-            user_profiles: typing.List[localutils.UserProfile]) -> str:
+            user_profiles: typing.List[localutils.UserProfile]) -> typing.Optional[str]:
         """
         Ask the user for a name that they want to give to their template.
         """
@@ -111,11 +111,11 @@ class ProfileCreation(utils.Cog):
                 )
             except asyncio.TimeoutError:
                 try:
-                    return await ctx.author.send(
+                    await ctx.author.send(
                         f"Your input for this field has timed out. Please try running `set{template.name}` "
                         "on your server again.",
                     )
-                except discord.Forbidden:
+                finally:
                     return None
 
             # Make sure their name is valid

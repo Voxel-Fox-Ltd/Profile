@@ -1,10 +1,11 @@
-import typing
-
 import discord
 from discord.ext import vbu
 
-from cogs.utils.perks_handler import GuildPerks
+from ..perks_handler import GuildPerks
+from ..profiles.template import Template
 
-class GuildContext(vbu.Context):
+class GuildContext(vbu.SlashContext):
     guild: discord.Guild
-    guild_perks: typing.Optional[GuildPerks] = None
+    guild_perks: GuildPerks
+    template: Template
+    invoke_meta: bool

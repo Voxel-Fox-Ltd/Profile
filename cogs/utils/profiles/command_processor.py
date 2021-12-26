@@ -6,10 +6,17 @@ from discord.ext import commands
 
 
 class InvalidCommandText(commands.BadArgument):
+    """
+    The given command text for the field was invalid.
+    """
+
     pass
 
 
-class CommandProcessor(object):
+class CommandProcessor:
+    """
+    An object that processes commands for the user.
+    """
 
     COMMAND_REGEX = re.compile(
         r'^{{.+?}}$',
@@ -44,7 +51,19 @@ class CommandProcessor(object):
     @classmethod
     def get_is_command(cls, text: str) -> typing.Tuple[bool, bool]:
         """
-        Returns whether or not the given text is a command as well as whether or not it's a _valid_ command.
+        Returns whether or not the given text is a command as well as whether or not it's
+        a *valid* command.
+
+        Parameters
+        -----------
+        text: :class:`str`
+            The text that you want to check for command validity.
+
+        Returns
+        --------
+        Tuple[:class:`bool`, :class:`bool`]
+            Whether or not the command is a command, and whether or not said
+            command is valid.
         """
 
         return (
@@ -53,9 +72,28 @@ class CommandProcessor(object):
         )
 
     @classmethod
-    def get_value(cls, text: str, member: typing.Optional[discord.Member] = None) -> typing.Optional[str]:
+    def get_value(cls, text: str, member: typing.Optional[discord.Member] = None) -> str:
         """
-        Return the value for a field.
+        Return the value for a field after it's run through a command.
+
+        Parameters
+        -----------
+        text: :class:`str`
+            The command value that was assigned to the field.
+        member: Optional[:class:`discord.Member`]
+            The member for whom the text should be generated.
+
+        Raises
+        -------
+        :class:`cogs.utils.errors.InvalidCommandText`
+            If the command is not valid.
+        :class:`ValueError`
+            If the command requires a member to get a value.
+
+        Returns
+        --------
+        :class:`str`
+            The value for the field.
         """
 
         # See if it's a command

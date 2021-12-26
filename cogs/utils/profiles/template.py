@@ -1,19 +1,27 @@
+from __future__ import annotations
+
 import typing
 import uuid
 import re
 import operator
 
 import discord
-from discord.ext import commands
-import voxelbotutils as utils
+from discord.ext import commands, vbu
 
 from cogs.utils.profiles.field import Field
 from cogs.utils.profiles.filled_field import FilledField
 from cogs.utils.profiles.command_processor import CommandProcessor, InvalidCommandText
 
+if typing.TYPE_CHECKING:
+    from .user_profile import UserProfile
+
 
 class TemplateNotFoundError(commands.BadArgument):
-    def __init__(self, template_name: str = None):
+    """
+    The template that the user has searched for isn't found.
+    """
+
+    def __init__(self, template_name: typing.Optional[str] = None):
         if template_name:
             message = f"There's no template with the name `{template_name}` on this guild."
         else:
@@ -22,18 +30,34 @@ class TemplateNotFoundError(commands.BadArgument):
 
 
 class TemplateSendError(commands.BadArgument):
+    """
+    The bot failed to send the profile.
+    """
+
     pass
 
 
 class TemplateVerificationChannelError(TemplateSendError):
+    """
+    The bot failed to send a profile to the verification channel.
+    """
+
     pass
 
 
 class TemplateArchiveChannelError(TemplateSendError):
+    """
+    The bot failed to send a profile to the archive channel.
+    """
+
     pass
 
 
 class TemplateRoleAddError(TemplateSendError):
+    """
+    The bot failed to add a role to the user.
+    """
+
     pass
 
 
@@ -41,19 +65,77 @@ class Template(object):
     """
     A class for an abstract template object that's saved to guild.
     This contains no user data, but rather the metadata for the template itself.
+
+    Parameters
+    -----------
+    template_id: Union[:class:`str`, :class:`uuid.UUID`]
+        The ID of the template.
+    colour: :class:`int`
+        The colour to be used on all of the profiles. If the colour
+        is ``0`` or ``None`` then a random colour is used.
+    guild_id: :class:`int`
+        The guild that the template is a part of.
+    verification_channel_id: :class:`str`
+        The ID of the template's verification channel. Set as a string
+        to allow for commands.
+    name: :class:`str`
+        The name of the template.
+    archive_channel_id: :class:`str`
+        The ID of the template's archive channel. Set as a string
+        to allow for commands.
+    role_id: :class:`str`
+        The ID of the template's role. Set as a string
+        to allow for commands.
+    max_profile_count: :class:`int`
+        The maximum number of profiles that users are allowed to
+        create for this template.
+
+    Attributes
+    -----------
+    template_id: Union[:class:`str`, :class:`uuid.UUID`]
+        The ID of the template.
+    colour: :class:`int`
+        The colour to be used on all of the profiles. If the colour
+        is ``0`` or ``None`` then a random colour is used.
+    guild_id: :class:`int`
+        The guild that the template is a part of.
+    verification_channel_id: :class:`str`
+        The ID of the template's verification channel. Set as a string
+        to allow for commands.
+    name: :class:`str`
+        The name of the template.
+    archive_channel_id: :class:`str`
+        The ID of the template's archive channel. Set as a string
+        to allow for commands.
+    role_id: :class:`str`
+        The ID of the template's role. Set as a string
+        to allow for commands.
+    max_profile_count: :class:`int`
+        The maximum number of profiles that users are allowed to
+        create for this template.
+    all_fields: Dict[:class:`str`, :class:`cogs.utils.profiles.field.Field`]
+        All of the fields for the template.
     """
 
     __slots__ = (
-        "template_id", "colour", "guild_id", "verification_channel_id", "name", "archive_channel_id", "role_id",
-        "max_profile_count", "all_fields",
+        "template_id", "colour", "guild_id", "verification_channel_id", "name",
+        "archive_channel_id", "role_id", "max_profile_count", "all_fields",
     )
     TEMPLATE_ID_REGEX = re.compile(r"^(?P<uuid>.{8}-.{4}-.{4}-.{4}-.{12})$")
-    SLASH_COMMAND_ARG_TYPE = utils.ApplicationCommandOptionType.STRING
+    SLASH_COMMAND_ARG_TYPE = discord.ApplicationCommandOptionType.string
 
     def __init__(
-            self, template_id: uuid.UUID, colour: int, guild_id: int, verification_channel_id: str,
-            name: str, archive_channel_id: str, role_id: str, max_profile_count: int, max_field_count: int = None):
-        self.template_id: uuid.UUID = str(template_id)
+            self,
+            template_id: uuid.UUID,
+            colour: int,
+            guild_id: int,
+            verification_channel_id: str,
+            name: str,
+            archive_channel_id: str,
+            role_id: str,
+            max_profile_count: int,
+            max_field_count: int = None):
+        self.template_id: str = str(template_id)
         self.colour: int = colour
         self.guild_id: int = guild_id
         self.verification_channel_id: str = verification_channel_id
@@ -61,13 +143,22 @@ class Template(object):
         self.archive_channel_id: str = archive_channel_id
         self.role_id: str = role_id
         self.max_profile_count: int = max_profile_count
-        # self.max_field_count: int = max_field_count
-        self.all_fields: typing.Dict[uuid.UUID, Field] = dict()
+
+        self.all_fields: typing.Dict[str, Field] = dict()
+
+    @property
+    def id(self) -> str:
+        """
+        The ID of the template.
+        """
+
+        return self.template_id
 
     @property
     def should_send_message(self) -> bool:
         """
-        Says whether or not this template should send a message (verification/archivation) on its submission.
+        Says whether or not this template should send a message
+        (verification/archivation) on its submission.
         """
 
         return bool(self.verification_channel_id or self.archive_channel_id)
@@ -75,6 +166,16 @@ class Template(object):
     def get_verification_channel_id(self, member: discord.Member) -> typing.Optional[int]:
         """
         Get the correct verification channel ID for the given member.
+
+        Parameters
+        -----------
+        member: :class:`discord.Member`
+            The member whose channel you want to get.
+
+        Returns
+        --------
+        Optional[:class:`int`]
+            The ID of the channel for this user's profile.
         """
 
         return self._get_id_from_command(self.verification_channel_id, member)
@@ -82,6 +183,16 @@ class Template(object):
     def get_archive_channel_id(self, member: discord.Member) -> typing.Optional[int]:
         """
         Get the correct archive channel ID for a given member.
+
+        Parameters
+        -----------
+        member: :class:`discord.Member`
+            The member whose channel you want to get.
+
+        Returns
+        --------
+        Optional[:class:`int`]
+            The ID of the channel for this user's profile.
         """
 
         return self._get_id_from_command(self.archive_channel_id, member)
@@ -89,6 +200,16 @@ class Template(object):
     def get_role_id(self, member: discord.Member) -> typing.Optional[int]:
         """
         Get the correct role ID for a given member.
+
+        Parameters
+        -----------
+        member: :class:`discord.Member`
+            The member whose role you want to get.
+
+        Returns
+        --------
+        Optional[:class:`int`]
+            The ID of the role for this user's profile.
         """
 
         return self._get_id_from_command(self.role_id, member)
@@ -114,116 +235,179 @@ class Template(object):
         raise InvalidCommandText()
 
     @property
-    def fields(self) -> typing.Dict[uuid.UUID, Field]:
+    def fields(self) -> typing.Dict[str, Field]:
         """
-        Returns a dict of `utils.Field` objects for this particular profile.
+        Returns a dict of `Field` objects for this particular profile.
         """
 
-        return {i: o for i, o in self.all_fields.items() if o.deleted is False}
+        return {
+            i: o
+            for i, o in self.all_fields.items()
+            if o.deleted is False
+        }
 
     @property
     def field_list(self) -> typing.List[Field]:
         """
-        Returns a list of `utils.Filed` objects - in order - for this profile.
+        Returns a list of `Filed` objects - in order - for this profile.
         """
 
         return sorted(self.fields.values(), key=operator.attrgetter("index"))
 
     async def fetch_profile_for_user(
-            self, db, user_id:int, profile_name: str = None,
-            *, fetch_filled_fields: bool = True) -> 'cogs.utils.profiles.user_profile.UserProfile':
+            self,
+            db: vbu.Database,
+            user_id:int,
+            profile_name: str = None,
+            *,
+            fetch_filled_fields: bool = True) -> typing.Optional[UserProfile]:
         """
         Gets the filled profile for a given user.
 
-        Args:
-            db (cogs.utils.database.DatabaseConnection): An active connection to the database.
-            user_id (int): The ID of the user you want to grab the information for.
-            profile_name (str, optional): The name of the profile you want to grab.
-            fetch_filled_fields (bool, optional): Whether or not to populate the filled fields for the UserProfile.
+        Parameters
+        -----------
+        db: :class:`vbu.Database`
+            An active connection to the database.
+        user_id: :class:`int`
+            The ID of the user you want to grab the information for.
+        profile_name: Optional[:class:`str`]
+            The name of the profile you want to grab.
+        fetch_filled_fields: Optional[:class:`bool`]
+            Whether or not to populate the filled fields for the `UserProfile`.
 
-        Returns:
-            cogs.utils.profiles.user_profile.UserProfile: The user profile that you asked for.
+        Raises
+        -------
+        :class:`ValueError`
+            If no profile name was provided and multiple profiles were retrieved.
 
-        Raises:
-            ValueError: If no profile name was provided and multiple profiles were retrieved.
+        Returns
+        -------
+        :class:`cogs.utils.profiles.user_profile.UserProfile`
+            The user profile that you asked for.
+        :class:`None`
+            No profile mathcing the given name could be found.
         """
 
         # Grab our imports here to avoid circular importing
-        from cogs.utils.profiles.user_profile import UserProfile
+        from .user_profile import UserProfile
 
         # Grab the user profile
         if profile_name is None:
             profile_rows = await db(
-                """SELECT * FROM created_profile WHERE template_id=$1 AND user_id=$2""", self.template_id, user_id,
+                """SELECT * FROM created_profile WHERE template_id=$1 AND user_id=$2""",
+                self.template_id, user_id,
             )
         else:
             profile_rows = await db(
                 """SELECT * FROM created_profile WHERE template_id=$1 AND user_id=$2 AND LOWER(name)=LOWER($3)""",
                 self.template_id, user_id, profile_name,
             )
+
+        # See if there was nothing provided
         if not profile_rows:
             return None
+
+        # See if multiple were provided and no search string was given
         if profile_name is None and len(profile_rows) > 1:
             raise ValueError("Too many saved profiles to have no set profile name")
+
+        # Make a profile to return
         user_profile = UserProfile(**profile_rows[0], template=self)
+
+        # Fetch the filled fields if the user requested them
         if fetch_filled_fields:
             await user_profile.fetch_filled_fields(db)
+
+        # Return the profile
         return user_profile
 
     async def fetch_all_profiles_for_user(
-            self, db, user_id: int, *, fetch_filled_fields: bool = True) -> typing.List['cogs.utils.profiles.user_profile.UserProfile']:
+            self,
+            db: vbu.Database,
+            user_id: int,
+            *,
+            fetch_filled_fields: bool = True) -> typing.List[UserProfile]:
         """
         Gets the filled profile for a given user.
 
-        Args:
-            db (cogs.utils.database.DatabaseConnection): An active connection to the database.
-            user_id (int): The ID of the user you want to grab the information for.
-            fetch_filled_fields (bool, optional): Whether or not to populate the filled fields for the UserProfile.
+        Parameters
+        -----------
+        db: :class:`vbu.Database`
+            An active connection to the database.
+        user_id: :class:`int`
+            The ID of the user you want to grab the information for.
+        fetch_filled_fields: Optional[:class:`bool`]
+            Whether or not to populate the filled fields for the UserProfile.
 
-        Returns:
-            typing.List['cogs.utils.profiles.user_profile.UserProfile']: A list of UserProfiles for the given user.
+        Returns
+        --------
+        List[cogs.vbu.profiles.user_profile.UserProfile]
+            A list of UserProfiles for the given user.
         """
 
         # Grab our imports here to avoid circular importing
-        from cogs.utils.profiles.user_profile import UserProfile
+        from .user_profile import UserProfile
 
         # Grab the user profile
-        profile_rows = await db("SELECT * FROM created_profile WHERE template_id=$1 AND user_id=$2", self.template_id, user_id)
+        profile_rows = await db(
+            "SELECT * FROM created_profile WHERE template_id=$1 AND user_id=$2",
+            self.template_id, user_id,
+        )
         profiles = [UserProfile(**i, template=self) for i in profile_rows]
         if fetch_filled_fields:
             [await i.fetch_filled_fields(db) for i in profiles]
         return profiles
 
-    async def fetch_all_profiles(self, db, *, fetch_filled_fields: bool = True) -> typing.List['cogs.utils.profiles.user_profile.UserProfile']:
+    async def fetch_all_profiles(
+            self,
+            db: vbu.Database,
+            *,
+            fetch_filled_fields: bool = True) -> typing.List[UserProfile]:
         """
         Gets the filled profile for a given user
 
-        Args:
-            db (cogs.utils.database.DatabaseConnection): An active connection to the database.
-            fetch_filled_fields (bool, optional): Whether or not to populate the filled fields for the UserProfile.
+        Parameters
+        -----------
+        db: :class:`vbu.Database`
+            An active connection to the database.
+        fetch_filled_fields: Optional[:class:`bool`]
+            Whether or not to populate the filled fields for the UserProfile.
 
-        Returns:
-            typing.List['cogs.utils.profiles.user_profile.UserProfile']: A list of UserProfiles for the given template.
+        Returns
+        --------
+        List[cogs.vbu.profiles.user_profile.UserProfile]
+            A list of UserProfiles for the given template.
         """
 
         # Grab our imports here to avoid circular importing
-        from cogs.utils.profiles.user_profile import UserProfile
+        from .user_profile import UserProfile
 
         # Grab the user profile
-        profile_rows = await db("SELECT * FROM created_profile WHERE template_id=$1", self.template_id)
+        profile_rows = await db(
+            "SELECT * FROM created_profile WHERE template_id=$1",
+            self.template_id,
+        )
         profiles = [UserProfile(**i, template=self) for i in profile_rows]
         if fetch_filled_fields:
             [await i.fetch_filled_fields(db) for i in profiles]
         return profiles
 
     @classmethod
-    async def fetch_template_by_id(cls, db, template_id: uuid.UUID, *, fetch_fields: bool = True) -> typing.Optional['Template']:
+    async def fetch_template_by_id(
+            cls,
+            db: vbu.Database,
+            template_id: str,
+            *,
+            fetch_fields: bool = True) -> typing.Optional[Template]:
         """
         Get a template from the database via its ID.
         """
 
         # Grab the template
-        template_rows = await db("SELECT * FROM template WHERE template_id=$1", template_id)
+        template_rows = await db(
+            "SELECT * FROM template WHERE template_id=$1",
+            template_id,
+        )
         if not template_rows:
             return None
         template = cls(**template_rows[0])
@@ -232,13 +416,22 @@ class Template(object):
         return template
 
     @classmethod
-    async def fetch_template_by_name(cls, db, guild_id: int, template_name: str, *, fetch_fields: bool = True) -> typing.Optional['Template']:
+    async def fetch_template_by_name(
+            cls,
+            db: vbu.Database,
+            guild_id: int,
+            template_name: str,
+            *,
+            fetch_fields: bool = True) -> typing.Optional[Template]:
         """
         Get a template from the database via its name.
         """
 
         # Grab the template
-        template_rows = await db("SELECT * FROM template WHERE guild_id=$1 AND LOWER(name)=LOWER($2)", guild_id, template_name)
+        template_rows = await db(
+            "SELECT * FROM template WHERE guild_id=$1 AND LOWER(name)=LOWER($2)",
+            guild_id, template_name,
+        )
         if not template_rows:
             return None
         template = cls(**template_rows[0])
@@ -247,7 +440,12 @@ class Template(object):
         return template
 
     @classmethod
-    async def fetch_all_templates_for_guild(cls, db, guild_id: int, *, fetch_fields: bool = True) -> typing.List['Template']:
+    async def fetch_all_templates_for_guild(
+            cls: typing.Type[Template],
+            db: vbu.Database,
+            guild_id: int,
+            *,
+            fetch_fields: bool = True) -> typing.List[Template]:
         """
         Get all the templates for a given guild.
         """
@@ -260,16 +458,19 @@ class Template(object):
                 await t.fetch_fields(db)
         return template_list
 
-    async def fetch_fields(self, db) -> typing.Dict[uuid.UUID, FilledField]:
+    async def fetch_fields(self, db) -> typing.Dict[str, Field]:
         """
         Fetch the fields for this template and store them in .all_fields.
         """
 
-        field_rows = await db("SELECT * FROM field WHERE template_id=$1", self.template_id)
+        field_rows = await db(
+            "SELECT * FROM field WHERE template_id=$1",
+            self.id,
+        )
         self.all_fields.clear()
         for f in field_rows:
             field = Field(**f)
-            self.all_fields[field.field_id] = field
+            self.all_fields[field.id] = field
         return self.all_fields
 
     @classmethod
@@ -290,14 +491,14 @@ class Template(object):
             raise TemplateNotFoundError(argument.lower())
         return v
 
-    def build_embed(self, bot, brief: bool = False) -> utils.Embed:
+    def build_embed(self, bot, brief: bool = False) -> discord.Embed:
         """
         Create an embed to visualise all of the created fields and given information.
         """
 
         # Create the initial embed
         fields: typing.List[Field] = self.field_list
-        embed = utils.Embed(use_random_colour=True, title=self.name)
+        embed = vbu.Embed(use_random_colour=True, title=self.name)
 
         # Work out what goes in the description
         description_lines = [

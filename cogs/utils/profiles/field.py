@@ -1,32 +1,74 @@
+import typing
 import uuid
 
 from cogs.utils.profiles.field_type import FieldType, TextField, ImageField, NumberField, BooleanField
 
 
-class Field(object):
+class Field:
     """
     The abstract field object for a given template.
-    This itself does not store any user information, but rather the meta information associated with
-    a field from a template.
+    This itself does not store any user information, but rather the meta information
+    associated with a field from a template.
 
-    Args:
-        field_id (uuid.UUID): the ID of the field
-        name (str): the name of the field
-        index (int): the index of the field - may not specifically refer to its location in the embed
-        prompt (str): the prompt shown to the user when they're asked to fill in this field information
-        timeout (int): how long the user has (in seconds) to fill in this field
-        field_type (cogs.utils.profiles.field_type.FieldType): the type given to this field
-        template_id (uuid.UUID): the ID of the template that this field is part of
-        optional (bool): whether or not this field is optional
-        deleted (bool): whether or not this field is deleted
+    Attributes
+    -----------
+    field_id: :class:`str`
+        The ID of the field.
+    name: :class:`str`
+        The name of the field.
+    index: :class:`int`
+        The index of the field. May not specifically refer to its location in the embed,
+        but *will* in relation to the other indexes of the fields.
+    prompt: :class:`str`
+        The prompt shown to the user when they're asked to fill in this field information.
+    timeout: :class:`int`
+        How long the user has (in seconds) to fill in this field.
+    field_type :class:`cogs.utils.profiles.field_type.FieldType`:
+        The type given to this field
+    template_id: :class:`str`
+        The ID of the template that this field is part of.
+    optional: :class:`bool`
+        Whether or not this field is optional.
+    deleted: :class:`bool`
+        Whether or not this field is deleted.
+
+    Parameters
+    -----------
+    field_id: Union[:class:`str`, :class:`uuid.UUID`]
+        The ID of the field.
+    name: :class:`str`
+        The name of the field.
+    index: :class:`int`
+        The index of the field. May not specifically refer to its location in the embed,
+        but *will* in relation to the other indexes of the fields.
+    prompt: :class:`str`
+        The prompt shown to the user when they're asked to fill in this field information.
+    timeout: :class:`int`
+        How long the user has (in seconds) to fill in this field.
+    field_type: :class:`FieldType`
+        The type given to this field
+    template_id: Union[:class:`str`, :class:`uuid.UUID`]
+        The ID of the template that this field is part of.
+    optional: :class:`bool`
+        Whether or not this field is optional.
+    deleted: :class:`bool`
+        Whether or not this field is deleted.
     """
 
     __slots__ = ("field_id", "index", "name", "prompt", "timeout", "field_type", "template_id", "optional", "deleted")
 
     def __init__(
-            self, field_id: uuid.UUID, name: str, index: int, prompt: str, timeout: int, field_type: FieldType,
-            template_id: uuid.UUID, optional: bool, deleted: bool):
-        self.field_id: uuid.UUID = str(field_id)
+            self,
+            field_id: typing.Union[str, uuid.UUID],
+            name: str,
+            index: int,
+            prompt: str,
+            timeout: int,
+            field_type: FieldType,
+            template_id: typing.Union[str, uuid.UUID],
+            optional: bool,
+            deleted: bool):
+        self.field_id: str = str(field_id)
         self.index: int = index
         self.name: str = name
         self.prompt: str = prompt
@@ -36,7 +78,18 @@ class Field(object):
             'INT': NumberField(),
             'IMAGE': ImageField(),
             'BOOLEAN': BooleanField(),
-        }[getattr(field_type, 'name', field_type)]
-        self.template_id: uuid.UUID = str(template_id)
+        }[getattr(field_type, 'name', field_type)]  # type: ignore
+        self.template_id: str = str(template_id)
         self.optional: bool = optional
         self.deleted: bool = deleted
+
+    @property
+    def id(self) -> str:
+        """
+        The ID of the field.
+        """
+
+        return self.field_id
+
+
+

@@ -7,7 +7,7 @@ class FieldCheckFailure(Exception):
         self.message = message
 
 
-class FieldType(object):
+class FieldType:
     """
     The typing of a given profile field.
     """

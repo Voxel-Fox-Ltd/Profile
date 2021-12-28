@@ -1,5 +1,5 @@
 # flake8: noqa
-from cogs.utils import checks, errors
+from cogs.utils import checks, errors, types
 from cogs.utils.profiles.field import Field
 from cogs.utils.profiles.field_type import FieldType, TextField, NumberField, ImageField
 from cogs.utils.profiles.template import Template

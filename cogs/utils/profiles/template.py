@@ -249,7 +249,7 @@ class Template(object):
     @property
     def field_list(self) -> typing.List[Field]:
         """
-        Returns a list of `Filed` objects - in order - for this profile.
+        Returns a list of `Field` objects - in order - for this profile.
         """
 
         return sorted(self.fields.values(), key=operator.attrgetter("index"))

@@ -75,15 +75,15 @@ class Template(object):
         is ``0`` or ``None`` then a random colour is used.
     guild_id: :class:`int`
         The guild that the template is a part of.
-    verification_channel_id: :class:`str`
+    verification_channel_id: Optional[:class:`str`]
         The ID of the template's verification channel. Set as a string
         to allow for commands.
     name: :class:`str`
         The name of the template.
-    archive_channel_id: :class:`str`
+    archive_channel_id: Optional[:class:`str`]
         The ID of the template's archive channel. Set as a string
         to allow for commands.
-    role_id: :class:`str`
+    role_id: Optional[:class:`str`]
         The ID of the template's role. Set as a string
         to allow for commands.
     max_profile_count: :class:`int`
@@ -129,19 +129,19 @@ class Template(object):
             template_id: uuid.UUID,
             colour: int,
             guild_id: int,
-            verification_channel_id: str,
+            verification_channel_id: typing.Optional[str],
             name: str,
-            archive_channel_id: str,
-            role_id: str,
+            archive_channel_id: typing.Optional[str],
+            role_id: typing.Optional[str],
             max_profile_count: int,
             max_field_count: int = None):
         self.template_id: str = str(template_id)
         self.colour: int = colour
         self.guild_id: int = guild_id
-        self.verification_channel_id: str = verification_channel_id
+        self.verification_channel_id: typing.Optional[str] = verification_channel_id
         self.name: str = name
-        self.archive_channel_id: str = archive_channel_id
-        self.role_id: str = role_id
+        self.archive_channel_id: typing.Optional[str] = archive_channel_id
+        self.role_id: typing.Optional[str] = role_id
         self.max_profile_count: int = max_profile_count
 
         self.all_fields: typing.Dict[str, Field] = dict()

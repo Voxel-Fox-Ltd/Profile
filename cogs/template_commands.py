@@ -1,80 +1,45 @@
+# obama
+
 import asyncio
 import string
 import uuid
 import typing
 import collections
-import operator
 
 import discord
-from discord.ext import commands
-import voxelbotutils as utils
-import asyncpg
+from discord.ext import commands, vbu
 
-from cogs import utils as localutils
+from cogs import utils
 
 
-class ProfileTemplates(utils.Cog):
+class ProfileTemplates(vbu.Cog):
 
-    def __init__(self, bot:utils.Bot):
+    def __init__(self, bot:vbu.Bot):
         super().__init__(bot)
-        self.template_editing_locks: typing.Dict[int, asyncio.Lock] = collections.defaultdict(asyncio.Lock)  # guild_id: asyncio.Lock
+        self.template_editing_locks: typing.Dict[int, asyncio.Lock]
+        self.template_editing_locks = collections.defaultdict(asyncio.Lock)  # guild_id: asyncio.Lock
 
     @staticmethod
     def is_valid_template_name(template_name: str) -> bool:
         """
         Returns whether a template name is technically valid.
 
-        Args:
-            template_name (str): The template name you want to check.
+        Parameters
+        -----------
+        template_name: :class:`str`
+            The template name you want to check.
 
-        Returns:
-            bool: Whether or not the given template name is valid.
+        Returns
+        --------
+        :class:`bool`
+            Whether or not the given template name is valid.
         """
 
         return len([i for i in template_name if i not in string.ascii_letters + string.digits]) == 0
 
-    @utils.command()
-    @commands.bot_has_permissions(send_messages=True)
-    @commands.guild_only()
-    async def templates(self, ctx: utils.Context, guild_id: int = None):
-        """
-        Lists the templates that have been created for this server.
-        """
-
-        # See if they're allowed to get from another guild ID
-        if guild_id is not None and guild_id != ctx.guild.id:
-            await utils.checks.is_bot_support().predicate(ctx)
-
-        # Grab the templates
-        async with self.bot.database() as db:
-            templates = await db(
-                """SELECT template.template_id, template.name, COUNT(created_profile.*) FROM template
-                LEFT JOIN created_profile ON template.template_id=created_profile.template_id
-                WHERE guild_id=$1 GROUP BY template.template_id""",
-                guild_id or ctx.guild.id
-            )
-
-        if not templates:
-            return await ctx.send("There are no created templates for this guild.")
-        template_names = [f"**{row['name']}** (`{row['template_id']}`, `{row['count']}` created profiles)" for row in templates]
-        return await ctx.send('\n'.join(template_names))
-
-    @utils.command(aliases=['describe'])
-    @commands.bot_has_permissions(send_messages=True, embed_links=True)
-    @commands.guild_only()
-    async def describetemplate(self, ctx: utils.Context, template: localutils.Template, brief: bool = True):
-        """
-        Describe a template and its fields.
-        """
-
-        embed = template.build_embed(self.bot, brief=brief)
-        async with self.bot.database() as db:
-            user_profiles = await template.fetch_all_profiles(db, fetch_filled_fields=False)
-        embed.description += f"\nCurrently there are **{len(user_profiles)}** created profiles for this template."
-        return await ctx.send(embed=embed)
-
     def purge_message_list(
-            self, channel: discord.TextChannel, message_list: typing.List[discord.Message]) -> asyncio.Task:
+            self, channel: discord.TextChannel,
+            message_list: typing.List[discord.Message]) -> asyncio.Task:
         """
         Delete a list of messages from the channel.
         """
@@ -87,29 +52,98 @@ class ProfileTemplates(utils.Cog):
             message_list.clear()
         return self.bot.loop.create_task(wrapper())
 
-    async def user_is_bot_support(self, ctx: utils.Context) -> bool:
+    @commands.group()
+    @commands.bot_has_permissions(send_messages=True)
+    @commands.guild_only()
+    async def template(self, ctx: commands.SlashContext):
+        """
+        The parent group for all template commands.
+        """
+
+        pass
+
+    @template.command(name="list")
+    @commands.defer()
+    @commands.bot_has_permissions(send_messages=True)
+    @commands.guild_only()
+    async def template_list(self, ctx: utils.types.GuildContext):
+        """
+        Lists the templates that have been created for this server.
+        """
+
+        # Grab the templates for the server
+        async with vbu.Database() as db:
+            templates = await db(
+                """SELECT template.template_id, template.name, COUNT(created_profile.*) FROM template
+                LEFT JOIN created_profile ON template.template_id=created_profile.template_id
+                WHERE guild_id=$1 GROUP BY template.template_id""",
+                ctx.guild.id
+            )
+
+        # See if there are any
+        if not templates:
+            return await ctx.interaction.followup.send("There are no created templates for this guild.")
+
+        # Format into a nice string
+        template_names = [
+            f"**{row['name']}** (`{row['template_id']}`, `{row['count']}` created profiles)"
+            for row in templates
+        ]
+
+        # And send
+        return await ctx.interaction.followup.send('\n'.join(template_names))
+
+    @template.command(name="describe")
+    @commands.defer()
+    @commands.bot_has_permissions(send_messages=True, embed_links=True)
+    @commands.guild_only()
+    async def template_describe(self, ctx: commands.SlashContext, template: utils.Template, brief: bool = True):
+        """
+        Describe a template and its fields.
+        """
+
+        # Build the embed
+        embed = template.build_embed(self.bot, brief=brief)
+
+        # Get the number of profiles
+        async with vbu.Database() as db:
+            user_profiles = await template.fetch_all_profiles(db, fetch_filled_fields=False)
+        embed.description += f"\nCurrently there are **{len(user_profiles)}** created profiles for this template."
+
+        # And send
+        return await ctx.interaction.followup.send(embed=embed)
+
+    async def user_is_bot_support(self, ctx: commands.Context) -> bool:
         """
         Returns whether or not the user calling the command is bot support.
         """
 
         try:
-            await utils.checks.is_bot_support().predicate(ctx)
+            await vbu.checks.is_bot_support().predicate(ctx)
             return True
         except commands.CommandError:
             return False
 
-    @utils.command()
+    @template.command(name="edit")
+    @commands.defer()
     @commands.has_guild_permissions(manage_roles=True)
     @commands.bot_has_permissions(send_messages=True, external_emojis=True, add_reactions=True, manage_messages=True)
     @commands.guild_only()
-    async def edittemplate(self, ctx: utils.Context, template: localutils.Template):
+    async def template_edit(self, ctx: utils.types.GuildContext, template: utils.Template):
         """
         Edits a template for your guild.
         """
 
+        # Set up the interaction to use
+        interaction: discord.Interaction = ctx.interaction
+
         # See if they're already editing that template
         if self.template_editing_locks[ctx.guild.id].locked():
-            return await ctx.send("You're already editing a template.")
+            return await interaction.followup.send("You're already editing a template.")
+
+        # Send a message that we can edit later
+        await interaction.followup.send("Loading template...", wait=True)
+        await interaction.original_message()
 
         # See if they're bot support
         is_bot_support = await self.user_is_bot_support(ctx)
@@ -118,575 +152,579 @@ class ProfileTemplates(utils.Cog):
         async with self.template_editing_locks[ctx.guild.id]:
 
             # Get the template fields
-            async with self.bot.database() as db:
+            async with vbu.Database() as db:
                 await template.fetch_fields(db)
                 guild_settings_rows = await db(
                     """SELECT * FROM guild_settings WHERE guild_id=$1 OR guild_id=0 ORDER BY guild_id DESC""",
                     ctx.guild.id,
                 )
-                perks = await localutils.get_perks_for_guild(db, ctx.guild.id)
+                perks = await utils.get_perks_for_guild(db, ctx.guild.id)
             ctx.guild_perks = perks
             guild_settings = guild_settings_rows[0]
 
             # Set up our initial vars so we can edit them later
-            template_display_edit_message = await ctx.send("Loading template...")  # The message with the template
-            components = utils.MessageComponents.add_buttons_with_rows(
-                utils.Button("Template name", custom_id="1\N{COMBINING ENCLOSING KEYCAP}"),
-                utils.Button("Profile verification channel", custom_id="2\N{COMBINING ENCLOSING KEYCAP}"),
-                utils.Button("Profile archive channel", custom_id="3\N{COMBINING ENCLOSING KEYCAP}"),
-                utils.Button("Profile completion role", custom_id="4\N{COMBINING ENCLOSING KEYCAP}"),
-                utils.Button("Template fields", custom_id="5\N{COMBINING ENCLOSING KEYCAP}"),
-                utils.Button("Profile count per user", custom_id="6\N{COMBINING ENCLOSING KEYCAP}"),
-                utils.Button("Done", custom_id="DONE", style=utils.ButtonStyle.SUCCESS),
+            components = discord.ui.MessageComponents.add_buttons_with_rows(
+                discord.ui.Button(label="Template name", custom_id="editTemplate NAME"),
+                discord.ui.Button(label="Profile verification channel", custom_id="editTemplate VERIFICATION"),
+                discord.ui.Button(label="Profile archive channel", custom_id="editTemplate ARCHIVE"),
+                discord.ui.Button(label="Profile completion role", custom_id="editTemplate ROLE"),
+                discord.ui.Button(label="Template fields", custom_id="editTemplate FIELDS"),
+                discord.ui.Button(label="Profile count per user", custom_id="editTemplate COUNT"),
+                discord.ui.Button(label="Done", custom_id="editTemplate DONE", style=discord.ButtonStyle.success),
             )
-            template_options_edit_message = None
-            should_edit = True  # Whether or not the template display message should be edited
 
             # Start our edit loop
             while True:
 
-                # Ask what they want to edit
-                if should_edit:
-                    try:
-                        await template_display_edit_message.edit(
-                            content=None,
-                            embed=template.build_embed(self.bot, brief=True),
-                            allowed_mentions=discord.AllowedMentions(roles=False),
-                        )
-                    except discord.HTTPException:
-                        return
-                    should_edit = False
+                # Edit the message
+                try:
+                    await interaction.edit_original_message(
+                        content=None,
+                        embed=template.build_embed(self.bot, brief=True),
+                        allowed_mentions=discord.AllowedMentions(roles=False),
+                        components=components.enable_components()
+                    )
+                except discord.HTTPException:
+                    return
 
                 # Wait for a response from the user
                 try:
-                    if template_options_edit_message:
-                        await template_options_edit_message.edit(components=components.enable_components())
-                    else:
-                        template_options_edit_message = await ctx.send("What would you like to edit?", components=components)
-                    payload = await template_options_edit_message.wait_for_button_click(check=lambda p: p.user.id == ctx.author.id, timeout=120)
-                    await payload.ack()
-                    reaction = payload.component.custom_id
+                    payload: discord.Interaction = self.bot.wait_for(
+                        "component_interaction",
+                        check=lambda i: i.user.id == ctx.author.id and i.message.id == interaction_message.id,
+                        timeout=60 * 2,
+                    )
+                    reaction: str = payload.component.custom_id
                 except asyncio.TimeoutError:
                     try:
-                        await template_options_edit_message.edit(content="Timed out waiting for edit response.", components=None)
-                    except discord.HTTPException:
-                        pass
-                    return
+                        await interaction.edit_original_message(
+                            content="Timed out waiting for edit response.",
+                            components=None,
+                            embed=None,
+                        )
+                    finally:
+                        return
 
                 # See what they reacted with
-                try:
-                    available_reactions = {
-                        "1\N{COMBINING ENCLOSING KEYCAP}": ("name", str),
-                        "2\N{COMBINING ENCLOSING KEYCAP}": ("verification_channel_id", commands.TextChannelConverter()),
-                        "3\N{COMBINING ENCLOSING KEYCAP}": ("archive_channel_id", commands.TextChannelConverter()),
-                        "4\N{COMBINING ENCLOSING KEYCAP}": ("role_id", commands.RoleConverter()),
-                        "5\N{COMBINING ENCLOSING KEYCAP}": (None, self.edit_field(ctx, template, guild_settings, is_bot_support)),
-                        "6\N{COMBINING ENCLOSING KEYCAP}": ("max_profile_count", int),
-                        "DONE": None,
-                    }
-                    attr, converter = available_reactions[reaction]
-                except TypeError:
-                    break  # They're done
+                _, attribute = reaction.split(" ", 1)
+                if attribute == "DONE":
+                    break
+                elif attribute == "FIELDS":
+                    response: typing.Optional[bool] = await self.edit_field(
+                        ctx, interaction, template, guild_settings,
+                        is_bot_support,
+                    )
+                    async with vbu.Database() as db:
+                        await template.fetch_fields(db)
+                elif attribute in ["NAME", "VERIFICATION", "ARCHIVE", "ROLE", "COUNT"]:
+                    converter: typing.Union[commands.Converter, type]
+                    attribute, converter = {
+                        "NAME": ("name", str),
+                        "VERIFICATION": ("verification_channel_id", commands.TextChannelConverter()),
+                        "ARCHIVE": ("archive_channel_id", commands.TextChannelConverter()),
+                        "ROLE": ("role_id", commands.RoleConverter()),
+                        "COUNT": ("max_profile_count", int),
+                    }[attribute]
+                    response: typing.Optional[bool] = await self.change_template_attribute(
+                        ctx, interaction, template, guild_settings,
+                        is_bot_support, attribute, converter,
+                    )
+                else:
+                    assert False, "Failed to get a response."
 
-                # Disable the components
-                await template_options_edit_message.edit(components=components.disable_components())
-
-                # If they want to edit a field, we go through this section
-                if attr is None:
-
-                    # Let them change the fields
-                    fields_have_changed = await converter
-
-                    # If the fields have changed then we should update the message
-                    if fields_have_changed:
-                        async with self.bot.database() as db:
-                            await template.fetch_fields(db)
-                        should_edit = True
-
-                    # And we're done with this round, so continue upwards
-                    continue
-
-                # Change the given attribute
-                should_edit = await self.change_template_attribute(ctx, template, guild_settings, is_bot_support, attr, converter)
+                # See if the user gave a response or if they timed out
+                if response is None:
+                    break
 
         # Tell them it's done
-        await template_options_edit_message.edit(
-            content=(
-                f"Finished editing template. Users can create profiles with `{ctx.clean_prefix}{template.name.lower()} set`, "
-                f"edit with `{ctx.clean_prefix}{template.name.lower()} edit`, and show them with "
-                f"`{ctx.clean_prefix}{template.name.lower()} get`."
-            ),
-            components=None,
-        )
+        try:
+            await interaction.edit_original_message(
+                content=f"Finished editing template.",
+                components=None,
+            )
+        finally:
+            return
 
     async def change_template_attribute(
-            self, ctx: utils.Context, template: localutils.Template, guild_settings: dict, is_bot_support: bool, attribute: str,
-            converter: typing.Union[commands.Converter, type]) -> bool:
+            self,
+            ctx: utils.types.GuildContext,
+            interaction: discord.Interaction,
+            template: utils.Template,
+            guild_settings: dict,
+            is_bot_support: bool,
+            attribute: str,
+            converter: typing.Union[commands.Converter, type]) -> typing.Optional[bool]:
         """
-        Change the attributes of a given template. Returns whether or not the template has been changed, and should
-        thus be updated.
+        Change the attributes of a given template. Returns whether or not the template
+        has been changed, and should thus be updated.
         """
 
-        # Ask what they want to set things to
-        if isinstance(converter, commands.Converter):
-            note = ""
-            if attribute == "verification_channel_id":
-                note = "Note that any current pending profiles will _not_ be able to be approved after moving the channel"
-            v = await ctx.send((
-                f"What do you want to set the template's **{' '.join(attribute.split('_')[:-1])}** to? "
-                f"You can give a name, a ping, or an ID, or say `continue` to set the value to null. {note}"
-            ))
+        # Make up the text to be sent
+        text: str
+        if attribute == "name":
+            text = "What do you want to set the template's name to?"
+        elif attribute == "verification_channel_id":
+            text = "What channel do you want to set as the verification channel?"
+        elif attribute == "archive_channel_id":
+            text = "What channel do you want to set as the archive channel?"
+        elif attribute == "role_id":
+            text = "What role do you want users to receive when their profile is approved?"
+        elif attribute == "max_profile_count":
+            text = "What do you want to set the max profile count to?"
         else:
-            v = await ctx.send(f"What do you want to set the template's **{attribute.replace('_', ' ')}** to?")
-        messages_to_delete = [v]
+            raise ValueError()
+
+        # Send the text
+        await interaction.edit_original_message(
+            content=text,
+            components=None,
+            embed=None,
+        )
 
         # Wait for them to respond
+        def check(message):
+            return all([
+                message.author.id == ctx.author.id,
+                message.channel.id == ctx.channel.id,
+            ])
         try:
-            def check(message):
-                return all([
-                    message.author.id == ctx.author.id,
-                    message.channel.id == ctx.channel.id,
-                ])
-            value_message = await self.bot.wait_for("message", check=check, timeout=120)
+            value_message: discord.Message = await self.bot.wait_for(
+                "message",
+                check=check,
+                timeout=60 * 2,
+            )
         except asyncio.TimeoutError:
             try:
-                return await ctx.send("Timed out waiting for edit response.")
-            except discord.HTTPException:
+                await interaction.edit_original_message(
+                    content="Timed out waiting for edit response.",
+                    components=None,
+                    embed=None,
+                )
+            finally:
                 return
-        messages_to_delete.append(value_message)
 
         # Try and convert their response
+        converted: str
         try:
-            converted = str((await converter.convert(ctx, value_message.content)).id)
-
-        # The converter failed
-        except commands.BadArgument:
-
-            # They want to set it to none
-            if value_message.content == "continue":
-                converted = None
-
-            # They either gave a command or just something invalid
+            if isinstance(converter, commands.Converter):
+                converted = str((await converter.convert(ctx, value_message.content)).id)
             else:
-                is_command, is_valid_command = localutils.CommandProcessor.get_is_command(value_message.content)
-                if is_command and is_valid_command:
-                    converted = value_message.content
-                else:
-                    self.purge_message_list(ctx.channel, messages_to_delete)
-                    return False
-
-        # It isn't a converter object it's just a type
-        except AttributeError:
-            try:
                 converted = converter(value_message.content)
-            except ValueError:
-                self.purge_message_list(ctx.channel, messages_to_delete)
+        except commands.BadArgument:
+            is_command, is_valid_command = utils.CommandProcessor.get_is_command(value_message.content)
+            if is_command and is_valid_command:
+                converted = value_message.content
+            else:
                 return False
-
-        # Delete the messages we don't need any more
-        self.purge_message_list(ctx.channel, messages_to_delete)
+        except ValueError:
+            return False
 
         # Validate the given information
-        converted = await self.validate_given_attribute(ctx, template, attribute, converted, guild_settings, is_bot_support)
-        if converted is None and attribute in ["name", "max_profile_count"]:
+        checked_converted: typing.Optional[typing.Any] = await self.validate_given_attribute(
+            ctx=ctx,
+            template=template,
+            attribute=attribute,
+            converted=converted,
+            guild_settings=guild_settings,
+            is_bot_support=is_bot_support,
+        )
+        if checked_converted is None and attribute in ["name", "max_profile_count"]:
             return False
 
         # Store our new shit
-        setattr(template, attribute, converted)
-        async with self.bot.database() as db:
-            await db("UPDATE template SET {0}=$1 WHERE template_id=$2".format(attribute), converted, template.template_id)
+        setattr(template, attribute, checked_converted)
+        async with vbu.Database() as db:
+            await db(
+                "UPDATE template SET {0}=$1 WHERE template_id=$2".format(attribute),
+                checked_converted, template.template_id,
+            )
         return True
 
     async def validate_given_attribute(
-            self, ctx: utils.Context, template: localutils.Template, attribute: str,
-            converted: str, guild_settings: dict, is_bot_support: bool) -> str:
+            self,
+            ctx: utils.types.GuildContext,
+            template: utils.Template,
+            attribute: str,
+            converted: typing.Union[str, int],
+            guild_settings: dict,
+            is_bot_support: bool) -> typing.Optional[typing.Any]:
         """
         Validates the given information from the user as to whether their attribute should be changed.
         Returns either
         """
 
         # Validate if they provided a new name
-        if attribute == 'name':
+        if attribute == "name":
+
+            # Validaate the name
+            assert isinstance(converted, str)
             converted = converted.replace(" ", "")
-            async with self.bot.database() as db:
+
+            # See if they're already using the name
+            async with vbu.Database() as db:
                 name_in_use = await db(
                     """SELECT * FROM template WHERE guild_id=$1 AND LOWER(name)=LOWER($2)
                     AND template_id<>$3""",
                     ctx.guild.id, converted, template.template_id,
                 )
-                if name_in_use:
-                    await ctx.send("That template name is already in use.", delete_after=3)
-                    return None
+            if name_in_use:
+                await ctx.send("That template name is already in use.", delete_after=3)
+                return None
+
+            # See if the length is fine
             if 30 < len(converted) < 1:
                 await ctx.send("That template name is invalid - not within 1 and 30 characters in length.", delete_after=3)
                 return None
 
         # Validate profile count
-        if attribute == 'max_profile_count':
-            if is_bot_support:
-                pass
-            else:
-                original_converted = converted
-                converted = max(
-                    min(
-                        converted,
-                        max(
-                            guild_settings['max_template_profile_count'],
-                            ctx.guild_perks.max_profile_count,
-                        ),
+        elif attribute == "max_profile_count":
+
+            # Validate the number
+            assert isinstance(converted, int)
+            converted = max(
+                min(
+                    converted,
+                    max(
+                        guild_settings['max_template_profile_count'],
+                        ctx.guild_perks.max_profile_count,
                     ),
-                    0,
-                )
-                if original_converted > converted and not ctx.guild_perks.is_premium:
-                    await ctx.send(
-                        (
-                            f"Your max profile count has been set to **{converted}** instead "
-                            f"of **{original_converted}** - see `{ctx.clean_prefix}donate` to get a "
-                            "higher profile count for your server."
-                        ),
-                        delete_after=3,
-                    )
+                ),
+                0,
+            )
 
         # Return new information
         return converted
 
     async def edit_field(
-            self, ctx: utils.Context, template: localutils.Template, guild_settings: dict,
-            is_bot_support: bool) -> bool:
+            self,
+            ctx: utils.types.GuildContext,
+            interaction: discord.Interaction,
+            template: utils.Template,
+            guild_settings: dict,
+            is_bot_support: bool) -> typing.Optional[bool]:
         """
         Talk the user through editing a field of a template.
         Returns whether or not the template display needs to be updated, or None for an error (like a timeout).
         """
 
-        # Create some components to add to the message
-        if len(template.fields) == 0:
-            components = None
+        # Create some components to add to the message asking which field to edit
+        field_name_buttons = [
+            discord.ui.Button(
+                label=field.name[:25],
+                custom_id=field.field_id
+            )
+            for field in template.field_list
+        ]
+        max_field_count = max(guild_settings['max_template_field_count'], ctx.guild_perks.max_field_count)
+        if len(template.fields) < max_field_count or is_bot_support:
+            new_button = discord.ui.Button(label="New", custom_id="NEW", style=discord.ButtonStyle.success)
         else:
-            field_name_buttons = [
-                utils.Button(field.name[:25], style=utils.ButtonStyle.SECONDARY, custom_id=field.field_id)
-                for field in template.field_list
-            ]
-            max_field_count = max(guild_settings['max_template_field_count'], ctx.guild_perks.max_field_count)
-            if len(template.fields) < max_field_count or is_bot_support:
-                components = utils.MessageComponents.add_buttons_with_rows(
-                    utils.Button("New", custom_id="NEW"),
-                    *field_name_buttons
-                )
-            else:
-                components = utils.MessageComponents.add_buttons_with_rows(
-                    utils.Button("New (unavailable)", custom_id="NEW"),
-                    *field_name_buttons
-                )
+            new_button = discord.ui.Button(label="New (unavailable)", custom_id="NEW", disabled=True, style=discord.ButtonStyle.success)
+        components = discord.ui.MessageComponents.add_buttons_with_rows(
+            new_button,
+            *field_name_buttons,
+            discord.ui.Button(label="Cancel", custom_id="CANCEL", style=discord.ButtonStyle.secondary),
+        )
 
         # Send a message asking what they want to edit
-        if components:
-            ask_field_edit_message: discord.Message = await ctx.send("Which field do you want to edit?", components=components)
-            messages_to_delete = [ask_field_edit_message]
-        else:
-            ask_field_edit_message = None
-            messages_to_delete = []
-
-        # Get field index message
-        field_to_edit: localutils.Field = await self.get_field_to_edit(
-            ctx, template, ask_field_edit_message, guild_settings, is_bot_support,
+        original_message = await interaction.response.edit_message(
+            content="Which field do you want to edit?",
+            components=components,
+            embed=None,
         )
-        if not isinstance(field_to_edit, localutils.Field):
-            self.purge_message_list(ctx.channel, messages_to_delete)
-            return field_to_edit  # A new field was created - let's just exit here
-        await ask_field_edit_message.edit(components=components.disable_components())
 
-        # Ask what part of it they want to edit
-        components = utils.MessageComponents(
-            utils.ActionRow(
-                utils.Button("Field name", custom_id="NAME"),
-                utils.Button("Field prompt", custom_id="PROMPT"),
-                utils.Button("Field being optional", custom_id="OPTIONAL"),
-                utils.Button("Field type", custom_id="TYPE"),
-            ),
-            utils.ActionRow(
-                utils.Button("Delete field", style=utils.ButtonStyle.DANGER, custom_id="DELETE"),
-                utils.Button("Cancel", style=utils.ButtonStyle.SECONDARY, custom_id="CANCEL"),
-            ),
-        )
-        attribute_message: discord.Message = await ctx.send(
-            f"Editing the field **{field_to_edit.name}**. Which part would you like to edit?",
-            allowed_mentions=discord.AllowedMentions.none(),
-            components=components
-        )
-        messages_to_delete.append(attribute_message)
-
-        # Wait for them to say what they want to edit
+        # Wait for them to click a button
         try:
-            payload = await attribute_message.wait_for_button_click(check=lambda p: p.user.id == ctx.author.id, timeout=120)
-            await payload.ack()
-            payload_id = payload.component.custom_id
+            interaction = await self.bot.wait_for(
+                "component_interaction",
+                check=lambda i: i.user.id == ctx.author.id and original_message.id == i.message.id,
+                timeout=60 * 2,
+            )
         except asyncio.TimeoutError:
             try:
-                await attribute_message.edit(content="Timed out waiting for field attribute.", components=None)
-            except discord.HTTPException:
-                pass
-            return None
+                await interaction.edit_original_message(
+                    content="Timed out waiting for button click.",
+                    components=None,
+                    embed=None,
+                )
+            finally:
+                return None
+
+        # See if they clicked one of the simple buttons
+        if interaction.component.custom_id == "NEW":
+            image_field_exists: bool = any(
+                i for i in template.fields.values()
+                if isinstance(i.field_type, utils.ImageField)
+            )
+            field: typing.Optional[utils.Field] = await self.create_new_field(
+                ctx=ctx,
+                interaction=interaction,
+                template=template,
+                index=len(template.all_fields),
+                image_set=image_field_exists,
+            )
+            if field is None:
+                return None
+            return True
+        elif interaction.component.custom_id == "CANCEL":
+            return False
+
+        # Otherwise, take them through editing the field
+        field_to_edit = template.fields.get(interaction.component.custom_id)
+        if field_to_edit is None:
+            return True  # Update the template for them
+
+        # Ask what part of it they want to edit
+        components = discord.ui.MessageComponents(
+            discord.ui.ActionRow(
+                discord.ui.Button(label="Field name", custom_id="NAME"),
+                discord.ui.Button(label="Field prompt", custom_id="PROMPT"),
+                discord.ui.Button(label="Field being optional", custom_id="OPTIONAL"),
+                discord.ui.Button(label="Field type", custom_id="TYPE"),
+            ),
+            discord.ui.ActionRow(
+                discord.ui.Button(label="Delete field", style=discord.ButtonStyle.danger, custom_id="DELETE"),
+                discord.ui.Button(label="Cancel", style=discord.ButtonStyle.secondary, custom_id="CANCEL"),
+            ),
+        )
+        await interaction.response.edit_message(
+            content=f"Editing the field **{field_to_edit.name}**. Which part would you like to edit?",
+            components=components,
+            embed=None,
+        )
+
+        # Wait for them to click a butotn
+        try:
+            interaction = await self.bot.wait_for(
+                "component_interaction",
+                check=lambda i: i.user.id == ctx.author.id and i.message.id == original_message.id,
+                timeout=60 * 2,
+            )
+        except asyncio.TimeoutError:
+            try:
+                await interaction.edit_original_message(
+                    content="Timed out waiting for field attribute.",
+                    components=None,
+                    embed=None,
+                )
+            finally:
+                return None
 
         # See if they want to cancel
-        if payload_id == "CANCEL":
-            self.purge_message_list(ctx.channel, messages_to_delete)
+        if interaction.component.custom_id == "CANCEL":
             return False
-        await attribute_message.edit(components=components.disable_components())
 
-        # Let's set up our validity converters for each of the fields
-        def name_validity_checker(given_value):
-            if len(given_value) > 256 or len(given_value) <= 0:
-                return "Your given field name is too long. Please provide another."
-            return True
-
-        # See what they reacted with
-        try:
-            available_reactions = {
-                "NAME": (
-                    "name", "What do you want to set the name of this field to?",
-                    lambda given: "Your given field name is too long. Please provide another." if 0 >= len(given) > 256 else True,
-                    None,
-                ),
-                "PROMPT": (
-                    "prompt", "What do you want to set the prompt for this field to?",
-                    lambda given: "Your given field prompt is too short. Please provide another." if len(given) == 0 else True,
-                    None,
-                ),
-                "OPTIONAL": (
-                    "optional", "Do you want this field to be optional?",
-                    None,
-                    utils.MessageComponents.boolean_buttons(),
-                ),
-                "TYPE": (
-                    "field_type", "What type do you want this field to have?",
-                    None,
-                    utils.MessageComponents(utils.ActionRow(utils.Button("Text", "TEXT"), utils.Button("Numbers", "NUMBERS"))),
-                ),
-                "DELETE": None,
-                # "CANCEL": None,
-            }
-            changed_attribute, prompt, value_check, components = available_reactions[payload_id]
-        except TypeError:
-            changed_attribute = None  # Delete field
-
-        # Get the value they asked for
-        field_value_message = None
-        if changed_attribute:
-
-            # Loop so we can deal with invalid values
-            while True:
-
-                # Send the prompt
-                v = await ctx.send(prompt, components=components)
-                messages_to_delete.append(v)
-
-                # Ask the user for some content
-                try:
-                    if value_check:
-                        def check(message):
-                            return all([
-                                message.author.id == ctx.author.id,
-                                message.channel.id == ctx.channel.id,
-                            ])
-                        field_value_message = await self.bot.wait_for("message", check=check, timeout=120)
-                        messages_to_delete.append(field_value_message)
-                        field_value = str(field_value_message.content)
-                    elif components:
-                        payload = await v.wait_for_button_click(check=lambda p: p.user.id == ctx.author.id, timeout=120)
-                        await payload.ack()
-                        field_value = {
-                            "YES": True,
-                            "NO": False,
-                            "TEXT": localutils.TextField.name,
-                            "NUMBERS": localutils.NumberField.name,
-                        }[payload.component.custom_id]
-                    else:
-                        raise Exception("You shouldn't be able to get here.")
-
-                # Value failed to convert
-                except ValueError:
-                    v = await ctx.send("I couldn't convert your provided value properly. Please provide another.")
-                    messages_to_delete.append(v)
-                    continue
-
-                # Timed out
-                except asyncio.TimeoutError:
-                    try:
-                        await ctx.send("Timed out waiting for field value.")
-                    except discord.HTTPException:
-                        pass
-                    return None
-
-                # Fix up the inputs
-                if value_check:
-                    value_is_valid = value_check(field_value)
-                    if isinstance(value_is_valid, str) or isinstance(value_is_valid, bool) and value_is_valid is False:
-                        v = await ctx.send(value_is_valid or "Your provided value is invalid. Please provide another.")
-                        messages_to_delete.append(v)
-                        continue
-                break
-
-        # Save the data
-        async with self.bot.database() as db:
-            if changed_attribute:
-                await db(
-                    """UPDATE field SET {0}=$2 WHERE field_id=$1""".format(changed_attribute),
-                    field_to_edit.field_id, field_value,
-                )
-            else:
+        # See if they want to delete
+        elif interaction.component.custom_id == "DELETE":
+            async with vbu.Database() as db:
                 await db(
                     """UPDATE field SET deleted=true WHERE field_id=$1""",
                     field_to_edit.field_id,
                 )
+            return True
+
+        # They want to change something
+        attribute_to_change: str = interaction.component.custom_id
+
+        # They want to change something that we spawn a modal for
+        if attribute_to_change in ["NAME", "PROMPT"]:
+
+            # Make the modal
+            modal = discord.ui.Modal(
+                title="Change Field Attribute",
+                components=[
+                    discord.ui.ActionRow(
+                        discord.ui.InputText(
+                            label={
+                                "NAME": "What name do you want the field to have?",
+                                "PROMPT": "What question do you want the bot to ask the user for this field?",
+                            }[attribute_to_change],
+                            value=getattr(field_to_edit, attribute_to_change.lower()),
+                            custom_id="fieldAttributeText",
+                            max_length=256 if attribute_to_change == "NAME" else None,
+                        )
+                    )
+                ]
+            )
+
+            # Send the modal
+            await interaction.response.send_modal(modal)
+
+            # Wait for a response
+            try:
+                interaction = await self.bot.wait_for(
+                    "modal_submit",
+                    check=lambda i: i.user.id == ctx.author.id and i.components[0].custom_id == modal.custom_id,
+                    timeout=60 * 20,
+                )
+            except asyncio.TimeoutError:
+                try:
+                    await interaction.edit_original_message(
+                        content="Timed out waiting for modal submission.",
+                        components=None,
+                        embed=None,
+                    )
+                finally:
+                    return None
+
+            # Get the newly changed data
+            field_value = interaction.components[0].components[0].components[0].value
+
+        # They want to change something we spawn a button for
+        elif attribute_to_change in ["OPTIONAL", "TYPE"]:
+
+            # Make the responses
+            if attribute_to_change == "OPTIONAL":
+                prompt = "Do you want this field to be optional?"
+                components = discord.ui.MessageComponents.boolean_buttons()
+            elif attribute_to_change == "TYPE":
+                prompt = "What type do you want this field to have?"
+                components = discord.ui.MessageComponents(
+                    discord.ui.ActionRow(
+                        discord.ui.Button(label="Text", custom_id="TEXT"),
+                        discord.ui.Button(label="Numbers", custom_id="NUMBERS")
+                    )
+                )
+            else:
+                raise ValueError()
+
+            # Ask the user
+            await interaction.response.edit_message(
+                content=prompt,
+                components=components,
+                embed=None,
+            )
+
+            # Wait for a response
+            try:
+                interaction = await self.bot.wait_for(
+                    "component_interaction",
+                    check=lambda i: i.user.id == ctx.author.id and i.message.id == original_message.id,
+                    timeout=60 * 2,
+                )
+            except asyncio.TimeoutError:
+                try:
+                    await interaction.edit_original_message(
+                        content="Timed out waiting for button click.",
+                        components=None,
+                        embed=None,
+                    )
+                finally:
+                    return None
+
+            # Get the newly changed data
+            field_value = {
+                "YES": True,
+                "NO": False,
+                "TEXT": utils.TextField.name,
+                "NUMBERS": utils.NumberField.name,
+            }[interaction.component.custom_id]
+
+        # It's something else
+        else:
+            raise ValueError()
+
+        # We want to defer now
+        await interaction.response.defer()
+
+        # Save the data
+        async with vbu.Database() as db:
+            await db(
+                """UPDATE field SET {0}=$2 WHERE field_id=$1""".format(attribute_to_change.lower()),
+                field_to_edit.field_id, field_value,
+            )
 
         # And done
-        self.purge_message_list(ctx.channel, messages_to_delete)
         return True
 
-    async def get_field_to_edit(
-            self, ctx: utils.Context, template: localutils.Template, sent_message: discord.Message,
-            guild_settings: dict, is_bot_support: bool) -> localutils.Field:
-        """
-        Get the index of the field that we want to edit. Either returns the field that the user wants to edit,
-        True if a new field was successfully created, or None if the user timed out.
-        """
-
-        # Start our infinite loop
-        messages_to_delete = []
-        while True:
-
-            # Wait for them to say which field they want to edit
-            if len(template.fields) > 0:
-                try:
-                    payload = await sent_message.wait_for_button_click(check=lambda p: p.user.id == ctx.author.id, timeout=120)
-                    await payload.ack()
-                except asyncio.TimeoutError:
-                    try:
-                        await sent_message.edit(content="Timed out waiting for field index.", components=None)
-                    except discord.HTTPException:
-                        pass
-                    return None
-
-            # Grab the field they want to edit
-            try:
-                if len(template.fields) == 0:
-                    raise ValueError()
-                return template.fields[payload.component.custom_id]
-
-            # They either gave an invalid number or want to make a new field
-            except (ValueError, KeyError):
-
-                # See if they're allowed to make a new one
-                if len(template.fields) >= ctx.guild_perks.max_field_count and not is_bot_support:
-                    await payload.send((
-                        "You need to be subscribed to premium add more templates - "
-                        f"see the `{ctx.clean_prefix}donate` command for more information."
-                    ))
-                    return True
-
-                # See if an image field already exists
-                image_field_exists: bool = any([i for i in template.fields.values() if isinstance(i.field_type, localutils.ImageField)])
-
-                # Talk the user through creating a new field
-                field: localutils.Field = await self.create_new_field(
-                    ctx=ctx,
-                    template=template,
-                    index=len(template.all_fields),
-                    image_set=image_field_exists,
-                    prompt_for_creation=False,
-                    delete_messages=True
-                )
-
-                # If they errored on setting up then we can exit here
-                if field is None:
-                    return None
-
-                # Save the new field into the database
-                async with self.bot.database() as db:
-                    try:
-                        await db(
-                            """INSERT INTO field (field_id, name, index, prompt, timeout, field_type, optional, template_id)
-                            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)""",
-                            field.field_id, field.name, field.index, field.prompt, field.timeout, field.field_type.name,
-                            field.optional, field.template_id,
-                        )
-                    except asyncpg.ForeignKeyViolationError:
-                        return True  # The template was deleted while it was being edited
-                return True
-
-    @utils.command()
+    @template.command(name="delete")
+    @commands.defer()
     @commands.has_guild_permissions(manage_roles=True)
     @commands.bot_has_permissions(send_messages=True, external_emojis=True, add_reactions=True)
     @commands.guild_only()
-    async def deletetemplate(self, ctx: utils.Context, template: localutils.Template):
+    async def template_delete(self, ctx: utils.types.GuildContext, template: utils.Template):
         """
         Deletes a template from your guild.
         """
 
         # See if they're already editing that template
         if self.template_editing_locks[ctx.guild.id].locked():
-            return await ctx.send("You're already editing a template.")
+            return await ctx.interaction.followup.send("You're already editing a template.")
+        interaction = ctx.interaction
 
         # Grab the template edit lock
         async with self.template_editing_locks[ctx.guild.id]:
 
             # Ask for confirmation
-            delete_confirmation_message = await ctx.send(
+            delete_confirmation_message = await ctx.interaction.followup.send(
                 "By doing this, you'll delete all of the created profiles under this template as well. Would you like to proceed?",
-                components=utils.MessageComponents.boolean_buttons()
+                components=discord.ui.MessageComponents.boolean_buttons(),
+                wait=True,
             )
             try:
-                payload = await delete_confirmation_message.wait_for_button_click(check=lambda p: p.user.id == ctx.author.id, timeout=120.0)
-                await payload.ack()
+                interaction = await self.bot.wait_for(
+                    "component_interaction",
+                    check=lambda i: i.user.id == ctx.author.id and i.message.id == delete_confirmation_message.id,
+                    timeout=120,
+                )
             except asyncio.TimeoutError:
                 try:
-                    await delete_confirmation_message.edit(
+                    await interaction.edit_original_message(
                         content="Template delete timed out - please try again later.",
-                        components=utils.MessageComponents.boolean_buttons().disable_components(),
+                        components=None,
                     )
-                except discord.HTTPException:
-                    pass
-                return
+                finally:
+                    return
 
             # Check if they said no
-            if payload.component.custom_id == "NO":
-                return await payload.message.delete()
+            if interaction.component.custom_id == "NO":
+                return await interaction.response.edit_original_message(
+                    content="Cancelled template delete.",
+                    components=None,
+                    embed=None,
+                )
 
             # Delete it from the database
-            async with self.bot.database() as db:
-                await db("DELETE FROM template WHERE template_id=$1", template.template_id)
+            async with vbu.Database() as db:
+                await db(
+                    """DELETE FROM template WHERE template_id=$1""",
+                    template.template_id,
+                )
             self.logger.info(f"Template '{template.name}' deleted on guild {ctx.guild.id}")
-            return await payload.message.edit(
+            return await interaction.response.edit_message(
                 content=f"All relevant data for template **{template.name}** (`{template.template_id}`) has been deleted.",
                 components=None,
+                embed=None,
             )
 
-    @utils.command()
+    @template.command(name="create")
+    @commands.defer()
     @commands.has_guild_permissions(manage_roles=True)
     @commands.bot_has_permissions(send_messages=True, manage_messages=True, external_emojis=True, add_reactions=True, embed_links=True)
     @commands.guild_only()
-    async def createtemplate(self, ctx: utils.Context, template_name: str = None):
+    async def template_create(self, ctx: utils.types.GuildContext, template_name: str):
         """
         Creates a new template for your guild.
         """
 
         # Only allow them to make one template at once
         if self.template_editing_locks[ctx.guild.id].locked():
-            return await ctx.send("You're already creating a template.")
+            return await ctx.interaction.followup.send("You're already creating a template.")
+        interaction = ctx.interaction
 
-        # See if they have too many templates already
-        async with self.bot.database() as db:
+        # Check their template count
+        async with vbu.Database() as db:
             template_list = await db("SELECT template_id FROM template WHERE guild_id=$1", ctx.guild.id)
             guild_settings = await db("SELECT * FROM guild_settings WHERE guild_id=$1 OR guild_id=0 ORDER BY guild_id DESC", ctx.guild.id)
-            perks = await localutils.get_perks_for_guild(db, ctx.guild.id)
+            perks = await utils.get_perks_for_guild(db, ctx.guild.id)
         max_template_count = max(guild_settings[0]['max_template_count'], perks.max_template_count)
         if len(template_list) >= max_template_count:
             if perks.is_premium:
-                return await ctx.send((
+                return await interaction.followup.send((
                     f"You already have {max_template_count} templates set for this server, which is the "
                     "maximum number you are allowed."
                 ))
-            return await ctx.send((
+            return await interaction.followup.send((
                 f"You already have {max_template_count} templates set for this server, which is the "
                 f"maximum number you are allowed - see `{ctx.clean_prefix}donate` to get a "
                 "higher profile count for your server."
@@ -695,69 +733,40 @@ class ProfileTemplates(utils.Cog):
         # And now we start creating the template itself
         async with self.template_editing_locks[ctx.guild.id]:
 
-            # Send the flavour text behind getting a template name
-            if template_name is None:
-                await ctx.send((
-                    f"What name do you want to give this template? This will be used for the set "
-                    f"and get commands; eg if the name of your template is `test`, the commands generated "
-                    f"will be `{ctx.prefix}settest` to set a profile, `{ctx.prefix}gettest` to get a "
-                    f"profile, and `{ctx.prefix}deletetest` to delete a profile. A profile name is case "
-                    f"insensitive when used in commands."
-                ))
-
-            # Get name from the messages they send
-            while True:
-
-                # Get message
-                if template_name is None:
-                    try:
-                        check = lambda m: m.author == ctx.author and m.channel == ctx.channel
-                        name_message = await self.bot.wait_for('message', check=check, timeout=120)
-
-                    # Catch timeout
-                    except asyncio.TimeoutError:
-                        try:
-                            return await ctx.send((
-                                f"{ctx.author.mention}, your template creation has "
-                                f"timed out after 2 minutes of inactivity."
-                            ))
-                        except discord.Forbidden:
-                            return
-                    template_name = name_message.content
-
                 # Check name for characters
-                if not self.is_valid_template_name(template_name):
-                    await ctx.send((
-                        "You can only use normal lettering and digits in your command name. "
-                        "Please run this command again to set a new one."
-                    ))
-                    return
+            if not self.is_valid_template_name(template_name):
+                await interaction.followup.send((
+                    "You can only use normal lettering and digits in your command name. "
+                    "Please run this command again to set a new one."
+                ))
+                return
 
-                # Check name for length
-                if 30 >= len(template_name) >= 1:
-                    pass
-                else:
-                    await ctx.send("The maximum length of a profile name is 30 characters. Please give another name.")
-                    continue
+            # Check name for length
+            if 30 >= len(template_name) >= 1:
+                pass
+            else:
+                await interaction.followup.send(
+                    "The maximum length of a profile name is 30 characters. "
+                    "Please run this command again to set a new one."
+                )
 
-                # Check name is unique
-                async with self.bot.database() as db:
-                    template_exists = await db(
-                        """SELECT * FROM template WHERE guild_id=$1 AND LOWER(name)=LOWER($2)""",
-                        ctx.guild.id, template_name,
-                    )
-                if template_exists:
-                    await ctx.send((
-                        f"This server already has a template with name **{template_name}**. "
-                        "Please run this command again to provide another one."
-                    ))
-                    return
-                break
+            # Check name is unique
+            async with vbu.Database() as db:
+                template_exists = await db(
+                    """SELECT * FROM template WHERE guild_id=$1 AND LOWER(name)=LOWER($2)""",
+                    ctx.guild.id, template_name,
+                )
+            if template_exists:
+                await interaction.followup.send(
+                    f"This server already has a template with name **{template_name}**. "
+                    "Please run this command again to provide another one."
+                )
+                return
 
             # Get an ID for the profile
-            template = localutils.Template(
+            template = utils.Template(
                 template_id=uuid.uuid4(),
-                colour=0x0,
+                colour=0,
                 guild_id=ctx.guild.id,
                 verification_channel_id=None,
                 name=template_name,
@@ -768,7 +777,7 @@ class ProfileTemplates(utils.Cog):
             )
 
         # Save it all to database
-        async with self.bot.database() as db:
+        async with vbu.Database() as db:
             await db(
                 """INSERT INTO template (template_id, name, colour, guild_id, verification_channel_id, archive_channel_id)
                 VALUES ($1, $2, $3, $4, $5, $6)""",
@@ -778,210 +787,127 @@ class ProfileTemplates(utils.Cog):
 
         # Output to user
         self.logger.info(f"New template '{template.name}' created on guild {ctx.guild.id}")
-        await ctx.invoke(self.bot.get_command("edittemplate"), template)
-
-    async def get_field_name(self, ctx: utils.Context, messages_to_delete: list) -> typing.Optional[str]:
-        """
-        A method for use in template creation - asks the user for the name of the field they want to add.
-        """
-
-        # Set up a check we can use later
-        def message_check(message):
-            return all([
-                message.author.id == ctx.author.id,
-                message.channel.id == ctx.channel.id,
-            ])
-
-        # Get a name for the new field
-        v = await ctx.send(
-            "What name should this field have? This is the name shown on the embed, "
-            "so it should be something like 'Name', 'Age', 'Gender', etc."
-        )
-        messages_to_delete.append(v)
-        while True:
-            try:
-                field_name_message = await self.bot.wait_for('message', check=message_check, timeout=120)
-                messages_to_delete.append(field_name_message)
-            except asyncio.TimeoutError:
-                try:
-                    await ctx.send(
-                        "Creating a new field has timed out. The profile "
-                        "is being created with the fields currently added."
-                    )
-                except (discord.Forbidden, discord.NotFound):
-                    pass
-                return None
-
-            # Check if if name is too long
-            if 256 >= len(field_name_message.content) >= 1:
-                break
-            else:
-                v = await ctx.send(
-                    "The maximum length of a field name is 256 characters. "
-                    "Please provide another name."
-                )
-                messages_to_delete.append(v)
-        return field_name_message.content
+        await self.template_edit(ctx, template)
 
     async def create_new_field(
-            self, ctx: utils.Context, template: localutils.Template, index: int, image_set: bool = False,
-            prompt_for_creation: bool = True, delete_messages: bool = False) -> typing.Optional[localutils.Field]:
+            self,
+            ctx: vbu.Context,
+            interaction: discord.Interaction,
+            template: utils.Template,
+            index: int,
+            image_set: bool = False) -> typing.Optional[utils.Field]:
         """
         Talk a user through creating a new field for their template.
         """
 
-        # Here are some things we can use later
-        def message_check(message):
-            return all([
-                message.author.id == ctx.author.id,
-                message.channel.id == ctx.channel.id,
-            ])
-        messages_to_delete = []
+        # Send a modal off to the user
+        modal = discord.ui.Modal(
+            title="Create New Field",
+            components=[
+                discord.ui.ActionRow(
+                    discord.ui.InputText(
+                        label=(
+                            "What name should this field have? This is the name shown on the embed, "
+                            "so it should be something like 'Name', 'Age', 'Gender', etc."
+                        ),
+                        max_length=256,
+                    )
+                ),
+                discord.ui.ActionRow(
+                    discord.ui.InputText(
+                        label=(
+                            "What message should I send when I'm asking people to fill out this field? "
+                            "This should be a question or prompt, eg 'What is your name/age/gender/etc'."
+                        ),
+                        style=discord.TextStyle.long,
+                    )
+                )
+            ]
+        )
+        await interaction.response.send_modal(modal)
+        original_message = await interaction.original_message()
 
-        # Ask if they want a new field
-        if prompt_for_creation:
-            field_message = await ctx.send(
-                "Do you want to make a new field for your profile?",
-                embed=template.build_embed(self.bot),
-                components=utils.MessageComponents.boolean_buttons(),
+        # Wait for the user to respond
+        try:
+            interaction = await self.bot.wait_for(
+                "modal_submit",
+                check=lambda i: i.user.id == ctx.author.id and i.components[0].custom_id == modal.custom_id,
+                timeout=60 * 2
             )
-            messages_to_delete.append(field_message)
-
-            # Here's us waiting for the "do you want to make a new field" reaction
+        except asyncio.TimeoutError:
             try:
-                payload = await field_message.wait_for_button_click(check=lambda p: p.user.id == ctx.author.id, timeout=120)
-                await payload.ack()
-            except asyncio.TimeoutError:
-                try:
-                    await ctx.send("Creating a new field has timed out. The profile is being created with the fields currently added.")
-                except (discord.Forbidden, discord.NotFound):
-                    pass
+                await interaction.edit_original_message(
+                    content="Creating a new field has timed out.",
+                    components=None,
+                    embed=None,
+                )
+            finally:
                 return None
+        field_name = interaction.components[0].components[0].components[0].value
+        field_prompt = interaction.components[0].components[0].components[1].value
 
-            # See if they don't wanna continue
-            if payload.component.custom_id == "NO":
-                return None
-            await field_message.edit(content=field_message.content, embed=None)
-
-        # Get a name for the new field
-        field_name = await self.get_field_name(ctx, messages_to_delete)
-        if field_name is None:
-            return
-
-        # Get a prompt for the field
-        v = await ctx.send((
-            "What message should I send when I'm asking people to fill out this field? "
-            "This should be a question or prompt, eg 'What is your name/age/gender/etc'."
-        ))
-        messages_to_delete.append(v)
-        while True:
-            try:
-                field_prompt_message = await self.bot.wait_for('message', check=message_check, timeout=120)
-                messages_to_delete.append(field_prompt_message)
-            except asyncio.TimeoutError:
-                try:
-                    await ctx.send(
-                        "Creating a new field has timed out. The profile is being "
-                        "created with the fields currently added."
-                    )
-                except (discord.Forbidden, discord.NotFound):
-                    pass
-                return None
-
-            if len(field_prompt_message.content) >= 1:
-                break
-            else:
-                v = await ctx.send("You need to actually give text for the prompt :/")
-                messages_to_delete.append(v)
-        field_prompt = field_prompt_message.content
-        prompt_is_command = bool(localutils.CommandProcessor.COMMAND_REGEX.search(field_prompt))
-
-        # If it's a command, then we don't need to deal with this
-        if not prompt_is_command:
-
-            # Get field optional
-            prompt_message = await ctx.send(
-                "Is this field optional?",
-                components=utils.MessageComponents.boolean_buttons(),
+        # Get field optional
+        await interaction.response.edit_message(
+            content="Is this field optional?",
+            components=discord.ui.MessageComponents.boolean_buttons(),
+        )
+        try:
+            interaction = await self.bot.wait_for(
+                "component_interaction",
+                check=lambda i: i.user.id == ctx.author.id and i.message.id == original_message.id,
+                timeout=60 * 2,
             )
-            messages_to_delete.append(prompt_message)
+            field_optional_emoji = interaction.component.custom_id
+        except asyncio.TimeoutError:
+            field_optional_emoji = "NO"
+        field_optional = field_optional_emoji == "YES"
+
+        # Ask for a field type
+        action_row = discord.ui.ActionRow(
+            discord.ui.Button(label="Text", custom_id="TEXT"),
+            discord.ui.Button(label="Numbers", custom_id="NUMBERS"),
+        )
+        if not image_set:
+            action_row.add_component(discord.ui.Button(label="Image", custom_id="IMAGE"))
+        components = discord.ui.MessageComponents(action_row)
+        await interaction.response.edit_message(
+            content="What type is this field?",
+            components=components,
+            embed=None,
+        )
+
+        # See what they said
+        try:
+            interaction = await self.bot.wait_for(
+                "component_interaction",
+                check=lambda i: i.user.id == ctx.author.id and i.message.id == original_message.id,
+                timeout=60 * 2,
+            )
+            key = interaction.component.custom_id
+        except asyncio.TimeoutError:
             try:
-                payload = await prompt_message.wait_for_button_click(check=lambda p: p.user.id == ctx.author.id, timeout=120)
-                await payload.ack()
-                field_optional_emoji = payload.component.custom_id
-            except asyncio.TimeoutError:
-                field_optional_emoji = "NO"
-            field_optional = field_optional_emoji == "YES"
-            self.bot.loop.create_task(payload.message.edit(
-                components=utils.MessageComponents.boolean_buttons().disable_components(),
-            ))
+                await interaction.edit_original_message(
+                    content="Picking a field type has timed out.",
+                    components=None,
+                    embed=None,
+                )
+            finally:
+                return None
 
-            # Get timeout
-            v = await ctx.send((
-                "How many seconds should I wait for people to fill out this field (I recommend 120 - "
-                "that's 2 minutes)? The minimum is 30, and the maximum is 600."
-            ))
-            messages_to_delete.append(v)
-            while True:
-                try:
-                    field_timeout_message = await self.bot.wait_for('message', check=message_check, timeout=120)
-                    messages_to_delete.append(field_timeout_message)
-                except asyncio.TimeoutError:
-                    await ctx.send(
-                        "Creating a new field has timed out. The profile is being created with the fields currently added."
-                    )
-                    return None
-                try:
-                    timeout = int(field_timeout_message.content)
-                    if timeout < 30:
-                        raise ValueError()
-                    break
-                except ValueError:
-                    v = await ctx.send(
-                        "I couldn't convert your message into a valid number - the minimum is 30 seconds. Please try again."
-                    )
-                    messages_to_delete.append(v)
-            field_timeout = min([timeout, 600])
-
-            # Ask for a field type
-            action_row = utils.ActionRow()
-            action_row.add_component(utils.Button("Text", custom_id="TEXT"))
-            action_row.add_component(utils.Button("Numbers", custom_id="NUMBERS"))
-            if not image_set:
-                action_row.add_component(utils.Button("Image", custom_id="IMAGE"))
-            components = utils.MessageComponents(action_row)
-            field_type_message = await ctx.send("What type is this field?", components=components)
-            messages_to_delete.append(field_type_message)
-
-            # See what they said
-            try:
-                payload = await field_type_message.wait_for_button_click(check=lambda p: p.user.id == ctx.author.id, timeout=120)
-                await payload.ack()
-                key = payload.component.custom_id
-            except asyncio.TimeoutError:
-                try:
-                    await ctx.send("Picking a field type has timed out - defaulting to text.")
-                except (discord.Forbidden, discord.NotFound):
-                    pass
-                key = "TEXT"
-
-            # Change that emoji into a datatype
-            field_type = {
-                "NUMBERS": localutils.NumberField,
-                "TEXT": localutils.TextField,
-                "IMAGE": localutils.ImageField,
-            }[key]
-            if isinstance(field_type, localutils.ImageField) and image_set:
-                raise Exception("You shouldn't be able to set two image fields.")
+        # Change that emoji into a datatype
+        field_type = {
+            "NUMBERS": utils.NumberField(),
+            "TEXT": utils.TextField(),
+            "IMAGE": utils.ImageField(),
+        }[key]
+        if isinstance(field_type, utils.ImageField) and image_set:
+            raise Exception("You shouldn't be able to set two image fields.")
 
         # Set some defaults for the field stuff
-        else:
-            field_optional = False
-            field_timeout = 15
-            field_type = localutils.TextField
+        field_timeout = 60 * 10
 
         # Make the field object
-        field = localutils.Field(
+        field = utils.Field(
             field_id=uuid.uuid4(),
             name=field_name,
             index=index,
@@ -993,14 +919,10 @@ class ProfileTemplates(utils.Cog):
             deleted=False,
         )
 
-        # See if we need to delete things
-        if delete_messages:
-            self.purge_message_list(ctx.channel, messages_to_delete)
-
         # And we done
         return field
 
 
-def setup(bot: utils.Bot):
+def setup(bot: vbu.Bot):
     x = ProfileTemplates(bot)
     bot.add_cog(x)

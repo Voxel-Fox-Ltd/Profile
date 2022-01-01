@@ -1,7 +1,20 @@
+from __future__ import annotations
+
 import typing
 import uuid
 
-from cogs.utils.profiles.field_type import FieldType, TextField, ImageField, NumberField, BooleanField
+from discord.ext import vbu
+
+from .field_type import (
+    FieldType,
+    TextField,
+    ImageField,
+    NumberField,
+    BooleanField,
+)
+
+if typing.TYPE_CHECKING:
+    from .template import Template
 
 
 class Field:
@@ -91,5 +104,14 @@ class Field:
 
         return self.field_id
 
+    async def save(self, db: vbu.Database, template: Template) -> None:
+        """
+        Save the current class instance into the database.
+        """
 
-
+        await db.call(
+            """INSERT INTO field (field_id, name, index, prompt, timeout, field_type,
+            optional, deleted, template_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)""",
+            self.id, self.name, self.index, self.prompt, self.timeout, self.field_type.name,
+            self.optional, self.deleted, template.id,
+        )

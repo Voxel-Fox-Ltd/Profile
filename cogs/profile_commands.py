@@ -15,7 +15,7 @@ from cogs import utils
 class ProfileCreation(vbu.Cog):
 
     COMMAND_REGEX = re.compile(
-        r"^(?P<template>\S{1,30}) (?P<command>set|get|delete|edit)(?:\s?(?P<args>.*))$",
+        r"^(?P<template>\S{1,30}) (?P<command>set|create|get|delete|edit)(?:\s?(?P<args>.*))$",
         re.IGNORECASE
     )
 
@@ -40,7 +40,7 @@ class ProfileCreation(vbu.Cog):
             return
 
         # Only handle slashies
-        if not isinstance(ctx, vbu.SlashContext):
+        if not isinstance(ctx, commands.SlashContext):
             return
 
         # Get the command and used template
@@ -63,7 +63,7 @@ class ProfileCreation(vbu.Cog):
         metacommand: commands.Command
         if command_operator == "get":
             metacommand = self.get_profile_meta
-        elif command_operator == "set":
+        elif command_operator in ["set", "create"]:
             metacommand = self.set_profile_meta
         elif command_operator == "delete":
             metacommand = self.delete_profile_meta
@@ -161,9 +161,9 @@ class ProfileCreation(vbu.Cog):
             try:
 
                 # Get the name they gave
-                text_input: discord.ui.InputText
-                text_input = submitted_modal.components[0].get_component(text_input_custom_id)  # type: ignore
-                utils.TextField.check(text_input)
+                assert submitted_modal.components
+                text_input = submitted_modal.components[0].components[0]
+                utils.TextField.check(text_input.value)
                 name_content: str = text_input.value
 
                 # See if they're already using the name
@@ -233,6 +233,8 @@ class ProfileCreation(vbu.Cog):
             ) -> typing.Tuple[discord.Interaction, typing.Optional[utils.FilledField]]:
         """
         Ask the user to fill in the content for a field given its prompt.
+
+        The interaction given must not have been responded to.
         """
 
         # See if the field is a command
@@ -288,10 +290,11 @@ class ProfileCreation(vbu.Cog):
                     return (interaction, None)
 
             # Try and validate their input
-            field_content: str = user_submission.components[0].components[0].components[0].value  # type: ignore
+            field_content: str = user_submission.components[0].components[0].value  # type: ignore
             try:
                 if field_content:
                     field.field_type.check(field_content)
+                await user_submission.response.defer_update()
                 break
             except utils.errors.FieldCheckFailure as e:
                 await user_submission.response.edit_message(
@@ -338,7 +341,8 @@ class ProfileCreation(vbu.Cog):
     async def set_profile_meta(
             self,
             ctx: utils.types.GuildContext,
-            target_user: discord.Member):
+            target_user: discord.Member = None
+            ):
         """
         Talks a user through setting up a profile on a given server.
         """
@@ -417,7 +421,7 @@ class ProfileCreation(vbu.Cog):
                 discord.ui.Button(
                     label="Done",
                     custom_id="fillField DONE",
-                    disabled=True,
+                    disabled=len([i for i in buttons if not i.disabled]) > 0,
                     style=discord.ButtonStyle.success,
                 )
             )
@@ -428,7 +432,6 @@ class ProfileCreation(vbu.Cog):
                     style=discord.ButtonStyle.danger,
                 )
             )
-            components = discord.ui.MessageComponents.add_buttons_with_rows(*buttons)
 
             # Add the auto-filled fields to their list
             for field in template.field_list:
@@ -448,10 +451,12 @@ class ProfileCreation(vbu.Cog):
             while True:
 
                 # Edit the message
+                components = discord.ui.MessageComponents.add_buttons_with_rows(*buttons)
                 if not message_sent:
                     await interaction.response.send_message(
                         "What attribute do you want to edit?",
                         components=components,
+                        ephemeral=True,
                     )
                     message_sent = True
                 else:
@@ -477,8 +482,14 @@ class ProfileCreation(vbu.Cog):
                 # See which button they've clicked
                 _, field_id = button_click.custom_id.split(" ", 1)  # type: ignore
                 if field_id == "CANCEL":
-                    break
+                    await button_click.response.edit_message(
+                        content="Cancelled profile setup.",
+                        components=None,
+                        embed=None,
+                    )
+                    return
                 elif field_id == "DONE":
+                    interaction = button_click
                     break
                 field = template.fields[field_id]
 
@@ -491,9 +502,16 @@ class ProfileCreation(vbu.Cog):
                 filled_field_dict[field.field_id] = response_field
 
                 # Update the buttons
+                secondary_count = 0
                 for b in buttons:
                     if b.custom_id.split(" ")[-1] == field.id:
                         b.style = discord.ButtonStyle.primary
+                    if b.style == discord.ButtonStyle.secondary:
+                        secondary_count += 1
+                if secondary_count == 0:
+                    for b in buttons:
+                        if b.custom_id == "fillField DONE":
+                            b.enable()
 
                 # Change the interaction
                 interaction = filled_field_modal
@@ -509,13 +527,14 @@ class ProfileCreation(vbu.Cog):
         user_profile.all_filled_fields = filled_field_dict
 
         # Make sure that the embed sends
+        await interaction.response.defer_update()
         try:
-            await interaction.response.send_message(
+            await interaction.followup.send(
                 embed=user_profile.build_embed(self.bot, target_user),
                 ephemeral=True,
             )
         except discord.HTTPException as e:
-            return await interaction.response.send_message(
+            return await interaction.followup.send(
                 f"Your profile couldn't be sent to you - `{e}`.\nPlease try again later.",
                 ephemeral=True,
             )
@@ -547,6 +566,7 @@ class ProfileCreation(vbu.Cog):
             except asyncpg.ForeignKeyViolationError:
                 return await interaction.followup.send(
                     "Unfortunately, it looks like the template was deleted while you were setting up your profile.",
+                    ephemeral=True,
                 )
             for field in filled_field_dict.values():
                 await db(
@@ -557,9 +577,15 @@ class ProfileCreation(vbu.Cog):
 
         # Respond to user
         if template.get_verification_channel_id(target_user):
-            await interaction.followup.send(f"Your profile has been sent to the **{ctx.guild.name}** staff team for verification - please hold tight!")
+            await interaction.followup.send(
+                f"Your profile has been sent to the **{ctx.guild.name}** staff team for verification - please hold tight!",
+                ephemeral=True,
+            )
         else:
-            await interaction.followup.send("Your profile has been created and saved.")
+            await interaction.followup.send(
+                "Your profile has been created and saved.",
+                ephemeral=True,
+            )
 
     @vbu.command(hidden=True)
     @commands.bot_has_permissions(send_messages=True)

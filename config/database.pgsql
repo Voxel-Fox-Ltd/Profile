@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS channel_list(
 CREATE TABLE IF NOT EXISTS template(
     template_id UUID PRIMARY KEY,
     name VARCHAR(30),
+    application_command_id BIGINT,
     colour INTEGER,
     guild_id BIGINT NOT NULL,
     verification_channel_id TEXT,

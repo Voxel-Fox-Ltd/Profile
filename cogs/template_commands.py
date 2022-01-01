@@ -10,6 +10,52 @@ from discord.ext import commands, vbu
 from cogs import utils
 
 
+def get_profile_application_command(name: str, description: str = None) -> discord.ApplicationCommand:
+    """
+    Create an application command with the given name, and subcommands
+    for create, edit, and delete.
+    """
+
+    command = discord.ApplicationCommand(
+        name=name,
+        description=description or name,
+        type=discord.ApplicationCommandType.chat_input,
+        options=[
+            discord.ApplicationCommandOption(
+                name="create",
+                description="Create a new profile.",
+                type=discord.ApplicationCommandOptionType.subcommand,
+            ),
+            discord.ApplicationCommandOption(
+                name="delete",
+                description="Delete one of your profiles.",
+                type=discord.ApplicationCommandOptionType.subcommand,
+                options=[
+                    discord.ApplicationCommandOption(
+                        name="profile_name",
+                        description="The name of the profile that you want to delete.",
+                        type=discord.ApplicationCommandOptionType.string,
+                    ),
+                ],
+            ),
+            discord.ApplicationCommandOption(
+                name="get",
+                description="Create a new profile.",
+                type=discord.ApplicationCommandOptionType.subcommand,
+                options=[
+                    discord.ApplicationCommandOption(
+                        name="user",
+                        description="The person whose profile you want to get.",
+                        type=discord.ApplicationCommandOptionType.user,
+                        required=False,
+                    ),
+                ],
+            ),
+        ]
+    )
+    return command
+
+
 class ProfileTemplates(vbu.Cog):
 
     def __init__(self, bot:vbu.Bot):
@@ -36,23 +82,6 @@ class ProfileTemplates(vbu.Cog):
         """
 
         return len([i for i in template_name if i not in string.ascii_letters + string.digits]) == 0
-
-    def purge_message_list(
-            self,
-            channel: discord.TextChannel,
-            message_list: typing.List[discord.Message]
-            ) -> asyncio.Task:
-        """
-        Delete a list of messages from the channel.
-        """
-
-        async def wrapper():
-            def check(message):
-                return message.id in [i.id for i in message_list]
-            bulk = channel.permissions_for(channel.guild.me).manage_messages
-            await channel.purge(check=check, bulk=bulk)
-            message_list.clear()
-        return self.bot.loop.create_task(wrapper())
 
     @commands.group()
     @commands.bot_has_permissions(send_messages=True)
@@ -95,7 +124,17 @@ class ProfileTemplates(vbu.Cog):
         # And send
         return await ctx.interaction.followup.send('\n'.join(template_names))
 
-    @template.command(name="describe", autocomplete_params=("template",))
+    @template.command(
+        name="describe",
+        application_command_meta=commands.ApplicationCommandMeta(
+            params=[
+                commands.ApplicationCommandParam(
+                    description="The template that you want to get the information of.",
+                    autocomplete=True,
+                ),
+            ],
+        ),
+    )
     @commands.defer()
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @commands.guild_only()
@@ -126,7 +165,17 @@ class ProfileTemplates(vbu.Cog):
         except commands.CommandError:
             return False
 
-    @template.command(name="edit", autocomplete_params=("template",))
+    @template.command(
+        name="edit",
+        application_command_meta=commands.ApplicationCommandMeta(
+            params=[
+                commands.ApplicationCommandParam(
+                    description="The template that you want to edit.",
+                    autocomplete=True,
+                ),
+            ],
+        ),
+    )
     @commands.defer()
     @commands.has_guild_permissions(manage_roles=True)
     @commands.bot_has_permissions(send_messages=True, external_emojis=True, add_reactions=True, manage_messages=True)
@@ -669,7 +718,17 @@ class ProfileTemplates(vbu.Cog):
         # And done
         return interaction, True
 
-    @template.command(name="delete", autocomplete_params=("template",))
+    @template.command(
+        name="delete",
+        application_command_meta=commands.ApplicationCommandMeta(
+            params=[
+                commands.ApplicationCommandParam(
+                    description="The template that you want to delete.",
+                    autocomplete=True,
+                ),
+            ],
+        ),
+    )
     @commands.defer()
     @commands.has_guild_permissions(manage_roles=True)
     @commands.bot_has_permissions(send_messages=True, external_emojis=True, add_reactions=True)
@@ -682,7 +741,7 @@ class ProfileTemplates(vbu.Cog):
         # See if they're already editing that template
         if self.template_editing_locks[ctx.guild.id].locked():
             return await ctx.interaction.followup.send("You're already editing a template.")
-        interaction = ctx.interaction
+        interaction: discord.Interaction = ctx.interaction
 
         # Grab the template edit lock
         async with self.template_editing_locks[ctx.guild.id]:
@@ -716,17 +775,27 @@ class ProfileTemplates(vbu.Cog):
                     embed=None,
                 )
 
+            # Defer so we can update without a hitch
+            await interaction.response.defer_update()
+
+            # Delete the application command
+            if template.application_command_id:
+                command = discord.Object(template.application_command_id)
+                try:
+                    await ctx.guild.delete_application_command(command)
+                finally:
+                    pass
+
             # Delete it from the database
             async with vbu.Database() as db:
                 await db(
                     """DELETE FROM template WHERE template_id=$1""",
                     template.template_id,
                 )
-            self.logger.info(f"Template '{template.name}' deleted on guild {ctx.guild.id}")
-            return await interaction.response.edit_message(
+
+            # And respond
+            return await interaction.followup.send(
                 content=f"All relevant data for template **{template.name}** (`{template.template_id}`) has been deleted.",
-                components=None,
-                embed=None,
             )
 
     @template.command(name="create")
@@ -795,6 +864,10 @@ class ProfileTemplates(vbu.Cog):
                 )
                 return
 
+            # Add new application command
+            command = get_profile_application_command(template_name.lower())
+            command = await ctx.guild.create_application_command(command)
+
             # Get an ID for the profile
             template = utils.Template(
                 template_id=uuid.uuid4(),
@@ -806,18 +879,20 @@ class ProfileTemplates(vbu.Cog):
                 role_id=None,
                 max_profile_count=1,
                 max_field_count=10,
+                application_command_id=command.id,
             )
 
         # Save it all to database
         async with vbu.Database() as db:
             await db(
-                """INSERT INTO template (template_id, name, colour, guild_id, verification_channel_id, archive_channel_id)
-                VALUES ($1, $2, $3, $4, $5, $6)""",
+                """INSERT INTO template (template_id, name, colour, guild_id, verification_channel_id,
+                archive_channel_id, application_command_id) VALUES ($1, $2, $3, $4, $5, $6, $7)""",
                 template.template_id, template.name, template.colour, template.guild_id,
                 template.verification_channel_id, template.archive_channel_id,
+                template.application_command_id,
             )
 
-        # Output to user
+        # Follow up into edit
         self.logger.info(f"New template '{template.name}' created on guild {ctx.guild.id}")
         await self.template_edit(ctx, template)
 

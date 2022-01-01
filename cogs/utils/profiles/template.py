@@ -89,6 +89,8 @@ class Template(object):
     max_profile_count: :class:`int`
         The maximum number of profiles that users are allowed to
         create for this template.
+    application_command_id: :class:`int`
+        The ID of the application command associated with this template.
 
     Attributes
     -----------
@@ -115,11 +117,14 @@ class Template(object):
         create for this template.
     all_fields: Dict[:class:`str`, :class:`cogs.utils.profiles.field.Field`]
         All of the fields for the template.
+    application_command_id: Optional[:class:`int`]
+        The ID of the application command associated with this template.
     """
 
     __slots__ = (
         "template_id", "colour", "guild_id", "verification_channel_id", "name",
         "archive_channel_id", "role_id", "max_profile_count", "all_fields",
+        "application_command_id",
     )
     TEMPLATE_ID_REGEX = re.compile(r"^(?P<uuid>.{8}-.{4}-.{4}-.{4}-.{12})$")
     SLASH_COMMAND_ARG_TYPE = discord.ApplicationCommandOptionType.string
@@ -134,7 +139,9 @@ class Template(object):
             archive_channel_id: typing.Optional[str],
             role_id: typing.Optional[str],
             max_profile_count: int,
-            max_field_count: int = None):
+            max_field_count: int = None,
+            application_command_id: int = None,
+            ):
         self.template_id: str = str(template_id)
         self.colour: int = colour
         self.guild_id: int = guild_id
@@ -143,6 +150,7 @@ class Template(object):
         self.archive_channel_id: typing.Optional[str] = archive_channel_id
         self.role_id: typing.Optional[str] = role_id
         self.max_profile_count: int = max_profile_count
+        self.application_command_id: typing.Optional[int] = application_command_id
 
         self.all_fields: typing.Dict[str, Field] = dict()
 

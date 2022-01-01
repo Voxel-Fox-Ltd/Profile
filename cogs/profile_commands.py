@@ -25,6 +25,52 @@ class ProfileCreation(vbu.Cog):
         self.set_profile_locks = collections.defaultdict(asyncio.Lock)
 
     @vbu.Cog.listener()
+    async def on_autocomplete_interaction(self, interaction: discord.Interaction):
+        """
+        Deal with the autocomplete for "[profile] get".
+        """
+
+        # A basic filter to only deal with template get
+        assert interaction.command_name
+        if not interaction.command_name.endswith(" get"):
+            return
+        assert interaction.options
+        assert interaction.user
+
+        # Get the command and used template
+        command_invokation = interaction.command_name
+        assert command_invokation
+        matches = self.COMMAND_REGEX.search(command_invokation)
+        if matches is None:
+            return
+        template_name = matches.group("template")  # template name
+
+        # Find the template they asked for on their server
+        assert interaction.guild
+        async with vbu.Database() as db:
+
+            # Get the template
+            template = await utils.Template.fetch_template_by_name(db, interaction.guild.id, template_name, fetch_fields=False)
+            if not template:
+                self.logger.info(f"Failed at getting template '{template_name}' in guild {interaction.guild.id}")
+                return  # Fail silently on template doesn't exist
+
+            # Find the user's profiles
+            options = interaction.options[0].options
+            user_id = interaction.user.id
+            if options:
+                for i in options:
+                    if i.name == "user" and i.value:
+                        user_id = int(i.value)
+            user_profiles = await template.fetch_all_profiles_for_user(db, user_id, fetch_filled_fields=False)
+
+        # And return the profile names
+        await interaction.response.send_autocomplete([
+            discord.ApplicationCommandOptionChoice(name=i.name, value=i.name)
+            for i in user_profiles
+        ])
+
+    @vbu.Cog.listener()
     async def on_command_error(self, ctx: utils.types.GuildContext, error: commands.CommandError):
         """
         CommandNotFound handler so the bot can search for that custom command.

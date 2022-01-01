@@ -49,6 +49,13 @@ def get_profile_application_command(name: str, description: str = None) -> disco
                         type=discord.ApplicationCommandOptionType.user,
                         required=False,
                     ),
+                    discord.ApplicationCommandOption(
+                        name="name",
+                        description="The name of the profile that you want to get.",
+                        type=discord.ApplicationCommandOptionType.string,
+                        required=False,
+                        autocomplete=True,
+                    ),
                 ],
             ),
         ]
@@ -747,7 +754,7 @@ class ProfileTemplates(vbu.Cog):
         async with self.template_editing_locks[ctx.guild.id]:
 
             # Ask for confirmation
-            delete_confirmation_message = await ctx.interaction.followup.send(
+            delete_confirmation_message = await interaction.followup.send(
                 "By doing this, you'll delete all of the created profiles under this template as well. Would you like to proceed?",
                 components=discord.ui.MessageComponents.boolean_buttons(),
                 wait=True,
@@ -794,8 +801,9 @@ class ProfileTemplates(vbu.Cog):
                 )
 
             # And respond
-            return await interaction.followup.send(
+            return await interaction.edit_original_message(
                 content=f"All relevant data for template **{template.name}** (`{template.template_id}`) has been deleted.",
+                components=None,
             )
 
     @template.command(name="create")

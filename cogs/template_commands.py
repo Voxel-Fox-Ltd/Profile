@@ -271,10 +271,12 @@ class ProfileTemplates(vbu.Cog):
                     finally:
                         return
 
-                # See what they reacted with
+                # See if they're done
                 if attribute == "DONE":
                     await interaction.response.edit_message(components=None)
                     break
+
+                # See if they wanna change fields
                 elif attribute == "FIELDS":
                     response: typing.Optional[bool]
                     interaction, response = await self.edit_field(
@@ -283,6 +285,8 @@ class ProfileTemplates(vbu.Cog):
                     )
                     async with vbu.Database() as db:
                         await template.fetch_fields(db)
+
+                # See if they wanna change an attribute
                 elif attribute in ["NAME", "VERIFICATION", "ARCHIVE", "ROLE", "COUNT"]:
                     converter: typing.Union[commands.Converter, type]
                     attribute, converter = {
@@ -297,6 +301,15 @@ class ProfileTemplates(vbu.Cog):
                         ctx, interaction, template, guild_settings,
                         is_bot_support, attribute, converter,
                     )
+
+                    # Change the command if the name was changed
+                    if attribute == "name" and template.application_command_id:
+                        await ctx.guild.edit_application_command(
+                            discord.Object(template.application_command_id),
+                            name=template.name,
+                        )
+
+                # Some invalid response
                 else:
                     assert False, "Failed to get a response."
 

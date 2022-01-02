@@ -40,7 +40,7 @@ async def update_template(request: Request):
 
         # Make sure the template exists
         template = None
-        if data.get("teplate_id"):
+        if data.get("template_id"):
             template = await localutils.Template.fetch_template_by_id(db, data['template_id'], fetch_fields=False)
             if not template:
                 return json_response({"error": "Template does not exist."}, status=400)

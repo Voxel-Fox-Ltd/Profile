@@ -256,7 +256,7 @@ class Template(object):
     @property
     def field_list(self) -> List[Field]:
         """
-        Returns a list of `Field` objects - in order - for this profile.
+        Returns a list of `utils.Field` objects - in order - for this profile.
         """
 
         return sorted(self.fields.values(), key=operator.attrgetter("index"))

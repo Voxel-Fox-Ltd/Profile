@@ -380,7 +380,7 @@ class ProfileCreation(vbu.Cog):
             field=field,
         )
 
-    @vbu.command(hidden=True)
+    @commands.command(hidden=True)
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     @vbu.checks.meta_command()
@@ -638,8 +638,12 @@ class ProfileCreation(vbu.Cog):
     @commands.guild_only()
     @vbu.checks.meta_command()
     async def edit_profile_meta(
-            self, ctx: vbu.Context, target_user: typing.Optional[discord.Member], *,
-            profile_name: str = None):
+            self,
+            ctx: vbu.Context,
+            target_user: discord.Member = None,
+            *,
+            profile_name: str = None,
+            ):
         """
         Talks a user through setting up a profile on a given server.
         """
@@ -841,7 +845,11 @@ class ProfileCreation(vbu.Cog):
     @commands.guild_only()
     @vbu.checks.meta_command()
     async def delete_profile_meta(
-            self, ctx: vbu.Context, user: typing.Optional[discord.Member], *, profile_name: str = None):
+            self,
+            ctx: vbu.Context,
+            user: discord.Member = None,
+            *,
+            profile_name: str = None):
         """
         Handles deleting a profile.
         """
@@ -923,7 +931,12 @@ class ProfileCreation(vbu.Cog):
     @commands.guild_only()
     @vbu.checks.meta_command()
     async def get_profile_meta(
-            self, ctx: vbu.Context, user: typing.Optional[discord.Member], *, profile_name: str = None):
+            self,
+            ctx: vbu.Context,
+            user: typing.Optional[discord.Member],
+            *,
+            profile_name: str = None
+            ):
         """
         Gets a profile for a given member.
         """

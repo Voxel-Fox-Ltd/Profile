@@ -50,7 +50,7 @@ def get_profile_application_command(name: str, description: str = None) -> disco
                         required=False,
                     ),
                     discord.ApplicationCommandOption(
-                        name="name",
+                        name="profile_name",
                         description="The name of the profile that you want to get.",
                         type=discord.ApplicationCommandOptionType.string,
                         required=False,
@@ -136,8 +136,15 @@ class ProfileTemplates(vbu.Cog):
         application_command_meta=commands.ApplicationCommandMeta(
             params=[
                 commands.ApplicationCommandParam(
+                    name="template",
                     description="The template that you want to get the information of.",
+                    type=discord.ApplicationCommandOptionType.string,
                     autocomplete=True,
+                ),
+                commands.ApplicationCommandParam(
+                    name="brief",
+                    description="Whether you want to display abbreviated data or not.",
+                    type=discord.ApplicationCommandOptionType.boolean,
                 ),
             ],
         ),
@@ -177,7 +184,9 @@ class ProfileTemplates(vbu.Cog):
         application_command_meta=commands.ApplicationCommandMeta(
             params=[
                 commands.ApplicationCommandParam(
+                    name="template",
                     description="The template that you want to edit.",
+                    type=discord.ApplicationCommandOptionType.string,
                     autocomplete=True,
                 ),
             ],
@@ -521,7 +530,6 @@ class ProfileTemplates(vbu.Cog):
         )
 
         # Wait for them to click a button
-        original_interaction = interaction
         try:
             interaction = await self.bot.wait_for(
                 "component_interaction",
@@ -743,7 +751,9 @@ class ProfileTemplates(vbu.Cog):
         application_command_meta=commands.ApplicationCommandMeta(
             params=[
                 commands.ApplicationCommandParam(
+                    name="template",
                     description="The template that you want to delete.",
+                    type=discord.ApplicationCommandOptionType.string,
                     autocomplete=True,
                 ),
             ],
@@ -819,7 +829,18 @@ class ProfileTemplates(vbu.Cog):
                 components=None,
             )
 
-    @template.command(name="create")
+    @template.command(
+        name="create",
+        application_command_meta=commands.ApplicationCommandMeta(
+            params=[
+                commands.ApplicationCommandParam(
+                    name="template_name",
+                    description="The name of the template that you want to create.",
+                    type=discord.ApplicationCommandOptionType.string,
+                ),
+            ],
+        ),
+    )
     @commands.defer()
     @commands.has_guild_permissions(manage_roles=True)
     @commands.bot_has_permissions(send_messages=True, manage_messages=True, external_emojis=True, add_reactions=True, embed_links=True)

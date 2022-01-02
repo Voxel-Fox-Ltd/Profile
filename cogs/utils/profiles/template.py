@@ -514,6 +514,7 @@ class Template(object):
             f"Guild ID: `{self.guild_id}`",
             f"Maximum allowed profiles: `{self.max_profile_count}`",
             # f"Maximum field count: `{self.max_field_count}`",
+            f"Application command ID: `{self.application_command_id}`"
         ]
 
         # Add verification channel ID

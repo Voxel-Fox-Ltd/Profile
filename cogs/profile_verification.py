@@ -408,13 +408,13 @@ class ProfileVerification(vbu.Cog):
             # Send the profile to the archive
             try:
                 await self.send_profile_archivation(user_profile, profile_user)
-            finally:
+            except discord.HTTPException:
                 pass
 
             # Add the relevant role to the user
             try:
                 await self.add_profile_user_roles(user_profile, profile_user)
-            finally:
+            except discord.HTTPException:
                 pass
 
         # And tell the moderator we're done

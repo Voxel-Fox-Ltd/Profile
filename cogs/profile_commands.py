@@ -32,7 +32,8 @@ class ProfileCreation(vbu.Cog):
 
         # A basic filter to only deal with template get
         assert interaction.command_name
-        if not interaction.command_name.endswith(" get"):
+        command_name = interaction.command_name
+        if command_name.endswith(" get") or command_name.endswith(" delete"):
             return
         assert interaction.options
         assert interaction.user
@@ -332,8 +333,9 @@ class ProfileCreation(vbu.Cog):
                             "again to go back through this setup."
                         ),
                     )
-                finally:
-                    return (interaction, None)
+                except discord.HTTPException:
+                    pass
+                return (interaction, None)
 
             # Try and validate their input
             field_content: str = user_submission.components[0].components[0].value  # type: ignore
@@ -368,8 +370,9 @@ class ProfileCreation(vbu.Cog):
                         content="Timed out waiting for you to continue.",
                         components=None
                     )
-                finally:
-                    return (user_submission, None)
+                except discord.HTTPException:
+                    pass
+                return (user_submission, None)
 
         # Add their filled field object to the list of data
         return user_submission, utils.FilledField(
@@ -522,8 +525,9 @@ class ProfileCreation(vbu.Cog):
                             content="Timed out waiting for button clicks",
                             components=None,
                         )
-                    finally:
-                        return
+                    except discord.HTTPException:
+                        pass
+                    return
 
                 # See which button they've clicked
                 _, field_id = button_click.custom_id.split(" ", 1)  # type: ignore

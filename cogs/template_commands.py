@@ -240,6 +240,23 @@ class ProfileTemplates(vbu.Cog):
                 discord.ui.Button(label="Done", custom_id=f"{interaction_id} DONE", style=discord.ButtonStyle.success),
             )
 
+            # See if they have a command set up properly
+            command = None
+            if template.application_command_id:
+                try:
+                    command = await ctx.guild.fetch_application_command(template.application_command_id)
+                except discord.HTTPException:
+                    pass
+            if command is None:
+                components.components[-1].add_component(
+                    discord.ui.Button(
+                        label="Add slash command",
+                        custom_id=f"{interaction_id} COMMAND",
+                        style=discord.ButtonStyle.danger,
+                        disabled=command is not None
+                    )
+                )
+
             # Start our edit loop
             while True:
 
@@ -250,7 +267,7 @@ class ProfileTemplates(vbu.Cog):
                             content=None,
                             embed=template.build_embed(self.bot, brief=True),
                             allowed_mentions=discord.AllowedMentions(roles=False),
-                            components=components.enable_components()
+                            components=components,
                         )
                     except discord.HTTPException:
                         return
@@ -258,7 +275,7 @@ class ProfileTemplates(vbu.Cog):
                     await interaction.followup.send(
                         embed=template.build_embed(self.bot, brief=True),
                         allowed_mentions=discord.AllowedMentions(roles=False),
-                        components=components.enable_components()
+                        components=components,
                     )
                     sent_initial_message = True
 
@@ -277,13 +294,29 @@ class ProfileTemplates(vbu.Cog):
                             components=None,
                             embed=None,
                         )
-                    finally:
-                        return
+                    except discord.HTTPException:
+                        pass
+                    return
 
                 # See if they're done
+                response = False
                 if attribute == "DONE":
                     await interaction.response.edit_message(components=None)
                     break
+
+                # See if they wanna add a button
+                elif attribute == "COMMAND":
+                    await interaction.response.defer_update()
+                    command = get_profile_application_command(template.name)
+                    command = await ctx.guild.create_application_command(command)
+                    async with vbu.Database() as db:
+                        await db(
+                            """UPDATE template SET application_command_id=$2 WHERE template_id=$1""",
+                            template.id, command.id,
+                        )
+                    template.application_command_id = command.id
+                    components.get_component(f"{interaction_id} COMMAND").disable()
+                    response = True
 
                 # See if they wanna change fields
                 elif attribute == "FIELDS":
@@ -384,8 +417,9 @@ class ProfileTemplates(vbu.Cog):
                     components=None,
                     embed=None,
                 )
-            finally:
-                return interaction, None
+            except discord.HTTPException:
+                pass
+            return interaction, None
 
         # Try and convert their response
         converted: str
@@ -418,7 +452,7 @@ class ProfileTemplates(vbu.Cog):
         # Try and delete the message
         try:
             await value_message.delete()
-        finally:
+        except discord.HTTPException:
             pass
 
         # Store our new shit
@@ -544,7 +578,7 @@ class ProfileTemplates(vbu.Cog):
                     components=None,
                     embed=None,
                 )
-            finally:
+            except discord.HTTPException:
                 return interaction, None
 
         # See if they clicked one of the simple buttons
@@ -611,8 +645,9 @@ class ProfileTemplates(vbu.Cog):
                     components=None,
                     embed=None,
                 )
-            finally:
-                return interaction, None
+            except discord.HTTPException:
+                pass
+            return interaction, None
 
         # See if they want to cancel
         if action == "CANCEL":
@@ -669,8 +704,9 @@ class ProfileTemplates(vbu.Cog):
                         components=None,
                         embed=None,
                     )
-                finally:
-                    return interaction, None
+                except discord.HTTPException:
+                    pass
+                return interaction, None
 
             # Get the newly changed data
             field_value = interaction.components[0].components[0].value
@@ -718,8 +754,9 @@ class ProfileTemplates(vbu.Cog):
                         components=None,
                         embed=None,
                     )
-                finally:
-                    return interaction, None
+                except discord.HTTPException:
+                    pass
+                return interaction, None
 
             # Get the newly changed data
             field_value = {
@@ -794,8 +831,9 @@ class ProfileTemplates(vbu.Cog):
                         content="Template delete timed out - please try again later.",
                         components=None,
                     )
-                finally:
-                    return
+                except discord.HTTPException:
+                    pass
+                return
 
             # Check if they said no
             if interaction.component.custom_id == "NO":
@@ -813,7 +851,7 @@ class ProfileTemplates(vbu.Cog):
                 command = discord.Object(template.application_command_id)
                 try:
                     await ctx.guild.delete_application_command(command)
-                finally:
+                except discord.HTTPException:
                     pass
 
             # Delete it from the database
@@ -990,8 +1028,9 @@ class ProfileTemplates(vbu.Cog):
                     components=None,
                     embed=None,
                 )
-            finally:
-                return interaction, None
+            except discord.HTTPException:
+                pass
+            return interaction, None
         assert interaction.components
         field_name: str = interaction.components[0].components[0].value
         field_prompt: str = interaction.components[1].components[0].value
@@ -1048,8 +1087,9 @@ class ProfileTemplates(vbu.Cog):
                     components=None,
                     embed=None,
                 )
-            finally:
-                return interaction, None
+            except discord.HTTPException:
+                pass
+            return interaction, None
 
         # Change that emoji into a datatype
         field_type = {

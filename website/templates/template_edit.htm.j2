@@ -4,224 +4,110 @@
 {% block head %}
 <link rel="stylesheet" type="text/css" href="{{ static('/css/guild_settings.css') }}">
 <link rel="stylesheet" type="text/css" href="{{ static('/css/template_edit.css') }}">
-<script type="text/javascript" src="{{ static('/js/template_edit.js') }}"></script>
+<script type="text/javascript" src="{{ static('/js/new_template_edit.js') }}"></script>
 {% endblock head %}
-
-
-{% macro add_field_html(template_id, field, hidden=False) %}
-<div {% if hidden %}id="base-field" {% endif %}class="field">
-    <input type="hidden" value="{{ template_id }}" name="template_id" />
-    <input type="hidden" value="{{ field.field_id }}" name="field_id" />
-    <div class="info">
-        {% if hidden %}
-            <h3 class="index" name="index">Pending Field</h3>
-        {% else %}
-            <h3 class="index" name="index">Field Index #{{ field.index }}</h3>
-        {% endif %}
-        <button class="delete-button" onclick="sendDeleteField(this);">Delete field</button>
-        <button class="field-submit-button" onclick="sendUpdateField(this);" disabled>Submit changes</button>
-    </div>
-    <div class="attribute">
-        <p>Name</p>
-        <textarea
-                name="name"
-                type="text"
-                data-original="{{ field.name }}"
-                rows="2"
-                oninput="enableFieldSubmitButton(this);"
-                max="256"
-                min="1"
-                required >
-            {{- field.name -}}
-        </textarea>
-    </div>
-    <div class="attribute">
-        <p>Prompt</p>
-        <textarea
-                name="prompt"
-                type="text"
-                data-original="{{ field.prompt }}"
-                rows="4"
-                oninput="enableFieldSubmitButton(this);"
-                max="1000"
-                min="1"
-                required >
-            {{- field.prompt -}}
-        </textarea>
-    </div>
-    <div class="attribute">
-        <p>Timeout</p>
-        <input
-                name="timeout"
-                type="number"
-                value="{{ field.timeout }}"
-                data-original="{{ field.timeout }}"
-                oninput="enableFieldSubmitButton(this);"
-                max="600"
-                min="30"
-                required />
-    </div>
-    <div class="attribute">
-        <p>Type</p>
-        <select name="type" oninput="enableFieldSubmitButton(this);">
-            <option value="1000-CHAR" {% if field.type == "1000-CHAR" %}selected{% endif %}>Text</option>
-            <option value="INT" {% if field.type == "INT" %}selected{% endif %}>Number</option>
-            <option value="IMAGE" {% if field.type == "IMAGE" %}selected{% endif %}>Image</option>
-        </select>
-    </div>
-    <div class="attribute">
-        <p>Optional</p>
-        <select name="optional" oninput="enableFieldSubmitButton(this);">
-            <option value="1" {% if field.optional %}selected{% endif %}>Yes</option>
-            <option value="" {% if field.optional %}selected{% endif %}>No</option>
-        </select>
-    </div>
-</div>
-{% endmacro %}
 
 
 {% block content %}
 <section id="main">
-    <h1 class="title">{{ template.name }}</h1>
-    <h2 class="template-id">
-        <pre style="margin: 0;"><code>{{ template.template_id }}</code></pre>
-        <a id="guild-base-url" style="display: block; margin-bottom: 10px;" href="/guilds/{{ template.guild_id }}">Return to guild</a>
-        {# <a style="display: block;" href="/templates/{{ template.template_id }}/advanced">Advanced editing</a> #}
-    </h2>
-    <div id="templates">
-
-        {# First we have the template data itself #}
-        <div class="template" data-template-id="{{ template.template_id }}">
-            <div class="attributes field">
-
-                {# Let's store the template ID here just for fun #}
-                <input type="hidden" value="{{ template.template_id }}" name="template_id" />
-
-                {# Verification channel #}
-                <div class="attribute">
-                    <p>Verification Channel</p>
-                    <select
-                            name="verification_channel_id"
-                            data-original="{{ template.verification_channel_id or '' }}"
-                            oninput="enableFieldSubmitButton(this);" >
-                        <option value="" selected></option>
-                        {% for category, channels in guild.by_category() %}
-                            <optgroup label="{{ category or 'Uncategorized' }}">
-                                {% for c in channels if c.type.name in ["text"] %}
-                                    {% set compare = c.id|string() %}
-                                    <option
-                                            value="{{ c.id }}"
-                                            {% if compare == template.verification_channel_id %}selected{% endif %}>
-                                        #{{ c.name }}
-                                    </option>
-                                {% endfor %}
-                            </optgroup>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                {# Archive channel #}
-                <div class="attribute">
-                    <p>Archive Channel</p>
-                    <select
-                            name="archive_channel_id"
-                            data-original="{{ template.archive_channel_id or '' }}"
-                            oninput="enableFieldSubmitButton(this);" >
-                        <option value="" selected></option>
-                        {% for category, channels in guild.by_category() %}
-                            <optgroup label="{{ category or 'Uncategorized' }}">
-                                {% for c in channels if c.type.name in ["text"] %}
-                                    {% set compare = c.id|string() %}
-                                    <option
-                                            value="{{ c.id }}"
-                                            {% if compare == template.archive_channel_id %}selected{% endif %}>
-                                        #{{ c.name }}
-                                    </option>
-                                {% endfor %}
-                            </optgroup>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                {# Given role #}
-                <div class="attribute">
-                    <p>Role</p>
-                    <select
-                            name="role_id"
-                            data-original="{{ template.role_id or '' }}"
-                            oninput="enableFieldSubmitButton(this);" >
-                        <option value="" selected></option>
-                        {% for r in guild.roles[::-1] %}
-                            {% set compare = r.id|string() %}
+    <input type="hidden" name="guild_id" id="guild_id" value="{{ template.guild_id }}"> {# apparently the api requires guild_id #}
+    <div id="template-meta">
+        <div id="template-info">
+            {# template name #}
+            <input type="text" name="name" id="name" value="{{ template.name }}" style="font-size:2em;">
+            <pre id="template_id">{{ template.template_id }}</pre>
+            {# template verification channel #}
+            <label for="verification_channel_id">Template Verification Channel</label><br>
+            <select name="verification_channel_id" id="verification_channel_id">
+                <option value="" selected>(no channel)</option>
+                {% for category, channels in guild.by_category() %}
+                    <optgroup label="{{ category or '(no category)' }}">
+                        {% for c in channels if c.type.name in ["text"] %}
                             <option
-                                    value="{{ r.id }}"
-                                    {% if compare == template.role_id %}selected{% endif %}>
-                                {{ r.name }}
+                                    value="{{ c.id }}"
+                                    {% if c.id|string() == template.verification_channel_id %}selected{% endif %}>
+                                #{{ c.name }}
                             </option>
                         {% endfor %}
-                    </select>
-                </div>
-
-                {# Max profile count #}
-                <div class="attribute">
-                    <p>Max Profile Count</p>
-                    <select
-                            name="max_profile_count"
-                            data-original="{{ template.max_profile_count or '' }}"
-                            oninput="enableFieldSubmitButton(this);" >
-                        {% for i in range(0, 26) %}
-                            <option
-                                    value="{{ i }}"
-                                    {% if i == template.max_profile_count %}selected{% endif %}
-                                    {% if i > guild_settings.max_template_profile_count %}disabled{% endif %} >
-                                {{ i }}{% if i > guild_settings.max_template_profile_count %} - premium{% endif %}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                {# Submit changes button #}
-                <div class="attribute">
-                    <button class="submit-button" onclick="sendUpdateTemplate(this);" disabled>Submit changes</button>
-                </div>
-
-            </div>
-        </div>
-
-        <div class="template">
-            <div class="fields" style="margin: 0;">
-                <div class="field">
-                    <div class="attribute">
-                        <button class="create-field-button" onclick="createField(this);">Create new field</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {# And now we have all the fields #}
-        <div class="template">
-            <div class="fields" style="margin: 0;">
-                {{ add_field_html(template.template_id, None, True) }}
-                {% for field in template.field_list %}
-                    {{ add_field_html(template.template_id, field) }}
-                    <hr />
+                    </optgroup>
                 {% endfor %}
-            </div>
+            </select>
+            {# template archive channel #}
+            <label for="archive_channel_id">Template Archive Channel</label><br>
+            <select name="archive_channel_id" id="archive_channel_id">
+                <option value="" selected>(no channel)</option>
+                {% for category, channels in guild.by_category() %}
+                    <optgroup label="{{ category or '(no category)' }}">
+                        {% for c in channels if c.type.name in ["text"] %}
+                            <option
+                                    value="{{ c.id }}"
+                                    {% if c.id|string() == template.archive_channel_id %}selected{% endif %}>
+                                #{{ c.name }}
+                            </option>
+                        {% endfor %}
+                    </optgroup>
+                {% endfor %}
+            </select>
+            {# template role #}
+            <label for="role_id">Template Role</label><br>
+            <select name="role_id" id="role_id">
+                <option value="" selected>(no role)</option>
+                {% for r in guild.roles[:0:-1] %}
+                    <option
+                            value="{{ r.id }}"
+                            {% if r.id|string() == template.role_id %}selected{% endif %}>
+                        {{ r.name }}
+                    </option>
+                {% endfor %}
+            </select>
+            {# max profile count #}
+            <label for="max_profile_count">Max Profile Count</label><br>
+            <select name="max_profile_count" id="max_profile_count">
+                {% for i in range(26) %}
+                    <option
+                            value="{{ i }}"
+                            {% if i == template.max_profile_count %}selected{% endif %}
+                            {% if i > guild_settings.max_template_profile_count %}disabled{% endif %}>
+                        {{ i }}{% if i > guild_settings.max_template_profile_count %} (requires premium){% endif %}
+                    </option>
+                {% endfor %}
+            </select>
         </div>
-
-        <div class="template delete-section">
-            <button class="submit-button delete-button" onclick="sendDeleteTemplate(`{{ template.template_id }}`);">Delete template</button>
+        <div id="save-changes">
+            <button onclick="saveTemplate()" style="background:#00ff00;">Save Template</button>
+            <button onclick="deleteTemplate()" style="background:#ff0000;color:white;">Delete Template</button>
         </div>
-
+    </div>
+    <div class="template-fields">
+        {% for field in template.field_list %}
+            <details class="field" field-id="{{ field.field_id }}">
+                <summary>{{ field.name }}</summary>
+                <pre>{{ field.field_id }}</pre>
+                <label for="name">Field Name</label>
+                <input type="text" name="name" id="name" value="{{ field.name }}">
+                <label for="type">Field Type</label>
+                <select name="type" id="type">
+                    <option value="1000-CHAR" {% if field.type == "1000-CHAR" %}selected{% endif %}>Text</option>
+                    <option value="INT" {% if field.type == "INT" %}selected{% endif %}>Number</option>
+                    <option value="IMAGE" {% if field.type == "IMAGE" %}selected{% endif %}>Image</option>
+                </select>
+                <label for="optional">Field Optional</label>
+                <select name="optional" id="optional">
+                    <option value="1" {% if field.optional %}selected{% endif %}>Yes</option>
+                    <option value="" {% if not field.optional %}selected{% endif %}>No</option>
+                </select>
+                <label for="prompt">Field Prompt</label>
+                <textarea name="prompt" id="prompt" maxlength="1000">{{ field.prompt }}</textarea>
+                <label for="prompt">Field Prompt Timeout</label>
+                <input type="number" name="timeout" id="timeout" min="30" max="600" value="{{ field.timeout }}">
+                <div id="save-changes">
+                    <button onclick="saveField('{{ field.field_id }}')" style="background:#00ff00;">Save Field</button>
+                    <button onclick="deleteField('{{ field.field_id }}')" style="background:#ff0000;color:white;">Delete Field</button>
+                </div>
+            </details>
+        {% endfor %}
     </div>
 </section>
 
-{# Shows an unsaved changes overlay similar to discord ui #}
-<div id="unsaved" hidden>
-    <p>You have unsaved template edits.</p>
-    <div class="buttons">
-        <button class="submit-button" onclick="saveAllChanges()">Save</button>
-        <button class="reset-button" onclick="resetAllChanges()">Reset</button>
-    </div>
-</div>
+
 {% endblock content %}

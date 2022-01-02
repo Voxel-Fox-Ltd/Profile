@@ -12,6 +12,10 @@ import asyncpg
 from cogs import utils
 
 
+def t(i: typing.Union[commands.Context, discord.Interaction], l: str) -> str:
+    return vbu.translation(i, "profile_commands").gettext(l)
+
+
 class ProfileCreation(vbu.Cog):
 
     COMMAND_REGEX = re.compile(
@@ -166,10 +170,11 @@ class ProfileCreation(vbu.Cog):
         if template.max_profile_count == 1:
             suffix = None
             while True:
+                default_name = t(interaction, "default")
                 if suffix is None:
-                    name_content = "default"
+                    name_content = f"{default_name}"
                 else:
-                    name_content = f"default{suffix}"
+                    name_content = f"{default_name}{suffix}"
                 if name_content.lower() in [i.name.lower() for i in user_profiles]:
                     suffix = (suffix or 0) + 1
                 else:
@@ -182,11 +187,11 @@ class ProfileCreation(vbu.Cog):
             # Send the user a modal to ask for the answer
             text_input_custom_id = f"userProfileNameGiven {template.id}"
             modal = discord.ui.Modal(
-                title="Profile Name",
+                title=t(interaction, "Profile Name"),
                 components=[
                     discord.ui.ActionRow(
                         discord.ui.InputText(
-                            label="What name do you want to give your profile?",
+                            label=t(interaction, "What name do you want to give your profile?"),
                             custom_id=text_input_custom_id,
                         ),
                     ),
@@ -215,17 +220,13 @@ class ProfileCreation(vbu.Cog):
 
                 # See if they're already using the name
                 if name_content.lower() in [i.name.lower() for i in user_profiles]:
-                    raise utils.errors.FieldCheckFailure(
-                        "You're already using that name for this template. "
-                        "Please provide an alternative."
-                    )
+                    error_text = t(interaction, "You're already using that name for this template. Please provide an alternative.")
+                    raise utils.errors.FieldCheckFailure(error_text)
 
                 # See if the characters used are invalid
                 if any([i for i in name_content if i not in string.ascii_letters + string.digits + ' ']):
-                    raise utils.errors.FieldCheckFailure(
-                        "You can only use standard lettering and digits "
-                        "in your profile name. Please provide an alternative."
-                    )
+                    error_text = t(interaction, "You can only use standard lettering and digits in your profile name. Please provide an alternative.")
+                    raise utils.errors.FieldCheckFailure(error_text)
 
             # We hit an error converting their name to something valid
             except utils.errors.FieldCheckFailure as e:
@@ -233,7 +234,7 @@ class ProfileCreation(vbu.Cog):
                 components = discord.ui.MessageComponents(
                     discord.ui.ActionRow(
                         discord.ui.Button(
-                            label="Okay",
+                            label=t(interaction, "Okay"),
                             custom_id=button_custom_id,
                             style=discord.ButtonStyle.secondary,
                         )
@@ -254,7 +255,7 @@ class ProfileCreation(vbu.Cog):
                 except asyncio.TimeoutError:
                     try:
                         b: discord.ui.Button = components.get_component(button_custom_id)  # type: ignore
-                        b.label = "Waited too long to continue"
+                        b.label = t(interaction, "Timed out waiting for you to continue.")
                         b.disabled = True
                         await submitted_modal.edit_original_message(components=components)
                     except discord.HTTPException:
@@ -291,7 +292,7 @@ class ProfileCreation(vbu.Cog):
                 user_id=target_user.id,
                 name=profile_name,
                 field_id=field.id,
-                value="Could not get field information",
+                value=t(interaction, "Could not get field information"),
                 field=field,
             )
 
@@ -327,11 +328,9 @@ class ProfileCreation(vbu.Cog):
             # We timed out waiting
             except asyncio.TimeoutError:
                 try:
+                    error_text = t(interaction, "Timed out waiting for you to continue.")
                     await interaction.edit_original_message(
-                        content=(
-                            "Your input for this field has timed out. Set up your profile on your server "
-                            "again to go back through this setup."
-                        ),
+                        content=error_text,
                     )
                 except discord.HTTPException:
                     pass
@@ -350,7 +349,7 @@ class ProfileCreation(vbu.Cog):
                     components=discord.ui.MessageComponents(
                         discord.ui.ActionRow(
                             discord.ui.Button(
-                                label="Okay",
+                                label=t(interaction, "Okay"),
                                 custom_id="OKAY",
                             )
                         )
@@ -367,7 +366,7 @@ class ProfileCreation(vbu.Cog):
             except asyncio.TimeoutError:
                 try:
                     await user_submission.edit_original_message(
-                        content="Timed out waiting for you to continue.",
+                        content=t(interaction, "Timed out waiting for you to continue."),
                         components=None
                     )
                 except discord.HTTPException:
@@ -405,7 +404,7 @@ class ProfileCreation(vbu.Cog):
         # See if the user is already setting up a profile
         if self.set_profile_locks[ctx.author.id].locked():
             return await interaction.response.send_message(
-                "You're already setting up a profile.",
+                t(interaction, "You're already setting up a profile."),
                 ephemeral=True,
             )
 
@@ -418,38 +417,28 @@ class ProfileCreation(vbu.Cog):
             await template.fetch_fields(db)
             user_profiles = await template.fetch_all_profiles_for_user(db, target_user.id)
         if len(user_profiles) >= template.max_profile_count:
-            if target_user == ctx.author:
-                await interaction.response.send_message(
-                    (
-                        f"You're already at the maximum number of profiles "
-                        f"set for **{template.name}**."
-                    ),
-                    ephemeral=True,
-                )
-            else:
-                await interaction.response.send_message(
-                    (
-                        f"{target_user.mention} is already at the maximum "
-                        f"number of profiles set up for **{template.name}**."
-                    ),
-                    ephemeral=True,
-                )
+            error_text = t(interaction, "You're already at the maximum number of profiles set for **{template_name}**.")
+            await interaction.response.send_message(
+                error_text.format(template_name=template.name),
+                ephemeral=True,
+            )
             return
 
         # See if the template is accepting more profiles
         if template.max_profile_count == 0:
+            error_text = t(interaction, "Currently the template **{template_name}** is not accepting any more applications.")
             return await interaction.response.send_message(
-                f"Currently the template **{template.name}** is not accepting any more applications.",
+                error_text.format(template_name=template.name),
                 ephemeral=True,
             )
 
+        # Get a name for the profile
+        interaction, profile_name = await self.get_profile_name(ctx, interaction, template, user_profiles)
+        if not profile_name:
+            return
+
         # Drag the user into the create profile lock
         async with self.set_profile_locks[ctx.author.id]:
-
-            # Get a name for the profile
-            interaction, profile_name = await self.get_profile_name(ctx, interaction, template, user_profiles)
-            if not profile_name:
-                return
 
             # Make the buttons that the user can click to fill in their profile
             filled_field_dict: typing.Dict[str, utils.FilledField] = {}
@@ -468,7 +457,7 @@ class ProfileCreation(vbu.Cog):
             ]
             buttons.append(
                 discord.ui.Button(
-                    label="Done",
+                    label=t(interaction, "Done"),
                     custom_id="fillField DONE",
                     disabled=len([i for i in buttons if not i.disabled]) > 0,
                     style=discord.ButtonStyle.success,
@@ -476,7 +465,7 @@ class ProfileCreation(vbu.Cog):
             )
             buttons.append(
                 discord.ui.Button(
-                    label="Cancel",
+                    label=t(interaction, "Cancel"),
                     custom_id="fillField CANCEL",
                     style=discord.ButtonStyle.danger,
                 )
@@ -503,7 +492,7 @@ class ProfileCreation(vbu.Cog):
                 components = discord.ui.MessageComponents.add_buttons_with_rows(*buttons)
                 if not message_sent:
                     await interaction.response.send_message(
-                        "What attribute do you want to edit?",
+                        t(interaction, "What attribute do you want to edit?"),
                         components=components,
                         ephemeral=True,
                     )
@@ -522,7 +511,7 @@ class ProfileCreation(vbu.Cog):
                 except asyncio.TimeoutError:
                     try:
                         await interaction.edit_original_message(
-                            content="Timed out waiting for button clicks",
+                            content=t(interaction, "Timed out waiting for you to continue."),
                             components=None,
                         )
                     except discord.HTTPException:
@@ -533,7 +522,7 @@ class ProfileCreation(vbu.Cog):
                 _, field_id = button_click.custom_id.split(" ", 1)  # type: ignore
                 if field_id == "CANCEL":
                     await button_click.response.edit_message(
-                        content="Cancelled profile setup.",
+                        content=t(interaction, "Cancelled profile setup."),
                         components=None,
                         embed=None,
                     )
@@ -584,8 +573,9 @@ class ProfileCreation(vbu.Cog):
                 ephemeral=True,
             )
         except discord.HTTPException as e:
+            error_text = t(interaction, "I failed to send your profile to you - `{error_text}`.")
             return await interaction.followup.send(
-                f"Your profile couldn't be sent to you - `{e}`.\nPlease try again later.",
+                error_text,
                 ephemeral=True,
             )
 
@@ -614,8 +604,9 @@ class ProfileCreation(vbu.Cog):
                     send_profile_message_id, send_profile_channel_id
                 )
             except asyncpg.ForeignKeyViolationError:
+                error_text = t(interaction, "It looks like the template was deleted while you were setting up your profile.")
                 return await interaction.followup.send(
-                    "Unfortunately, it looks like the template was deleted while you were setting up your profile.",
+                    error_text,
                     ephemeral=True,
                 )
             for field in filled_field_dict.values():
@@ -627,15 +618,11 @@ class ProfileCreation(vbu.Cog):
 
         # Respond to user
         if template.get_verification_channel_id(target_user):
-            await interaction.followup.send(
-                f"Your profile has been sent to the **{ctx.guild.name}** staff team for verification - please hold tight!",
-                ephemeral=True,
-            )
+            message = t(interaction, "Your profile has been sent to the **{guild_name}** staff team for verification - please hold tight!")
+            message = message.format(guild_name=ctx.guild.name)
         else:
-            await interaction.followup.send(
-                "Your profile has been created and saved.",
-                ephemeral=True,
-            )
+            message = t(interaction, "Your profile has been created and saved.")
+        await interaction.followup.send(message, ephemeral=True)
 
     @vbu.command(hidden=True)
     @commands.bot_has_permissions(send_messages=True)
@@ -850,10 +837,10 @@ class ProfileCreation(vbu.Cog):
     @vbu.checks.meta_command()
     async def delete_profile_meta(
             self,
-            ctx: vbu.Context,
+            ctx: utils.types.GuildContext,
             user: discord.Member = None,
             *,
-            profile_name: str = None):
+            profile_name: str):
         """
         Handles deleting a profile.
         """
@@ -865,53 +852,50 @@ class ProfileCreation(vbu.Cog):
         # Get the profile
         template: utils.Template = ctx.template
         async with vbu.Database() as db:
-
-            # They gave no name and they only have one profile
-            try:
-                user_profile = await template.fetch_profile_for_user(db, (user or ctx.author).id, profile_name, fetch_filled_fields=True)
-
-            # They gave no name and they have multiple profiles
-            except ValueError:
-                user_profiles: typing.List[utils.UserProfile] = await template.fetch_all_profiles_for_user(db, (user or ctx.author).id)
-                profile_names_string = [f'"{o}"' for o in [i.name.replace('*', '\\*').replace('`', '\\`').replace('_', '\\_') for i in user_profiles]]
-                if user:
-                    await ctx.send((
-                        f"{user.mention} has multiple profiles set for the template "
-                        f"**{template.name}** - {', '.join(profile_names_string)}."
-                    ))
-                else:
-                    await ctx.send(f"You have multiple profiles set for the template **{template.name}** - {', '.join(profile_names_string)}.")
-                return
+            user_profile = await template.fetch_profile_for_user(db, (user or ctx.author).id, profile_name, fetch_filled_fields=True)
 
         # There's no profile with that name given
         if user_profile is None:
-            if profile_name and user:
-                text = f"{user.mention} doesn't have a profile for **{template.name}** with the name **{profile_name}**."
-            elif profile_name:
-                text = f"You don't have a profile for **{template.name}** with the name **{profile_name}**."
-            elif user:
-                text = f"{user.mention} doesn't have a profile for **{template.name}**."
+            if profile_name:
+                text = t(ctx.interaction, "You don't have a profile for **{template_name}** with the name **{profile_name}**.")
             else:
-                text = f"You don't have a profile for **{template.name}**."
+                text = t(ctx.interaction, "You don't have a profile for **{template_name}**.")
+            text.format(template_name=template.name, profile_name=profile_name)
             return await ctx.send(text, allowed_mentions=discord.AllowedMentions.none())
 
         # Ask if they're sure
         are_you_sure_message = await ctx.send(
-            "Are you sure you want to delete this profile?",
+            t(ctx.interaction, "Are you sure you want to delete this profile?"),
             embed=user_profile.build_embed(self.bot, user or ctx.author),
-            components=vbu.MessageComponents.boolean_buttons(),
+            components=discord.ui.MessageComponents.boolean_buttons(),
         )
         try:
-            payload = await are_you_sure_message.wait_for_button_click(check=lambda p: p.user.id == ctx.author.id, timeout=120)
-            await payload.ack()
+            interaction = await self.bot.wait_for(
+                "component_interaction",
+                check=lambda i: i.user.id == ctx.author.id and i.message.id == are_you_sure_message.id,
+                timeout=60 * 2,
+            )
         except asyncio.TimeoutError:
             try:
-                await are_you_sure_message.edit(content="Timed out waiting for confirmation on profile delete.", embed=None, components=None)
+                await are_you_sure_message.edit(
+                    content=t(ctx.interaction, "Timed out waiting for you to continue."),
+                    embed=None,
+                    components=None,
+                )
             except discord.HTTPException:
                 pass
             return
-        if payload.component.custom_id == "NO":
-            return await payload.message.edit(content="Alright, cancelled profile delete.", embed=None, components=None)
+
+        # They're not sure
+        if interaction.component.custom_id == "NO":
+            return await interaction.response.edit_message(
+                content=t(interaction, "Cancelled profile delete."),
+                embed=None,
+                components=None,
+            )
+
+        # They want to delete
+        await interaction.response.defer_update()
 
         # Delete the currently archived message, should one exist
         current_profile_message = await user_profile.fetch_message(self.bot)
@@ -928,7 +912,9 @@ class ProfileCreation(vbu.Cog):
                 """DELETE FROM created_profile WHERE user_id=$1 AND template_id=$2 AND name=$3""",
                 user.id, template.template_id, user_profile.name,
             )
-        await payload.message.edit(content="This profile has been deleted.", embed=None, components=None)
+        await interaction.followup.send(
+            content=t(interaction, "Your profile has been deleted."),
+        )
 
     @vbu.command(hidden=True)
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
@@ -936,10 +922,10 @@ class ProfileCreation(vbu.Cog):
     @vbu.checks.meta_command()
     async def get_profile_meta(
             self,
-            ctx: vbu.Context,
+            ctx: utils.types.GuildContext,
             user: typing.Optional[discord.Member],
             *,
-            profile_name: str = None
+            profile_name: str,
             ):
         """
         Gets a profile for a given member.
@@ -948,16 +934,9 @@ class ProfileCreation(vbu.Cog):
         # See if there's a set profile
         template: utils.Template = ctx.template
         async with vbu.Database() as db:
-            try:
-                user_profile: utils.UserProfile = await template.fetch_profile_for_user(db, (user or ctx.author).id, profile_name)
-            except ValueError:
-                user_profiles: typing.List[utils.UserProfile] = await template.fetch_all_profiles_for_user(db, (user or ctx.author).id)
-                profile_names_string = [f'"{o}"' for o in [i.name.replace('*', '\\*').replace('`', '\\`').replace('_', '\\_') for i in user_profiles]]
-                if user:
-                    await ctx.send(f"{user.mention} has multiple profiles set for the template **{template.name}** - {', '.join(profile_names_string)}.")
-                else:
-                    await ctx.send(f"You have multiple profiles set for the template **{template.name}** - {', '.join(profile_names_string)}.")
-                return
+            user_profile: typing.Optional[utils.UserProfile]
+            user_profile = await template.fetch_profile_for_user(db, (user or ctx.author).id, profile_name)
+
         if user_profile is None:
             if profile_name:
                 if user:

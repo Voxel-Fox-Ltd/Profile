@@ -63,7 +63,7 @@ def get_profile_application_command(name: str, description: str = None) -> disco
     return command
 
 
-class ProfileTemplates(vbu.Cog):
+class TemplateCommands(vbu.Cog):
 
     def __init__(self, bot:vbu.Bot):
         super().__init__(bot)
@@ -1139,5 +1139,5 @@ class ProfileTemplates(vbu.Cog):
 
 
 def setup(bot: vbu.Bot):
-    x = ProfileTemplates(bot)
+    x = TemplateCommands(bot)
     bot.add_cog(x)

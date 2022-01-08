@@ -8,6 +8,10 @@ from discord.ext import commands, vbu
 from cogs import utils
 
 
+def t(i: typing.Union[commands.Context, discord.Interaction], l: str) -> str:
+    return vbu.translation(i, "profile_verification").gettext(l)
+
+
 class ProfileVerification(vbu.Cog):
 
     async def send_profile_verification(

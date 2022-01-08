@@ -17,7 +17,7 @@ if typing.TYPE_CHECKING:
     from .profile_verification import ProfileVerification
 
 
-def t(i: typing.Union[commands.Context, discord.Interaction], l: str) -> str:
+def t(i: typing.Union[commands.Context, discord.Interaction, str], l: str) -> str:
     return vbu.translation(i, "profile_commands").gettext(l)
 
 
@@ -43,6 +43,8 @@ class ProfileCommands(vbu.Cog):
         assert interaction.command_name
         command_name = interaction.command_name
         if command_name.endswith(" get") or command_name.endswith(" delete"):
+            pass
+        else:
             return
         assert interaction.options
         assert interaction.user
@@ -449,10 +451,11 @@ class ProfileCommands(vbu.Cog):
 
             # Make the buttons that the user can click to fill in their profile
             filled_field_dict: typing.Dict[str, utils.FilledField] = {}
+            component_id = str(uuid.uuid4())
             buttons = [
                 discord.ui.Button(
                     label=field.name,
-                    custom_id=f"fillField {field.id}",
+                    custom_id=f"{component_id} {field.id}",
                     disabled=any(utils.CommandProcessor.get_is_command(field.prompt)),
                     style=(
                         discord.ButtonStyle.primary
@@ -465,7 +468,7 @@ class ProfileCommands(vbu.Cog):
             buttons.append(
                 discord.ui.Button(
                     label=t(interaction, "Done"),
-                    custom_id="fillField DONE",
+                    custom_id=f"{component_id} DONE",
                     disabled=len([i for i in buttons if not i.disabled]) > 0,
                     style=discord.ButtonStyle.success,
                 )
@@ -473,7 +476,7 @@ class ProfileCommands(vbu.Cog):
             buttons.append(
                 discord.ui.Button(
                     label=t(interaction, "Cancel"),
-                    custom_id="fillField CANCEL",
+                    custom_id=f"{component_id} CANCEL",
                     style=discord.ButtonStyle.danger,
                 )
             )
@@ -514,6 +517,7 @@ class ProfileCommands(vbu.Cog):
                     button_click: discord.Interaction = await self.bot.wait_for(
                         "component_interaction",
                         timeout=60 * 3,
+                        check=lambda i: i.user.id == ctx.author.id and i.custom_id.startswith(component_id),
                     )
                 except asyncio.TimeoutError:
                     try:
@@ -526,7 +530,7 @@ class ProfileCommands(vbu.Cog):
                     return
 
                 # See which button they've clicked
-                _, field_id = button_click.custom_id.split(" ", 1)  # type: ignore
+                _, field_id = button_click.custom_id.split(" ")  # type: ignore
                 if field_id == "CANCEL":
                     await button_click.response.edit_message(
                         content=t(interaction, "Cancelled profile setup."),
@@ -556,7 +560,7 @@ class ProfileCommands(vbu.Cog):
                         secondary_count += 1
                 if secondary_count == 0:
                     for b in buttons:
-                        if b.custom_id == "fillField DONE":
+                        if b.custom_id.endswith(" DONE"):
                             b.enable()
 
                 # Change the interaction
@@ -842,7 +846,7 @@ class ProfileCommands(vbu.Cog):
     #     # Respond to user
     #     await ctx.author.send("Your profile has been edited and saved.")
 
-    @vbu.command(hidden=True)
+    @commands.command(hidden=True)
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     @vbu.checks.meta_command()

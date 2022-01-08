@@ -10,6 +10,10 @@ from discord.ext import commands, vbu
 from cogs import utils
 
 
+def t(i: typing.Union[commands.Context, discord.Interaction, str], l: str) -> str:
+    return vbu.translation(i, "template_commands").gettext(l)
+
+
 def get_profile_application_command(name: str, description: str = None) -> discord.ApplicationCommand:
     """
     Create an application command with the given name, and subcommands
@@ -25,6 +29,14 @@ def get_profile_application_command(name: str, description: str = None) -> disco
                 name="create",
                 description="Create a new profile.",
                 type=discord.ApplicationCommandOptionType.subcommand,
+                name_localizations={
+                    i: t(i, "create")
+                    for i in ["de", "pt"]
+                },
+                description_localizations={
+                    i: t(i, "Create a new profile.")
+                    for i in ["de", "pt"]
+                },
             ),
             discord.ApplicationCommandOption(
                 name="delete",
@@ -35,6 +47,7 @@ def get_profile_application_command(name: str, description: str = None) -> disco
                         name="profile_name",
                         description="The name of the profile that you want to delete.",
                         type=discord.ApplicationCommandOptionType.string,
+                        autocomplete=True,
                     ),
                 ],
             ),
@@ -286,7 +299,8 @@ class TemplateCommands(vbu.Cog):
                         check=lambda i: i.user.id == ctx.author.id and i.component.custom_id.startswith(interaction_id),
                         timeout=60 * 2,
                     )
-                    _, attribute = interaction.component.custom_id.split(" ")
+                    assert interaction.custom_id
+                    _, attribute = interaction.custom_id.split(" ")
                 except asyncio.TimeoutError:
                     try:
                         await interaction.edit_original_message(
@@ -564,6 +578,7 @@ class TemplateCommands(vbu.Cog):
         )
 
         # Wait for them to click a button
+        action: str = ""
         try:
             interaction = await self.bot.wait_for(
                 "component_interaction",
@@ -637,7 +652,7 @@ class TemplateCommands(vbu.Cog):
                 check=lambda i: i.user.id == ctx.author.id and i.component.custom_id.startswith(interaction_id),
                 timeout=60 * 2,
             )
-            _, action = interaction.component.custom_id.split(" ")
+            _, action = interaction.custom_id.split(" ")
         except asyncio.TimeoutError:
             try:
                 await interaction.edit_original_message(

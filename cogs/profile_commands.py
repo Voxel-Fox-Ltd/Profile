@@ -715,7 +715,7 @@ class ProfileCommands(vbu.Cog):
                 discord.ui.Button(
                     label=t(interaction, "Done"),
                     custom_id=f"{component_id} DONE",
-                    disabled=len([i for i in buttons if not i.disabled]) > 0,
+                    disabled=len([i for i in buttons if not i.disabled and i.style == discord.ButtonStyle.secondary]) > 0,
                     style=discord.ButtonStyle.success,
                 )
             )

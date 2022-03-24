@@ -42,7 +42,7 @@ class ProfileCommands(vbu.Cog):
         # A basic filter to only deal with template get
         assert interaction.command_name
         command_name = interaction.command_name
-        if command_name.endswith(" get") or command_name.endswith(" delete"):
+        if command_name.endswith(" get") or command_name.endswith(" delete") or command_name.endswith(" edit"):
             pass
         else:
             return

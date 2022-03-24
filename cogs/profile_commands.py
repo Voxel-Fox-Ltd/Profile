@@ -285,6 +285,7 @@ class ProfileCommands(vbu.Cog):
     async def get_field_content(
             ctx: utils.types.GuildContext,
             interaction: discord.Interaction,
+            id_to_use: str,
             profile_name: str,
             field: utils.Field,
             target_user: typing.Union[discord.User, discord.Member],
@@ -310,6 +311,7 @@ class ProfileCommands(vbu.Cog):
         # Send the user the prompt
         modal = discord.ui.Modal(
             title=field.name,
+            custom_id=f"{id_to_use} {field.id}",
             components=[
                 discord.ui.ActionRow(
                     discord.ui.InputText(
@@ -440,6 +442,7 @@ class ProfileCommands(vbu.Cog):
             self,
             ctx: utils.types.GuildContext,
             interaction: discord.Interaction,
+            id_to_use: str,
             profile_name: str,
             field: utils.Field,
             user: typing.Union[discord.User, discord.Member],
@@ -448,6 +451,7 @@ class ProfileCommands(vbu.Cog):
         filled_field_modal, response_field = await self.get_field_content(
             ctx,
             interaction,
+            id_to_use,
             profile_name,
             field,
             user,

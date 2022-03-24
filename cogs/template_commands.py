@@ -264,19 +264,19 @@ class TemplateCommands(vbu.Cog):
             )
 
             # See if they have a command set up properly
-            command = None
+            added_command = None
             if template.application_command_id:
                 try:
-                    command = await ctx.guild.fetch_application_command(template.application_command_id)
+                    added_command = await ctx.guild.fetch_application_command(template.application_command_id)
                 except discord.HTTPException:
                     pass
-            if command is None:
+            if added_command is None:
                 components.components[-1].add_component(
                     discord.ui.Button(
                         label="Add slash command",
                         custom_id=f"{interaction_id} COMMAND",
                         style=discord.ButtonStyle.danger,
-                        disabled=command is not None
+                        disabled=added_command is not None
                     )
                 )
             else:
@@ -339,20 +339,20 @@ class TemplateCommands(vbu.Cog):
                 # See if they wanna add a button
                 elif attribute == "COMMAND":
                     await interaction.response.defer_update()
-                    command = get_profile_application_command(template.name)
-                    if template.application_command_id:
+                    application_command_object = get_profile_application_command(template.name)
+                    if added_command:
                         await ctx.guild.edit_application_command(
-                            discord.Object(template.application_command_id),
-                            options=command.options
+                            added_command,
+                            options=application_command_object.options
                         )
                     else:
-                        command = await ctx.guild.create_application_command(command)
+                        added_command = await ctx.guild.create_application_command(application_command_object)
                         async with vbu.Database() as db:
                             await db(
                                 """UPDATE template SET application_command_id=$2 WHERE template_id=$1""",
-                                template.id, command.id,
+                                template.id, added_command.id,
                             )
-                    template.application_command_id = command.id
+                    template.application_command_id = added_command.id
                     components.get_component(f"{interaction_id} COMMAND").label = "Update slash command"
                     response = True
 

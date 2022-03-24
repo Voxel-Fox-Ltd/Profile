@@ -647,6 +647,7 @@ class ProfileCommands(vbu.Cog):
                 self.bot.loop.create_task(self.get_field_content_with_dispatch(
                     ctx,
                     button_click,
+                    component_id,
                     user_profile.name,
                     field,
                     user,

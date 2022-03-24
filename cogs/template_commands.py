@@ -620,10 +620,10 @@ class TemplateCommands(vbu.Cog):
         try:
             interaction = await self.bot.wait_for(
                 "component_interaction",
-                check=lambda i: i.user.id == ctx.author.id and i.component.custom_id.startswith(interaction_id),
+                check=lambda i: i.user.id == ctx.author.id and i.custom_id.startswith(interaction_id),
                 timeout=60 * 2,
             )
-            _, action = interaction.component.custom_id.split(" ")
+            _, action = interaction.custom_id.split(" ")
         except asyncio.TimeoutError:
             try:
                 await interaction.edit_original_message(
@@ -687,7 +687,7 @@ class TemplateCommands(vbu.Cog):
         try:
             interaction = await self.bot.wait_for(
                 "component_interaction",
-                check=lambda i: i.user.id == ctx.author.id and i.component.custom_id.startswith(interaction_id),
+                check=lambda i: i.user.id == ctx.author.id and i.custom_id.startswith(interaction_id),
                 timeout=60 * 2,
             )
             _, action = interaction.custom_id.split(" ")

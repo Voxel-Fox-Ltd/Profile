@@ -285,7 +285,6 @@ class TemplateCommands(vbu.Cog):
                         label="Update slash command",
                         custom_id=f"{interaction_id} COMMAND",
                         style=discord.ButtonStyle.danger,
-                        disabled=command is not None
                     )
                 )
 

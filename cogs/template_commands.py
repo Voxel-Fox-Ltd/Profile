@@ -71,6 +71,20 @@ def get_profile_application_command(name: str, description: str = None) -> disco
                     ),
                 ],
             ),
+            discord.ApplicationCommandOption(
+                name="edit",
+                description="Edit one of your profiles.",
+                type=discord.ApplicationCommandOptionType.subcommand,
+                options=[
+                    discord.ApplicationCommandOption(
+                        name="profile_name",
+                        description="The name of the profile that you want to edit.",
+                        type=discord.ApplicationCommandOptionType.string,
+                        required=True,
+                        autocomplete=True,
+                    ),
+                ],
+            ),
         ]
     )
     return command

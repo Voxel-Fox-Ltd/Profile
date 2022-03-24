@@ -247,9 +247,10 @@ class ProfileCommands(vbu.Cog):
                         )
                     )
                 )
-                await submitted_modal.response.edit_message(
+                await submitted_modal.response.send_message(
                     content=e.message,
                     components=components,
+                    ephemeral=True,
                 )
 
                 # Wait for the user to say it's all okay before continuing so that

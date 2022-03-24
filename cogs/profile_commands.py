@@ -938,7 +938,7 @@ class ProfileCommands(vbu.Cog):
     async def get_profile_meta(
             self,
             ctx: utils.types.GuildContext,
-            user: typing.Optional[discord.Member],
+            user: typing.Optional[discord.Member] = None,
             *,
             profile_name: str,
             ):

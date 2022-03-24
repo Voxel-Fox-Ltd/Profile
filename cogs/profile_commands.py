@@ -940,7 +940,7 @@ class ProfileCommands(vbu.Cog):
             ctx: utils.types.GuildContext,
             user: typing.Optional[discord.Member] = None,
             *,
-            profile_name: str = None,
+            profile_name: str,
             ):
         """
         Gets a profile for a given member.

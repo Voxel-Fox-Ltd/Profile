@@ -606,9 +606,9 @@ class ProfileCommands(vbu.Cog):
                 # Work out what was clicked
                 response_field = None
                 try:
-                    button_click: discord.Interaction[str] = done.pop()
+                    button_click: discord.Interaction[str] = done.pop().result()
                 except TypeError:
-                    button_click, response_field = done.pop()
+                    button_click, response_field = done.pop().result()
 
                 # See which button they've clicked
                 _, field_id = button_click.custom_id.split(" ")  # type: ignore

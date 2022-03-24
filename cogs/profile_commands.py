@@ -288,6 +288,7 @@ class ProfileCommands(vbu.Cog):
             profile_name: str,
             field: utils.Field,
             target_user: typing.Union[discord.User, discord.Member],
+            current_value: typing.Optional[str] = None
             ) -> typing.Tuple[discord.Interaction, typing.Optional[utils.FilledField]]:
         """
         Ask the user to fill in the content for a field given its prompt.
@@ -315,6 +316,7 @@ class ProfileCommands(vbu.Cog):
                         label=field.prompt,
                         required=not field.optional,
                         custom_id=f"fieldText {field.id}",
+                        value=current_value,
                     )
                 )
             ]
@@ -545,7 +547,17 @@ class ProfileCommands(vbu.Cog):
                 field = template.fields[field_id]
 
                 # Send them a modal
-                filled_field_modal, response_field = await self.get_field_content(ctx, button_click, profile_name, field, target_user)
+                current_response = filled_field_dict.get(field.field_id)
+                if current_response is not None:
+                    current_response = current_response.value
+                filled_field_modal, response_field = await self.get_field_content(
+                    ctx,
+                    button_click,
+                    profile_name,
+                    field,
+                    target_user,
+                    current_value=current_response,
+                )
                 if response_field is None:
                     return
 

@@ -639,6 +639,7 @@ class ProfileCommands(vbu.Cog):
                         for b in buttons:
                             if b.custom_id.endswith(" DONE"):
                                 b.enable()
+                    continue
                 field = template.fields[field_id]
 
                 # Send them a modal

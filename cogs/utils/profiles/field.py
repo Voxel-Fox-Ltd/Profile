@@ -91,7 +91,7 @@ class Field:
             'INT': NumberField(),
             'IMAGE': ImageField(),
             'BOOLEAN': BooleanField(),
-        }[getattr(field_type, 'name', field_type)]  # type: ignore
+        }[getattr(field_type, 'name', field_type) or '1000-CHAR']  # type: ignore
         self.template_id: str = str(template_id)
         self.optional: bool = optional
         self.deleted: bool = deleted

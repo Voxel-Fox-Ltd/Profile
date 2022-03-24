@@ -125,8 +125,8 @@ class ProfileCommands(vbu.Cog):
             metacommand = self.set_profile_meta
         elif command_operator == "delete":
             metacommand = self.delete_profile_meta
-        elif command_operator == "edit":
-            metacommand = self.edit_profile_meta
+        # elif command_operator == "edit":
+        #     metacommand = self.edit_profile_meta
         else:
             raise ValueError(f"Couldn't get metacommand {command_operator}")
 
@@ -639,7 +639,7 @@ class ProfileCommands(vbu.Cog):
             message = t(interaction, "Your profile has been created and saved.")
         await interaction.followup.send(message, ephemeral=True)
 
-    # @vbu.command(hidden=True)
+    # @commands.command(hidden=True)
     # @commands.bot_has_permissions(send_messages=True)
     # @commands.guild_only()
     # @vbu.checks.meta_command()
@@ -931,7 +931,7 @@ class ProfileCommands(vbu.Cog):
             content=t(interaction, "Your profile has been deleted."),
         )
 
-    @vbu.command(hidden=True)
+    @commands.command(hidden=True)
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @commands.guild_only()
     @vbu.checks.meta_command()

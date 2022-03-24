@@ -213,7 +213,7 @@ class ProfileVerification(vbu.Cog):
         """
 
         # Make sure that the button is something we want to deal with
-        if not interaction.component.custom_id.startswith("VERIFY PROFILE"):
+        if not interaction.custom_id.startswith("VERIFY PROFILE"):
             return
 
         # Check that both the channel and the message are readable
@@ -237,15 +237,12 @@ class ProfileVerification(vbu.Cog):
             return
 
         # Get the member who added the reaction
-        guild: discord.Guild = interaction.guild  # type: ignore
         moderator: discord.Member = interaction.user  # type: ignore
-        if moderator.bot:
-            return
         if not utils.checks.member_is_moderator(self.bot, moderator):
             return
 
         # Check what they reacted with
-        verify = interaction.component.custom_id == "VERIFY PROFILE YES"
+        verify = interaction.custom_id == "VERIFY PROFILE YES"
         return await self.perform_verify(interaction, verify)
 
     async def perform_verify(
@@ -266,7 +263,6 @@ class ProfileVerification(vbu.Cog):
 
         # Make some assertions to help our typing
         assert interaction.message
-        assert interaction.guild
 
         # Check whom and what we're updating
         try:
@@ -282,6 +278,9 @@ class ProfileVerification(vbu.Cog):
 
         # Defer before we go into our database
         await interaction.response.defer(ephemeral=True)
+
+        # Grab the guild object
+        guild = await self.bot.fetch_guild(interaction.guild_id)
 
         # Decide what we're doing
         async with vbu.Database() as db:
@@ -379,7 +378,7 @@ class ProfileVerification(vbu.Cog):
         # Get the profile user
         profile_user: typing.Optional[discord.Member]
         try:
-            profile_user = await interaction.guild.fetch_member(profile_user_id)
+            profile_user = await guild.fetch_member(profile_user_id)
         except discord.HTTPException:
             profile_user = None
 
@@ -390,19 +389,19 @@ class ProfileVerification(vbu.Cog):
                 if verify:
                     await profile_user.send(
                         f"Your profile for **{user_profile.template.name}** (`{user_profile.name}`) on "
-                        f"`{interaction.guild.name}` has been verified.",
+                        f"`{guild.name}` has been verified.",
                         embed=embed,
                     )
                 else:
                     await profile_user.send(
                         f"Your profile for **{user_profile.template.name}** (`{user_profile.name}`) on "
-                        f"`{interaction.guild.name}` has been denied with the reason `{denial_reason}`.",
+                        f"`{guild.name}` has been denied with the reason `{denial_reason}`.",
                         embed=embed,
                     )
             except discord.HTTPException:
                 self.logger.info(
                     f"Couldn't DM user {user_profile.user_id} about their '{user_profile.template.name}' "
-                    f"profile verification on {interaction.guild.id}"
+                    f"profile verification on {guild.id}"
                 )
                 pass  # Can't send the user a DM, let's just ignore it
 

@@ -103,7 +103,11 @@ class TemplateCommands(vbu.Cog):
 
         return len([i for i in template_name if i not in string.ascii_letters + string.digits]) == 0
 
-    @commands.group()
+    @commands.group(
+        application_command_meta=commands.ApplicationCommandMeta(
+            # Add translations here
+        ),
+    )
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     async def template(self, ctx: commands.SlashContext):
@@ -113,7 +117,12 @@ class TemplateCommands(vbu.Cog):
 
         pass
 
-    @template.command(name="list")
+    @template.command(
+        name="list",
+        application_command_meta=commands.ApplicationCommandMeta(
+            # Add translations here
+        ),
+    )
     @commands.defer()
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
@@ -147,19 +156,20 @@ class TemplateCommands(vbu.Cog):
     @template.command(
         name="describe",
         application_command_meta=commands.ApplicationCommandMeta(
-            params=[
-                commands.ApplicationCommandParam(
+            options=[
+                discord.ApplicationCommandOption(
                     name="template",
                     description="The template that you want to get the information of.",
                     type=discord.ApplicationCommandOptionType.string,
                     autocomplete=True,
                 ),
-                commands.ApplicationCommandParam(
+                discord.ApplicationCommandOption(
                     name="brief",
                     description="Whether you want to display abbreviated data or not.",
                     type=discord.ApplicationCommandOptionType.boolean,
                 ),
             ],
+            # Add translations here
         ),
     )
     @commands.defer()
@@ -195,8 +205,8 @@ class TemplateCommands(vbu.Cog):
     @template.command(
         name="edit",
         application_command_meta=commands.ApplicationCommandMeta(
-            params=[
-                commands.ApplicationCommandParam(
+            options=[
+                discord.ApplicationCommandOption(
                     name="template",
                     description="The template that you want to edit.",
                     type=discord.ApplicationCommandOptionType.string,
@@ -696,7 +706,8 @@ class TemplateCommands(vbu.Cog):
                                 "PROMPT": "What should the prompt for this field be?",
                             }[attribute_to_change],
                             value=getattr(field_to_edit, attribute_to_change.lower()),
-                            max_length=256 if attribute_to_change == "NAME" else None,
+                            max_length=256 if attribute_to_change == "NAME" else 2000,
+                            min_length=1,
                         )
                     )
                 ]
@@ -801,8 +812,8 @@ class TemplateCommands(vbu.Cog):
     @template.command(
         name="delete",
         application_command_meta=commands.ApplicationCommandMeta(
-            params=[
-                commands.ApplicationCommandParam(
+            options=[
+                discord.ApplicationCommandOption(
                     name="template",
                     description="The template that you want to delete.",
                     type=discord.ApplicationCommandOptionType.string,
@@ -885,8 +896,8 @@ class TemplateCommands(vbu.Cog):
     @template.command(
         name="create",
         application_command_meta=commands.ApplicationCommandMeta(
-            params=[
-                commands.ApplicationCommandParam(
+            options=[
+                discord.ApplicationCommandOption(
                     name="template_name",
                     description="The name of the template that you want to create.",
                     type=discord.ApplicationCommandOptionType.string,
@@ -1137,7 +1148,7 @@ class TemplateCommands(vbu.Cog):
     @template_edit.autocomplete
     @template_describe.autocomplete
     @template_delete.autocomplete
-    async def template_autocomplete(self, ctx, interaction):
+    async def template_autocomplete(self, ctx: commands.SlashContext, interaction: discord.Interaction):
         """
         Return the templates for the given guild.
         """
@@ -1145,7 +1156,7 @@ class TemplateCommands(vbu.Cog):
         async with vbu.Database() as db:
             templates = await db(
                 """SELECT template_id, name FROM template WHERE guild_id=$1""",
-                ctx.guild.id,
+                ctx.interaction.guild_id,
             )
         await interaction.response.send_autocomplete([
             discord.ApplicationCommandOptionChoice(name=row['name'], value=row['name'])

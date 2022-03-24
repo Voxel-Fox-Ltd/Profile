@@ -631,7 +631,7 @@ class ProfileCommands(vbu.Cog):
                     filled_field_dict[response_field.field_id] = response_field
                     secondary_count = 0
                     for b in buttons:
-                        if b.custom_id.split(" ")[-1] == response_field.id:
+                        if b.custom_id.split(" ")[-1] == response_field.field_id:
                             b.style = discord.ButtonStyle.primary
                         if b.style == discord.ButtonStyle.secondary:
                             secondary_count += 1

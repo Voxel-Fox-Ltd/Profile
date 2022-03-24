@@ -279,6 +279,15 @@ class TemplateCommands(vbu.Cog):
                         disabled=command is not None
                     )
                 )
+            else:
+                components.components[-1].add_component(
+                    discord.ui.Button(
+                        label="Update slash command",
+                        custom_id=f"{interaction_id} COMMAND",
+                        style=discord.ButtonStyle.danger,
+                        disabled=command is not None
+                    )
+                )
 
             # Start our edit loop
             while True:
@@ -332,14 +341,20 @@ class TemplateCommands(vbu.Cog):
                 elif attribute == "COMMAND":
                     await interaction.response.defer_update()
                     command = get_profile_application_command(template.name)
-                    command = await ctx.guild.create_application_command(command)
-                    async with vbu.Database() as db:
-                        await db(
-                            """UPDATE template SET application_command_id=$2 WHERE template_id=$1""",
-                            template.id, command.id,
+                    if template.application_command_id:
+                        await ctx.guild.edit_application_command(
+                            discord.Object(template.application_command_id),
+                            options=command.options
                         )
+                    else:
+                        command = await ctx.guild.create_application_command(command)
+                        async with vbu.Database() as db:
+                            await db(
+                                """UPDATE template SET application_command_id=$2 WHERE template_id=$1""",
+                                template.id, command.id,
+                            )
                     template.application_command_id = command.id
-                    components.get_component(f"{interaction_id} COMMAND").disable()
+                    components.get_component(f"{interaction_id} COMMAND").label = "Update slash command"
                     response = True
 
                 # See if they wanna change fields

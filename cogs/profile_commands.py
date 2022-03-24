@@ -685,7 +685,7 @@ class ProfileCommands(vbu.Cog):
         # Check if they're already at the maximum amount of profiles
         async with vbu.Database() as db:
             await template.fetch_fields(db)
-            user_profile = await template.fetch_profile_for_user(db, target_user.id, name)
+            user_profile = await template.fetch_profile_for_user(db, target_user.id, profile_name)
             if not user_profile:
                 return await interaction.response.send_message(
                     t(interaction, "Failed to get that profile."),

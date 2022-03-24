@@ -662,7 +662,7 @@ class ProfileCommands(vbu.Cog):
             self,
             ctx: utils.types.GuildContext,
             *,
-            name: str
+            profile_name: str
             ):
         """
         Edit one of your profiles.

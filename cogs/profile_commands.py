@@ -335,7 +335,7 @@ class ProfileCommands(vbu.Cog):
                         label=field.prompt[:45],
                         required=not field.optional,
                         custom_id=f"fieldText {field.id}",
-                        value=current_value if current_value is None else current_value[:45],
+                        value=current_value,
                     )
                 )
             ]

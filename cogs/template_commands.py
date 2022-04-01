@@ -802,7 +802,7 @@ class TemplateCommands(vbu.Cog):
             try:
                 interaction = await self.bot.wait_for(
                     "component_interaction",
-                    check=lambda i: i.user.id == ctx.author.id and i.component.custon_id.startswith(interaction_id),
+                    check=lambda i: i.user.id == ctx.author.id and i.component.custom_id.startswith(interaction_id),
                     timeout=60 * 2,
                 )
             except asyncio.TimeoutError:

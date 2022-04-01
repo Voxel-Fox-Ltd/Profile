@@ -1005,7 +1005,7 @@ class TemplateCommands(vbu.Cog):
                 return
 
             # Add new application command
-            command = get_profile_application_command(template_name.lower())
+            command = get_profile_application_command(template_name)
             command = await ctx.guild.create_application_command(command)
 
             # Get an ID for the profile
@@ -1068,6 +1068,7 @@ class TemplateCommands(vbu.Cog):
                             "What prompt should be sent with this message?"
                         ),
                         style=discord.TextStyle.long,
+                        max_length=45,
                     )
                 )
             ]

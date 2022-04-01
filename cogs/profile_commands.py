@@ -332,7 +332,7 @@ class ProfileCommands(vbu.Cog):
             components=[
                 discord.ui.ActionRow(
                     discord.ui.InputText(
-                        label=field.prompt,
+                        label=field.prompt[:45],
                         required=not field.optional,
                         custom_id=f"fieldText {field.id}",
                         value=current_value,

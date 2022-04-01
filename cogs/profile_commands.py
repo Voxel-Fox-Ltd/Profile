@@ -372,7 +372,10 @@ class ProfileCommands(vbu.Cog):
             try:
                 if field_content:
                     field.field_type.check(field_content)
-                await user_submission.response.defer_update()
+                try:
+                    await user_submission.response.defer_update()
+                except discord.InteractionResponded:
+                    pass
                 break
             except utils.errors.FieldCheckFailure as e:
                 await user_submission.response.edit_message(

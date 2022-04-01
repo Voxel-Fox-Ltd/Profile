@@ -124,6 +124,7 @@ class TemplateCommands(vbu.Cog):
     )
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
+    @commands.is_slash_command()
     async def template(self, ctx: commands.SlashContext):
         """
         The parent group for all template commands.
@@ -140,6 +141,7 @@ class TemplateCommands(vbu.Cog):
     @commands.defer()
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
+    @commands.is_slash_command()
     async def template_list(self, ctx: utils.types.GuildContext):
         """
         Lists the templates that have been created for this server.
@@ -189,6 +191,7 @@ class TemplateCommands(vbu.Cog):
     @commands.defer()
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @commands.guild_only()
+    @commands.is_slash_command()
     async def template_describe(self, ctx: commands.SlashContext, template: utils.Template, brief: bool = True):
         """
         Describe a template and its fields.
@@ -233,6 +236,7 @@ class TemplateCommands(vbu.Cog):
     @commands.has_guild_permissions(manage_roles=True)
     @commands.bot_has_permissions(send_messages=True, external_emojis=True, add_reactions=True, manage_messages=True)
     @commands.guild_only()
+    @commands.is_slash_command()
     async def template_edit(self, ctx: utils.types.GuildContext, template: utils.Template):
         """
         Edits a template for your guild.
@@ -854,6 +858,7 @@ class TemplateCommands(vbu.Cog):
     @commands.has_guild_permissions(manage_roles=True)
     @commands.bot_has_permissions(send_messages=True, external_emojis=True, add_reactions=True)
     @commands.guild_only()
+    @commands.is_slash_command()
     async def template_delete(self, ctx: utils.types.GuildContext, template: utils.Template):
         """
         Deletes a template from your guild.
@@ -937,6 +942,7 @@ class TemplateCommands(vbu.Cog):
     @commands.has_guild_permissions(manage_roles=True)
     @commands.bot_has_permissions(send_messages=True, manage_messages=True, external_emojis=True, add_reactions=True, embed_links=True)
     @commands.guild_only()
+    @commands.is_slash_command()
     async def template_create(self, ctx: utils.types.GuildContext, template_name: str):
         """
         Creates a new template for your guild.

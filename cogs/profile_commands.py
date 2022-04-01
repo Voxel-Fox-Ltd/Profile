@@ -98,8 +98,8 @@ class ProfileCommands(vbu.Cog):
             return
 
         # Only handle slashies
-        if not isinstance(ctx, commands.SlashContext):
-            return
+        # if not isinstance(ctx, commands.SlashContext):
+        #     return
 
         # Get the command and used template
         command_invokation = ctx.interaction.command_name
@@ -129,6 +129,14 @@ class ProfileCommands(vbu.Cog):
             metacommand = self.edit_profile_meta
         else:
             raise ValueError(f"Couldn't get metacommand {command_operator}")
+
+        # Make sure it's a slashie
+        if not isinstance(ctx, commands.SlashContext):
+            if not template.application_command_id:
+                await ctx.send(f"This command can only be run as a slash command - run `/template edit {template.name}` to create it.")
+            else:
+                await ctx.send(f"This command can only be run as a slash command.")
+            return
 
         # Invoke command
         ctx.command = metacommand

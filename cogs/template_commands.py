@@ -21,8 +21,8 @@ def get_profile_application_command(name: str, description: str = None) -> disco
     """
 
     command = discord.ApplicationCommand(
-        name=name,
-        description=(description or name).lower(),
+        name=name.lower(),
+        description=description or name,
         type=discord.ApplicationCommandType.chat_input,
         options=[
             discord.ApplicationCommandOption(

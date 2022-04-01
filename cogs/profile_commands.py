@@ -327,7 +327,7 @@ class ProfileCommands(vbu.Cog):
 
         # Send the user the prompt
         modal = discord.ui.Modal(
-            title=field.name,
+            title=field.name[:45],
             custom_id=f"{id_to_use} {field.id}",
             components=[
                 discord.ui.ActionRow(
@@ -335,7 +335,7 @@ class ProfileCommands(vbu.Cog):
                         label=field.prompt[:45],
                         required=not field.optional,
                         custom_id=f"fieldText {field.id}",
-                        value=current_value,
+                        value=current_value if current_value is None else current_value[:45],
                     )
                 )
             ]

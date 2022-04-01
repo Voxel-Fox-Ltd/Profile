@@ -109,7 +109,7 @@ class ProfileCommands(vbu.Cog):
         try:
             command_invokation = ctx.interaction.command_name
         except AttributeError:
-            command_invokation = ctx.invoked_with
+            command_invokation = ctx.message.content[len(ctx.prefix):]
             self.logger.info(command_invokation)
         assert command_invokation
         matches = self.COMMAND_REGEX.search(command_invokation) or self.OLD_COMMAND_REGEX.search(command_invokation)

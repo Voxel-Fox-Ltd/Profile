@@ -336,6 +336,7 @@ class ProfileCommands(vbu.Cog):
                         required=not field.optional,
                         custom_id=f"fieldText {field.id}",
                         value=current_value,
+                        style=discord.TextStyle.long,
                     )
                 )
             ]

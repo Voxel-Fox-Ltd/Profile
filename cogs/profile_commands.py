@@ -60,6 +60,8 @@ class ProfileCommands(vbu.Cog):
         if matches is None:
             return
         template_name = matches.group("template")  # template name
+        if template_name == "template":
+            return  # Don't bother with the non-profile commands
 
         # Find the template they asked for on their server
         assert interaction.guild

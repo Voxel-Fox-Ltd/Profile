@@ -102,7 +102,10 @@ class ProfileCommands(vbu.Cog):
         #     return
 
         # Get the command and used template
-        command_invokation = ctx.interaction.command_name
+        try:
+            command_invokation = ctx.interaction.command_name
+        except AttributeError:
+            command_invokation = ctx.invoked_with
         assert command_invokation
         matches = self.COMMAND_REGEX.search(command_invokation)
         if matches is None:

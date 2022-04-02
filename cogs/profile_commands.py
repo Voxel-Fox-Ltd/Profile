@@ -688,7 +688,7 @@ class ProfileCommands(vbu.Cog):
         except discord.HTTPException as e:
             error_text = t(interaction, "I failed to send your profile to you - `{error_text}`.")
             return await interaction.followup.send(
-                error_text,
+                error_text.format(str(e)),
                 ephemeral=True,
             )
 

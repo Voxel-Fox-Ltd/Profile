@@ -213,7 +213,7 @@ class UserProfile(object):
                 field_value = CommandProcessor.get_value(f.field.prompt, member)
             except InvalidCommandText:
                 field_value = f.value
-            if field_value is None:
+            if field_value is None or field_value == "":
                 continue
 
             # Set data

@@ -555,7 +555,7 @@ class ProfileCommands(vbu.Cog):
                     disabled=any(utils.CommandProcessor.get_is_command(field.prompt)),
                     style=(
                         discord.ButtonStyle.primary
-                        if any(utils.CommandProcessor.get_is_command(field.prompt)) or field.id in filled_field_dict
+                        if any(utils.CommandProcessor.get_is_command(field.prompt)) or field.id in filled_field_dict or field.optional
                         else discord.ButtonStyle.secondary
                     ),
                 )

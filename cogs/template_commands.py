@@ -822,7 +822,7 @@ class TemplateCommands(vbu.Cog):
                 "NO": False,
                 "TEXT": utils.TextField.name,
                 "NUMBERS": utils.NumberField.name,
-            }[interaction.component.custom_id]
+            }[interaction.custom_id.split(" ")[-1]]
 
         # It's something else
         else:

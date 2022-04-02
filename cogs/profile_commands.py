@@ -854,7 +854,7 @@ class ProfileCommands(vbu.Cog):
                         allowed_mentions=discord.AllowedMentions(users=False),
                     )
                 else:
-                    await ctx.send(f"You have multiple profiles for **{template.name}** you need to specify one.")
+                    await ctx.send(f"You have multiple profiles for **{template.name}** - you need to specify one.")
                 return
 
         if user_profile is None:

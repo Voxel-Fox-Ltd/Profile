@@ -64,13 +64,13 @@ class ProfileCommands(vbu.Cog):
             return  # Don't bother with the non-profile commands
 
         # Find the template they asked for on their server
-        assert interaction.guild
+        assert interaction.guild_id
         async with vbu.Database() as db:
 
             # Get the template
-            template = await utils.Template.fetch_template_by_name(db, interaction.guild.id, template_name, fetch_fields=False)
+            template = await utils.Template.fetch_template_by_name(db, interaction.guild_id, template_name, fetch_fields=False)
             if not template:
-                self.logger.info(f"Failed at getting template '{template_name}' in guild {interaction.guild.id}")
+                self.logger.info(f"Failed at getting template '{template_name}' in guild {interaction.guild_id}")
                 return  # Fail silently on template doesn't exist
 
             # Find the user's profiles
@@ -835,7 +835,7 @@ class ProfileCommands(vbu.Cog):
             ctx: utils.types.GuildContext,
             user: typing.Optional[discord.Member] = None,
             *,
-            profile_name: str,
+            profile_name: str = None,
             ):
         """
         Gets a profile for a given member.

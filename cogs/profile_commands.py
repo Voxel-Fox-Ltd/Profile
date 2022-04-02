@@ -844,8 +844,18 @@ class ProfileCommands(vbu.Cog):
         # See if there's a set profile
         template: utils.Template = ctx.template
         async with vbu.Database() as db:
-            user_profile: typing.Optional[utils.UserProfile]
-            user_profile = await template.fetch_profile_for_user(db, (user or ctx.author).id, profile_name)
+            user_profile: typing.Optional[utils.UserProfile] = None
+            try:
+                user_profile = await template.fetch_profile_for_user(db, (user or ctx.author).id, profile_name)
+            except ValueError:
+                if user:
+                    await ctx.send(
+                        f"{user.mention} has multiple profiles for **{template.name}** - you need to specify one.",
+                        allowed_mentions=discord.AllowedMentions(users=False),
+                    )
+                else:
+                    await ctx.send(f"You have multiple profiles for **{template.name}** you need to specify one.")
+                return
 
         if user_profile is None:
             if profile_name:

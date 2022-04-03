@@ -544,7 +544,9 @@ class TemplateCommands(vbu.Cog):
             interaction: discord.Interaction = None) -> typing.Optional[typing.Any]:
         """
         Validates the given information from the user as to whether their attribute should be changed.
-        Returns either
+        Returns either None or the converted attribute.
+
+        The interaction given must not have been responded to.
         """
 
         # Get sendable
@@ -753,9 +755,9 @@ class TemplateCommands(vbu.Cog):
         if attribute_to_change in ["NAME", "PROMPT"]:
 
             # Make the modal
-            current_value = getattr(field_to_edit, attribute_to_change.lower())
-            current_value = current_value.replace("\n", " ") if attribute_to_change == "NAME" else current_value
-            max_length = 80 if attribute_to_change == "NAME" else 2000
+            current_value = getattr(field_to_edit, attribute_to_change.lower()).replace("\n", " ")
+            # current_value = current_value.replace("\n", " ") if attribute_to_change == "NAME" else current_value
+            max_length = 80 if attribute_to_change == "NAME" else 45
             modal = discord.ui.Modal(
                 title="Change Field Attribute",
                 components=[

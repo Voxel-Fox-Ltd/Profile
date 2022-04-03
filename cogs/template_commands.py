@@ -596,7 +596,7 @@ class TemplateCommands(vbu.Cog):
         # Create some components to add to the message asking which field to edit
         field_name_buttons = [
             discord.ui.Button(
-                label=field.name[:25],
+                label=field.name.replace("\n", " ")[:80],
                 custom_id=f"{interaction_id} {field.field_id}"
             )
             for field in template.field_list
@@ -728,6 +728,9 @@ class TemplateCommands(vbu.Cog):
         if attribute_to_change in ["NAME", "PROMPT"]:
 
             # Make the modal
+            current_value = getattr(field_to_edit, attribute_to_change.lower())
+            current_value = current_value.replace("\n", " ") if attribute_to_change == "NAME" else current_value
+            max_length = 80 if attribute_to_change == "NAME" else 2000
             modal = discord.ui.Modal(
                 title="Change Field Attribute",
                 components=[
@@ -737,8 +740,8 @@ class TemplateCommands(vbu.Cog):
                                 "NAME": "What name do you want the field to have?",
                                 "PROMPT": "What should the prompt for this field be?",
                             }[attribute_to_change],
-                            value=getattr(field_to_edit, attribute_to_change.lower()),
-                            max_length=256 if attribute_to_change == "NAME" else 2000,
+                            value=current_value[:max_length],
+                            max_length=max_length,
                             min_length=1,
                         )
                     )
@@ -753,7 +756,7 @@ class TemplateCommands(vbu.Cog):
                 interaction = await self.bot.wait_for(
                     "modal_submit",
                     check=lambda i: i.user.id == ctx.author.id and i.custom_id == modal.custom_id,
-                    timeout=60 * 20,
+                    timeout=60 * 10,
                 )
             except asyncio.TimeoutError:
                 try:
@@ -1059,7 +1062,7 @@ class TemplateCommands(vbu.Cog):
                         label=(
                             "What name should this field have?"
                         ),
-                        max_length=256,
+                        max_length=80,
                     )
                 ),
                 discord.ui.ActionRow(
@@ -1110,10 +1113,10 @@ class TemplateCommands(vbu.Cog):
         try:
             interaction = await self.bot.wait_for(
                 "component_interaction",
-                check=lambda i: i.user.id == ctx.author.id and i.component.custom_id.startswith(interaction_id),
+                check=lambda i: i.user.id == ctx.author.id and i.custom_id.startswith(interaction_id),
                 timeout=60 * 2,
             )
-            _, field_optional_emoji = interaction.component.custom_id.split(" ")
+            _, field_optional_emoji = interaction.custom_id.split(" ")
         except asyncio.TimeoutError:
             field_optional_emoji = "NO"
         field_optional = field_optional_emoji == "YES"
@@ -1137,10 +1140,10 @@ class TemplateCommands(vbu.Cog):
         try:
             interaction = await self.bot.wait_for(
                 "component_interaction",
-                check=lambda i: i.user.id == ctx.author.id and i.component.custom_id.startswith(interaction_id),
+                check=lambda i: i.user.id == ctx.author.id and i.custom_id.startswith(interaction_id),
                 timeout=60 * 2,
             )
-            _, key = interaction.component.custom_id.split(" ")
+            _, key = interaction.custom_id.split(" ")
         except asyncio.TimeoutError:
             try:
                 await interaction.edit_original_message(

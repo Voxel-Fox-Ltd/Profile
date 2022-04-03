@@ -357,7 +357,7 @@ class TemplateCommands(vbu.Cog):
                 # See if they wanna add a button
                 elif attribute == "COMMAND":
                     await interaction.response.defer_update()
-                    application_command_object = get_profile_application_command(template.name)
+                    application_command_object = self.get_profile_application_command(template.name)
                     if added_command:
                         await ctx.guild.edit_application_command(
                             added_command,
@@ -1008,7 +1008,7 @@ class TemplateCommands(vbu.Cog):
                 return
 
             # Add new application command
-            command = get_profile_application_command(template_name)
+            command = self.get_profile_application_command(template_name)
             command = await ctx.guild.create_application_command(command)
 
             # Get an ID for the profile

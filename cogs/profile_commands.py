@@ -625,20 +625,23 @@ class ProfileCommands(vbu.Cog):
                     )
 
                 # Wait for the user to click a button OR for an update signal
-                done, pending = await asyncio.wait(
-                    [
-                        self.bot.wait_for(
-                            "component_interaction",
-                            check=lambda i: i.user.id == ctx.author.id and i.custom_id.startswith(component_id),
-                        ),
-                        self.bot.wait_for(
-                            "profile_edit_update",
-                            check=lambda i, ff: i.user.id == ctx.author.id and i.custom_id.startswith(component_id),
-                        ),
-                    ],
-                    return_when=asyncio.FIRST_COMPLETED,
-                    timeout=60 * 10,
-                )
+                try:
+                    done, pending = await asyncio.wait(
+                        [
+                            self.bot.wait_for(
+                                "component_interaction",
+                                check=lambda i: i.user.id == ctx.author.id and i.custom_id.startswith(component_id),
+                            ),
+                            self.bot.wait_for(
+                                "profile_edit_update",
+                                check=lambda i, ff: i.user.id == ctx.author.id and i.custom_id.startswith(component_id),
+                            ),
+                        ],
+                        return_when=asyncio.FIRST_COMPLETED,
+                        timeout=60 * 15,
+                    )
+                except asyncio.TimeoutError:
+                    return
                 for p in pending:
                     p.cancel()
 

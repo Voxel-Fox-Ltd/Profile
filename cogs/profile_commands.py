@@ -637,6 +637,7 @@ class ProfileCommands(vbu.Cog):
                         ),
                     ],
                     return_when=asyncio.FIRST_COMPLETED,
+                    timeout=60 * 10,
                 )
                 for p in pending:
                     p.cancel()

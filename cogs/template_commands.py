@@ -674,7 +674,7 @@ class TemplateCommands(vbu.Cog):
                 discord.ui.Button(label="Field name", custom_id=f"{interaction_id} NAME"),
                 discord.ui.Button(label="Field prompt", custom_id=f"{interaction_id} PROMPT"),
                 discord.ui.Button(label="Field being optional", custom_id=f"{interaction_id} OPTIONAL"),
-                discord.ui.Button(label="Field type", custom_id=f"{interaction_id} TYPE"),
+                discord.ui.Button(label="Field type", custom_id=f"{interaction_id} FIELD_TYPE"),
             ),
             discord.ui.ActionRow(
                 discord.ui.Button(label="Delete field", style=discord.ButtonStyle.danger, custom_id=f"{interaction_id} DELETE"),
@@ -773,7 +773,7 @@ class TemplateCommands(vbu.Cog):
             field_value = interaction.components[0].components[0].value
 
         # They want to change something we spawn a button for
-        elif attribute_to_change in ["OPTIONAL", "TYPE"]:
+        elif attribute_to_change in ["OPTIONAL", "FIELD_TYPE"]:
 
             # Make the responses
             interaction_id = str(uuid.uuid4())

@@ -39,7 +39,10 @@ class TemplateCommands(vbu.Cog):
             Whether or not the given template name is valid.
         """
 
-        return len([i for i in template_name if i not in string.ascii_letters + string.digits]) == 0
+        return all((
+            len([i for i in template_name if i not in string.ascii_letters + string.digits]) == 0,
+            len(template_name) <= 30,
+        ))
 
     @staticmethod
     def get_profile_application_command(name: str, description: str = None) -> discord.ApplicationCommand:
@@ -563,6 +566,12 @@ class TemplateCommands(vbu.Cog):
             if 30 < len(converted) < 1:
                 await ctx.send("That template name is invalid - not within 1 and 30 characters in length.", delete_after=3)
                 return None
+
+            # See if the characters are fine
+            if not len([i for i in converted if i not in string.ascii_letters + string.digits]) == 0:
+                await ctx.send("You can only use standard lettering in your template name.", delete_after=3)
+                return None
+
 
         # Validate profile count
         elif attribute == "max_profile_count":

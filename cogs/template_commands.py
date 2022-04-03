@@ -783,7 +783,7 @@ class TemplateCommands(vbu.Cog):
                     yes_id=f"{interaction_id} YES",
                     no_id=f"{interaction_id} NO",
                 )
-            elif attribute_to_change == "TYPE":
+            elif attribute_to_change == "FIELD_TYPE":
                 prompt = "What type do you want this field to have?"
                 components = discord.ui.MessageComponents(
                     discord.ui.ActionRow(

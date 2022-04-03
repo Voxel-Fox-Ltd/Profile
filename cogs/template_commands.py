@@ -358,20 +358,28 @@ class TemplateCommands(vbu.Cog):
                 elif attribute == "COMMAND":
                     await interaction.response.defer_update()
                     application_command_object = self.get_profile_application_command(template.name)
-                    if added_command:
-                        await ctx.guild.edit_application_command(
-                            added_command,
-                            options=application_command_object.options
-                        )
-                    else:
-                        added_command = await ctx.guild.create_application_command(application_command_object)
-                        async with vbu.Database() as db:
-                            await db(
-                                """UPDATE template SET application_command_id=$2 WHERE template_id=$1""",
-                                template.id, added_command.id,
+                    error = None
+                    try:
+                        if added_command:
+                            await ctx.guild.edit_application_command(
+                                added_command,
+                                options=application_command_object.options
                             )
-                    template.application_command_id = added_command.id
-                    components.get_component(f"{interaction_id} COMMAND").label = "Update slash command"
+                        else:
+                            added_command = await ctx.guild.create_application_command(application_command_object)
+                            async with vbu.Database() as db:
+                                await db(
+                                    """UPDATE template SET application_command_id=$2 WHERE template_id=$1""",
+                                    template.id, added_command.id,
+                                )
+                        template.application_command_id = added_command.id
+                    except Exception as e:
+                        error = e
+                    if error:
+                        components.get_component(f"{interaction_id} COMMAND").label = "Error adding slash command"
+                        await interaction.followup.send(f"Error updating slash command - `{error!s}`.", ephemeral=True)
+                    else:
+                        components.get_component(f"{interaction_id} COMMAND").label = "Update slash command"
                     response = True
 
                 # See if they wanna change fields

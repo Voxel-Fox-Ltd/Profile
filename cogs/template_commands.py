@@ -441,6 +441,7 @@ class TemplateCommands(vbu.Cog):
         has been changed, and should thus be updated.
 
         The interaction given must not have been responded to.
+        The interaction returned will have been responded to.
         """
 
         # Make up the text to be sent
@@ -512,6 +513,7 @@ class TemplateCommands(vbu.Cog):
             converted=converted,
             guild_settings=guild_settings,
             is_bot_support=is_bot_support,
+            interaction=interaction,
         )
         if checked_converted is None and attribute in ["name", "max_profile_count"]:
             return interaction, False
@@ -538,11 +540,17 @@ class TemplateCommands(vbu.Cog):
             attribute: str,
             converted: typing.Union[str, int],
             guild_settings: dict,
-            is_bot_support: bool) -> typing.Optional[typing.Any]:
+            is_bot_support: bool,
+            interaction: discord.Interaction = None) -> typing.Optional[typing.Any]:
         """
         Validates the given information from the user as to whether their attribute should be changed.
         Returns either
         """
+
+        # Get sendable
+        sendable = ctx
+        if interaction:
+            sendable = interaction.followup
 
         # Validate if they provided a new name
         if attribute == "name":
@@ -559,17 +567,17 @@ class TemplateCommands(vbu.Cog):
                     ctx.guild.id, converted, template.template_id,
                 )
             if name_in_use:
-                await ctx.send("That template name is already in use.", delete_after=3)
+                await sendable.send("That template name is already in use.", ephemeral=True)
                 return None
 
             # See if the length is fine
             if 30 < len(converted) < 1:
-                await ctx.send("That template name is invalid - not within 1 and 30 characters in length.", delete_after=3)
+                await sendable.send("That template name is invalid - not within 1 and 30 characters in length.", ephemeral=True)
                 return None
 
             # See if the characters are fine
             if not len([i for i in converted if i not in string.ascii_letters + string.digits]) == 0:
-                await ctx.send("You can only use standard lettering in your template name.", delete_after=3)
+                await sendable.send("You can only use standard lettering in your template name.", ephemeral=True)
                 return None
 
 

@@ -14,82 +14,6 @@ def t(i: typing.Union[commands.Context, discord.Interaction, str], l: str) -> st
     return vbu.translation(i, "template_commands").gettext(l)
 
 
-def get_profile_application_command(name: str, description: str = None) -> discord.ApplicationCommand:
-    """
-    Create an application command with the given name, and subcommands
-    for create, edit, and delete.
-    """
-
-    command = discord.ApplicationCommand(
-        name=name.lower(),
-        description=description or name,
-        type=discord.ApplicationCommandType.chat_input,
-        options=[
-            discord.ApplicationCommandOption(
-                name="create",
-                description="Create a new profile.",
-                type=discord.ApplicationCommandOptionType.subcommand,
-                name_localizations={
-                    i: t(i, "create")
-                    for i in ["de", "pt"]
-                },
-                description_localizations={
-                    i: t(i, "Create a new profile.")
-                    for i in ["de", "pt"]
-                },
-            ),
-            discord.ApplicationCommandOption(
-                name="delete",
-                description="Delete one of your profiles.",
-                type=discord.ApplicationCommandOptionType.subcommand,
-                options=[
-                    discord.ApplicationCommandOption(
-                        name="profile_name",
-                        description="The name of the profile that you want to delete.",
-                        type=discord.ApplicationCommandOptionType.string,
-                        autocomplete=True,
-                    ),
-                ],
-            ),
-            discord.ApplicationCommandOption(
-                name="get",
-                description="Create a new profile.",
-                type=discord.ApplicationCommandOptionType.subcommand,
-                options=[
-                    discord.ApplicationCommandOption(
-                        name="user",
-                        description="The person whose profile you want to get.",
-                        type=discord.ApplicationCommandOptionType.user,
-                        required=False,
-                    ),
-                    discord.ApplicationCommandOption(
-                        name="profile_name",
-                        description="The name of the profile that you want to get.",
-                        type=discord.ApplicationCommandOptionType.string,
-                        required=False,
-                        autocomplete=True,
-                    ),
-                ],
-            ),
-            discord.ApplicationCommandOption(
-                name="edit",
-                description="Edit one of your profiles.",
-                type=discord.ApplicationCommandOptionType.subcommand,
-                options=[
-                    discord.ApplicationCommandOption(
-                        name="profile_name",
-                        description="The name of the profile that you want to edit.",
-                        type=discord.ApplicationCommandOptionType.string,
-                        required=True,
-                        autocomplete=True,
-                    ),
-                ],
-            ),
-        ]
-    )
-    return command
-
-
 class TemplateCommands(vbu.Cog):
 
     def __init__(self, bot:vbu.Bot):
@@ -116,6 +40,82 @@ class TemplateCommands(vbu.Cog):
         """
 
         return len([i for i in template_name if i not in string.ascii_letters + string.digits]) == 0
+
+    @staticmethod
+    def get_profile_application_command(name: str, description: str = None) -> discord.ApplicationCommand:
+        """
+        Create an application command with the given name, and subcommands
+        for create, edit, and delete.
+        """
+
+        command = discord.ApplicationCommand(
+            name=name.lower(),
+            description=description or name,
+            type=discord.ApplicationCommandType.chat_input,
+            options=[
+                discord.ApplicationCommandOption(
+                    name="create",
+                    description="Create a new profile.",
+                    type=discord.ApplicationCommandOptionType.subcommand,
+                    name_localizations={
+                        i: t(i, "create")
+                        for i in ["de", "pt"]
+                    },
+                    description_localizations={
+                        i: t(i, "Create a new profile.")
+                        for i in ["de", "pt"]
+                    },
+                ),
+                discord.ApplicationCommandOption(
+                    name="delete",
+                    description="Delete one of your profiles.",
+                    type=discord.ApplicationCommandOptionType.subcommand,
+                    options=[
+                        discord.ApplicationCommandOption(
+                            name="profile_name",
+                            description="The name of the profile that you want to delete.",
+                            type=discord.ApplicationCommandOptionType.string,
+                            autocomplete=True,
+                        ),
+                    ],
+                ),
+                discord.ApplicationCommandOption(
+                    name="get",
+                    description="Create a new profile.",
+                    type=discord.ApplicationCommandOptionType.subcommand,
+                    options=[
+                        discord.ApplicationCommandOption(
+                            name="user",
+                            description="The person whose profile you want to get.",
+                            type=discord.ApplicationCommandOptionType.user,
+                            required=False,
+                        ),
+                        discord.ApplicationCommandOption(
+                            name="profile_name",
+                            description="The name of the profile that you want to get.",
+                            type=discord.ApplicationCommandOptionType.string,
+                            required=False,
+                            autocomplete=True,
+                        ),
+                    ],
+                ),
+                discord.ApplicationCommandOption(
+                    name="edit",
+                    description="Edit one of your profiles.",
+                    type=discord.ApplicationCommandOptionType.subcommand,
+                    options=[
+                        discord.ApplicationCommandOption(
+                            name="profile_name",
+                            description="The name of the profile that you want to edit.",
+                            type=discord.ApplicationCommandOptionType.string,
+                            required=True,
+                            autocomplete=True,
+                        ),
+                    ],
+                ),
+            ]
+        )
+        return command
 
     @commands.group(
         application_command_meta=commands.ApplicationCommandMeta(

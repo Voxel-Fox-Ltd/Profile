@@ -316,6 +316,7 @@ class ProfileCommands(vbu.Cog):
         Ask the user to fill in the content for a field given its prompt.
 
         The interaction given must not have been responded to.
+        The interaction returned must not have been responded to.
         """
 
         # See if the field is a command
@@ -354,7 +355,7 @@ class ProfileCommands(vbu.Cog):
 
             # Wait for the user's input
             try:
-                user_submission: discord.Interaction = await ctx.bot.wait_for(
+                interaction: discord.Interaction = await ctx.bot.wait_for(
                     "modal_submit",
                     check=lambda i: i.user.id == ctx.author.id and i.custom_id == modal.custom_id,
                     timeout=60 * 10,
@@ -369,17 +370,23 @@ class ProfileCommands(vbu.Cog):
                     )
                 except discord.HTTPException:
                     pass
-                return (interaction, None)
+                return (interaction, None)  # return responded interaction
 
             # Try and validate their input
-            field_content: str = user_submission.components[0].components[0].value  # type: ignore
+            field_content: str = interaction.components[0].components[0].value  # type: ignore
             try:
                 if field_content:
                     field.field_type.check(field_content)
-                await user_submission.response.defer_update()
+                try:
+                    await interaction.response.defer_update()
+                except discord.HTTPException:
+                    # The interaction has already been responded to
+                    # I'm not super sure WHEN this could happen
+                    # But it does appear to be rather common
+                    pass
                 break
             except utils.errors.FieldCheckFailure as e:
-                await user_submission.response.edit_message(
+                await interaction.response.edit_message(
                     content=e.message,
                     components=discord.ui.MessageComponents(
                         discord.ui.ActionRow(
@@ -400,16 +407,16 @@ class ProfileCommands(vbu.Cog):
                 )
             except asyncio.TimeoutError:
                 try:
-                    await user_submission.edit_original_message(
+                    await interaction.edit_original_message(
                         content=t(interaction, "Timed out waiting for you to continue."),
                         components=None
                     )
                 except discord.HTTPException:
                     pass
-                return (user_submission, None)
+                return (interaction, None)
 
         # Add their filled field object to the list of data
-        return user_submission, utils.FilledField(
+        return interaction, utils.FilledField(
             user_id=target_user.id,
             name=profile_name,
             field_id=field.field_id,

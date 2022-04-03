@@ -496,7 +496,7 @@ class ProfileCommands(vbu.Cog):
         if self.set_profile_locks[ctx.author.id].locked():
             component_id = self.profile_lock_uuids.get(ctx.author.id)
             if component_id is None:
-                components = None
+                components = discord.utils.MISSING
             else:
                 components = discord.ui.MessageComponents(
                     discord.ui.ActionRow(
@@ -508,6 +508,7 @@ class ProfileCommands(vbu.Cog):
                 )
             return await interaction.response.send_message(
                 t(interaction, "You're already setting up a profile."),
+                components=components,
                 ephemeral=True,
             )
 

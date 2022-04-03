@@ -36,6 +36,8 @@ class ProfileCommands(vbu.Cog):
         super().__init__(bot)
         self.set_profile_locks: typing.Dict[int, asyncio.Lock]
         self.set_profile_locks = collections.defaultdict(asyncio.Lock)
+        self.profile_lock_uuids: typing.Dict[int, str]  # the component ID of their setup
+        self.profile_lock_uuids = {}
 
     @vbu.Cog.listener()
     async def on_autocomplete_interaction(self, interaction: discord.Interaction):
@@ -492,6 +494,18 @@ class ProfileCommands(vbu.Cog):
 
         # See if the user is already setting up a profile
         if self.set_profile_locks[ctx.author.id].locked():
+            component_id = self.profile_lock_uuids.get(ctx.author.id)
+            if component_id is None:
+                components = None
+            else:
+                components = discord.ui.MessageComponents(
+                    discord.ui.ActionRow(
+                        discord.ui.Button(
+                            label=t(interaction, "Cancel profile setup"),
+                            custom_id=f"{component_id} CANCEL",
+                        ),
+                    )
+                )
             return await interaction.response.send_message(
                 t(interaction, "You're already setting up a profile."),
                 ephemeral=True,
@@ -548,6 +562,7 @@ class ProfileCommands(vbu.Cog):
             # Make the buttons that the user can click to fill in their profile
             filled_field_dict: typing.Dict[str, utils.FilledField] = user_profile.all_filled_fields
             component_id = str(uuid.uuid4())
+            self.profile_lock_uuids[ctx.author.id] = component_id
             buttons = [
                 discord.ui.Button(
                     label=field.name,

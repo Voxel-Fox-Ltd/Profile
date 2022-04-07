@@ -311,7 +311,7 @@ class ProfileVerification(vbu.Cog):
 
         # See if we need to say anything
         if user_profile is None:
-            await interaction.message.delete()
+            await interaction.delete_original_message()
             return
         assert user_profile.template
 
@@ -337,14 +337,14 @@ class ProfileVerification(vbu.Cog):
             try:
                 button_click = await self.bot.wait_for(
                     "component_interaction",
-                    check=lambda i: i.user.id == interaction.user.id and i.component.custom_id.startswith(interaction_id),
+                    check=lambda i: i.user.id == interaction.user.id and i.custom_id.startswith(interaction_id),
                     timeout=60 * 2,
                 )
             except asyncio.TimeoutError:
                 button_click = None
 
             # If there was one, spawn a modal back at em
-            if button_click is not None and button_click.component.custom_id.endswith("YES"):
+            if button_click is not None and button_click.custom_id.endswith("YES"):
                 modal = discord.ui.Modal(
                     title="Denial Reason",
                     components=[
@@ -421,6 +421,10 @@ class ProfileVerification(vbu.Cog):
                 pass
 
         # And tell the moderator we're done
+        try:
+            await interaction.delete_original_message()
+        except:
+            pass
         await (modal_submit or interaction).followup.send(
             "Profile dealt with successfully.",
             ephemeral=True,

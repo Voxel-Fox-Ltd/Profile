@@ -99,7 +99,6 @@ class ProfileCommands(vbu.Cog):
         # Filter out DMs
         if isinstance(ctx.channel, discord.DMChannel):
             return  # Fail silently on DM invocation
-        guild_id: int = None
 
         # Handle commandnotfound which is really just handling the set/get/delete/edit commands
         if not isinstance(error, commands.CommandNotFound):
@@ -110,13 +109,17 @@ class ProfileCommands(vbu.Cog):
         #     return
 
         # Get the command and used template
-        try:
+        guild_id: typing.Optional[int] = None
+        command_invokation: typing.Optional[str] = None
+        if isinstance(ctx, commands.SlashContext):
             command_invokation = ctx.interaction.command_name
             guild_id = ctx.interaction.guild_id
-        except AttributeError:
+        elif isinstance(ctx, commands.Context):
             command_invokation = ctx.message.content[len(ctx.prefix):]
             guild_id = ctx.guild.id
         assert command_invokation
+        assert guild_id
+
         matches = self.COMMAND_REGEX.search(command_invokation) or self.OLD_COMMAND_REGEX.search(command_invokation)
         if matches is None:
             return
@@ -127,7 +130,7 @@ class ProfileCommands(vbu.Cog):
         async with vbu.Database() as db:
             template = await utils.Template.fetch_template_by_name(db, guild_id, template_name, fetch_fields=False)
         if not template:
-            self.logger.info(f"Failed at getting template '{template_name}' in guild {guild_id}")
+            # self.logger.info(f"Failed at getting template '{template_name}' in guild {guild_id}")
             return  # Fail silently on template doesn't exist
 
         # Get the metacommand

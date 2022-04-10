@@ -413,10 +413,16 @@ class TemplateCommands(vbu.Cog):
 
                     # Change the command if the name was changed
                     if attribute == "name" and template.application_command_id:
-                        await ctx.guild.edit_application_command(
-                            discord.Object(template.application_command_id),
-                            name=template.name,
-                        )
+                        try:
+                            await ctx.guild.edit_application_command(
+                                discord.Object(template.application_command_id),
+                                name=template.name,
+                            )
+                        except Exception as e:
+                            await interaction.followup.send(
+                                f"Failed to update slash command - `{e!s}`.",
+                                ephemeral=True,
+                            )
 
                 # Some invalid response
                 else:

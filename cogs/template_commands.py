@@ -259,7 +259,7 @@ class TemplateCommands(vbu.Cog):
         is_bot_support = await self.user_is_bot_support(ctx)
 
         # Grab the template edit lock
-        async with self.template_editing_locks[ctx.guild.id]:
+        async with self.template_editing_locks[str(uuid.uuid4())]:
 
             # Get the template fields
             async with vbu.Database() as db:
@@ -906,7 +906,7 @@ class TemplateCommands(vbu.Cog):
         interaction: discord.Interaction = ctx.interaction
 
         # Grab the template edit lock
-        async with self.template_editing_locks[ctx.guild.id]:
+        async with self.template_editing_locks[str(uuid.uuid4())]:
 
             # Ask for confirmation
             delete_confirmation_message = await interaction.followup.send(
@@ -1008,7 +1008,7 @@ class TemplateCommands(vbu.Cog):
             ))
 
         # And now we start creating the template itself
-        async with self.template_editing_locks[ctx.guild.id]:
+        async with self.template_editing_locks[str(uuid.uuid4())]:
 
                 # Check name for characters
             if not self.is_valid_template_name(template_name):

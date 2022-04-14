@@ -824,6 +824,10 @@ class TemplateCommands(vbu.Cog):
                         discord.ui.Button(label="Numbers", custom_id=f"{interaction_id} NUMBERS")
                     )
                 )
+                if not any(i for i in template.fields.values() if isinstance(i.field_type, utils.ImageField)):
+                    components.components[0].add_component(
+                        discord.ui.Button(label="Text", custom_id=f"{interaction_id} IMAGE"),
+                    )
             else:
                 raise ValueError()
 
@@ -858,6 +862,7 @@ class TemplateCommands(vbu.Cog):
                 "NO": False,
                 "TEXT": utils.TextField.name,
                 "NUMBERS": utils.NumberField.name,
+                "IMAGE": utils.ImageField.name,
             }[interaction.custom_id.split(" ")[-1]]
 
         # It's something else

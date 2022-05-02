@@ -395,6 +395,8 @@ class ProfileCommands(vbu.Cog):
             field_content: str = interaction.components[0].components[0].value.strip()  # type: ignore
             try:
                 if field_content:
+                    if hasattr(field.field_type, "fix"):
+                        field_content = await field.field_type.fix(field_content)  # type: ignore
                     field.field_type.check(field_content)
                 try:
                     await interaction.response.defer_update()

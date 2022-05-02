@@ -1,4 +1,12 @@
+from __future__ import annotations
+
 import re
+from typing import Optional, TYPE_CHECKING
+
+import yarl
+
+if TYPE_CHECKING:
+    from discord.ext import vbu
 
 
 class FieldCheckFailure(Exception):
@@ -13,6 +21,7 @@ class FieldType:
     """
 
     name = None
+    bot: Optional[vbu.Bot] = None
 
     def __str__(self):
         return self.name
@@ -97,12 +106,13 @@ class NumberField(FieldType):
 
 
 class ImageField(FieldType):
+
     name = 'IMAGE'
-    matcher = re.compile(r"^(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png|jpeg|gif)$")
+    IMAGE_MATCHER = re.compile(r"^(http(?:s?))://(((?:[/|.|\w|\s|-])*)\.(jpg|gif|png|jpeg|gif))((?:\?|#)(.+))?$")
 
     @classmethod
     def check(cls, value):
-        if cls.matcher.search(value):
+        if cls.IMAGE_MATCHER.search(value):
             return True
         raise FieldCheckFailure("No valid image URL found.")
 
@@ -114,6 +124,46 @@ class ImageField(FieldType):
             content = message.content
         cls.check(content)
         return content
+
+    @classmethod
+    async def fix(cls, value: str) -> str:
+        """
+        Fix an input string to become a better input string.
+
+        In order:
+
+        * Will change a `media.discordapp.net` URL to a `cdn.discordapp.com` link.
+        * Will remove `width` and `height` GET params if the URL is a Discord link.
+        * Will take the first image if the given link is an Imgur album.
+        """
+
+        url = yarl.URL(value)
+        if not url.scheme:
+            return value
+
+        # Fix media.discord links
+        if url.host == "media.discordapp.net":
+            value = str(url).replace("//media.discordapp.net", "//cdn.discordapp.com", 1)
+            url = yarl.URL(value)
+
+        # Remove GET params
+        if url.host == "cdn.discordapp.com" and "height" in url.query or "width" in url.query:
+            url = url.update_query(height="", width="")
+
+        # Check for Imgur links
+        if url.host == "imgur.com" and url.path.startswith("/gallery") and cls.bot and cls.bot.config['imgur']['client_id']:
+            gallery_id = url.path.split("/")[2]
+            headers = {
+                "Authorization": f"Client-ID {cls.bot.config['imgur']['client_id']}",
+                "User-Agent": cls.bot.user_agent,
+            }
+            site = await cls.bot.session.get(f"https://api.imgur.com/3/album/{gallery_id}/images", headers=headers)
+            if site.ok:
+                data = await site.json()
+                url = yarl.URL(data['data'][0]['link'])
+
+        # And that should be done
+        return str(url)
 
 
 class BooleanField(FieldType):

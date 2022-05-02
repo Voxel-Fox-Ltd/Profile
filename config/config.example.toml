@@ -91,7 +91,7 @@ event_webhook_url = ""  # Some events will be posted via webhook to this url
 # What the bot is playing
 [presence]
     activity_type = "watching"  # Should be one of 'playing', 'listening', 'watching', 'competing'
-    text = ",help"
+    text = "your profiles"
     status = "online"  # Should be one of 'online', 'invisible', 'idle', 'dnd'
     include_shard_id = true  # Whether or not to append "(shard N)" to the presence; only present if there's more than 1 shard
     [presence.streaming]  # This is used to automatically set the bot's status to your Twitch stream when you go live
@@ -105,6 +105,10 @@ event_webhook_url = ""  # Some events will be posted via webhook to this url
     enabled = true
     permissions =  [ "read_messages", "send_messages", "embed_links", "add_reactions", "external_emojis", ]
     scope = "bot applications.commands"
+
+# An Imgur API key so we can get Imgur images from albums
+[imgur]
+    client_id = ""  # https://api.imgur.com/oauth2/addclient
 
 # It's time for better analytics! Let's give statsd a little try
 [statsd]

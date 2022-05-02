@@ -12,7 +12,7 @@
         <div class="guild" href="/guilds/{{ guild.id }}">
             <a href="/guilds/{{ guild.id }}">
                 {% if guild.icon %}
-                    <img class="guild-icon" src="{{ guild.icon }}" />
+                    <img class="guild-icon" src="{{ guild.icon.with_size(256) }}" />
                 {% else %}
                     <img class="guild-icon" src="https://cdn.discordapp.com/embed/avatars/1.png" />
                 {% endif %}

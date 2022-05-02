@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: profile-discord-bot\n"
 "POT-Creation-Date: 2022-05-02 09:21+0100\n"
-"PO-Revision-Date: 2022-05-02 12:25\n"
+"PO-Revision-Date: 2022-05-02 14:33\n"
 "Last-Translator: \n"
 "Language-Team: Turkish\n"
 "Language: tr\n"
@@ -21,11 +21,11 @@ msgstr ""
 
 #: profile_verification.py:59
 msgid "Approve"
-msgstr ""
+msgstr "Kabul et"
 
 #: profile_verification.py:64
 msgid "Decline"
-msgstr ""
+msgstr "Reddet"
 
 #: profile_verification.py:302
 #, python-brace-format
@@ -34,7 +34,7 @@ msgstr ""
 
 #: profile_verification.py:330
 msgid "No reason provided."
-msgstr ""
+msgstr "Neden verilmedi."
 
 #: profile_verification.py:341
 msgid "Would you like to give a denial reason?"
@@ -42,11 +42,11 @@ msgstr ""
 
 #: profile_verification.py:360
 msgid "Denial Reason"
-msgstr ""
+msgstr "Reddedilme Nedeni"
 
 #: profile_verification.py:365
 msgid "Why are you denying this profile?"
-msgstr ""
+msgstr "Bu profili neden reddetiyorsunuz?"
 
 #: profile_verification.py:408
 #, python-brace-format

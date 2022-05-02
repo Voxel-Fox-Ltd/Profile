@@ -386,7 +386,7 @@ class ProfileVerification(vbu.Cog):
                 # And get the denial reason
                 if modal_submit:
                     await modal_submit.response.defer(ephemeral=True)
-                    denial_reason = modal_submit.components[0].components[0].value  # type: ignore
+                    denial_reason = modal_submit.components[0].components[0].value.strip()  # type: ignore
 
             # They said no
             elif button_click:

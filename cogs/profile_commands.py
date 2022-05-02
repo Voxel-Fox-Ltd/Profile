@@ -253,8 +253,8 @@ class ProfileCommands(vbu.Cog):
                 # Get the name that they gave from the modal
                 assert submitted_modal.components
                 text_input = submitted_modal.components[0].components[0]
-                utils.TextField.check(text_input.value)
-                name_content: str = text_input.value
+                utils.TextField.check(text_input.value.strip())
+                name_content: str = text_input.value.strip()
 
                 # See if the name they provided is already in use
                 if name_content.lower() in [i.name.lower() for i in user_profiles]:
@@ -392,7 +392,7 @@ class ProfileCommands(vbu.Cog):
                 return (interaction, None)  # return responded interaction
 
             # Try and validate their input
-            field_content: str = interaction.components[0].components[0].value  # type: ignore
+            field_content: str = interaction.components[0].components[0].value.strip()  # type: ignore
             try:
                 if field_content:
                     field.field_type.check(field_content)

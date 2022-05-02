@@ -894,7 +894,7 @@ class TemplateCommands(vbu.Cog):
                 return interaction, None
 
             # Get the newly changed data
-            field_value = interaction.components[0].components[0].value  # type: ignore
+            field_value = interaction.components[0].components[0].value.strip()  # type: ignore
 
         # They want to change something we spawn a button for
         elif attribute_to_change in ["OPTIONAL", "FIELD_TYPE"]:
@@ -1249,8 +1249,8 @@ class TemplateCommands(vbu.Cog):
                 pass
             return interaction, None
         assert interaction.components
-        field_name: str = interaction.components[0].components[0].value
-        field_prompt: str = interaction.components[1].components[0].value
+        field_name: str = interaction.components[0].components[0].value.strip()
+        field_prompt: str = interaction.components[1].components[0].value.strip()
 
         # Get field optional
         interaction_id = str(uuid.uuid4())

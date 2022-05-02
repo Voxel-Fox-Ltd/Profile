@@ -1,2 +1,2 @@
-voxelbotutils
+novus[vbu,speed]>=0.1.0
 humanize

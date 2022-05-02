@@ -322,7 +322,10 @@ class ProfileVerification(vbu.Cog):
 
         # See if we need to say anything
         if user_profile is None:
-            await interaction.delete_original_message()
+            try:
+                await interaction.delete_original_message()
+            except discord.HTTPException:
+                pass
             return
         assert user_profile.template
 

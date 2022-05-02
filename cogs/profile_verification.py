@@ -246,8 +246,8 @@ class ProfileVerification(vbu.Cog):
 
         # Get the member who added the reaction
         moderator: discord.Member = interaction.user  # type: ignore
-        if not utils.checks.member_is_moderator(self.bot, moderator):
-            return
+        # if not utils.checks.member_is_moderator(self.bot, moderator):
+        #     return
 
         # Check what they reacted with
         verify = interaction.custom_id == "VERIFY PROFILE YES"

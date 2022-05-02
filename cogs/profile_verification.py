@@ -379,6 +379,10 @@ class ProfileVerification(vbu.Cog):
                     await modal_submit.response.defer(ephemeral=True)
                     denial_reason = modal_submit.components[0].components[0].value  # type: ignore
 
+            # They said no
+            elif button_click:
+                await button_click.response.edit_message(components=components.disable_components())
+
         # Get the profile user
         profile_user: Optional[discord.Member]
         try:

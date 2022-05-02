@@ -1,0 +1,78 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: profile-discord-bot\n"
+"POT-Creation-Date: 2022-05-02 07:48+0100\n"
+"PO-Revision-Date: 2022-05-02 12:25\n"
+"Last-Translator: \n"
+"Language-Team: Turkish\n"
+"Language: tr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.0.1\n"
+"X-Poedit-Basepath: ../cogs/utils/profiles\n"
+"X-Poedit-SearchPath-0: template.py\n"
+"X-Crowdin-Project: profile-discord-bot\n"
+"X-Crowdin-Project-ID: 513162\n"
+"X-Crowdin-Language: tr\n"
+"X-Crowdin-File: /novus/locales/template.pot\n"
+"X-Crowdin-File-ID: 50\n"
+
+#: template.py:517
+#, python-brace-format
+msgid "Template ID: `{template_id}`"
+msgstr ""
+
+#: template.py:520
+#, python-brace-format
+msgid "Guild ID: `{guild_id}`"
+msgstr ""
+
+#: template.py:523
+#, python-brace-format
+msgid "Maximum allowed profiles: `{max_profile_count}`"
+msgstr ""
+
+#: template.py:526
+#, python-brace-format
+msgid "Application command ID: `{application_command_id}`"
+msgstr ""
+
+#: template.py:531
+#, python-brace-format
+msgid "Verification channel: {value}"
+msgstr ""
+
+#: template.py:545
+#, python-brace-format
+msgid "Archive channel: {value}"
+msgstr ""
+
+#: template.py:559
+#, python-brace-format
+msgid "Given role: {value}"
+msgstr ""
+
+#: template.py:579
+msgid "Discord User"
+msgstr ""
+
+#: template.py:582
+msgid "In this field, the owner of the created profile will be pinged."
+msgstr ""
+
+#: template.py:615
+#, python-brace-format
+msgid "Field ID `{field_id}` at position {position_index} with index {field_index}, type `{type}`.```\n"
+"{prompt}```"
+msgstr ""
+
+#: template.py:630
+msgid "No fields have been added to this template."
+msgstr ""
+
+#: template.py:640
+msgid "Fields"
+msgstr ""
+

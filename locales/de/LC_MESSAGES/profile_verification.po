@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2022-05-02 07:48+0100\n"
-"PO-Revision-Date: 2022-05-02 07:49+0100\n"
+"POT-Creation-Date: 2022-05-02 09:21+0100\n"
+"PO-Revision-Date: 2022-05-02 09:27+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: de\n"
@@ -14,32 +14,40 @@ msgstr ""
 "X-Poedit-Basepath: ../cogs\n"
 "X-Poedit-SearchPath-0: profile_verification.py\n"
 
-#: profile_verification.py:293
+#: profile_verification.py:59
+msgid "Approve"
+msgstr "Genehmigen"
+
+#: profile_verification.py:64
+msgid "Decline"
+msgstr "Ablehnen"
+
+#: profile_verification.py:302
 #, fuzzy, python-brace-format
 msgid "Failed to get template with ID `{template_id}`."
 msgstr "Vorlage mit ID `{template_id}` konnte nicht abgerufen werden."
 
-#: profile_verification.py:321
+#: profile_verification.py:330
 #, fuzzy
 msgid "No reason provided."
 msgstr "Kein Grund angegeben."
 
-#: profile_verification.py:332
+#: profile_verification.py:341
 #, fuzzy
 msgid "Would you like to give a denial reason?"
 msgstr "Möchten Sie einen Ablehnungsgrund angeben?"
 
-#: profile_verification.py:351
+#: profile_verification.py:360
 #, fuzzy
 msgid "Denial Reason"
 msgstr "Grund der Verweigerung"
 
-#: profile_verification.py:356
+#: profile_verification.py:365
 #, fuzzy
 msgid "Why are you denying this profile?"
 msgstr "Warum lehnen Sie dieses Profil ab?"
 
-#: profile_verification.py:395
+#: profile_verification.py:408
 #, fuzzy, python-brace-format
 msgid ""
 "Your profile for **{template_name}** (`{profile_name}`) on `{guild_name}` "
@@ -48,7 +56,7 @@ msgstr ""
 "Ihr Profil für **{template_name}** (`{profile_name}`) auf `{guild_name}` "
 "wurde überprüft."
 
-#: profile_verification.py:404
+#: profile_verification.py:417
 #, fuzzy, python-brace-format
 msgid ""
 "Your profile for **{template_name}** (`{profile_name}`) on `{guild_name}` "
@@ -57,7 +65,15 @@ msgstr ""
 "Ihr Profil für **{template_name}** (`{profile_name}`) auf `{guild_name}` "
 "wurde mit der Begründung `{denial_reason}` abgelehnt."
 
-#: profile_verification.py:441
+#: profile_verification.py:442
+msgid "Failed to send profile archive message."
+msgstr "Profilarchivnachricht konnte nicht gesendet werden."
+
+#: profile_verification.py:453
+msgid "Failed to add role to user."
+msgstr "Rolle kann dem Benutzer nicht hinzugefügt werden."
+
+#: profile_verification.py:464
 #, fuzzy
 msgid "Profile dealt with successfully."
-msgstr "Das Profil wurde erfolgreich bearbeitet."
+msgstr "Profil erfolgreich bearbeitet."

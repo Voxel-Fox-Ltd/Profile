@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2022-05-02 07:48+0100\n"
+"POT-Creation-Date: 2022-05-02 09:21+0100\n"
 "PO-Revision-Date: 2022-05-02 07:47+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -15,41 +15,57 @@ msgstr ""
 "X-Poedit-Basepath: ../cogs\n"
 "X-Poedit-SearchPath-0: profile_verification.py\n"
 
-#: profile_verification.py:293
+#: profile_verification.py:59
+msgid "Approve"
+msgstr ""
+
+#: profile_verification.py:64
+msgid "Decline"
+msgstr ""
+
+#: profile_verification.py:302
 #, python-brace-format
 msgid "Failed to get template with ID `{template_id}`."
 msgstr ""
 
-#: profile_verification.py:321
+#: profile_verification.py:330
 msgid "No reason provided."
 msgstr ""
 
-#: profile_verification.py:332
+#: profile_verification.py:341
 msgid "Would you like to give a denial reason?"
 msgstr ""
 
-#: profile_verification.py:351
+#: profile_verification.py:360
 msgid "Denial Reason"
 msgstr ""
 
-#: profile_verification.py:356
+#: profile_verification.py:365
 msgid "Why are you denying this profile?"
 msgstr ""
 
-#: profile_verification.py:395
+#: profile_verification.py:408
 #, python-brace-format
 msgid ""
 "Your profile for **{template_name}** (`{profile_name}`) on `{guild_name}` "
 "has been verified."
 msgstr ""
 
-#: profile_verification.py:404
+#: profile_verification.py:417
 #, python-brace-format
 msgid ""
 "Your profile for **{template_name}** (`{profile_name}`) on `{guild_name}` "
 "has been denied with the reason `{denial_reason}`."
 msgstr ""
 
-#: profile_verification.py:441
+#: profile_verification.py:442
+msgid "Failed to send profile archive message."
+msgstr ""
+
+#: profile_verification.py:453
+msgid "Failed to add role to user."
+msgstr ""
+
+#: profile_verification.py:464
 msgid "Profile dealt with successfully."
 msgstr ""

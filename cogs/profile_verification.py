@@ -12,6 +12,7 @@ class ProfileVerification(vbu.Cog):
 
     async def send_profile_verification(
             self,
+            ctx: Union[discord.Interaction, commands.Context, str],
             user_profile: utils.UserProfile,
             target_user: discord.Member,
             ) -> Optional[discord.Message]:
@@ -50,12 +51,20 @@ class ProfileVerification(vbu.Cog):
         channel: discord.PartialMessageable = self.bot.get_partial_messageable(verification_channel_id)
 
         # Send the data
-        embed: discord.Embed = user_profile.build_embed(self.bot, "en", target_user)
+        embed: discord.Embed = user_profile.build_embed(self.bot, ctx, target_user)
         embed.set_footer(text=f'{template.name} // Verification Check')
         try:
             components = discord.ui.MessageComponents.add_buttons_with_rows(
-                discord.ui.Button(label="Approve", style=discord.ButtonStyle.success, custom_id="VERIFY PROFILE YES"),
-                discord.ui.Button(label="Decline", style=discord.ButtonStyle.danger, custom_id="VERIFY PROFILE NO"),
+                discord.ui.Button(
+                    label=vbu.translation(ctx, "profile_verification").gettext("Approve"),
+                    style=discord.ButtonStyle.success,
+                    custom_id="VERIFY PROFILE YES",
+                ),
+                discord.ui.Button(
+                    label=vbu.translation(ctx, "profile_verification").gettext("Decline"),
+                    style=discord.ButtonStyle.danger,
+                    custom_id="VERIFY PROFILE NO",
+                ),
             )
             v = await channel.send(
                 (
@@ -194,7 +203,7 @@ class ProfileVerification(vbu.Cog):
         # Run each of the items
         try:
             if template.get_verification_channel_id(target_user):
-                return_message = await self.send_profile_verification(user_profile, target_user)
+                return_message = await self.send_profile_verification(ctx, user_profile, target_user)
             else:
                 return_message = await self.send_profile_archivation(ctx, user_profile, target_user)
                 await self.add_profile_user_roles(user_profile, target_user)

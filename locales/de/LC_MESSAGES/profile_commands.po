@@ -101,7 +101,7 @@ msgstr ""
 
 #: profile_commands.py:610
 msgid "Done"
-msgstr "Erledigt"
+msgstr "Abschicken"
 
 #: profile_commands.py:618
 msgid "Cancel"
@@ -109,7 +109,7 @@ msgstr "Abbrechen"
 
 #: profile_commands.py:645
 msgid "What attribute do you want to edit?"
-msgstr "Welches Attribut möchtest du bearbeiten?"
+msgstr "Welches Feld möchtest du bearbeiten?"
 
 #: profile_commands.py:688
 msgid "Cancelled profile setup."
@@ -135,7 +135,7 @@ msgid ""
 "verification - please hold tight!"
 msgstr ""
 "Ihr Profil wurde zur Überprüfung an das **{guild_name}** Mitarbeiterteam "
-"geschickt - bitte halten Sie sich fest!"
+"geschickt - bitte haben sie ein wenig geduld.!"
 
 #: profile_commands.py:792
 msgid "Your profile has been created and saved."

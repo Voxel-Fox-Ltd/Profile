@@ -252,7 +252,7 @@ msgstr "Welchen Namen soll dieses Feld haben?"
 
 #: template_commands.py:1227
 msgid "What prompt should be sent with this message?"
-msgstr "Welche Aufforderung sollte mit dieser Nachricht gesendet werden?"
+msgstr "Was soll ich sagen?"
 
 #: template_commands.py:1247
 msgid "Creating a new field has timed out."

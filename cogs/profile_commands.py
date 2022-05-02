@@ -830,17 +830,21 @@ class ProfileCommands(vbu.Cog):
             return await ctx.send(text, allowed_mentions=discord.AllowedMentions.none())
 
         # Ask if they're sure
+        interaction_id = str(uuid.uuid4())
         are_you_sure_message = await ctx.send(
             vbu.translation(ctx, "profile_commands").gettext(
                 "Are you sure you want to delete this profile?"
             ),
             embed=user_profile.build_embed(self.bot, ctx, user or ctx.author),
-            components=discord.ui.MessageComponents.boolean_buttons(),
+            components=discord.ui.MessageComponents.boolean_buttons(
+                yes=(vbu.translation(ctx, "profile_commands").gettext("Yes"), f"{interaction_id} YES",),
+                no=(vbu.translation(ctx, "profile_commands").gettext("No"), f"{interaction_id} NO",),
+            ),
         )
         try:
             interaction = await self.bot.wait_for(
                 "component_interaction",
-                check=lambda i: i.user.id == ctx.author.id and i.message.id == are_you_sure_message.id,
+                check=lambda i: i.user.id == ctx.author.id and i.componet_id.startswith(interaction_id)
                 timeout=60 * 2,
             )
         except asyncio.TimeoutError:
@@ -857,7 +861,7 @@ class ProfileCommands(vbu.Cog):
             return
 
         # They're not sure
-        if interaction.custom_id == "NO":
+        if interaction.custom_id.endswith("NO"):
             return await interaction.response.edit_message(
                 content=vbu.translation(interaction, "profile_commands").gettext(
                     "Cancelled profile delete."

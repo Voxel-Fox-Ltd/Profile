@@ -47,6 +47,10 @@ async def update_template(request: Request):
 
         # Make sure the user is editing a template that they have permission to edit
         try:
+            assert template is not None
+        except AssertionError:
+            return json_response({"error": "Failed to get template for whatever reason."}, status=401)
+        try:
             guild = await request.app['bots']['bot'].fetch_guild(template.guild_id)
         except discord.HTTPException:
             return json_response({"error": "Bot not in guild."}, status=401)

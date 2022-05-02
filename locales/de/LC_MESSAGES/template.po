@@ -1,10 +1,10 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: \n"
+"Project-Id-Version: profile-discord-bot\n"
 "POT-Creation-Date: 2022-05-02 07:48+0100\n"
-"PO-Revision-Date: 2022-05-02 07:49+0100\n"
+"PO-Revision-Date: 2022-05-02 08:46\n"
 "Last-Translator: \n"
-"Language-Team: \n"
+"Language-Team: German\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -13,6 +13,11 @@ msgstr ""
 "X-Generator: Poedit 3.0.1\n"
 "X-Poedit-Basepath: ../cogs/utils/profiles\n"
 "X-Poedit-SearchPath-0: template.py\n"
+"X-Crowdin-Project: profile-discord-bot\n"
+"X-Crowdin-Project-ID: 513162\n"
+"X-Crowdin-Language: de\n"
+"X-Crowdin-File: /novus/locales/template.pot\n"
+"X-Crowdin-File-ID: 36\n"
 
 #: template.py:517
 #, python-brace-format
@@ -54,26 +59,21 @@ msgid "Discord User"
 msgstr "Discord-Benutzer"
 
 #: template.py:582
-#
 msgid "In this field, the owner of the created profile will be pinged."
 msgstr "In diesem Feld wird der Besitzer des erstellten Profils angepiept."
 
 #: template.py:615
 #, python-brace-format
-msgid ""
-"Field ID `{field_id}` at position {position_index} with index {field_index}, "
-"type `{type}`.```\n"
+msgid "Field ID `{field_id}` at position {position_index} with index {field_index}, type `{type}`.```\n"
 "{prompt}```"
-msgstr ""
-"Feld-ID `{field_id}` an Position {position_index} mit Index {field_index}, "
-"Typ `{type}`.```\n"
+msgstr "Feld-ID `{field_id}` an Position {position_index} mit Index {field_index}, Typ `{type}`.```\n"
 "{prompt}```"
 
 #: template.py:630
-#
 msgid "No fields have been added to this template."
 msgstr "Zu dieser Vorlage wurden keine Felder hinzugefügt."
 
 #: template.py:640
 msgid "Fields"
 msgstr "Felder"
+

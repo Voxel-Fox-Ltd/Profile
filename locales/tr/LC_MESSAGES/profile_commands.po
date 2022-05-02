@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: profile-discord-bot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-05-02 12:25\n"
+"PO-Revision-Date: 2022-05-02 14:33\n"
 "Last-Translator: \n"
 "Language-Team: Turkish\n"
 "MIME-Version: 1.0\n"
@@ -22,40 +22,40 @@ msgstr ""
 #: profile_commands.py:150
 #, python-brace-format
 msgid "This command can only be run as a slash command - run `/template edit {template_name}` to create it."
-msgstr ""
+msgstr "Bu komut sadece slash komut'u olarak kullanılabilir - `/template edit {template_name}` yazarak yaratabilirsiniz."
 
 #: profile_commands.py:155
 msgid "This command can only be run as a slash command."
-msgstr ""
+msgstr "Bu komut sadece slash komut'u olarak kullanılabilir."
 
 #: profile_commands.py:209
 msgid "default"
-msgstr ""
+msgstr "varsayılan"
 
 #: profile_commands.py:226
 msgid "Profile Name"
-msgstr ""
+msgstr "Profil İsmi"
 
 #: profile_commands.py:232
 msgid "What name do you want to give your profile?"
-msgstr ""
+msgstr "Profilinize ne ismi vermek istersiniz?"
 
 #: profile_commands.py:262
 msgid "You're already using that name for this template. Please provide an alternative."
-msgstr ""
+msgstr "Bu ismi başka bir şablon için kullanııyorsunuz. Lütfen başka bir isim temin edin."
 
 #: profile_commands.py:269
 msgid "You can only use standard lettering and digits in your profile name. Please provide an alternative."
-msgstr ""
+msgstr "Sadece latin harfleri ve sayılar profil ismilerinde kullanılabilir. Lütfen başka bir isim temin edin."
 
 #: profile_commands.py:280 profile_commands.py:413
 msgid "Okay"
-msgstr ""
+msgstr "Tamam"
 
 #: profile_commands.py:305 profile_commands.py:385 profile_commands.py:431
 #: profile_commands.py:850
 msgid "Timed out waiting for you to continue."
-msgstr ""
+msgstr "Devam etmeniz için bekleme zaman aşımına uğradı."
 
 #: profile_commands.py:346
 msgid "Could not get field information."
@@ -63,7 +63,7 @@ msgstr ""
 
 #: profile_commands.py:534
 msgid "Cancel profile setup"
-msgstr ""
+msgstr "Profil kurulumunu iptal et"
 
 #: profile_commands.py:540
 msgid "You're already setting up a profile."
@@ -71,25 +71,25 @@ msgstr ""
 
 #: profile_commands.py:555
 msgid "Failed to get that profile."
-msgstr ""
+msgstr "Profil hakkında bilgi alırken hata'ya uğrandı."
 
 #: profile_commands.py:564
 #, python-brace-format
 msgid "You're already at the maximum number of profiles set for **{template_name}**."
-msgstr ""
+msgstr "**{template_name}** şablonu için maksimum profil sayısına ulaşıldı."
 
 #: profile_commands.py:577
 #, python-brace-format
 msgid "Currently the template **{template_name}** is not accepting any more applications."
-msgstr ""
+msgstr "Şu anda **{template_name}** şablonu daha fazla başvuru kabul etmiyor."
 
 #: profile_commands.py:610
 msgid "Done"
-msgstr ""
+msgstr "Tamamlandı"
 
 #: profile_commands.py:618
 msgid "Cancel"
-msgstr ""
+msgstr "İptal et"
 
 #: profile_commands.py:645
 msgid "What attribute do you want to edit?"
@@ -97,12 +97,12 @@ msgstr ""
 
 #: profile_commands.py:688
 msgid "Cancelled profile setup."
-msgstr ""
+msgstr "Profil kurulumu iptal edildi."
 
 #: profile_commands.py:738
 #, python-brace-format
 msgid "I failed to send your profile to you - `{error_text}`."
-msgstr ""
+msgstr "Size kendi profilinizi yollamaya çalışırken hata oluştu - `{error_text}`."
 
 #: profile_commands.py:772
 msgid "It looks like the template was deleted while you were setting up your profile."
@@ -115,7 +115,7 @@ msgstr ""
 
 #: profile_commands.py:792
 msgid "Your profile has been created and saved."
-msgstr ""
+msgstr "Profiliniz yaratılmış ve kayıt edilmiştir."
 
 #: profile_commands.py:823 profile_commands.py:934
 #, python-brace-format
@@ -129,15 +129,15 @@ msgstr ""
 
 #: profile_commands.py:835
 msgid "Are you sure you want to delete this profile?"
-msgstr ""
+msgstr "Bu profili silmek istediğinize emin misiniz?"
 
 #: profile_commands.py:863
 msgid "Cancelled profile delete."
-msgstr ""
+msgstr "Profil silinmesini reddet."
 
 #: profile_commands.py:889
 msgid "Your profile has been deleted."
-msgstr ""
+msgstr "Profiliniz silinmiştir."
 
 #: profile_commands.py:917
 #, python-brace-format

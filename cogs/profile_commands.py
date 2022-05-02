@@ -677,7 +677,10 @@ class ProfileCommands(vbu.Cog):
 
                 # Work out what was clicked
                 response_field: Optional[utils.FilledField] = None
-                button_click: discord.Interaction[str] = done.pop().result()
+                try:
+                    button_click: discord.Interaction[str] = done.pop().result()
+                except KeyError:
+                    return
                 try:
                     button_click, response_field = button_click  # type: ignore - is a profile edit update
                 except TypeError:

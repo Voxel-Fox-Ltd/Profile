@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: profile-discord-bot\n"
 "POT-Creation-Date: 2022-05-02 08:11+0100\n"
-"PO-Revision-Date: 2022-05-02 08:46\n"
+"PO-Revision-Date: 2022-05-02 09:41\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -17,7 +17,7 @@ msgstr ""
 "X-Crowdin-Project-ID: 513162\n"
 "X-Crowdin-Language: de\n"
 "X-Crowdin-File: /novus/locales/template_commands.pot\n"
-"X-Crowdin-File-ID: 38\n"
+"X-Crowdin-File-ID: 52\n"
 
 #: template_commands.py:199
 #, python-brace-format

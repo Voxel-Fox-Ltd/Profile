@@ -1,5 +1,5 @@
 import uuid
-import typing
+from typing import Optional, Union
 import asyncio
 
 import discord
@@ -8,17 +8,13 @@ from discord.ext import commands, vbu
 from cogs import utils
 
 
-def t(i: typing.Union[commands.Context, discord.Interaction], l: str) -> str:
-    return vbu.translation(i, "profile_verification").gettext(l)
-
-
 class ProfileVerification(vbu.Cog):
 
     async def send_profile_verification(
             self,
             user_profile: utils.UserProfile,
             target_user: discord.Member,
-            ) -> typing.Optional[discord.Message]:
+            ) -> Optional[discord.Message]:
         """
         Sends a profile in to the template's verification channel.
 
@@ -41,10 +37,10 @@ class ProfileVerification(vbu.Cog):
         """
 
         # Grab the verification channel ID
-        template: typing.Optional[utils.Template] = user_profile.template
+        template: Optional[utils.Template] = user_profile.template
         if template is None:
             raise TypeError("Missing template from user profile.")
-        verification_channel_id: typing.Optional[int] = template.get_verification_channel_id(target_user)  # this may raise InvalidCommandText
+        verification_channel_id: Optional[int] = template.get_verification_channel_id(target_user)  # this may raise InvalidCommandText
 
         # Check if there's a verification channel
         if verification_channel_id is None:
@@ -54,7 +50,7 @@ class ProfileVerification(vbu.Cog):
         channel: discord.PartialMessageable = self.bot.get_partial_messageable(verification_channel_id)
 
         # Send the data
-        embed: discord.Embed = user_profile.build_embed(self.bot, target_user)
+        embed: discord.Embed = user_profile.build_embed(self.bot, "en", target_user)
         embed.set_footer(text=f'{template.name} // Verification Check')
         try:
             components = discord.ui.MessageComponents.add_buttons_with_rows(
@@ -77,9 +73,10 @@ class ProfileVerification(vbu.Cog):
 
     async def send_profile_archivation(
             self,
+            ctx: Union[discord.Interaction, commands.Context],
             user_profile: utils.UserProfile,
             target_user: discord.Member
-            ) -> typing.Optional[discord.Message]:
+            ) -> Optional[discord.Message]:
         """
         Send a profile to the template's archive channel.
         This will also add the given role to the user.
@@ -87,6 +84,8 @@ class ProfileVerification(vbu.Cog):
 
         Parameters
         -----------
+        ctx:
+            A locale object.
         user_profile: :class:`utils.UserProfile`
             The profile to be submitted.
         target_user: :class:`discord.Member`
@@ -104,10 +103,10 @@ class ProfileVerification(vbu.Cog):
         """
 
         # Grab the archive channel ID
-        template: typing.Optional[utils.Template] = user_profile.template
+        template: Optional[utils.Template] = user_profile.template
         if template is None:
             raise TypeError("Missing template from user profile.")
-        archive_channel_id: typing.Optional[int] = template.get_archive_channel_id(target_user)  # this may raise InvalidCommandText
+        archive_channel_id: Optional[int] = template.get_archive_channel_id(target_user)  # this may raise InvalidCommandText
 
         # Check if there's an archive channel set
         if archive_channel_id is None:
@@ -117,7 +116,7 @@ class ProfileVerification(vbu.Cog):
         channel: discord.PartialMessageable = self.bot.get_partial_messageable(archive_channel_id)
 
         # Send the data
-        embed: discord.Embed = user_profile.build_embed(self.bot, target_user)
+        embed: discord.Embed = user_profile.build_embed(self.bot, ctx, target_user)
         try:
             return await channel.send(None if target_user is None else target_user.mention, embed=embed)
         except discord.HTTPException:
@@ -145,10 +144,10 @@ class ProfileVerification(vbu.Cog):
         """
 
         # Grab the role ID
-        template: typing.Optional[utils.Template] = user_profile.template
+        template: Optional[utils.Template] = user_profile.template
         if template is None:
             raise TypeError("Missing template from user profile.")
-        role_id: typing.Optional[int] = template.get_role_id(target_user)
+        role_id: Optional[int] = template.get_role_id(target_user)
 
         # See if there's a role to add
         if role_id is None:
@@ -166,7 +165,7 @@ class ProfileVerification(vbu.Cog):
             ctx: commands.SlashContext,
             user_profile: utils.UserProfile,
             target_user: discord.Member,
-            ) -> typing.Optional[discord.Message]:
+            ) -> Optional[discord.Message]:
         """
         Send a profile verification OR archive message for a given profile.
         Returns whether or not the sending was a success.
@@ -187,7 +186,7 @@ class ProfileVerification(vbu.Cog):
         """
 
         # Grab the template
-        template: typing.Optional[utils.Template] = user_profile.template
+        template: Optional[utils.Template] = user_profile.template
         if template is None:
             raise TypeError("Missing template from user profile.")
         return_message = None
@@ -197,10 +196,10 @@ class ProfileVerification(vbu.Cog):
             if template.get_verification_channel_id(target_user):
                 return_message = await self.send_profile_verification(user_profile, target_user)
             else:
-                return_message = await self.send_profile_archivation(user_profile, target_user)
+                return_message = await self.send_profile_archivation(ctx, user_profile, target_user)
                 await self.add_profile_user_roles(user_profile, target_user)
         except utils.errors.TemplateSendError as e:
-            await ctx.author.send(str(e))
+            await ctx.author.send(str(e))  # type: ignore
             return None
 
         # Wew it worked
@@ -263,6 +262,7 @@ class ProfileVerification(vbu.Cog):
 
         # Make some assertions to help our typing
         assert interaction.message
+        original_verification_message = interaction.message
 
         # Check whom and what we're updating
         try:
@@ -273,8 +273,8 @@ class ProfileVerification(vbu.Cog):
         profile_user_id = int(profile_user_id)
 
         # Set up our vars
-        user_profile: typing.Optional[utils.UserProfile] = None
-        template: typing.Optional[utils.Template] = None
+        user_profile: Optional[utils.UserProfile] = None
+        template: Optional[utils.Template] = None
 
         # Defer before we go into our database
         await interaction.response.defer(ephemeral=True)
@@ -289,7 +289,9 @@ class ProfileVerification(vbu.Cog):
             template = await utils.Template.fetch_template_by_id(db, template_id)
             if template is None:
                 await interaction.followup.send(
-                    f"Failed to get template with ID `{template_id}`.",
+                    vbu.translation(interaction, "profile_verification").gettext(
+                        "Failed to get template with ID `{template_id}`."
+                    ).format(template_id=template_id),
                     ephemeral=True,
                 )
                 return
@@ -316,7 +318,7 @@ class ProfileVerification(vbu.Cog):
         assert user_profile.template
 
         # Get a denial message if we're not verifying
-        denial_reason = "No reason provided."
+        denial_reason = vbu.translation(interaction, "profile_verification", use_guild=True).gettext("No reason provided.")
         modal_submit = None
         if not verify:
 
@@ -327,13 +329,13 @@ class ProfileVerification(vbu.Cog):
                 no_id=f"{interaction_id} NO",
             )
             await interaction.followup.send(
-                "Would you like to give a denial reason?",
+                vbu.translation(interaction, "profile_verification").gettext("Would you like to give a denial reason?"),
                 components=components,
                 ephemeral=True,
             )
 
             # Wait for a button click
-            button_click: typing.Optional[discord.Interaction]
+            button_click: Optional[discord.Interaction]
             try:
                 button_click = await self.bot.wait_for(
                     "component_interaction",
@@ -346,11 +348,13 @@ class ProfileVerification(vbu.Cog):
             # If there was one, spawn a modal back at em
             if button_click is not None and button_click.custom_id.endswith("YES"):
                 modal = discord.ui.Modal(
-                    title="Denial Reason",
+                    title=vbu.translation(interaction, "profile_verification").gettext("Denial Reason"),
                     components=[
                         discord.ui.ActionRow(
                             discord.ui.InputText(
-                                label="Why are you denying this profile?",
+                                label=vbu.translation(interaction, "profile_verification").gettext(
+                                    "Why are you denying this profile?",
+                                ),
                                 style=discord.TextStyle.long,
                                 max_length=200,
                             ),
@@ -360,7 +364,7 @@ class ProfileVerification(vbu.Cog):
                 await button_click.response.send_modal(modal)
 
                 # Wait for the modal submission
-                modal_submit: typing.Optional[discord.Interaction]
+                modal_submit: Optional[discord.Interaction]
                 try:
                     modal_submit = await self.bot.wait_for(
                         "modal_submit",
@@ -373,10 +377,10 @@ class ProfileVerification(vbu.Cog):
                 # And get the denial reason
                 if modal_submit:
                     await modal_submit.response.defer(ephemeral=True)
-                    denial_reason = modal_submit.components[0].components[0].value
+                    denial_reason = modal_submit.components[0].components[0].value  # type: ignore
 
         # Get the profile user
-        profile_user: typing.Optional[discord.Member]
+        profile_user: Optional[discord.Member]
         try:
             profile_user = await guild.fetch_member(profile_user_id)
         except discord.HTTPException:
@@ -385,19 +389,27 @@ class ProfileVerification(vbu.Cog):
         # Tell the user about the decision
         if profile_user:
             try:
-                embed: discord.Embed = user_profile.build_embed(self.bot, profile_user)
+                embed: discord.Embed = user_profile.build_embed(self.bot, interaction, profile_user)
                 if verify:
-                    await profile_user.send(
-                        f"Your profile for **{user_profile.template.name}** (`{user_profile.name}`) on "
-                        f"`{guild.name}` has been verified.",
-                        embed=embed,
+                    text = vbu.translation(interaction, "profile_verification", use_guild=True).gettext(
+                        "Your profile for **{template_name}** (`{profile_name}`) on "
+                        "`{guild_name}` has been verified.",
+                    ).format(
+                        template_name=user_profile.template.name,
+                        profile_name=user_profile.name,
+                        guild_name=guild.name,
                     )
                 else:
-                    await profile_user.send(
-                        f"Your profile for **{user_profile.template.name}** (`{user_profile.name}`) on "
-                        f"`{guild.name}` has been denied with the reason `{denial_reason}`.",
-                        embed=embed,
+                    text = vbu.translation(interaction, "profile_verification", use_guild=True).gettext(
+                        "Your profile for **{template_name}** (`{profile_name}`) on "
+                        "`{guild_name}` has been denied with the reason `{denial_reason}`.",
+                    ).format(
+                        template_name=user_profile.template.name,
+                        profile_name=user_profile.name,
+                        guild_name=guild.name,
+                        denial_reason=denial_reason,
                     )
+                await profile_user.send(text, embed=embed)
             except discord.HTTPException:
                 self.logger.info(
                     f"Couldn't DM user {user_profile.user_id} about their '{user_profile.template.name}' "
@@ -410,7 +422,7 @@ class ProfileVerification(vbu.Cog):
 
             # Send the profile to the archive
             try:
-                await self.send_profile_archivation(user_profile, profile_user)
+                await self.send_profile_archivation(interaction, user_profile, profile_user)
             except discord.HTTPException:
                 pass
 
@@ -422,11 +434,11 @@ class ProfileVerification(vbu.Cog):
 
         # And tell the moderator we're done
         try:
-            await interaction.delete_original_message()
+            await original_verification_message.delete()
         except:
             pass
         await (modal_submit or interaction).followup.send(
-            "Profile dealt with successfully.",
+            vbu.translation(interaction, "profile_verification").gettext("Profile dealt with successfully."),
             ephemeral=True,
         )
 

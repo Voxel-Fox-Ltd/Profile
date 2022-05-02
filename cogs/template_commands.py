@@ -1,7 +1,7 @@
 import asyncio
 import string
 import uuid
-import typing
+from typing import Optional, Dict, Tuple, Union, Any
 import collections
 
 import discord
@@ -10,15 +10,11 @@ from discord.ext import commands, vbu
 from cogs import utils
 
 
-def t(i: typing.Union[commands.Context, discord.Interaction, str], l: str) -> str:
-    return vbu.translation(i, "template_commands").gettext(l)
-
-
 class TemplateCommands(vbu.Cog):
 
     def __init__(self, bot:vbu.Bot):
         super().__init__(bot)
-        self.template_editing_locks: typing.Dict[int, asyncio.Lock]
+        self.template_editing_locks: Dict[Union[int, str], asyncio.Lock]
         self.template_editing_locks = collections.defaultdict(asyncio.Lock)  # guild_id: asyncio.Lock
 
     @staticmethod
@@ -45,7 +41,7 @@ class TemplateCommands(vbu.Cog):
         ))
 
     @staticmethod
-    def get_profile_application_command(name: str, description: str = None) -> discord.ApplicationCommand:
+    def get_profile_application_command(name: str, description: Optional[str] = None) -> discord.ApplicationCommand:
         """
         Create an application command with the given name, and subcommands
         for create, edit, and delete.
@@ -60,14 +56,6 @@ class TemplateCommands(vbu.Cog):
                     name="create",
                     description="Create a new profile.",
                     type=discord.ApplicationCommandOptionType.subcommand,
-                    name_localizations={
-                        i: t(i, "create")
-                        for i in ["de", "pt"]
-                    },
-                    description_localizations={
-                        i: t(i, "Create a new profile.")
-                        for i in ["de", "pt"]
-                    },
                 ),
                 discord.ApplicationCommandOption(
                     name="delete",
@@ -84,7 +72,7 @@ class TemplateCommands(vbu.Cog):
                 ),
                 discord.ApplicationCommandOption(
                     name="get",
-                    description="Create a new profile.",
+                    description="Display a created profile.",
                     type=discord.ApplicationCommandOptionType.subcommand,
                     options=[
                         discord.ApplicationCommandOption(
@@ -201,12 +189,16 @@ class TemplateCommands(vbu.Cog):
         """
 
         # Build the embed
-        embed = template.build_embed(self.bot, brief=brief)
+        embed = template.build_embed(self.bot, ctx, brief=brief)
 
         # Get the number of profiles
         async with vbu.Database() as db:
             user_profiles = await template.fetch_all_profiles(db, fetch_filled_fields=False)
-        embed.description += f"\nCurrently there are **{len(user_profiles)}** created profiles for this template."
+        user_profile_count = len(user_profiles)
+        text = vbu.translation(ctx, "template_commands").gettext(
+            "Currently there are **{user_profile_count}** created profiles for this template.",
+        ).format(user_profile_count=user_profile_count)
+        embed.description += f"\n{text}"  # type: ignore
 
         # And send
         return await ctx.interaction.followup.send(embed=embed)
@@ -250,7 +242,9 @@ class TemplateCommands(vbu.Cog):
 
         # See if they're already editing that template
         if self.template_editing_locks[ctx.guild.id].locked():
-            return await interaction.followup.send("You're already editing a template.")
+            return await interaction.followup.send(vbu.translation(interaction, "template_commands").gettext(
+                "You're already editing a template.",
+            ))
 
         # Send a message that we can edit later
         sent_initial_message: bool = False
@@ -275,13 +269,41 @@ class TemplateCommands(vbu.Cog):
             # Set up our initial vars so we can edit them later
             interaction_id = str(uuid.uuid4())
             components = discord.ui.MessageComponents.add_buttons_with_rows(
-                discord.ui.Button(label="Template name", custom_id=f"{interaction_id} NAME"),
-                discord.ui.Button(label="Profile verification channel", custom_id=f"{interaction_id} VERIFICATION"),
-                discord.ui.Button(label="Profile archive channel", custom_id=f"{interaction_id} ARCHIVE"),
-                discord.ui.Button(label="Profile completion role", custom_id=f"{interaction_id} ROLE"),
-                discord.ui.Button(label="Template fields", custom_id=f"{interaction_id} FIELDS"),
-                discord.ui.Button(label="Profile count per user", custom_id=f"{interaction_id} COUNT"),
-                discord.ui.Button(label="Done", custom_id=f"{interaction_id} DONE", style=discord.ButtonStyle.success),
+                discord.ui.Button(
+                    label=vbu.translation(interaction, "template_commands").gettext(
+                        "Template name",
+                    ),
+                    custom_id=f"{interaction_id} NAME"),
+                discord.ui.Button(
+                    label=vbu.translation(interaction, "template_commands").gettext(
+                        "Profile verification channel",
+                    ),
+                    custom_id=f"{interaction_id} VERIFICATION"),
+                discord.ui.Button(
+                    label=vbu.translation(interaction, "template_commands").gettext(
+                        "Profile archive channel",
+                    ),
+                    custom_id=f"{interaction_id} ARCHIVE"),
+                discord.ui.Button(
+                    label=vbu.translation(interaction, "template_commands").gettext(
+                        "Profile completion role",
+                    ),
+                    custom_id=f"{interaction_id} ROLE"),
+                discord.ui.Button(
+                    label=vbu.translation(interaction, "template_commands").gettext(
+                        "Template fields",
+                    ),
+                    custom_id=f"{interaction_id} FIELDS"),
+                discord.ui.Button(
+                    label=vbu.translation(interaction, "template_commands").gettext(
+                        "Profile count per user",
+                    ),
+                    custom_id=f"{interaction_id} COUNT"),
+                discord.ui.Button(
+                    label=vbu.translation(interaction, "template_commands").gettext(
+                        "Done",
+                    ),
+                    custom_id=f"{interaction_id} DONE", style=discord.ButtonStyle.success),
             )
 
             # See if they have a command set up properly
@@ -292,18 +314,18 @@ class TemplateCommands(vbu.Cog):
                 except discord.HTTPException:
                     pass
             if added_command is None:
-                components.components[-1].add_component(
+                components.components[-1].add_component(  # type: ignore
                     discord.ui.Button(
-                        label="Add slash command",
+                        label=vbu.translation(interaction, "template_commands").gettext("Add slash command"),
                         custom_id=f"{interaction_id} COMMAND",
                         style=discord.ButtonStyle.danger,
                         disabled=added_command is not None
                     )
                 )
             else:
-                components.components[-1].add_component(
+                components.components[-1].add_component(  # type: ignore
                     discord.ui.Button(
-                        label="Update slash command",
+                        label=vbu.translation(interaction, "template_commands").gettext("Update slash command"),
                         custom_id=f"{interaction_id} COMMAND",
                         style=discord.ButtonStyle.danger,
                     )
@@ -317,7 +339,7 @@ class TemplateCommands(vbu.Cog):
                     try:
                         await interaction.edit_original_message(
                             content=None,
-                            embed=template.build_embed(self.bot, brief=True),
+                            embed=template.build_embed(self.bot, interaction, brief=True),
                             allowed_mentions=discord.AllowedMentions(roles=False),
                             components=components,
                         )
@@ -325,7 +347,7 @@ class TemplateCommands(vbu.Cog):
                         return
                 else:
                     await interaction.followup.send(
-                        embed=template.build_embed(self.bot, brief=True),
+                        embed=template.build_embed(self.bot, interaction, brief=True),
                         allowed_mentions=discord.AllowedMentions(roles=False),
                         components=components,
                     )
@@ -343,7 +365,9 @@ class TemplateCommands(vbu.Cog):
                 except asyncio.TimeoutError:
                     try:
                         await interaction.edit_original_message(
-                            content="Timed out waiting for edit response.",
+                            content=vbu.translation(interaction, "template_commands").gettext(
+                                "Timed out waiting for edit response.",
+                            ),
                             components=None,
                             embed=None,
                         )
@@ -379,15 +403,20 @@ class TemplateCommands(vbu.Cog):
                     except Exception as e:
                         error = e
                     if error:
-                        components.get_component(f"{interaction_id} COMMAND").label = "Error adding slash command"
-                        await interaction.followup.send(f"Error updating slash command - `{error!s}`.", ephemeral=True)
+                        components.get_component(f"{interaction_id} COMMAND").label = vbu.translation(interaction, "template_commands").gettext("Error adding slash command")  # type: ignore
+                        await interaction.followup.send(
+                            vbu.translation(interaction, "template_commands").gettext(
+                                "Error updating slash command - `{error}`.",
+                            ).format(error=str(error)),
+                            ephemeral=True,
+                        )
                     else:
-                        components.get_component(f"{interaction_id} COMMAND").label = "Update slash command"
+                        components.get_component(f"{interaction_id} COMMAND").label = vbu.translation(interaction, "template_commands").gettext("Update slash command")  # type: ignore
                     response = True
 
                 # See if they wanna change fields
                 elif attribute == "FIELDS":
-                    response: typing.Optional[bool]
+                    response: Optional[bool]
                     interaction, response = await self.edit_field(
                         ctx, interaction, template, guild_settings,
                         is_bot_support,
@@ -397,7 +426,7 @@ class TemplateCommands(vbu.Cog):
 
                 # See if they wanna change an attribute
                 elif attribute in ["NAME", "VERIFICATION", "ARCHIVE", "ROLE", "COUNT"]:
-                    converter: typing.Union[commands.Converter, type]
+                    converter: Union[commands.Converter, type]
                     attribute, converter = {
                         "NAME": ("name", str),
                         "VERIFICATION": ("verification_channel_id", commands.TextChannelConverter()),
@@ -405,7 +434,7 @@ class TemplateCommands(vbu.Cog):
                         "ROLE": ("role_id", commands.RoleConverter()),
                         "COUNT": ("max_profile_count", int),
                     }[attribute]
-                    response: typing.Optional[bool]
+                    response: Optional[bool]
                     interaction, response = await self.change_template_attribute(
                         ctx, interaction, template, guild_settings,
                         is_bot_support, attribute, converter,
@@ -420,7 +449,7 @@ class TemplateCommands(vbu.Cog):
                             )
                         except Exception as e:
                             await interaction.followup.send(
-                                f"Failed to update slash command - `{e!s}`.",
+                                vbu.translation(interaction, "template_commands").gettext("Error updating slash command - `{error}`.").format(error=str(e)),
                                 ephemeral=True,
                             )
 
@@ -440,8 +469,8 @@ class TemplateCommands(vbu.Cog):
             guild_settings: dict,
             is_bot_support: bool,
             attribute: str,
-            converter: typing.Union[commands.Converter, type]
-            ) -> typing.Tuple[discord.Interaction, typing.Optional[bool]]:
+            converter: Union[commands.Converter, type]
+            ) -> Tuple[discord.Interaction, Optional[bool]]:
         """
         Change the attributes of a given template. Returns whether or not the template
         has been changed, and should thus be updated.
@@ -453,15 +482,25 @@ class TemplateCommands(vbu.Cog):
         # Make up the text to be sent
         text: str
         if attribute == "name":
-            text = "What do you want to set the template's name to?"
+            text = vbu.translation(interaction, "template_commands").gettext(
+                "What do you want to set the template's name to?",
+            )
         elif attribute == "verification_channel_id":
-            text = "What channel do you want to set as the verification channel?"
+            text = vbu.translation(interaction, "template_commands").gettext(
+                "What channel do you want to set as the verification channel?",
+            )
         elif attribute == "archive_channel_id":
-            text = "What channel do you want to set as the archive channel?"
+            text = vbu.translation(interaction, "template_commands").gettext(
+                "What channel do you want to set as the archive channel?",
+            )
         elif attribute == "role_id":
-            text = "What role do you want users to receive when their profile is approved?"
+            text = vbu.translation(interaction, "template_commands").gettext(
+                "What role do you want users to receive when their profile is approved?",
+            )
         elif attribute == "max_profile_count":
-            text = "What do you want to set the max profile count to?"
+            text = vbu.translation(interaction, "template_commands").gettext(
+                "What do you want to set the max profile count to?",
+            )
         else:
             raise ValueError()
 
@@ -473,10 +512,10 @@ class TemplateCommands(vbu.Cog):
         )
 
         # Wait for them to respond
-        def check(message):
+        def check(message: discord.Message):
             return all([
                 message.author.id == ctx.author.id,
-                message.channel.id == ctx.channel.id,
+                message.channel.id == ctx.channel.id,  # type: ignore - here we'll be an actual Discord message
             ])
         try:
             value_message: discord.Message = await self.bot.wait_for(
@@ -487,7 +526,7 @@ class TemplateCommands(vbu.Cog):
         except asyncio.TimeoutError:
             try:
                 await interaction.edit_original_message(
-                    content="Timed out waiting for edit response.",
+                    content=vbu.translation(interaction, "template_commands").gettext("Timed out waiting for edit response."),
                     components=None,
                     embed=None,
                 )
@@ -512,7 +551,7 @@ class TemplateCommands(vbu.Cog):
             return interaction, False
 
         # Validate the given information
-        checked_converted: typing.Optional[typing.Any] = await self.validate_given_attribute(
+        checked_converted: Optional[Any] = await self.validate_given_attribute(
             ctx=ctx,
             template=template,
             attribute=attribute,
@@ -544,10 +583,10 @@ class TemplateCommands(vbu.Cog):
             ctx: utils.types.GuildContext,
             template: utils.Template,
             attribute: str,
-            converted: typing.Union[str, int],
+            converted: Union[str, int],
             guild_settings: dict,
             is_bot_support: bool,
-            interaction: discord.Interaction = None) -> typing.Optional[typing.Any]:
+            interaction: Optional[discord.Interaction] = None) -> Optional[Any]:
         """
         Validates the given information from the user as to whether their attribute should be changed.
         Returns either None or the converted attribute.
@@ -575,17 +614,32 @@ class TemplateCommands(vbu.Cog):
                     ctx.guild.id, converted, template.template_id,
                 )
             if name_in_use:
-                await sendable.send("That template name is already in use.", ephemeral=True)
+                await sendable.send(
+                    vbu.translation(ctx, "template_commands").gettext(
+                        "That template name is already in use."
+                    ),
+                    ephemeral=True,
+                )
                 return None
 
             # See if the length is fine
             if 30 < len(converted) < 1:
-                await sendable.send("That template name is invalid - not within 1 and 30 characters in length.", ephemeral=True)
+                await sendable.send(
+                    vbu.translation(ctx, "template_commands").gettext(
+                        "That template name is invalid - not within 1 and 30 characters in length.",
+                    ),
+                    ephemeral=True,
+                )
                 return None
 
             # See if the characters are fine
             if not len([i for i in converted if i not in string.ascii_letters + string.digits]) == 0:
-                await sendable.send("You can only use standard lettering in your template name.", ephemeral=True)
+                await sendable.send(
+                    vbu.translation(ctx, "template_commands").gettext(
+                        "You can only use standard lettering in your template name.",
+                    ),
+                    ephemeral=True,
+                )
                 return None
 
 
@@ -615,7 +669,7 @@ class TemplateCommands(vbu.Cog):
             template: utils.Template,
             guild_settings: dict,
             is_bot_support: bool,
-            ) -> typing.Tuple[discord.Interaction, typing.Optional[bool]]:
+            ) -> Tuple[discord.Interaction, Optional[bool]]:
         """
         Talk the user through editing a field of a template.
         Returns whether or not the template display needs to be updated, or None for an error (like a timeout).
@@ -636,18 +690,31 @@ class TemplateCommands(vbu.Cog):
         ]
         max_field_count = max(guild_settings['max_template_field_count'], ctx.guild_perks.max_field_count)
         if len(template.fields) < max_field_count or is_bot_support:
-            new_button = discord.ui.Button(label="New", custom_id=f"{interaction_id} NEW", style=discord.ButtonStyle.success)
+            new_button = discord.ui.Button(
+                label=vbu.translation(ctx, "template_commands").gettext("New"),
+                custom_id=f"{interaction_id} NEW",
+                style=discord.ButtonStyle.success,
+            )
         else:
-            new_button = discord.ui.Button(label="New (unavailable)", custom_id=f"{interaction_id} NEW", disabled=True, style=discord.ButtonStyle.success)
+            new_button = discord.ui.Button(
+                label=vbu.translation(ctx, "template_commands").gettext("New (unavailable)"),
+                custom_id=f"{interaction_id} NEW",
+                disabled=True,
+                style=discord.ButtonStyle.success,
+            )
         components = discord.ui.MessageComponents.add_buttons_with_rows(
             new_button,
             *field_name_buttons,
-            discord.ui.Button(label="Cancel", custom_id=f"{interaction_id} CANCEL", style=discord.ButtonStyle.danger),
+            discord.ui.Button(
+                label=vbu.translation(ctx, "template_commands").gettext("Cancel"),
+                custom_id=f"{interaction_id} CANCEL",
+                style=discord.ButtonStyle.danger,
+            ),
         )
 
         # Send a message asking what they want to edit
         await interaction.response.edit_message(
-            content="Which field do you want to edit?",
+            content=vbu.translation(ctx, "template_commands").gettext("Which field do you want to edit?"),
             components=components,
             embed=None,
         )
@@ -664,7 +731,7 @@ class TemplateCommands(vbu.Cog):
         except asyncio.TimeoutError:
             try:
                 await interaction.edit_original_message(
-                    content="Timed out waiting for button click.",
+                    content=vbu.translation(ctx, "template_commands").gettext("Timed out waiting for button click."),
                     components=None,
                     embed=None,
                 )
@@ -677,7 +744,7 @@ class TemplateCommands(vbu.Cog):
                 i for i in template.fields.values()
                 if isinstance(i.field_type, utils.ImageField)
             )
-            field: typing.Optional[utils.Field]
+            field: Optional[utils.Field]
             interaction, field = await self.create_new_field(
                 ctx=ctx,
                 interaction=interaction,
@@ -704,18 +771,41 @@ class TemplateCommands(vbu.Cog):
         interaction_id = str(uuid.uuid4())
         components = discord.ui.MessageComponents(
             discord.ui.ActionRow(
-                discord.ui.Button(label="Field name", custom_id=f"{interaction_id} NAME"),
-                discord.ui.Button(label="Field prompt", custom_id=f"{interaction_id} PROMPT"),
-                discord.ui.Button(label="Field being optional", custom_id=f"{interaction_id} OPTIONAL"),
-                discord.ui.Button(label="Field type", custom_id=f"{interaction_id} FIELD_TYPE"),
+                discord.ui.Button(
+                    label=vbu.translation(ctx, "template_commands").gettext("Field name"),
+                    custom_id=f"{interaction_id} NAME"
+                ),
+                discord.ui.Button(
+                    label=vbu.translation(ctx, "template_commands").gettext("Field prompt"),
+                    custom_id=f"{interaction_id} PROMPT"
+                ),
+                discord.ui.Button(
+                    label=vbu.translation(ctx, "template_commands").gettext("Field being optional"),
+                    custom_id=f"{interaction_id} OPTIONAL"
+                ),
+                discord.ui.Button(
+                    label=vbu.translation(ctx, "template_commands").gettext("Field type"),
+                    custom_id=f"{interaction_id} FIELD_TYPE"
+                ),
             ),
             discord.ui.ActionRow(
-                discord.ui.Button(label="Delete field", style=discord.ButtonStyle.danger, custom_id=f"{interaction_id} DELETE"),
-                discord.ui.Button(label="Cancel", style=discord.ButtonStyle.secondary, custom_id=f"{interaction_id} CANCEL"),
+                discord.ui.Button(
+                    label=vbu.translation(ctx, "template_commands").gettext("Delete field"),
+                    style=discord.ButtonStyle.danger,
+                    custom_id=f"{interaction_id} DELETE",
+                ),
+                discord.ui.Button(
+                    label=vbu.translation(ctx, "template_commands").gettext("Cancel"),
+                    style=discord.ButtonStyle.secondary,
+                    custom_id=f"{interaction_id} CANCEL",
+                ),
             ),
         )
+        field_name = field_to_edit.name
         await interaction.response.edit_message(
-            content=f"Editing the field **{field_to_edit.name}**. Which part would you like to edit?",
+            content=vbu.translation(ctx, "template_commands").gettext(
+                "Editing the field **{field_name}**. Which part would you like to edit?",
+            ).format(field_name=field_to_edit.name),
             components=components,
             embed=None,
         )
@@ -731,7 +821,7 @@ class TemplateCommands(vbu.Cog):
         except asyncio.TimeoutError:
             try:
                 await interaction.edit_original_message(
-                    content="Timed out waiting for field attribute.",
+                    content=vbu.translation(ctx, "template_commands").gettext("Timed out waiting for field attribute."),
                     components=None,
                     embed=None,
                 )
@@ -765,13 +855,17 @@ class TemplateCommands(vbu.Cog):
             # current_value = current_value.replace("\n", " ") if attribute_to_change == "NAME" else current_value
             max_length = 80 if attribute_to_change == "NAME" else 45
             modal = discord.ui.Modal(
-                title="Change Field Attribute",
+                title=vbu.translation(ctx, "template_commands").gettext("Change Field Attribute"),
                 components=[
                     discord.ui.ActionRow(
                         discord.ui.InputText(
                             label={
-                                "NAME": "What name do you want the field to have?",
-                                "PROMPT": "What should the prompt for this field be?",
+                                "NAME": vbu.translation(ctx, "template_commands").gettext(
+                                    "What name do you want the field to have?"
+                                ),
+                                "PROMPT": vbu.translation(ctx, "template_commands").gettext(
+                                    "What should the prompt for this field be?"
+                                ),
                             }[attribute_to_change],
                             value=current_value[:max_length],
                             max_length=max_length,
@@ -794,7 +888,7 @@ class TemplateCommands(vbu.Cog):
             except asyncio.TimeoutError:
                 try:
                     await interaction.edit_original_message(
-                        content="Timed out waiting for modal submission.",
+                        content=vbu.translation(ctx, "template_commands").gettext("Timed out waiting for modal submission."),
                         components=None,
                         embed=None,
                     )
@@ -803,7 +897,7 @@ class TemplateCommands(vbu.Cog):
                 return interaction, None
 
             # Get the newly changed data
-            field_value = interaction.components[0].components[0].value
+            field_value = interaction.components[0].components[0].value  # type: ignore
 
         # They want to change something we spawn a button for
         elif attribute_to_change in ["OPTIONAL", "FIELD_TYPE"]:
@@ -811,22 +905,37 @@ class TemplateCommands(vbu.Cog):
             # Make the responses
             interaction_id = str(uuid.uuid4())
             if attribute_to_change == "OPTIONAL":
-                prompt = "Do you want this field to be optional?"
+                prompt = vbu.translation(ctx, "template_commands").gettext("Do you want this field to be optional?")
                 components = discord.ui.MessageComponents.boolean_buttons(
-                    yes_id=f"{interaction_id} YES",
-                    no_id=f"{interaction_id} NO",
+                    yes=(
+                        vbu.translation(ctx, "template_commands").gettext("Yes"),
+                        f"{interaction_id} YES",
+                    ),
+                    no=(
+                        vbu.translation(ctx, "template_commands").gettext("No"),
+                        f"{interaction_id} NO",
+                    ),
                 )
             elif attribute_to_change == "FIELD_TYPE":
-                prompt = "What type do you want this field to have?"
+                prompt = vbu.translation(ctx, "template_commands").gettext("What type do you want this field to have?")
                 components = discord.ui.MessageComponents(
                     discord.ui.ActionRow(
-                        discord.ui.Button(label="Text", custom_id=f"{interaction_id} TEXT"),
-                        discord.ui.Button(label="Numbers", custom_id=f"{interaction_id} NUMBERS")
+                        discord.ui.Button(
+                            label=vbu.translation(ctx, "template_commands").gettext("Text"),
+                            custom_id=f"{interaction_id} TEXT",
+                        ),
+                        discord.ui.Button(
+                            label=vbu.translation(ctx, "template_commands").gettext("Numbers"),
+                            custom_id=f"{interaction_id} NUMBERS",
+                        ),
                     )
                 )
                 if not any(i for i in template.fields.values() if isinstance(i.field_type, utils.ImageField)):
-                    components.components[0].add_component(
-                        discord.ui.Button(label="Text", custom_id=f"{interaction_id} IMAGE"),
+                    components.components[0].add_component(  # type: ignore
+                        discord.ui.Button(
+                            label=vbu.translation(ctx, "template_commands").gettext("Image"),
+                            custom_id=f"{interaction_id} IMAGE",
+                        ),
                     )
             else:
                 raise ValueError()
@@ -848,7 +957,7 @@ class TemplateCommands(vbu.Cog):
             except asyncio.TimeoutError:
                 try:
                     await interaction.edit_original_message(
-                        content="Timed out waiting for button click.",
+                        content=vbu.translation(ctx, "template_commands").gettext("Timed out waiting for button click."),
                         components=None,
                         embed=None,
                     )
@@ -907,15 +1016,21 @@ class TemplateCommands(vbu.Cog):
 
         # See if they're already editing that template
         if self.template_editing_locks[ctx.guild.id].locked():
-            return await ctx.interaction.followup.send("You're already editing a template.")
+            return await ctx.interaction.followup.send(
+                vbu.translation(ctx, "template_commands").gettext("You're already editing a template."),
+            )
         interaction: discord.Interaction = ctx.interaction
 
         # Grab the template edit lock
         async with self.template_editing_locks[str(uuid.uuid4())]:
 
             # Ask for confirmation
+            text = vbu.translation(ctx, "template_commands").gettext(
+                "By doing this, you'll delete all of the created profiles under this "
+                "template as well. Would you like to proceed?"
+            )
             delete_confirmation_message = await interaction.followup.send(
-                "By doing this, you'll delete all of the created profiles under this template as well. Would you like to proceed?",
+                text,
                 components=discord.ui.MessageComponents.boolean_buttons(),
                 wait=True,
             )
@@ -928,7 +1043,7 @@ class TemplateCommands(vbu.Cog):
             except asyncio.TimeoutError:
                 try:
                     await interaction.edit_original_message(
-                        content="Template delete timed out - please try again later.",
+                        content=vbu.translation(ctx, "template_commands").gettext("Template delete timed out - please try again later."),
                         components=None,
                     )
                 except discord.HTTPException:
@@ -936,9 +1051,9 @@ class TemplateCommands(vbu.Cog):
                 return
 
             # Check if they said no
-            if interaction.component.custom_id == "NO":
+            if interaction.custom_id == "NO":
                 return await interaction.response.edit_message(
-                    content="Cancelled template delete.",
+                    content=vbu.translation(ctx, "template_commands").gettext("Cancelled template delete."),
                     components=None,
                     embed=None,
                 )
@@ -962,8 +1077,11 @@ class TemplateCommands(vbu.Cog):
                 )
 
             # And respond
+            text = vbu.translation(ctx, "template_commands").gettext(
+                "All relevant data for template **{template_name}** (`{template_id}`) has been deleted.",
+            ).format(template_name=template.name, template_id=template.template_id)
             return await interaction.edit_original_message(
-                content=f"All relevant data for template **{template.name}** (`{template.template_id}`) has been deleted.",
+                content=text,
                 components=None,
             )
 
@@ -991,7 +1109,7 @@ class TemplateCommands(vbu.Cog):
 
         # Only allow them to make one template at once
         if self.template_editing_locks[ctx.guild.id].locked():
-            return await ctx.interaction.followup.send("You're already creating a template.")
+            return await ctx.interaction.followup.send(vbu.translation(ctx, "template_commands").gettext("You're already creating a template."))
         interaction = ctx.interaction
 
         # Check their template count
@@ -1002,13 +1120,13 @@ class TemplateCommands(vbu.Cog):
         max_template_count = max(guild_settings[0]['max_template_count'], perks.max_template_count)
         if len(template_list) >= max_template_count:
             if perks.is_premium:
-                return await interaction.followup.send((
+                return await interaction.followup.send(vbu.translation(ctx, "template_commands").gettext(
                     f"You already have {max_template_count} templates set for this server, which is the "
                     "maximum number you are allowed."
                 ))
-            return await interaction.followup.send((
+            return await interaction.followup.send(vbu.translation(ctx, "template_commands").gettext(
                 f"You already have {max_template_count} templates set for this server, which is the "
-                f"maximum number you are allowed - see `{ctx.clean_prefix}donate` to get a "
+                "maximum number you are allowed - see `/info` and donate to get a "
                 "higher profile count for your server."
             ))
 
@@ -1017,7 +1135,7 @@ class TemplateCommands(vbu.Cog):
 
                 # Check name for characters
             if not self.is_valid_template_name(template_name):
-                await interaction.followup.send((
+                await interaction.followup.send(vbu.translation(ctx, "template_commands").gettext(
                     "You can only use normal lettering and digits in your command name. "
                     "Please run this command again to set a new one."
                 ))
@@ -1027,10 +1145,10 @@ class TemplateCommands(vbu.Cog):
             if 30 >= len(template_name) >= 1:
                 pass
             else:
-                await interaction.followup.send(
+                await interaction.followup.send(vbu.translation(ctx, "template_commands").gettext(
                     "The maximum length of a profile name is 30 characters. "
                     "Please run this command again to set a new one."
-                )
+                ))
 
             # Check name is unique
             async with vbu.Database() as db:
@@ -1039,10 +1157,10 @@ class TemplateCommands(vbu.Cog):
                     ctx.guild.id, template_name,
                 )
             if template_exists:
-                await interaction.followup.send(
+                await interaction.followup.send(vbu.translation(ctx, "template_commands").gettext(
                     f"This server already has a template with name **{template_name}**. "
                     "Please run this command again to provide another one."
-                )
+                ))
                 return
 
             # Add new application command
@@ -1084,7 +1202,7 @@ class TemplateCommands(vbu.Cog):
             template: utils.Template,
             index: int,
             image_set: bool = False,
-            ) -> typing.Tuple[discord.Interaction, typing.Optional[utils.Field]]:
+            ) -> Tuple[discord.Interaction, Optional[utils.Field]]:
         """
         Talk a user through creating a new field for their template.
 
@@ -1097,7 +1215,7 @@ class TemplateCommands(vbu.Cog):
             components=[
                 discord.ui.ActionRow(
                     discord.ui.InputText(
-                        label=(
+                        label=vbu.translation(ctx, "template_commands").gettext(
                             "What name should this field have?"
                         ),
                         max_length=80,
@@ -1105,7 +1223,7 @@ class TemplateCommands(vbu.Cog):
                 ),
                 discord.ui.ActionRow(
                     discord.ui.InputText(
-                        label=(
+                        label=vbu.translation(ctx, "template_commands").gettext(
                             "What prompt should be sent with this message?"
                         ),
                         style=discord.TextStyle.long,
@@ -1126,7 +1244,7 @@ class TemplateCommands(vbu.Cog):
         except asyncio.TimeoutError:
             try:
                 await interaction.edit_original_message(
-                    content="Creating a new field has timed out.",
+                    content=vbu.translation(ctx, "template_commands").gettext("Creating a new field has timed out."),
                     components=None,
                     embed=None,
                 )
@@ -1140,12 +1258,18 @@ class TemplateCommands(vbu.Cog):
         # Get field optional
         interaction_id = str(uuid.uuid4())
         buttons_components = discord.ui.MessageComponents.boolean_buttons(
-            yes_id=f"{interaction_id} YES",
-            no_id=f"{interaction_id} NO",
+            yes=(
+                vbu.translation(ctx, "template_commands").gettext("Yes"),
+                f"{interaction_id} YES",
+            ),
+            no=(
+                vbu.translation(ctx, "template_commands").gettext("No"),
+                f"{interaction_id} NO",
+            ),
         )
         await interaction.response.defer_update()
         await interaction.edit_original_message(
-            content="Is this field optional?",
+            content=vbu.translation(ctx, "template_commands").gettext("Is this field optional?"),
             components=buttons_components,
         )
         try:
@@ -1162,14 +1286,23 @@ class TemplateCommands(vbu.Cog):
         # Ask for a field type
         interaction_id = str(uuid.uuid4())
         action_row = discord.ui.ActionRow(
-            discord.ui.Button(label="Text", custom_id=f"{interaction_id} TEXT"),
-            discord.ui.Button(label="Numbers", custom_id=f"{interaction_id} NUMBERS"),
+            discord.ui.Button(
+                label=vbu.translation(ctx, "template_commands").gettext("Text"),
+                custom_id=f"{interaction_id} TEXT",
+            ),
+            discord.ui.Button(
+                label=vbu.translation(ctx, "template_commands").gettext("Numbers"),
+                custom_id=f"{interaction_id} NUMBERS",
+            ),
         )
         if not image_set:
-            action_row.add_component(discord.ui.Button(label="Image", custom_id=f"{interaction_id} IMAGE"))
+            action_row.add_component(discord.ui.Button(
+                label=vbu.translation(ctx, "template_commands").gettext("Image"),
+                custom_id=f"{interaction_id} IMAGE",
+            ))
         components = discord.ui.MessageComponents(action_row)
         await interaction.response.edit_message(
-            content="What type is this field?",
+            content=vbu.translation(ctx, "template_commands").gettext("What type is this field?"),
             components=components,
             embed=None,
         )
@@ -1185,7 +1318,7 @@ class TemplateCommands(vbu.Cog):
         except asyncio.TimeoutError:
             try:
                 await interaction.edit_original_message(
-                    content="Picking a field type has timed out.",
+                    content=vbu.translation(ctx, "template_commands").gettext("Picking a field type has timed out."),
                     components=None,
                     embed=None,
                 )
@@ -1221,9 +1354,9 @@ class TemplateCommands(vbu.Cog):
         # And we done
         return interaction, field
 
-    @template_edit.autocomplete
-    @template_describe.autocomplete
-    @template_delete.autocomplete
+    @template_edit.autocomplete  # type: ignore
+    @template_describe.autocomplete  # type: ignore
+    @template_delete.autocomplete  # type: ignore
     async def template_autocomplete(self, ctx: commands.SlashContext, interaction: discord.Interaction):
         """
         Return the templates for the given guild.

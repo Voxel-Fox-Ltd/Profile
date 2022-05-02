@@ -1,0 +1,350 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2022-05-02 08:11+0100\n"
+"PO-Revision-Date: 2022-05-02 08:12+0100\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.0.1\n"
+"X-Poedit-Basepath: ../cogs\n"
+"X-Poedit-SearchPath-0: template_commands.py\n"
+
+#: template_commands.py:199
+#, fuzzy, python-brace-format
+msgid ""
+"Currently there are **{user_profile_count}** created profiles for this "
+"template."
+msgstr ""
+"Derzeit gibt es **{user_profile_count}** erstellte Profile für diese Vorlage."
+
+#: template_commands.py:246 template_commands.py:1020
+#, fuzzy
+msgid "You're already editing a template."
+msgstr "Sie sind bereits dabei, eine Vorlage zu bearbeiten."
+
+#: template_commands.py:274
+msgid "Template name"
+msgstr "Name der Vorlage"
+
+#: template_commands.py:279
+#, fuzzy
+msgid "Profile verification channel"
+msgstr "Kanal zur Profilüberprüfung"
+
+#: template_commands.py:284
+#, fuzzy
+msgid "Profile archive channel"
+msgstr "Profil Archivkanal"
+
+#: template_commands.py:289
+#, fuzzy
+msgid "Profile completion role"
+msgstr "Rolle der Profilvervollständigung"
+
+#: template_commands.py:294
+#, fuzzy
+msgid "Template fields"
+msgstr "Felder der Vorlage"
+
+#: template_commands.py:299
+#, fuzzy
+msgid "Profile count per user"
+msgstr "Profilanzahl pro Benutzer"
+
+#: template_commands.py:304
+msgid "Done"
+msgstr "Erledigt"
+
+#: template_commands.py:319
+#, fuzzy
+msgid "Add slash command"
+msgstr "Schrägstrich-Befehl hinzufügen"
+
+#: template_commands.py:328 template_commands.py:414
+#, fuzzy
+msgid "Update slash command"
+msgstr "Schrägstrich-Befehl aktualisieren"
+
+#: template_commands.py:369 template_commands.py:529
+#, fuzzy
+msgid "Timed out waiting for edit response."
+msgstr "Zeitüberschreitung beim Warten auf eine Bearbeitungsantwort."
+
+#: template_commands.py:406
+#, fuzzy
+msgid "Error adding slash command"
+msgstr "Fehler beim Hinzufügen des Schrägstrich-Befehls"
+
+#: template_commands.py:409 template_commands.py:452
+#, fuzzy, python-brace-format
+msgid "Error updating slash command - `{error}`."
+msgstr "Fehler beim Aktualisieren des Slash-Befehls - `{error}`."
+
+#: template_commands.py:486
+#, fuzzy
+msgid "What do you want to set the template's name to?"
+msgstr "Wie soll der Name der Vorlage lauten?"
+
+#: template_commands.py:490
+#, fuzzy
+msgid "What channel do you want to set as the verification channel?"
+msgstr "Welchen Kanal möchten Sie als Verifizierungskanal festlegen?"
+
+#: template_commands.py:494
+#, fuzzy
+msgid "What channel do you want to set as the archive channel?"
+msgstr "Welchen Kanal möchten Sie als Archivkanal festlegen?"
+
+#: template_commands.py:498
+#, fuzzy
+msgid "What role do you want users to receive when their profile is approved?"
+msgstr ""
+"Welche Rolle sollen die Nutzer erhalten, wenn ihr Profil genehmigt wird?"
+
+#: template_commands.py:502
+#, fuzzy
+msgid "What do you want to set the max profile count to?"
+msgstr "Auf welchen Wert möchten Sie die maximale Profilanzahl einstellen?"
+
+#: template_commands.py:619
+#, fuzzy
+msgid "That template name is already in use."
+msgstr "Dieser Vorlagenname ist bereits in Gebrauch."
+
+#: template_commands.py:629
+#, fuzzy
+msgid ""
+"That template name is invalid - not within 1 and 30 characters in length."
+msgstr ""
+"Dieser Vorlagenname ist ungültig - er darf nicht zwischen 1 und 30 Zeichen "
+"lang sein."
+
+#: template_commands.py:639
+#, fuzzy
+msgid "You can only use standard lettering in your template name."
+msgstr "Sie können in Ihrem Vorlagennamen nur Standardbuchstaben verwenden."
+
+#: template_commands.py:694
+msgid "New"
+msgstr "Neu"
+
+#: template_commands.py:700
+#, fuzzy
+msgid "New (unavailable)"
+msgstr "Neu (nicht verfügbar)"
+
+#: template_commands.py:709 template_commands.py:798
+msgid "Cancel"
+msgstr "Abbrechen"
+
+#: template_commands.py:717
+#, fuzzy
+msgid "Which field do you want to edit?"
+msgstr "Welches Feld möchten Sie bearbeiten?"
+
+#: template_commands.py:734 template_commands.py:960
+#, fuzzy
+msgid "Timed out waiting for button click."
+msgstr "Zeitüberschreitung beim Warten auf das Klicken der Schaltfläche."
+
+#: template_commands.py:775
+msgid "Field name"
+msgstr "Feldname"
+
+#: template_commands.py:779
+#, fuzzy
+msgid "Field prompt"
+msgstr "Feld Eingabeaufforderung"
+
+#: template_commands.py:783
+#, fuzzy
+msgid "Field being optional"
+msgstr "Das Feld ist fakultativ"
+
+#: template_commands.py:787
+msgid "Field type"
+msgstr "Feldtyp"
+
+#: template_commands.py:793
+msgid "Delete field"
+msgstr "Feld löschen"
+
+#: template_commands.py:807
+#, fuzzy, python-brace-format
+msgid "Editing the field **{field_name}**. Which part would you like to edit?"
+msgstr ""
+"Bearbeitung des Feldes **{field_name}**. Welchen Teil möchten Sie bearbeiten?"
+
+#: template_commands.py:824
+#, fuzzy
+msgid "Timed out waiting for field attribute."
+msgstr "Zeitüberschreitung beim Warten auf das Feldattribut."
+
+#: template_commands.py:858
+#, fuzzy
+msgid "Change Field Attribute"
+msgstr "Feldattribut ändern"
+
+#: template_commands.py:864
+#, fuzzy
+msgid "What name do you want the field to have?"
+msgstr "Welchen Namen soll das Feld haben?"
+
+#: template_commands.py:867
+#, fuzzy
+msgid "What should the prompt for this field be?"
+msgstr "Wie sollte die Eingabeaufforderung für dieses Feld lauten?"
+
+#: template_commands.py:891
+#, fuzzy
+msgid "Timed out waiting for modal submission."
+msgstr "Zeitüberschreitung beim Warten auf die modale Übermittlung."
+
+#: template_commands.py:908
+#, fuzzy
+msgid "Do you want this field to be optional?"
+msgstr "Möchten Sie, dass dieses Feld optional ist?"
+
+#: template_commands.py:911 template_commands.py:1262
+msgid "Yes"
+msgstr "Ja"
+
+#: template_commands.py:915 template_commands.py:1266
+msgid "No"
+msgstr "Nein"
+
+#: template_commands.py:920
+#, fuzzy
+msgid "What type do you want this field to have?"
+msgstr "Welchen Typ soll dieses Feld haben?"
+
+#: template_commands.py:924 template_commands.py:1290
+msgid "Text"
+msgstr "Text"
+
+#: template_commands.py:928 template_commands.py:1294
+msgid "Numbers"
+msgstr "Nummern"
+
+#: template_commands.py:936 template_commands.py:1300
+msgid "Image"
+msgstr "Bild"
+
+#: template_commands.py:1029
+#, fuzzy
+msgid ""
+"By doing this, you'll delete all of the created profiles under this template "
+"as well. Would you like to proceed?"
+msgstr ""
+"Auf diese Weise löschen Sie auch alle unter dieser Vorlage erstellten "
+"Profile. Möchten Sie fortfahren?"
+
+#: template_commands.py:1046
+#, fuzzy
+msgid "Template delete timed out - please try again later."
+msgstr ""
+"Das Löschen der Vorlage wurde abgebrochen - bitte versuchen Sie es später "
+"noch einmal."
+
+#: template_commands.py:1056
+#, fuzzy
+msgid "Cancelled template delete."
+msgstr "Löschen der Vorlage abgebrochen."
+
+#: template_commands.py:1081
+#, fuzzy, python-brace-format
+msgid ""
+"All relevant data for template **{template_name}** (`{template_id}`) has "
+"been deleted."
+msgstr ""
+"Alle relevanten Daten für Vorlage **{template_name}** (`{template_id}`) "
+"wurden gelöscht."
+
+#: template_commands.py:1112
+#, fuzzy
+msgid "You're already creating a template."
+msgstr "Sie sind bereits dabei, eine Vorlage zu erstellen."
+
+#: template_commands.py:1124
+#, fuzzy, python-brace-format
+msgid ""
+"You already have {max_template_count} templates set for this server, which "
+"is the maximum number you are allowed."
+msgstr ""
+"Sie haben bereits {max_template_count} Vorlagen für diesen Server "
+"eingestellt, was die maximale Anzahl ist, die Sie zulassen."
+
+#: template_commands.py:1128
+#, fuzzy, python-brace-format
+msgid ""
+"You already have {max_template_count} templates set for this server, which "
+"is the maximum number you are allowed - see `/info` and donate to get a "
+"higher profile count for your server."
+msgstr ""
+"Sie haben bereits {max_template_count} Vorlagen für diesen Server "
+"eingestellt, was die maximal zulässige Anzahl ist - siehe `/info` und "
+"spenden Sie, um eine höhere Profilanzahl für Ihren Server zu erhalten."
+
+#: template_commands.py:1139
+#, fuzzy
+msgid ""
+"You can only use normal lettering and digits in your command name. Please "
+"run this command again to set a new one."
+msgstr ""
+"Sie können nur normale Buchstaben und Ziffern in Ihrem Befehlsnamen "
+"verwenden. Bitte führen Sie diesen Befehl erneut aus, um einen neuen Namen "
+"zu vergeben."
+
+#: template_commands.py:1149
+#, fuzzy
+msgid ""
+"The maximum length of a profile name is 30 characters. Please run this "
+"command again to set a new one."
+msgstr ""
+"Die maximale Länge eines Profilnamens beträgt 30 Zeichen. Bitte führen Sie "
+"diesen Befehl erneut aus, um einen neuen Namen festzulegen."
+
+#: template_commands.py:1161
+#, fuzzy, python-brace-format
+msgid ""
+"This server already has a template with name **{template_name}**. Please run "
+"this command again to provide another one."
+msgstr ""
+"Dieser Server hat bereits eine Vorlage mit dem Namen **{template_name}**. "
+"Bitte führen Sie diesen Befehl erneut aus, um eine andere Vorlage "
+"bereitzustellen."
+
+#: template_commands.py:1219
+#, fuzzy
+msgid "What name should this field have?"
+msgstr "Welchen Namen soll dieses Feld haben?"
+
+#: template_commands.py:1227
+#, fuzzy
+msgid "What prompt should be sent with this message?"
+msgstr "Welche Aufforderung sollte mit dieser Nachricht gesendet werden?"
+
+#: template_commands.py:1247
+#, fuzzy
+msgid "Creating a new field has timed out."
+msgstr "Die Erstellung eines neuen Feldes hat ein Zeitlimit überschritten."
+
+#: template_commands.py:1272
+#, fuzzy
+msgid "Is this field optional?"
+msgstr "Ist dieses Feld fakultativ?"
+
+#: template_commands.py:1305
+#, fuzzy
+msgid "What type is this field?"
+msgstr "Welcher Art ist dieses Feld?"
+
+#: template_commands.py:1321
+#, fuzzy
+msgid "Picking a field type has timed out."
+msgstr "Bei der Auswahl eines Feldtyps ist die Zeit abgelaufen."

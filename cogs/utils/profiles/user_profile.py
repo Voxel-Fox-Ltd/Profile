@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-import typing
+from typing import Union, Optional, Dict, List
 import uuid
 import operator
 
 import discord
-from discord.ext import vbu
+from discord.ext import commands, vbu
 
 from cogs.utils.profiles.template import Template
 from cogs.utils.profiles.filled_field import FilledField
@@ -69,21 +69,21 @@ class UserProfile(object):
             self,
             user_id: int,
             name: str,
-            template_id: typing.Union[str, uuid.UUID],
+            template_id: Union[str, uuid.UUID],
             verified: bool,
-            posted_message_id: int = None,
-            posted_channel_id: int = None,
-            template: Template = None):
+            posted_message_id: Optional[int] = None,
+            posted_channel_id: Optional[int] = None,
+            template: Optional[Template] = None):
         self.user_id: int = user_id
         self.name: str = name
         self.template_id: str = str(template_id)
         self.verified: bool = verified
         self.posted_message_id = posted_message_id
         self.posted_channel_id = posted_channel_id
-        self.all_filled_fields: typing.Dict[str, FilledField] = dict()
-        self.template: typing.Optional[Template] = template
+        self.all_filled_fields: Dict[str, FilledField] = dict()
+        self.template: Optional[Template] = template
 
-    async def fetch_filled_fields(self, db) -> typing.Dict[str, FilledField]:
+    async def fetch_filled_fields(self, db) -> Dict[str, FilledField]:
         """
         Fetch the fields for this profile and store them in .all_filled_fields.
         """
@@ -112,7 +112,7 @@ class UserProfile(object):
         # And return
         return self.all_filled_fields
 
-    async def fetch_template(self, db, *, fetch_fields: bool = True) -> typing.Optional[Template]:
+    async def fetch_template(self, db, *, fetch_fields: bool = True) -> Optional[Template]:
         """
         Fetch the template for this field and store it in .template.
         """
@@ -121,7 +121,7 @@ class UserProfile(object):
         self.template = template
         return template
 
-    async def fetch_message(self, bot: discord.Client) -> typing.Optional[discord.Message]:
+    async def fetch_message(self, bot: discord.Client) -> Optional[discord.Message]:
         """
         Fetch the message associated with this profile's archivation/submission.
 
@@ -169,14 +169,18 @@ class UserProfile(object):
             pass
 
     @property
-    def filled_fields(self) -> typing.Dict[str, FilledField]:
+    def filled_fields(self) -> Dict[str, FilledField]:
         return {
             i: o
             for i, o in self.all_filled_fields.items()
             if o.field is not None and o.field.deleted is False and o.value is not None
         }
 
-    def build_embed(self, bot, member: typing.Optional[discord.Member] = None) -> vbu.Embed:
+    def build_embed(
+            self,
+            bot: vbu.Bot,
+            ctx: Union[discord.Interaction, commands.Context, str],
+            member: Optional[discord.Member] = None) -> vbu.Embed:
         """
         Converts the filled profile into an embed.
         """
@@ -188,7 +192,7 @@ class UserProfile(object):
             raise ValueError("Invalid member object passed to build embed")
 
         # Create the initial embed
-        fields: typing.List[FilledField] = sorted(self.filled_fields.values(), key=operator.attrgetter("field.index"))
+        fields: List[FilledField] = sorted(self.filled_fields.values(), key=operator.attrgetter("field.index"))
         embed = vbu.Embed(use_random_colour=True)
         if not self.template:
             raise AttributeError("Missing template field for user profile")
@@ -197,7 +201,10 @@ class UserProfile(object):
             embed.colour = self.template.colour
 
         # Add the user
-        embed.add_field(name="Discord User", value=f"<@{self.user_id}>")
+        embed.add_field(
+            name=vbu.translation(ctx, "user_profile", use_guild=True).gettext("Discord User"),
+            value=f"<@{self.user_id}>",
+        )
 
         # Add each of the fields
         for f in fields:

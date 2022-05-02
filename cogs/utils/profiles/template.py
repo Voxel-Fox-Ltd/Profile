@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import typing
+from typing import TYPE_CHECKING, Union, Optional, List, Dict, Type
 import uuid
 import re
 import operator
@@ -9,10 +9,9 @@ import discord
 from discord.ext import commands, vbu
 
 from cogs.utils.profiles.field import Field
-from cogs.utils.profiles.filled_field import FilledField
 from cogs.utils.profiles.command_processor import CommandProcessor, InvalidCommandText
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from .user_profile import UserProfile
 
 
@@ -21,7 +20,7 @@ class TemplateNotFoundError(commands.BadArgument):
     The template that the user has searched for isn't found.
     """
 
-    def __init__(self, template_name: typing.Optional[str] = None):
+    def __init__(self, template_name: Optional[str] = None):
         if template_name:
             message = f"There's no template with the name `{template_name}` on this guild."
         else:
@@ -134,25 +133,25 @@ class Template(object):
             template_id: uuid.UUID,
             colour: int,
             guild_id: int,
-            verification_channel_id: typing.Optional[str],
+            verification_channel_id: Optional[str],
             name: str,
-            archive_channel_id: typing.Optional[str],
-            role_id: typing.Optional[str],
+            archive_channel_id: Optional[str],
+            role_id: Optional[str],
             max_profile_count: int,
-            max_field_count: int = None,
-            application_command_id: int = None,
+            max_field_count: Optional[int] = None,
+            application_command_id: Optional[int] = None,
             ):
         self.template_id: str = str(template_id)
         self.colour: int = colour
         self.guild_id: int = guild_id
-        self.verification_channel_id: typing.Optional[str] = verification_channel_id
+        self.verification_channel_id: Optional[str] = verification_channel_id
         self.name: str = name
-        self.archive_channel_id: typing.Optional[str] = archive_channel_id
-        self.role_id: typing.Optional[str] = role_id
+        self.archive_channel_id: Optional[str] = archive_channel_id
+        self.role_id: Optional[str] = role_id
         self.max_profile_count: int = max_profile_count
-        self.application_command_id: typing.Optional[int] = application_command_id
+        self.application_command_id: Optional[int] = application_command_id
 
-        self.all_fields: typing.Dict[str, Field] = dict()
+        self.all_fields: Dict[str, Field] = dict()
 
     @property
     def id(self) -> str:
@@ -171,7 +170,7 @@ class Template(object):
 
         return bool(self.verification_channel_id or self.archive_channel_id)
 
-    def get_verification_channel_id(self, member: discord.Member) -> typing.Optional[int]:
+    def get_verification_channel_id(self, member: discord.Member) -> Optional[int]:
         """
         Get the correct verification channel ID for the given member.
 
@@ -188,7 +187,7 @@ class Template(object):
 
         return self._get_id_from_command(self.verification_channel_id, member)
 
-    def get_archive_channel_id(self, member: discord.Member) -> typing.Optional[int]:
+    def get_archive_channel_id(self, member: discord.Member) -> Optional[int]:
         """
         Get the correct archive channel ID for a given member.
 
@@ -205,7 +204,7 @@ class Template(object):
 
         return self._get_id_from_command(self.archive_channel_id, member)
 
-    def get_role_id(self, member: discord.Member) -> typing.Optional[int]:
+    def get_role_id(self, member: discord.Member) -> Optional[int]:
         """
         Get the correct role ID for a given member.
 
@@ -223,7 +222,7 @@ class Template(object):
         return self._get_id_from_command(self.role_id, member)
 
     @staticmethod
-    def _get_id_from_command(text: str, member: discord.Member) -> typing.Optional[int]:
+    def _get_id_from_command(text: Optional[str], member: discord.Member) -> Optional[int]:
         """
         Get the ID from either a command or as a straight value.
         """
@@ -243,7 +242,7 @@ class Template(object):
         raise InvalidCommandText()
 
     @property
-    def fields(self) -> typing.Dict[str, Field]:
+    def fields(self) -> Dict[str, Field]:
         """
         Returns a dict of `Field` objects for this particular profile.
         """
@@ -255,7 +254,7 @@ class Template(object):
         }
 
     @property
-    def field_list(self) -> typing.List[Field]:
+    def field_list(self) -> List[Field]:
         """
         Returns a list of `Field` objects - in order - for this profile.
         """
@@ -266,9 +265,9 @@ class Template(object):
             self,
             db: vbu.Database,
             user_id:int,
-            profile_name: str = None,
+            profile_name: Optional[str] = None,
             *,
-            fetch_filled_fields: bool = True) -> typing.Optional[UserProfile]:
+            fetch_filled_fields: bool = True) -> Optional[UserProfile]:
         """
         Gets the filled profile for a given user.
 
@@ -334,7 +333,7 @@ class Template(object):
             db: vbu.Database,
             user_id: int,
             *,
-            fetch_filled_fields: bool = True) -> typing.List[UserProfile]:
+            fetch_filled_fields: bool = True) -> List[UserProfile]:
         """
         Gets the filled profile for a given user.
 
@@ -370,7 +369,7 @@ class Template(object):
             self,
             db: vbu.Database,
             *,
-            fetch_filled_fields: bool = True) -> typing.List[UserProfile]:
+            fetch_filled_fields: bool = True) -> List[UserProfile]:
         """
         Gets the filled profile for a given user
 
@@ -406,7 +405,7 @@ class Template(object):
             db: vbu.Database,
             template_id: str,
             *,
-            fetch_fields: bool = True) -> typing.Optional[Template]:
+            fetch_fields: bool = True) -> Optional[Template]:
         """
         Get a template from the database via its ID.
         """
@@ -430,7 +429,7 @@ class Template(object):
             guild_id: int,
             template_name: str,
             *,
-            fetch_fields: bool = True) -> typing.Optional[Template]:
+            fetch_fields: bool = True) -> Optional[Template]:
         """
         Get a template from the database via its name.
         """
@@ -449,11 +448,11 @@ class Template(object):
 
     @classmethod
     async def fetch_all_templates_for_guild(
-            cls: typing.Type[Template],
+            cls: Type[Template],
             db: vbu.Database,
             guild_id: int,
             *,
-            fetch_fields: bool = True) -> typing.List[Template]:
+            fetch_fields: bool = True) -> List[Template]:
         """
         Get all the templates for a given guild.
         """
@@ -466,7 +465,7 @@ class Template(object):
                 await t.fetch_fields(db)
         return template_list
 
-    async def fetch_fields(self, db) -> typing.Dict[str, Field]:
+    async def fetch_fields(self, db) -> Dict[str, Field]:
         """
         Fetch the fields for this template and store them in .all_fields.
         """
@@ -499,69 +498,91 @@ class Template(object):
             raise TemplateNotFoundError(argument.lower())
         return v
 
-    def build_embed(self, bot, brief: bool = False) -> discord.Embed:
+    def build_embed(
+            self,
+            bot: vbu.Bot,
+            ctx: Union[discord.Interaction, commands.Context, str],
+            brief: bool = False) -> discord.Embed:
         """
         Create an embed to visualise all of the created fields and given information.
         """
 
         # Create the initial embed
-        fields: typing.List[Field] = self.field_list
+        fields: List[Field] = self.field_list
         embed = vbu.Embed(use_random_colour=True, title=self.name)
 
         # Work out what goes in the description
         description_lines = [
-            f"Template ID: `{self.template_id}`",
-            f"Guild ID: `{self.guild_id}`",
-            f"Maximum allowed profiles: `{self.max_profile_count}`",
-            # f"Maximum field count: `{self.max_field_count}`",
-            f"Application command ID: `{self.application_command_id}`"
+            vbu.translation(ctx, "template", use_guild=True).gettext(
+                "Template ID: `{template_id}`"
+            ).format(template_id=self.template_id),
+            vbu.translation(ctx, "template", use_guild=True).gettext(
+                "Guild ID: `{guild_id}`"
+            ).format(guild_id=self.guild_id),
+            vbu.translation(ctx, "template", use_guild=True).gettext(
+                "Maximum allowed profiles: `{max_profile_count}`"
+            ).format(max_profile_count=self.max_profile_count),
+            vbu.translation(ctx, "template", use_guild=True).gettext(
+                "Application command ID: `{application_command_id}`"
+            ).format(application_command_id=self.application_command_id),
         ]
 
         # Add verification channel ID
+        verification_channel_str = vbu.translation(ctx, "template", use_guild=True).gettext("Verification channel: {value}")
         if self.verification_channel_id:
             is_command, is_valid_command = CommandProcessor.get_is_command(self.verification_channel_id)
             if is_command:
                 if is_valid_command:
-                    description_lines.append(f"Verification channel: (COMMAND) `{self.verification_channel_id}`")
+                    description_lines.append(verification_channel_str.format(value=f"(COMMAND) `{self.verification_channel_id}`"))
                 else:
-                    description_lines.append(f"Verification channel: (COMMAND::INVALID) `{self.verification_channel_id}`")
+                    description_lines.append(verification_channel_str.format(value=f"(COMMAND::INVALID) `{self.verification_channel_id}`"))
             else:
-                description_lines.append(f"Verification channel: `{self.verification_channel_id}` (<#{self.verification_channel_id}>)")
+                description_lines.append(verification_channel_str.format(value=f"`{self.verification_channel_id}` (<#{self.verification_channel_id}>)"))
         else:
-            description_lines.append("Verification channel: N/A")
+            description_lines.append(verification_channel_str.format(value="N/A"))
 
         # Add archive channel ID
+        archive_channel_str = vbu.translation(ctx, "template", use_guild=True).gettext("Archive channel: {value}")
         if self.archive_channel_id:
             is_command, is_valid_command = CommandProcessor.get_is_command(self.archive_channel_id)
             if is_command:
                 if is_valid_command:
-                    description_lines.append(f"Archive channel: (COMMAND) `{self.archive_channel_id}`")
+                    description_lines.append(archive_channel_str.format(value=f"(COMMAND) `{self.archive_channel_id}`"))
                 else:
-                    description_lines.append(f"Archive channel: (COMMAND::INVALID) `{self.archive_channel_id}`")
+                    description_lines.append(archive_channel_str.format(value=f"(COMMAND::INVALID) `{self.archive_channel_id}`"))
             else:
-                description_lines.append(f"Archive channel: `{self.archive_channel_id}` (<#{self.archive_channel_id}>)")
+                description_lines.append(archive_channel_str.format(value=f"`{self.archive_channel_id}` (<#{self.archive_channel_id}>)"))
         else:
-            description_lines.append("Archive channel: N/A")
+            description_lines.append(archive_channel_str.format(value="N/A"))
 
         # Add given role ID
+        given_role_str = vbu.translation(ctx, "template", use_guild=True).gettext("Given role: {value}")
         if self.role_id:
             is_command, is_valid_command = CommandProcessor.get_is_command(self.role_id)
             if is_command:
                 if is_valid_command:
-                    description_lines.append(f"Given role: (COMMAND) `{self.role_id}`")
+                    description_lines.append(given_role_str.format(value=f"(COMMAND) `{self.role_id}`"))
                 else:
-                    description_lines.append(f"Given role: (COMMAND::INVALID) `{self.role_id}`")
+                    description_lines.append(given_role_str.format(value=f"(COMMAND::INVALID) `{self.role_id}`"))
             else:
-                description_lines.append(f"Given role: `{self.role_id}` (<@&{self.role_id}>)")
+                description_lines.append(given_role_str.format(value=f"`{self.role_id}` (<@&{self.role_id}>)"))
         else:
-            description_lines.append("Given role: N/A")
+            description_lines.append(given_role_str.format(value="N/A"))
 
         # Add all our lines dab
         embed.description = '\n'.join(description_lines)
 
         # Add the user
         if brief is False:
-            embed.add_field(name="Discord User", value="In this field, the owner of the created profile will be pinged.", inline=False)
+            embed.add_field(
+                name=vbu.translation(ctx, "template", use_guild=True).gettext(
+                    "Discord User",
+                ),
+                value=vbu.translation(ctx, "template", use_guild=True).gettext(
+                    "In this field, the owner of the created profile will be pinged.",
+                ),
+                inline=False,
+            )
 
         # Set the colour if there is one to set
         if self.colour:
@@ -590,14 +611,23 @@ class Template(object):
             else:
                 embed.add_field(
                     name=f.name,
-                    value=f'Field ID `{f.field_id}` at position {index} with index {f.index}, type `{field_type_string}`.```\n{f.prompt}```',
-                    inline=False
+                    value=vbu.translation(ctx, "template", use_guild=True).gettext(
+                        "Field ID `{field_id}` at position {position_index} with index "
+                        "{field_index}, type `{type}`.```\n{prompt}```",
+                    ).format(
+                        field_id=f.field_id,
+                        position_index=index,
+                        field_index=f.index,
+                        type=field_type_string,
+                        prompt=f.prompt,
+                    ),
+                    inline=False,
                 )
 
         # If we're being brief, then just add all the field text at once
         if brief:
             if not text:
-                text = ["No fields added"]
+                text = [vbu.translation(ctx, "template", use_guild=True).gettext("No fields have been added to this template.")]
             if len('\n'.join(text)) > 1000:
                 for index, name, ftype in char_limit_text:
                     embed.add_field(
@@ -607,7 +637,7 @@ class Template(object):
                     )
             else:
                 embed.add_field(
-                    name="Fields",
+                    name=vbu.translation(ctx, "template", use_guild=True).gettext("Fields"),
                     value='\n'.join(text),
                     inline=False,
                 )

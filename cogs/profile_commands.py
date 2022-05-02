@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import re
-import typing
+from typing import Union, Optional, Dict, List, Tuple, TYPE_CHECKING
 import uuid
 import collections
 import string
@@ -13,12 +13,8 @@ import asyncpg
 
 from cogs import utils
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from .profile_verification import ProfileVerification
-
-
-def t(i: typing.Union[commands.Context, discord.Interaction, str], l: str) -> str:
-    return vbu.translation(i, "profile_commands").gettext(l)
 
 
 class ProfileCommands(vbu.Cog):
@@ -34,9 +30,9 @@ class ProfileCommands(vbu.Cog):
 
     def __init__(self, bot: vbu.Bot):
         super().__init__(bot)
-        self.set_profile_locks: typing.Dict[int, asyncio.Lock]
+        self.set_profile_locks: Dict[int, asyncio.Lock]
         self.set_profile_locks = collections.defaultdict(asyncio.Lock)
-        self.profile_lock_uuids: typing.Dict[int, str]  # the component ID of their setup
+        self.profile_lock_uuids: Dict[int, str]  # the component ID of their setup
         self.profile_lock_uuids = {}
 
     @vbu.Cog.listener()
@@ -70,7 +66,12 @@ class ProfileCommands(vbu.Cog):
         async with vbu.Database() as db:
 
             # Get the template
-            template = await utils.Template.fetch_template_by_name(db, interaction.guild_id, template_name, fetch_fields=False)
+            template = await utils.Template.fetch_template_by_name(
+                db,
+                interaction.guild_id,
+                template_name,
+                fetch_fields=False,
+            )
             if not template:
                 self.logger.info(f"Failed at getting template '{template_name}' in guild {interaction.guild_id}")
                 return  # Fail silently on template doesn't exist
@@ -104,13 +105,9 @@ class ProfileCommands(vbu.Cog):
         if not isinstance(error, commands.CommandNotFound):
             return
 
-        # Only handle slashies
-        # if not isinstance(ctx, commands.SlashContext):
-        #     return
-
         # Get the command and used template
-        guild_id: typing.Optional[int] = None
-        command_invokation: typing.Optional[str] = None
+        guild_id: Optional[int] = None
+        command_invokation: Optional[str] = None
         if isinstance(ctx, commands.SlashContext):
             command_invokation = ctx.interaction.command_name
             guild_id = ctx.interaction.guild_id
@@ -149,9 +146,15 @@ class ProfileCommands(vbu.Cog):
         # Make sure it's a slashie
         if not isinstance(ctx, commands.SlashContext):
             if not template.application_command_id:
-                await ctx.send(f"This command can only be run as a slash command - run `/template edit {template.name}` to create it.")
+                text = vbu.translation(ctx, "profile_commands").gettext(
+                    "This command can only be run as a slash command - run "
+                    "`/template edit {template_name}` to create it."
+                ).format(template_name=template.name)
             else:
-                await ctx.send(f"This command can only be run as a slash command.")
+                text = vbu.translation(ctx, "profile_commands").gettext(
+                    "This command can only be run as a slash command."
+                )
+            await ctx.send(text)
             return
 
         # Invoke command
@@ -170,8 +173,8 @@ class ProfileCommands(vbu.Cog):
             ctx: utils.types.GuildContext,
             interaction: discord.Interaction,
             template: utils.Template,
-            user_profiles: typing.List[utils.UserProfile],
-            ) -> typing.Tuple[discord.Interaction, typing.Optional[str]]:
+            user_profiles: List[utils.UserProfile],
+            ) -> Tuple[discord.Interaction, Optional[str]]:
         """
         Ask the user for a name that they want to give to their template.
 
@@ -203,7 +206,7 @@ class ProfileCommands(vbu.Cog):
         if template.max_profile_count == 1:
             suffix = None
             while True:
-                default_name = t(interaction, "default")
+                default_name = vbu.translation(interaction, "profile_commands").gettext("default")  # default profile name
                 if suffix is None:
                     name_content = f"{default_name}"
                 else:
@@ -219,11 +222,15 @@ class ProfileCommands(vbu.Cog):
 
             # Send the user a modal to ask for the answer
             modal = discord.ui.Modal(
-                title=t(interaction, "Profile Name"),
+                title=vbu.translation(interaction, "profile_commands").gettext(
+                    "Profile Name"
+                ),
                 components=[
                     discord.ui.ActionRow(
                         discord.ui.InputText(
-                            label=t(interaction, "What name do you want to give your profile?"),
+                            label=vbu.translation(interaction, "profile_commands").gettext(
+                                "What name do you want to give your profile?"
+                            ),
                         ),
                     ),
                 ]
@@ -251,12 +258,17 @@ class ProfileCommands(vbu.Cog):
 
                 # See if the name they provided is already in use
                 if name_content.lower() in [i.name.lower() for i in user_profiles]:
-                    error_text = t(interaction, "You're already using that name for this template. Please provide an alternative.")
+                    error_text = vbu.translation(interaction, "profile_commands").gettext(
+                        "You're already using that name for this template. Please provide an alternative."
+                    )
                     raise utils.errors.FieldCheckFailure(error_text)
 
                 # Make sure the name they gave is valid
                 if any([i for i in name_content if i not in string.ascii_letters + string.digits + ' ']):
-                    error_text = t(interaction, "You can only use standard lettering and digits in your profile name. Please provide an alternative.")
+                    error_text = vbu.translation(interaction, "profile_commands").gettext(
+                        "You can only use standard lettering and digits in your profile name. "
+                        "Please provide an alternative."
+                    )
                     raise utils.errors.FieldCheckFailure(error_text)
 
             # We hit an error converting their name to something valid
@@ -265,7 +277,7 @@ class ProfileCommands(vbu.Cog):
                 components = discord.ui.MessageComponents(
                     discord.ui.ActionRow(
                         discord.ui.Button(
-                            label=t(interaction, "Okay"),
+                            label=vbu.translation(interaction, "profile_commands").gettext("Okay"),
                             custom_id=button_custom_id,
                             style=discord.ButtonStyle.secondary,
                         )
@@ -289,7 +301,9 @@ class ProfileCommands(vbu.Cog):
                     try:
                         b = components.get_component(button_custom_id)
                         assert isinstance(b, discord.ui.Button)
-                        b.label = t(interaction, "Timed out waiting for you to continue.")
+                        b.label = vbu.translation(interaction, "profile_commands").gettext(
+                            "Timed out waiting for you to continue."
+                        )
                         b.disabled = True
                         await submitted_modal.edit_original_message(components=components)
                     except discord.HTTPException:
@@ -312,9 +326,9 @@ class ProfileCommands(vbu.Cog):
             id_to_use: str,
             profile_name: str,
             field: utils.Field,
-            target_user: typing.Union[discord.User, discord.Member],
-            current_value: typing.Optional[str] = None
-            ) -> typing.Tuple[discord.Interaction, typing.Optional[utils.FilledField]]:
+            target_user: Union[discord.User, discord.Member],
+            current_value: Optional[str] = None
+            ) -> Tuple[discord.Interaction, Optional[utils.FilledField]]:
         """
         Ask the user to fill in the content for a field given its prompt.
 
@@ -329,7 +343,7 @@ class ProfileCommands(vbu.Cog):
                 user_id=target_user.id,
                 name=profile_name,
                 field_id=field.id,
-                value=t(interaction, "Could not get field information"),
+                value=vbu.translation(interaction, "profile_commands").gettext("Could not get field information."),
                 field=field,
             )
 
@@ -358,7 +372,7 @@ class ProfileCommands(vbu.Cog):
 
             # Wait for the user's input
             try:
-                interaction: discord.Interaction = await ctx.bot.wait_for(
+                interaction = await ctx.bot.wait_for(
                     "modal_submit",
                     check=lambda i: i.user.id == ctx.author.id and i.custom_id == modal.custom_id,
                     timeout=60 * 10,
@@ -367,7 +381,9 @@ class ProfileCommands(vbu.Cog):
             # We timed out waiting
             except asyncio.TimeoutError:
                 try:
-                    error_text = t(interaction, "Timed out waiting for you to continue.")
+                    error_text = vbu.translation(interaction, "profile_commands").gettext(
+                        "Timed out waiting for you to continue."
+                    )
                     await interaction.edit_original_message(
                         content=error_text,
                     )
@@ -394,7 +410,7 @@ class ProfileCommands(vbu.Cog):
                     components=discord.ui.MessageComponents(
                         discord.ui.ActionRow(
                             discord.ui.Button(
-                                label=t(interaction, "Okay"),
+                                label=vbu.translation(interaction, "profile_commands").gettext("Okay"),
                                 custom_id="OKAY",
                             )
                         )
@@ -411,7 +427,9 @@ class ProfileCommands(vbu.Cog):
             except asyncio.TimeoutError:
                 try:
                     await interaction.edit_original_message(
-                        content=t(interaction, "Timed out waiting for you to continue."),
+                        content=vbu.translation(interaction, "profile_commands").gettext(
+                            "Timed out waiting for you to continue."
+                        ),
                         components=None
                     )
                 except discord.HTTPException:
@@ -434,7 +452,7 @@ class ProfileCommands(vbu.Cog):
     async def set_profile_meta(
             self,
             ctx: utils.types.GuildContext,
-            target_user: typing.Union[discord.Member, discord.User] = None
+            target_user: Optional[Union[discord.Member, discord.User]] = None
             ):
         """
         Talks a user through setting up a profile on a given server.
@@ -477,8 +495,8 @@ class ProfileCommands(vbu.Cog):
             id_to_use: str,
             profile_name: str,
             field: utils.Field,
-            user: typing.Union[discord.User, discord.Member],
-            current_value: typing.Optional[str] = None
+            user: Union[discord.User, discord.Member],
+            current_value: Optional[str] = None
             ):
         filled_field_modal, response_field = await self.get_field_content(
             ctx,
@@ -497,7 +515,7 @@ class ProfileCommands(vbu.Cog):
             interaction: discord.Interaction,
             template: utils.Template,
             user: discord.Member,
-            profile_name: typing.Optional[str],
+            profile_name: Optional[str],
             ):
 
         # Set up some variables
@@ -513,13 +531,13 @@ class ProfileCommands(vbu.Cog):
                 components = discord.ui.MessageComponents(
                     discord.ui.ActionRow(
                         discord.ui.Button(
-                            label=t(interaction, "Cancel profile setup"),
+                            label=vbu.translation(interaction, "profile_commands").gettext("Cancel profile setup"),
                             custom_id=f"{component_id} CANCEL",
                         ),
                     )
                 )
             return await interaction.response.send_message(
-                t(interaction, "You're already setting up a profile."),
+                vbu.translation(interaction, "profile_commands").gettext("You're already setting up a profile."),
                 components=components,
                 ephemeral=True,
             )
@@ -534,7 +552,7 @@ class ProfileCommands(vbu.Cog):
                 user_profile = await template.fetch_profile_for_user(db, user.id, profile_name)
                 if not user_profile:
                     return await interaction.response.send_message(
-                        t(interaction, "Failed to get that profile."),
+                        vbu.translation(interaction, "profile_commands").gettext("Failed to get that profile."),
                         ephemeral=True,
                     )
 
@@ -542,11 +560,10 @@ class ProfileCommands(vbu.Cog):
             else:
                 user_profiles = await template.fetch_all_profiles_for_user(db, user.id)
                 if len(user_profiles) >= template.max_profile_count:
-                    error_text = t(interaction, "You're already at the maximum number of profiles set for **{template_name}**.")
-                    return await interaction.response.send_message(
-                        error_text.format(template_name=template.name),
-                        ephemeral=True,
-                    )
+                    error_text = vbu.translation(interaction, "profile_commands").gettext(
+                        "You're already at the maximum number of profiles set for **{template_name}**."
+                    ).format(template_name=template.name)
+                    return await interaction.response.send_message(error_text, ephemeral=True,)
                 user_profile = utils.UserProfile(
                     user_id=user.id,
                     name="",  # Blank string for now, but it'll be set later
@@ -556,11 +573,10 @@ class ProfileCommands(vbu.Cog):
 
         # See if the template is accepting more profiles - if not then leave it be
         if template.max_profile_count == 0:
-            error_text = t(interaction, "Currently the template **{template_name}** is not accepting any more applications.")
-            return await interaction.response.send_message(
-                error_text.format(template_name=template.name),
-                ephemeral=True,
-            )
+            error_text = vbu.translation(interaction, "profile_commands").gettext(
+                "Currently the template **{template_name}** is not accepting any more applications.",
+            ).format(template_name=template.name)
+            return await interaction.response.send_message(error_text, ephemeral=True)
 
         # If we don't have a profile name, let's ask for one
         if not profile_name:
@@ -573,7 +589,7 @@ class ProfileCommands(vbu.Cog):
         async with self.set_profile_locks[ctx.author.id]:
 
             # Make the buttons that the user can click to fill in their profile
-            filled_field_dict: typing.Dict[str, utils.FilledField] = user_profile.all_filled_fields
+            filled_field_dict: Dict[str, utils.FilledField] = user_profile.all_filled_fields
             component_id = str(uuid.uuid4())
             self.profile_lock_uuids[ctx.author.id] = component_id
             buttons = [
@@ -591,7 +607,7 @@ class ProfileCommands(vbu.Cog):
             ]
             buttons.append(
                 discord.ui.Button(
-                    label=t(interaction, "Done"),
+                    label=vbu.translation(interaction, "profile_commands").gettext("Done"),
                     custom_id=f"{component_id} DONE",
                     disabled=len([i for i in buttons if not i.disabled and i.style == discord.ButtonStyle.secondary]) > 0,
                     style=discord.ButtonStyle.success,
@@ -599,7 +615,7 @@ class ProfileCommands(vbu.Cog):
             )
             buttons.append(
                 discord.ui.Button(
-                    label=t(interaction, "Cancel"),
+                    label=vbu.translation(interaction, "profile_commands").gettext("Cancel"),
                     custom_id=f"{component_id} CANCEL",
                     style=discord.ButtonStyle.danger,
                 )
@@ -626,7 +642,7 @@ class ProfileCommands(vbu.Cog):
                 components = discord.ui.MessageComponents.add_buttons_with_rows(*buttons)
                 if not message_sent:
                     await interaction.response.send_message(
-                        t(interaction, "What attribute do you want to edit?"),
+                        vbu.translation(interaction, "profile_commands").gettext("What attribute do you want to edit?"),
                         components=components,
                         ephemeral=True,
                     )
@@ -658,10 +674,10 @@ class ProfileCommands(vbu.Cog):
                     p.cancel()
 
                 # Work out what was clicked
-                response_field: utils.FilledField = None
+                response_field: Optional[utils.FilledField] = None
                 button_click: discord.Interaction[str] = done.pop().result()
                 try:
-                    button_click, response_field = button_click
+                    button_click, response_field = button_click  # type: ignore - is a profile edit update
                 except TypeError:
                     pass
 
@@ -669,7 +685,7 @@ class ProfileCommands(vbu.Cog):
                 _, field_id = button_click.custom_id.split(" ")  # type: ignore
                 if field_id == "CANCEL":
                     await button_click.response.edit_message(
-                        content=t(interaction, "Cancelled profile setup."),
+                        content=vbu.translation(interaction, "profile_commands").gettext("Cancelled profile setup."),
                         components=None,
                         embed=None,
                     )
@@ -714,15 +730,14 @@ class ProfileCommands(vbu.Cog):
         await interaction.response.defer_update()
         try:
             await interaction.followup.send(
-                embed=user_profile.build_embed(self.bot, user),
+                embed=user_profile.build_embed(self.bot, interaction, user),
                 ephemeral=True,
             )
         except discord.HTTPException as e:
-            error_text = t(interaction, "I failed to send your profile to you - `{error_text}`.")
-            return await interaction.followup.send(
-                error_text.format(error_text=str(e)),
-                ephemeral=True,
-            )
+            error_text = vbu.translation(interaction, "profile_commands").gettext(
+                "I failed to send your profile to you - `{error_text}`.",
+            ).format(error_text=str(e))
+            return await interaction.followup.send(error_text, ephemeral=True)
 
         # Delete the currently archived message
         await user_profile.delete_message(self.bot)
@@ -753,7 +768,9 @@ class ProfileCommands(vbu.Cog):
                     sent_profile_message_id, sent_profile_channel_id,
                 )
             except asyncpg.ForeignKeyViolationError:
-                error_text = t(interaction, "It looks like the template was deleted while you were setting up your profile.")
+                error_text = vbu.translation(interaction, "profile_commands").gettext(
+                    "It looks like the template was deleted while you were setting up your profile.",
+                )
                 return await interaction.followup.send(
                     error_text,
                     ephemeral=True,
@@ -767,10 +784,13 @@ class ProfileCommands(vbu.Cog):
 
         # Respond to user
         if template.get_verification_channel_id(user):
-            message = t(interaction, "Your profile has been sent to the **{guild_name}** staff team for verification - please hold tight!")
-            message = message.format(guild_name=ctx.guild.name)
+            message = vbu.translation(interaction, "profile_commands").gettext(
+                "Your profile has been sent to the **{guild_name}** staff team for verification - please hold tight!",
+            ).format(guild_name=ctx.guild.name)
         else:
-            message = t(interaction, "Your profile has been created and saved.")
+            message = vbu.translation(interaction, "profile_commands").gettext(
+                "Your profile has been created and saved.",
+            )
         await interaction.followup.send(message, ephemeral=True)
 
     @commands.command(hidden=True)
@@ -780,7 +800,7 @@ class ProfileCommands(vbu.Cog):
     async def delete_profile_meta(
             self,
             ctx: utils.types.GuildContext,
-            user: discord.Member = None,
+            user: Optional[discord.Member] = None,
             *,
             profile_name: str):
         """
@@ -799,16 +819,22 @@ class ProfileCommands(vbu.Cog):
         # There's no profile with that name given
         if user_profile is None:
             if profile_name:
-                text = t(ctx.interaction, "You don't have a profile for **{template_name}** with the name **{profile_name}**.")
+                text = vbu.translation(ctx, "profile_commands").gettext(
+                    "You don't have a profile for **{template_name}** with the name **{profile_name}**."
+                )
             else:
-                text = t(ctx.interaction, "You don't have a profile for **{template_name}**.")
+                text = vbu.translation(ctx, "profile_commands").gettext(
+                    "You don't have any profiles for **{template_name}**."
+                )
             text.format(template_name=template.name, profile_name=profile_name)
             return await ctx.send(text, allowed_mentions=discord.AllowedMentions.none())
 
         # Ask if they're sure
         are_you_sure_message = await ctx.send(
-            t(ctx.interaction, "Are you sure you want to delete this profile?"),
-            embed=user_profile.build_embed(self.bot, user or ctx.author),
+            vbu.translation(ctx, "profile_commands").gettext(
+                "Are you sure you want to delete this profile?"
+            ),
+            embed=user_profile.build_embed(self.bot, ctx, user or ctx.author),
             components=discord.ui.MessageComponents.boolean_buttons(),
         )
         try:
@@ -820,7 +846,9 @@ class ProfileCommands(vbu.Cog):
         except asyncio.TimeoutError:
             try:
                 await are_you_sure_message.edit(
-                    content=t(ctx.interaction, "Timed out waiting for you to continue."),
+                    content=vbu.translation(ctx, "profile_commands").gettext(
+                        "Timed out waiting for you to continue.",
+                    ),
                     embed=None,
                     components=None,
                 )
@@ -829,9 +857,11 @@ class ProfileCommands(vbu.Cog):
             return
 
         # They're not sure
-        if interaction.component.custom_id == "NO":
+        if interaction.custom_id == "NO":
             return await interaction.response.edit_message(
-                content=t(interaction, "Cancelled profile delete."),
+                content=vbu.translation(interaction, "profile_commands").gettext(
+                    "Cancelled profile delete."
+                ),
                 embed=None,
                 components=None,
             )
@@ -855,7 +885,9 @@ class ProfileCommands(vbu.Cog):
                 user.id, template.template_id, user_profile.name,
             )
         await interaction.followup.send(
-            content=t(interaction, "Your profile has been deleted."),
+            content=vbu.translation(interaction, "profile_commands").gettext(
+                "Your profile has been deleted."
+            ),
         )
 
     @commands.command(hidden=True)
@@ -865,9 +897,9 @@ class ProfileCommands(vbu.Cog):
     async def get_profile_meta(
             self,
             ctx: utils.types.GuildContext,
-            user: typing.Optional[discord.Member] = None,
+            user: Optional[discord.Member] = None,
             *,
-            profile_name: str = None,
+            profile_name: Optional[str] = None,
             ):
         """
         Gets a profile for a given member.
@@ -876,50 +908,58 @@ class ProfileCommands(vbu.Cog):
         # See if there's a set profile
         template: utils.Template = ctx.template
         async with vbu.Database() as db:
-            user_profile: typing.Optional[utils.UserProfile] = None
+            user_profile: Optional[utils.UserProfile] = None
             try:
                 user_profile = await template.fetch_profile_for_user(db, (user or ctx.author).id, profile_name)
             except ValueError:
                 if user:
-                    await ctx.send(
-                        f"{user.mention} has multiple profiles for **{template.name}** - you need to specify one.",
-                        allowed_mentions=discord.AllowedMentions(users=False),
-                    )
+                    text = vbu.translation(ctx, "profile_commands").gettext(
+                        "{user} has multiple profiles for **{template_name}** - you need to specify one.",
+                    ).format(user=user.mention, template_name=template.name)
                 else:
-                    await ctx.send(f"You have multiple profiles for **{template.name}** - you need to specify one.")
+                    text = vbu.translation(ctx, "profile_commands").gettext(
+                        "You have multiple profiles for **{template_name}** - you need to specify one."
+                    ).format(template_name=template.name)
+                await ctx.send(text, allowed_mentions=discord.AllowedMentions.none())
                 return
 
         if user_profile is None:
             if profile_name:
                 if user:
-                    await ctx.send(
-                        f"{user.mention} doesn't have a profile for **{template.name}** with the name **{profile_name}**.",
-                        allowed_mentions=discord.AllowedMentions(users=False),
-                    )
+                    text = vbu.translation(ctx, "profile_commands").gettext(
+                        "{user} doesn't have a profile for **{template_name}** with the name **{profile_name}**.",
+                    ).format(user=user.mention, template_name=template.name, profile_name=profile_name)
                 else:
-                    await ctx.send(f"You don't have a profile for **{template.name}** with the name **{profile_name}**.")
+                    text = vbu.translation(ctx, "profile_commands").gettext(
+                        "You don't have a profile for **{template_name}** with the name **{profile_name}**.",
+                    ).format(template_name=template.name, profile_name=profile_name)
+                await ctx.send(text, allowed_mentions=discord.AllowedMentions.none())
             else:
                 if user:
-                    await ctx.send(
-                        f"{user.mention} doesn't have a profile for **{template.name}**.",
-                        allowed_mentions=discord.AllowedMentions(users=False),
-                    )
+                    text = vbu.translation(ctx, "profile_commands").gettext(
+                        "{user} doesn't have any profiles for **{template_name}**.",
+                    ).format(user=user.mention, template_name=template.name)
                 else:
-                    await ctx.send(f"You don't have a profile for **{template.name}**.")
+                    text = vbu.translation(ctx, "profile_commands").gettext(
+                        "You don't have any profiles for **{template_name}**.",
+                    ).format(template_name=template.name)
+                await ctx.send(text, allowed_mentions=discord.AllowedMentions.none())
             return
 
         # See if verified
         if user_profile.verified or utils.checks.member_is_moderator(ctx.bot, ctx.author):
-            return await ctx.send(embed=user_profile.build_embed(self.bot, user or ctx.author))
+            return await ctx.send(embed=user_profile.build_embed(self.bot, ctx, user or ctx.author))
 
         # Not verified
         if user:
-            await ctx.send(
-                f"{user.mention}'s profile hasn't been verified yet, and thus can't be sent.",
-                allowed_mentions=discord.AllowedMentions.none(),
-            )
+            text = vbu.translation(ctx, "profile_commands").gettext(
+                "{user}'s profile hasn't been verified yet, and thus can't be sent.",
+            ).format(user=user.mention)
         else:
-            await ctx.send("Your profile hasn't been verified yet, and thus can't be sent.")
+            text = vbu.translation(ctx, "profile_commands").gettext(
+                "Your profile hasn't been verified yet, and thus can't be sent.",
+            )
+        await ctx.send(text, allowed_mentions=discord.AllowedMentions.none())
         return
 
 

@@ -1,0 +1,55 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2022-05-02 07:48+0100\n"
+"PO-Revision-Date: 2022-05-02 07:47+0100\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.0.1\n"
+"X-Poedit-Basepath: ../cogs\n"
+"X-Poedit-SearchPath-0: profile_verification.py\n"
+
+#: profile_verification.py:293
+#, python-brace-format
+msgid "Failed to get template with ID `{template_id}`."
+msgstr ""
+
+#: profile_verification.py:321
+msgid "No reason provided."
+msgstr ""
+
+#: profile_verification.py:332
+msgid "Would you like to give a denial reason?"
+msgstr ""
+
+#: profile_verification.py:351
+msgid "Denial Reason"
+msgstr ""
+
+#: profile_verification.py:356
+msgid "Why are you denying this profile?"
+msgstr ""
+
+#: profile_verification.py:395
+#, python-brace-format
+msgid ""
+"Your profile for **{template_name}** (`{profile_name}`) on `{guild_name}` "
+"has been verified."
+msgstr ""
+
+#: profile_verification.py:404
+#, python-brace-format
+msgid ""
+"Your profile for **{template_name}** (`{profile_name}`) on `{guild_name}` "
+"has been denied with the reason `{denial_reason}`."
+msgstr ""
+
+#: profile_verification.py:441
+msgid "Profile dealt with successfully."
+msgstr ""

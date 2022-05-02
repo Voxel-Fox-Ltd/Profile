@@ -114,8 +114,6 @@ class TemplateCommands(vbu.Cog):
         ),
     )
     @commands.bot_has_permissions(send_messages=True)
-    @commands.guild_only()
-    @commands.is_slash_command()
     async def template(self, ctx: commands.SlashContext):
         """
         The parent group for all template commands.
@@ -130,7 +128,6 @@ class TemplateCommands(vbu.Cog):
         ),
     )
     @commands.defer()
-    @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
     @commands.is_slash_command()
     async def template_list(self, ctx: utils.types.GuildContext):

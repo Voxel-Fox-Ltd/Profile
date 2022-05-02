@@ -1,32 +1,30 @@
-# Copyright (C) Kae Bartlett 2022 - present
-#
 msgid ""
 msgstr ""
-"Project-Id-Version: Profile\n"
+"Project-Id-Version: profile-discord-bot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: \n"
+"PO-Revision-Date: 2022-05-02 08:46\n"
 "Last-Translator: \n"
-"Language-Team: \n"
-"Language: de\n"
+"Language-Team: German\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 3.0.1\n"
 "X-Poedit-Basepath: ../cogs\n"
 "X-Poedit-SearchPath-0: profile_commands.py\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Crowdin-Project: profile-discord-bot\n"
+"X-Crowdin-Project-ID: 513162\n"
+"X-Crowdin-Language: de\n"
+"X-Crowdin-File: /novus/locales/profile_commands.pot\n"
+"X-Crowdin-File-ID: 32\n"
+"Language: de_DE\n"
 
 #: profile_commands.py:150
 #, python-brace-format
-msgid ""
-"This command can only be run as a slash command - run `/template edit "
-"{template_name}` to create it."
-msgstr ""
-"Dieser Befehl kann nur als Schrägstrich-Befehl ausgeführt werden - führen "
-"Sie `/template edit {template_name}` aus, um ihn zu erstellen."
+msgid "This command can only be run as a slash command - run `/template edit {template_name}` to create it."
+msgstr "Dieser Befehl kann nur als Schrägstrich-Befehl ausgeführt werden - führen Sie `/template edit {template_name}` aus, um ihn zu erstellen."
 
 #: profile_commands.py:155
-#
 msgid "This command can only be run as a slash command."
 msgstr "Dieser Befehl kann nur als Schrägstrich-Befehl ausgeführt werden."
 
@@ -43,24 +41,16 @@ msgid "What name do you want to give your profile?"
 msgstr "Welchen Namen möchten Sie Ihrem Profil geben?"
 
 #: profile_commands.py:262
-msgid ""
-"You're already using that name for this template. Please provide an "
-"alternative."
-msgstr ""
-"Sie verwenden diesen Namen bereits für diese Vorlage. Bitte geben Sie eine "
-"Alternative an."
+msgid "You're already using that name for this template. Please provide an alternative."
+msgstr "Sie verwenden diesen Namen bereits für diese Vorlage. Bitte geben Sie eine Alternative an."
 
 #: profile_commands.py:269
-msgid ""
-"You can only use standard lettering and digits in your profile name. Please "
-"provide an alternative."
-msgstr ""
-"Sie können nur Standardbeschriftungen und Ziffern in Ihrem Profilnamen "
-"verwenden. Bitte geben Sie eine Alternative an."
+msgid "You can only use standard lettering and digits in your profile name. Please provide an alternative."
+msgstr "Sie können nur Standardbeschriftungen und Ziffern in Ihrem Profilnamen verwenden. Bitte geben Sie eine Alternative an."
 
 #: profile_commands.py:280 profile_commands.py:413
 msgid "Okay"
-msgstr "Okay"
+msgstr ""
 
 #: profile_commands.py:305 profile_commands.py:385 profile_commands.py:431
 #: profile_commands.py:850
@@ -85,19 +75,13 @@ msgstr "Das Profil wurde nicht erstellt."
 
 #: profile_commands.py:564
 #, python-brace-format
-msgid ""
-"You're already at the maximum number of profiles set for **{template_name}**."
-msgstr ""
-"Sie haben bereits die maximale Anzahl von Profilen erreicht, die für "
-"**{template_name}** festgelegt sind."
+msgid "You're already at the maximum number of profiles set for **{template_name}**."
+msgstr "Sie haben bereits die maximale Anzahl von Profilen erreicht, die für **{template_name}** festgelegt sind."
 
 #: profile_commands.py:577
 #, python-brace-format
-msgid ""
-"Currently the template **{template_name}** is not accepting any more "
-"applications."
-msgstr ""
-"Derzeit akzeptiert die Vorlage **{template_name}** keine Bewerbungen mehr."
+msgid "Currently the template **{template_name}** is not accepting any more applications."
+msgstr "Derzeit akzeptiert die Vorlage **{template_name}** keine Bewerbungen mehr."
 
 #: profile_commands.py:610
 msgid "Done"
@@ -121,21 +105,13 @@ msgid "I failed to send your profile to you - `{error_text}`."
 msgstr "Ich habe es versäumt, Ihnen Ihr Profil zu senden - \"{error_text}\"."
 
 #: profile_commands.py:772
-msgid ""
-"It looks like the template was deleted while you were setting up your "
-"profile."
-msgstr ""
-"Es sieht so aus, als ob die Vorlage gelöscht wurde, während Sie Ihr Profil "
-"eingerichtet haben."
+msgid "It looks like the template was deleted while you were setting up your profile."
+msgstr "Es sieht so aus, als ob die Vorlage gelöscht wurde, während Sie Ihr Profil eingerichtet haben."
 
 #: profile_commands.py:788
 #, python-brace-format
-msgid ""
-"Your profile has been sent to the **{guild_name}** staff team for "
-"verification - please hold tight!"
-msgstr ""
-"Ihr Profil wurde zur Überprüfung an das **{guild_name}** Mitarbeiterteam "
-"geschickt - bitte haben sie ein wenig geduld.!"
+msgid "Your profile has been sent to the **{guild_name}** staff team for verification - please hold tight!"
+msgstr "Ihr Profil wurde zur Überprüfung an das **{guild_name}** Mitarbeiterteam geschickt - bitte haben sie ein wenig geduld.!"
 
 #: profile_commands.py:792
 msgid "Your profile has been created and saved."
@@ -143,12 +119,8 @@ msgstr "Ihr Profil wurde erstellt und gespeichert."
 
 #: profile_commands.py:823 profile_commands.py:934
 #, python-brace-format
-msgid ""
-"You don't have a profile for **{template_name}** with the name "
-"**{profile_name}**."
-msgstr ""
-"Sie haben kein Profil für **{template_name}** mit dem Namen **{profile_name}"
-"**."
+msgid "You don't have a profile for **{template_name}** with the name **{profile_name}**."
+msgstr "Sie haben kein Profil für **{template_name}** mit dem Namen **{profile_name}**."
 
 #: profile_commands.py:827 profile_commands.py:944
 #, python-brace-format
@@ -169,28 +141,18 @@ msgstr "Ihr Profil wurde gelöscht."
 
 #: profile_commands.py:917
 #, python-brace-format
-msgid ""
-"{user} has multiple profiles for **{template_name}** - you need to specify "
-"one."
-msgstr ""
-"{user} hat mehrere Profile für **{template_name}** - Sie müssen eines "
-"angeben."
+msgid "{user} has multiple profiles for **{template_name}** - you need to specify one."
+msgstr "{user} hat mehrere Profile für **{template_name}** - Sie müssen eines angeben."
 
 #: profile_commands.py:921
 #, python-brace-format
-msgid ""
-"You have multiple profiles for **{template_name}** - you need to specify one."
-msgstr ""
-"Sie haben mehrere Profile für **{template_name}** - Sie müssen eines angeben."
+msgid "You have multiple profiles for **{template_name}** - you need to specify one."
+msgstr "Sie haben mehrere Profile für **{template_name}** - Sie müssen eines angeben."
 
 #: profile_commands.py:930
 #, python-brace-format
-msgid ""
-"{user} doesn't have a profile for **{template_name}** with the name "
-"**{profile_name}**."
-msgstr ""
-"{user} verfügt nicht über ein Profil für **{template_name}** mit dem Namen "
-"**{profile_name}**."
+msgid "{user} doesn't have a profile for **{template_name}** with the name **{profile_name}**."
+msgstr "{user} verfügt nicht über ein Profil für **{template_name}** mit dem Namen **{profile_name}**."
 
 #: profile_commands.py:940
 #, python-brace-format
@@ -200,16 +162,9 @@ msgstr "{user} hat keine Profile für **{template.name}**."
 #: profile_commands.py:956
 #, python-brace-format
 msgid "{user}'s profile hasn't been verified yet, and thus can't be sent."
-msgstr ""
-"das Profil von {user} wurde noch nicht verifiziert und kann daher nicht "
-"gesendet werden."
+msgstr "das Profil von {user} wurde noch nicht verifiziert und kann daher nicht gesendet werden."
 
 #: profile_commands.py:960
-#
 msgid "Your profile hasn't been verified yet, and thus can't be sent."
-msgstr ""
-"Ihr Profil wurde noch nicht verifiziert und kann daher nicht gesendet werden."
+msgstr "Ihr Profil wurde noch nicht verifiziert und kann daher nicht gesendet werden."
 
-#, python-brace-format
-#~ msgid "You don't have any profiles for **{template.name}**."
-#~ msgstr "Sie haben keine Profile für **{template.name}**."

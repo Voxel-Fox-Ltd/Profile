@@ -428,13 +428,23 @@ class ProfileVerification(vbu.Cog):
             try:
                 await self.send_profile_archivation(interaction, user_profile, profile_user)
             except Exception:
-                pass
+                await (modal_submit or interaction).followup.send(
+                vbu.translation(interaction, "profile_verification").gettext(
+                    "Failed to send profile archive message."
+                ),
+                ephemeral=True,
+            )
 
             # Add the relevant role to the user
             try:
                 await self.add_profile_user_roles(user_profile, profile_user)
             except Exception:
-                pass
+                await (modal_submit or interaction).followup.send(
+                vbu.translation(interaction, "profile_verification").gettext(
+                    "Failed to add role to user."
+                ),
+                ephemeral=True,
+            )
 
         # And tell the moderator we're done
         try:

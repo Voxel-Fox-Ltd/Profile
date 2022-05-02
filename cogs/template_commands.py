@@ -56,17 +56,41 @@ class TemplateCommands(vbu.Cog):
                     name="create",
                     description="Create a new profile.",
                     type=discord.ApplicationCommandOptionType.subcommand,
+                    name_localizations={
+                        i: vbu.translation(i, "template_commands").gettext("create")
+                        for i in discord.Locale
+                    },
+                    description_localizations={
+                        i: vbu.translation(i, "template_commands").gettext("Create a new profile.")
+                        for i in discord.Locale
+                    },
                 ),
                 discord.ApplicationCommandOption(
                     name="delete",
                     description="Delete one of your profiles.",
                     type=discord.ApplicationCommandOptionType.subcommand,
+                    name_localizations={
+                        i: vbu.translation(i, "template_commands").gettext("delete")
+                        for i in discord.Locale
+                    },
+                    description_localizations={
+                        i: vbu.translation(i, "template_commands").gettext("Delete one of your profiles.")
+                        for i in discord.Locale
+                    },
                     options=[
                         discord.ApplicationCommandOption(
                             name="profile_name",
-                            description="The name of the profile that you want to delete.",
+                            description="The name of the profile.",
                             type=discord.ApplicationCommandOptionType.string,
                             autocomplete=True,
+                            name_localizations={
+                                i: vbu.translation(i, "template_commands").gettext("profile_name")
+                                for i in discord.Locale
+                            },
+                            description_localizations={
+                                i: vbu.translation(i, "template_commands").gettext("The name of the profile.")
+                                for i in discord.Locale
+                            },
                         ),
                     ],
                 ),
@@ -74,19 +98,43 @@ class TemplateCommands(vbu.Cog):
                     name="get",
                     description="Display a created profile.",
                     type=discord.ApplicationCommandOptionType.subcommand,
+                    name_localizations={
+                        i: vbu.translation(i, "template_commands").gettext("get")
+                        for i in discord.Locale
+                    },
+                    description_localizations={
+                        i: vbu.translation(i, "template_commands").gettext("Display a created profile")
+                        for i in discord.Locale
+                    },
                     options=[
                         discord.ApplicationCommandOption(
                             name="user",
                             description="The person whose profile you want to get.",
                             type=discord.ApplicationCommandOptionType.user,
                             required=False,
+                            name_localizations={
+                                i: vbu.translation(i, "template_commands").gettext("user")
+                                for i in discord.Locale
+                            },
+                            description_localizations={
+                                i: vbu.translation(i, "template_commands").gettext("The person whose profile you want to get.")
+                                for i in discord.Locale
+                            },
                         ),
                         discord.ApplicationCommandOption(
                             name="profile_name",
-                            description="The name of the profile that you want to get.",
+                            description="The name of the profile.",
                             type=discord.ApplicationCommandOptionType.string,
                             required=False,
                             autocomplete=True,
+                            name_localizations={
+                                i: vbu.translation(i, "template_commands").gettext("profile_name")
+                                for i in discord.Locale
+                            },
+                            description_localizations={
+                                i: vbu.translation(i, "template_commands").gettext("The name of the profile.")
+                                for i in discord.Locale
+                            },
                         ),
                     ],
                 ),
@@ -94,13 +142,29 @@ class TemplateCommands(vbu.Cog):
                     name="edit",
                     description="Edit one of your profiles.",
                     type=discord.ApplicationCommandOptionType.subcommand,
+                    name_localizations={
+                        i: vbu.translation(i, "template_commands").gettext("edit")
+                        for i in discord.Locale
+                    },
+                    description_localizations={
+                        i: vbu.translation(i, "template_commands").gettext("Edit one of your profiles.")
+                        for i in discord.Locale
+                    },
                     options=[
                         discord.ApplicationCommandOption(
                             name="profile_name",
-                            description="The name of the profile that you want to edit.",
+                            description="The name of the profile.",
                             type=discord.ApplicationCommandOptionType.string,
                             required=True,
                             autocomplete=True,
+                            name_localizations={
+                                i: vbu.translation(i, "template_commands").gettext("profile_name")
+                                for i in discord.Locale
+                            },
+                            description_localizations={
+                                i: vbu.translation(i, "template_commands").gettext("The name of the profile.")
+                                for i in discord.Locale
+                            },
                         ),
                     ],
                 ),
@@ -110,7 +174,10 @@ class TemplateCommands(vbu.Cog):
 
     @commands.group(
         application_command_meta=commands.ApplicationCommandMeta(
-            # Add translations here
+            name_localizations={
+                i: vbu.translation(i, "template_commands").gettext("template")
+                for i in discord.Locale
+            },
         ),
     )
     @commands.bot_has_permissions(send_messages=True)
@@ -124,7 +191,14 @@ class TemplateCommands(vbu.Cog):
     @template.command(
         name="list",
         application_command_meta=commands.ApplicationCommandMeta(
-            # Add translations here
+            name_localizations={
+                i: vbu.translation(i, "template_commands").gettext("list")
+                for i in discord.Locale
+            },
+            description_localizations={
+                i: vbu.translation(i, "template_commands").gettext("Lists the templates that have been created for this server.")
+                for i in discord.Locale
+            },
         ),
     )
     @commands.defer()
@@ -163,17 +237,40 @@ class TemplateCommands(vbu.Cog):
             options=[
                 discord.ApplicationCommandOption(
                     name="template",
-                    description="The template that you want to get the information of.",
+                    description="The name of the template.",
                     type=discord.ApplicationCommandOptionType.string,
                     autocomplete=True,
+                    name_localizations={
+                        i: vbu.translation(i, "template_commands").gettext("template")
+                        for i in discord.Locale
+                    },
+                    description_localizations={
+                        i: vbu.translation(i, "template_commands").gettext("The name of the template.")
+                        for i in discord.Locale
+                    },
                 ),
                 discord.ApplicationCommandOption(
                     name="brief",
-                    description="Whether you want to display abbreviated data or not.",
+                    description="If you want to display all stored information.",
                     type=discord.ApplicationCommandOptionType.boolean,
+                    name_localizations={
+                        i: vbu.translation(i, "template_commands").gettext("brief")
+                        for i in discord.Locale
+                    },
+                    description_localizations={
+                        i: vbu.translation(i, "template_commands").gettext("If you want to display all stored information.")
+                        for i in discord.Locale
+                    },
                 ),
             ],
-            # Add translations here
+            name_localizations={
+                i: vbu.translation(i, "template_commands").gettext("describe")
+                for i in discord.Locale
+            },
+            description_localizations={
+                i: vbu.translation(i, "template_commands").gettext("Describe a template and its fields.")
+                for i in discord.Locale
+            },
         ),
     )
     @commands.defer()
@@ -217,11 +314,27 @@ class TemplateCommands(vbu.Cog):
             options=[
                 discord.ApplicationCommandOption(
                     name="template",
-                    description="The template that you want to edit.",
+                    description="The name of the template.",
                     type=discord.ApplicationCommandOptionType.string,
                     autocomplete=True,
+                    name_localizations={
+                        i: vbu.translation(i, "template_commands").gettext("template")
+                        for i in discord.Locale
+                    },
+                    description_localizations={
+                        i: vbu.translation(i, "template_commands").gettext("The name of the template.")
+                        for i in discord.Locale
+                    },
                 ),
             ],
+            name_localizations={
+                i: vbu.translation(i, "template_commands").gettext("edit")
+                for i in discord.Locale
+            },
+            description_localizations={
+                i: vbu.translation(i, "template_commands").gettext("Edits a template.")
+                for i in discord.Locale
+            },
         ),
     )
     @commands.defer()
@@ -231,7 +344,7 @@ class TemplateCommands(vbu.Cog):
     @commands.is_slash_command()
     async def template_edit(self, ctx: utils.types.GuildContext, template: utils.Template):
         """
-        Edits a template for your guild.
+        Edits a template.
         """
 
         # Set up the interaction to use
@@ -994,11 +1107,27 @@ class TemplateCommands(vbu.Cog):
             options=[
                 discord.ApplicationCommandOption(
                     name="template",
-                    description="The template that you want to delete.",
+                    description="The name of the template.",
                     type=discord.ApplicationCommandOptionType.string,
                     autocomplete=True,
+                    name_localizations={
+                        i: vbu.translation(i, "template_commands").gettext("template")
+                        for i in discord.Locale
+                    },
+                    description_localizations={
+                        i: vbu.translation(i, "template_commands").gettext("The name of the template.")
+                        for i in discord.Locale
+                    },
                 ),
             ],
+            name_localizations={
+                i: vbu.translation(i, "template_commands").gettext("delete")
+                for i in discord.Locale
+            },
+            description_localizations={
+                i: vbu.translation(i, "template_commands").gettext("Deletes a template.")
+                for i in discord.Locale
+            },
         ),
     )
     @commands.defer()
@@ -1008,7 +1137,7 @@ class TemplateCommands(vbu.Cog):
     @commands.is_slash_command()
     async def template_delete(self, ctx: utils.types.GuildContext, template: utils.Template):
         """
-        Deletes a template from your guild.
+        Deletes a template.
         """
 
         # See if they're already editing that template
@@ -1088,10 +1217,26 @@ class TemplateCommands(vbu.Cog):
             options=[
                 discord.ApplicationCommandOption(
                     name="template_name",
-                    description="The name of the template that you want to create.",
+                    description="The name of the template.",
                     type=discord.ApplicationCommandOptionType.string,
+                    name_localizations={
+                        i: vbu.translation(i, "template_commands").gettext("template_name")
+                        for i in discord.Locale
+                    },
+                    description_localizations={
+                        i: vbu.translation(i, "template_commands").gettext("The name of the template.")
+                        for i in discord.Locale
+                    },
                 ),
             ],
+            name_localizations={
+                i: vbu.translation(i, "template_commands").gettext("create")
+                for i in discord.Locale
+            },
+            description_localizations={
+                i: vbu.translation(i, "template_commands").gettext("Creates a new template.")
+                for i in discord.Locale
+            },
         ),
     )
     @commands.defer()
@@ -1101,7 +1246,7 @@ class TemplateCommands(vbu.Cog):
     @commands.is_slash_command()
     async def template_create(self, ctx: utils.types.GuildContext, template_name: str):
         """
-        Creates a new template for your guild.
+        Creates a new template.
         """
 
         # Only allow them to make one template at once

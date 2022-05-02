@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: profile-discord-bot\n"
 "POT-Creation-Date: 2022-05-02 08:11+0100\n"
-"PO-Revision-Date: 2022-05-02 09:41\n"
+"PO-Revision-Date: 2022-05-02 09:50\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -139,7 +139,7 @@ msgstr "Feld Eingabeaufforderung"
 
 #: template_commands.py:783
 msgid "Field being optional"
-msgstr "Das Feld ist fakultativ"
+msgstr "Das Feld ist optional"
 
 #: template_commands.py:787
 msgid "Field type"
@@ -160,7 +160,7 @@ msgstr "Zeitüberschreitung beim Warten auf das Feldattribut."
 
 #: template_commands.py:858
 msgid "Change Field Attribute"
-msgstr "Feldattribut ändern"
+msgstr "Feld Frage ändern"
 
 #: template_commands.py:864
 msgid "What name do you want the field to have?"
@@ -260,11 +260,11 @@ msgstr "Die Erstellung eines neuen Feldes hat ein Zeitlimit überschritten."
 
 #: template_commands.py:1272
 msgid "Is this field optional?"
-msgstr "Ist dieses Feld fakultativ?"
+msgstr "Ist dieses Feld optional?"
 
 #: template_commands.py:1305
 msgid "What type is this field?"
-msgstr "Welcher Art ist dieses Feld?"
+msgstr "Welcher Art hat dieses Feld?"
 
 #: template_commands.py:1321
 msgid "Picking a field type has timed out."

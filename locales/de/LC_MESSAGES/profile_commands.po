@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: profile-discord-bot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-05-02 08:46\n"
+"PO-Revision-Date: 2022-05-02 09:50\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "MIME-Version: 1.0\n"
@@ -16,7 +16,7 @@ msgstr ""
 "X-Crowdin-Project-ID: 513162\n"
 "X-Crowdin-Language: de\n"
 "X-Crowdin-File: /novus/locales/profile_commands.pot\n"
-"X-Crowdin-File-ID: 32\n"
+"X-Crowdin-File-ID: 46\n"
 "Language: de_DE\n"
 
 #: profile_commands.py:150
@@ -55,7 +55,7 @@ msgstr ""
 #: profile_commands.py:305 profile_commands.py:385 profile_commands.py:431
 #: profile_commands.py:850
 msgid "Timed out waiting for you to continue."
-msgstr "Zeitüberschreitung, die darauf wartet, dass Sie fortfahren."
+msgstr "Zeitüberschreitung, bitte fahre fort."
 
 #: profile_commands.py:346
 msgid "Could not get field information."
@@ -102,7 +102,7 @@ msgstr "Profileinrichtung abgebrochen."
 #: profile_commands.py:738
 #, python-brace-format
 msgid "I failed to send your profile to you - `{error_text}`."
-msgstr "Ich habe es versäumt, Ihnen Ihr Profil zu senden - \"{error_text}\"."
+msgstr "Ich konnte dir dar Profil nicht zuschicken - \"{error_text}\"."
 
 #: profile_commands.py:772
 msgid "It looks like the template was deleted while you were setting up your profile."
@@ -111,7 +111,7 @@ msgstr "Es sieht so aus, als ob die Vorlage gelöscht wurde, während Sie Ihr Pr
 #: profile_commands.py:788
 #, python-brace-format
 msgid "Your profile has been sent to the **{guild_name}** staff team for verification - please hold tight!"
-msgstr "Ihr Profil wurde zur Überprüfung an das **{guild_name}** Mitarbeiterteam geschickt - bitte haben sie ein wenig geduld.!"
+msgstr "Ihr Profil wurde zur Überprüfung an das **{guild_name}** Mitarbeiterteam geschickt - bitte haben sie ein wenig geduld!"
 
 #: profile_commands.py:792
 msgid "Your profile has been created and saved."
@@ -157,7 +157,7 @@ msgstr "{user} verfügt nicht über ein Profil für **{template_name}** mit dem 
 #: profile_commands.py:940
 #, python-brace-format
 msgid "{user} doesn't have any profiles for **{template_name}**."
-msgstr "{user} hat keine Profile für **{template.name}**."
+msgstr "{user} hat keine Profile für **{template_name}**."
 
 #: profile_commands.py:956
 #, python-brace-format

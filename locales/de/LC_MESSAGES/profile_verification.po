@@ -23,32 +23,32 @@ msgid "Decline"
 msgstr "Ablehnen"
 
 #: profile_verification.py:302
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Failed to get template with ID `{template_id}`."
 msgstr "Vorlage mit ID `{template_id}` konnte nicht abgerufen werden."
 
 #: profile_verification.py:330
-#, fuzzy
+#
 msgid "No reason provided."
 msgstr "Kein Grund angegeben."
 
 #: profile_verification.py:341
-#, fuzzy
+#
 msgid "Would you like to give a denial reason?"
 msgstr "Möchten Sie einen Ablehnungsgrund angeben?"
 
 #: profile_verification.py:360
-#, fuzzy
+#
 msgid "Denial Reason"
 msgstr "Grund der Verweigerung"
 
 #: profile_verification.py:365
-#, fuzzy
+#
 msgid "Why are you denying this profile?"
 msgstr "Warum lehnen Sie dieses Profil ab?"
 
 #: profile_verification.py:408
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid ""
 "Your profile for **{template_name}** (`{profile_name}`) on `{guild_name}` "
 "has been verified."
@@ -57,7 +57,7 @@ msgstr ""
 "wurde überprüft."
 
 #: profile_verification.py:417
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid ""
 "Your profile for **{template_name}** (`{profile_name}`) on `{guild_name}` "
 "has been denied with the reason `{denial_reason}`."
@@ -74,6 +74,6 @@ msgid "Failed to add role to user."
 msgstr "Rolle kann dem Benutzer nicht hinzugefügt werden."
 
 #: profile_verification.py:464
-#, fuzzy
+#
 msgid "Profile dealt with successfully."
 msgstr "Profil erfolgreich bearbeitet."

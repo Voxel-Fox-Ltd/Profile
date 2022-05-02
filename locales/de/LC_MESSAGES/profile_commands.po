@@ -17,7 +17,7 @@ msgstr ""
 "X-Poedit-SearchPath-0: profile_commands.py\n"
 
 #: profile_commands.py:150
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid ""
 "This command can only be run as a slash command - run `/template edit "
 "{template_name}` to create it."
@@ -26,7 +26,7 @@ msgstr ""
 "Sie `/template edit {template_name}` aus, um ihn zu erstellen."
 
 #: profile_commands.py:155
-#, fuzzy
+#
 msgid "This command can only be run as a slash command."
 msgstr "Dieser Befehl kann nur als Schrägstrich-Befehl ausgeführt werden."
 
@@ -168,7 +168,7 @@ msgid "Your profile has been deleted."
 msgstr "Ihr Profil wurde gelöscht."
 
 #: profile_commands.py:917
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid ""
 "{user} has multiple profiles for **{template_name}** - you need to specify "
 "one."
@@ -177,14 +177,14 @@ msgstr ""
 "angeben."
 
 #: profile_commands.py:921
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid ""
 "You have multiple profiles for **{template_name}** - you need to specify one."
 msgstr ""
 "Sie haben mehrere Profile für **{template_name}** - Sie müssen eines angeben."
 
 #: profile_commands.py:930
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid ""
 "{user} doesn't have a profile for **{template_name}** with the name "
 "**{profile_name}**."
@@ -193,23 +193,23 @@ msgstr ""
 "**{profile_name}**."
 
 #: profile_commands.py:940
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{user} doesn't have any profiles for **{template_name}**."
 msgstr "{user} hat keine Profile für **{template.name}**."
 
 #: profile_commands.py:956
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{user}'s profile hasn't been verified yet, and thus can't be sent."
 msgstr ""
 "das Profil von {user} wurde noch nicht verifiziert und kann daher nicht "
 "gesendet werden."
 
 #: profile_commands.py:960
-#, fuzzy
+#
 msgid "Your profile hasn't been verified yet, and thus can't be sent."
 msgstr ""
 "Ihr Profil wurde noch nicht verifiziert und kann daher nicht gesendet werden."
 
-#, fuzzy, python-brace-format
+#, python-brace-format
 #~ msgid "You don't have any profiles for **{template.name}**."
 #~ msgstr "Sie haben keine Profile für **{template.name}**."

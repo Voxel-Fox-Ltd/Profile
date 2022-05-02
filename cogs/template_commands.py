@@ -1214,7 +1214,7 @@ class TemplateCommands(vbu.Cog):
                     discord.ui.InputText(
                         label=vbu.translation(ctx, "template_commands").gettext(
                             "What name should this field have?"
-                        ),
+                        )[:45],
                         max_length=80,
                     )
                 ),
@@ -1222,7 +1222,7 @@ class TemplateCommands(vbu.Cog):
                     discord.ui.InputText(
                         label=vbu.translation(ctx, "template_commands").gettext(
                             "What prompt should be sent with this message?"
-                        ),
+                        )[:45],
                         style=discord.TextStyle.long,
                         max_length=45,
                     )

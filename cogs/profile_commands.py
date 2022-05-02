@@ -814,7 +814,12 @@ class ProfileCommands(vbu.Cog):
         # Get the profile
         template: utils.Template = ctx.template
         async with vbu.Database() as db:
-            user_profile = await template.fetch_profile_for_user(db, (user or ctx.author).id, profile_name, fetch_filled_fields=True)
+            user_profile = await template.fetch_profile_for_user(
+                db,
+                (user or ctx.author).id,
+                profile_name,
+                fetch_filled_fields=True,
+            )
 
         # There's no profile with that name given
         if user_profile is None:

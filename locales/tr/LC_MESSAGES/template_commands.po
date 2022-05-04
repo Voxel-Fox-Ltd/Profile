@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: profile-discord-bot\n"
 "POT-Creation-Date: 2022-05-02 15:31+0100\n"
-"PO-Revision-Date: 2022-05-04 19:31\n"
+"PO-Revision-Date: 2022-05-04 20:32\n"
 "Last-Translator: \n"
 "Language-Team: Turkish\n"
 "Language: tr\n"
@@ -67,7 +67,7 @@ msgstr "düzenle"
 
 #: template_commands.py:150
 msgid "Edit one of your profiles."
-msgstr ""
+msgstr "Bir tane profilini düzenle."
 
 #: template_commands.py:178 template_commands.py:244
 #: template_commands.py:321 template_commands.py:1114
@@ -89,7 +89,7 @@ msgstr "Bu şablonun ismi."
 
 #: template_commands.py:257
 msgid "brief"
-msgstr ""
+msgstr "kısa"
 
 #: template_commands.py:261
 msgid "If you want to display all stored information."
@@ -97,11 +97,11 @@ msgstr ""
 
 #: template_commands.py:267
 msgid "describe"
-msgstr ""
+msgstr "açıkla"
 
 #: template_commands.py:271
 msgid "Describe a template and its fields."
-msgstr ""
+msgstr "Şablonu ve şablonun alanlarını açıkla."
 
 #: template_commands.py:293
 #, python-brace-format
@@ -118,7 +118,7 @@ msgstr ""
 
 #: template_commands.py:384
 msgid "Template name"
-msgstr ""
+msgstr "Şablon adı"
 
 #: template_commands.py:389
 msgid "Profile verification channel"
@@ -134,7 +134,7 @@ msgstr ""
 
 #: template_commands.py:404
 msgid "Template fields"
-msgstr ""
+msgstr "Şablon alanları"
 
 #: template_commands.py:409
 msgid "Profile count per user"
@@ -142,15 +142,15 @@ msgstr ""
 
 #: template_commands.py:414
 msgid "Done"
-msgstr ""
+msgstr "Tamamlandı"
 
 #: template_commands.py:429
 msgid "Add slash command"
-msgstr ""
+msgstr "Slash komutu ekle"
 
 #: template_commands.py:438 template_commands.py:524
 msgid "Update slash command"
-msgstr ""
+msgstr "Slash komutunu düzenle"
 
 #: template_commands.py:479 template_commands.py:639
 msgid "Timed out waiting for edit response."
@@ -158,12 +158,12 @@ msgstr ""
 
 #: template_commands.py:516
 msgid "Error adding slash command"
-msgstr ""
+msgstr "Slash komutunu eklerken hata oluştu"
 
 #: template_commands.py:519 template_commands.py:562
 #, python-brace-format
 msgid "Error updating slash command - `{error}`."
-msgstr ""
+msgstr "Slash komutunu güncellenirken hata oluştu - `{error}`."
 
 #: template_commands.py:596
 msgid "What do you want to set the template's name to?"
@@ -199,27 +199,27 @@ msgstr ""
 
 #: template_commands.py:804
 msgid "New"
-msgstr ""
+msgstr "Yeni"
 
 #: template_commands.py:810
 msgid "New (unavailable)"
-msgstr ""
+msgstr "Yeni (Mevcut değil)"
 
 #: template_commands.py:819 template_commands.py:908
 msgid "Cancel"
-msgstr ""
+msgstr "İptal et"
 
 #: template_commands.py:827
 msgid "Which field do you want to edit?"
-msgstr ""
+msgstr "Hangi alanı düzenlemek istersiniz?"
 
 #: template_commands.py:844 template_commands.py:1070
 msgid "Timed out waiting for button click."
-msgstr ""
+msgstr "Tuşa basma beklenirken zaman aşımına uğrandı."
 
 #: template_commands.py:885
 msgid "Field name"
-msgstr ""
+msgstr "Alan adı"
 
 #: template_commands.py:889
 msgid "Field prompt"
@@ -227,15 +227,15 @@ msgstr ""
 
 #: template_commands.py:893
 msgid "Field being optional"
-msgstr ""
+msgstr "Alan zorunlu değil"
 
 #: template_commands.py:897
 msgid "Field type"
-msgstr ""
+msgstr "Alan türü"
 
 #: template_commands.py:903
 msgid "Delete field"
-msgstr ""
+msgstr "Alanı sil"
 
 #: template_commands.py:917
 #, python-brace-format
@@ -264,31 +264,31 @@ msgstr ""
 
 #: template_commands.py:1018
 msgid "Do you want this field to be optional?"
-msgstr ""
+msgstr "Bu alan zorunlu olmamalı mı?"
 
 #: template_commands.py:1021 template_commands.py:1404
 msgid "Yes"
-msgstr ""
+msgstr "Evet"
 
 #: template_commands.py:1025 template_commands.py:1408
 msgid "No"
-msgstr ""
+msgstr "Hayır"
 
 #: template_commands.py:1030
 msgid "What type do you want this field to have?"
-msgstr ""
+msgstr "Bu alanın türü ne olsun?"
 
 #: template_commands.py:1034 template_commands.py:1432
 msgid "Text"
-msgstr ""
+msgstr "Yazı"
 
 #: template_commands.py:1038 template_commands.py:1436
 msgid "Numbers"
-msgstr ""
+msgstr "Sayılar"
 
 #: template_commands.py:1046 template_commands.py:1442
 msgid "Image"
-msgstr ""
+msgstr "Resim"
 
 #: template_commands.py:1128
 msgid "Deletes a template."
@@ -313,7 +313,7 @@ msgstr ""
 
 #: template_commands.py:1223
 msgid "template_name"
-msgstr ""
+msgstr "şablon_ismi"
 
 #: template_commands.py:1237
 msgid "Creates a new template."
@@ -321,7 +321,7 @@ msgstr ""
 
 #: template_commands.py:1254
 msgid "You're already creating a template."
-msgstr ""
+msgstr "Zaten şablon oluşturuyorsunuz."
 
 #: template_commands.py:1266
 #, python-brace-format
@@ -339,7 +339,7 @@ msgstr ""
 
 #: template_commands.py:1291
 msgid "The maximum length of a profile name is 30 characters. Please run this command again to set a new one."
-msgstr ""
+msgstr "Profil ismi maksimum 30 karater olabilir. Lütfen bu komutu yeniden çalıştırıp yeni isim vermeye çalışın."
 
 #: template_commands.py:1303
 #, python-brace-format
@@ -348,7 +348,7 @@ msgstr ""
 
 #: template_commands.py:1361
 msgid "What name should this field have?"
-msgstr ""
+msgstr "Bu alanın ismi ne olsun?"
 
 #: template_commands.py:1369
 msgid "What prompt should be sent with this message?"
@@ -356,17 +356,17 @@ msgstr ""
 
 #: template_commands.py:1389
 msgid "Creating a new field has timed out."
-msgstr ""
+msgstr "Yeni alan oluşturma zaman aşımına uğradı."
 
 #: template_commands.py:1414
 msgid "Is this field optional?"
-msgstr ""
+msgstr "Bu alan zorunlu değil mi?"
 
 #: template_commands.py:1447
 msgid "What type is this field?"
-msgstr ""
+msgstr "Bu alanın türü ne?"
 
 #: template_commands.py:1463
 msgid "Picking a field type has timed out."
-msgstr ""
+msgstr "Alan türü seçimi zaman aşımına uğradı."
 

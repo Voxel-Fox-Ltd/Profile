@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: profile-discord-bot\n"
 "POT-Creation-Date: 2022-05-02 15:31+0100\n"
-"PO-Revision-Date: 2022-05-04 13:57\n"
+"PO-Revision-Date: 2022-05-04 15:35\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese\n"
 "Language: pt\n"
@@ -256,15 +256,15 @@ msgstr "Que nome você deseja que o campo tenha?"
 
 #: template_commands.py:977
 msgid "What should the prompt for this field be?"
-msgstr ""
+msgstr "Qual deve ser o alerta para este campo?"
 
 #: template_commands.py:1001
 msgid "Timed out waiting for modal submission."
-msgstr ""
+msgstr "Tempo limite de espera excedido para o envio."
 
 #: template_commands.py:1018
 msgid "Do you want this field to be optional?"
-msgstr ""
+msgstr "Você quer que este campo seja opcional?"
 
 #: template_commands.py:1021 template_commands.py:1404
 msgid "Yes"
@@ -276,7 +276,7 @@ msgstr "Não"
 
 #: template_commands.py:1030
 msgid "What type do you want this field to have?"
-msgstr ""
+msgstr "Qual o tipo desse campo?"
 
 #: template_commands.py:1034 template_commands.py:1432
 msgid "Text"
@@ -296,77 +296,77 @@ msgstr "Excluir um modelo."
 
 #: template_commands.py:1155
 msgid "By doing this, you'll delete all of the created profiles under this template as well. Would you like to proceed?"
-msgstr ""
+msgstr "Ao fazer isso, você irá apagar todos os perfis criados neste modelo também. Gostaria de continuar?"
 
 #: template_commands.py:1172
 msgid "Template delete timed out - please try again later."
-msgstr ""
+msgstr "A exclusão do modelo expirou - por favor tente novamente mais tarde."
 
 #: template_commands.py:1182
 msgid "Cancelled template delete."
-msgstr ""
+msgstr "Eliminação de modelo cancelada."
 
 #: template_commands.py:1207
 #, python-brace-format
 msgid "All relevant data for template **{template_name}** (`{template_id}`) has been deleted."
-msgstr ""
+msgstr "Todos os dados relevantes para o modelo **{template_name}** (`{template_id}`) foram excluídos."
 
 #: template_commands.py:1223
 msgid "template_name"
-msgstr ""
+msgstr "nome_modelo"
 
 #: template_commands.py:1237
 msgid "Creates a new template."
-msgstr ""
+msgstr "Cria um novo modelo."
 
 #: template_commands.py:1254
 msgid "You're already creating a template."
-msgstr ""
+msgstr "Você já está editando um modelo."
 
 #: template_commands.py:1266
 #, python-brace-format
 msgid "You already have {max_template_count} templates set for this server, which is the maximum number you are allowed."
-msgstr ""
+msgstr "Você já tem {max_template_count} modelos definidos para este servidor, que é o número máximo que você configurou."
 
 #: template_commands.py:1270
 #, python-brace-format
 msgid "You already have {max_template_count} templates set for this server, which is the maximum number you are allowed - see `/info` and donate to get a higher profile count for your server."
-msgstr ""
+msgstr "Você já tem {max_template_count} modelos definidos para este servidor, que é o número máximo que você é permitido - consulte `/info` e faça uma doação para obter uma contagem de perfil mais alta para o seu servidor."
 
 #: template_commands.py:1281
 msgid "You can only use normal lettering and digits in your command name. Please run this command again to set a new one."
-msgstr ""
+msgstr "Você só pode usar letras normais e dígitos no nome do seu comando. Por favor, execute este comando novamente para definir um novo."
 
 #: template_commands.py:1291
 msgid "The maximum length of a profile name is 30 characters. Please run this command again to set a new one."
-msgstr ""
+msgstr "O comprimento máximo do nome do perfil é de 30 caracteres. Por favor, execute este comando novamente para definir um novo."
 
 #: template_commands.py:1303
 #, python-brace-format
 msgid "This server already has a template with name **{template_name}**. Please run this command again to provide another one."
-msgstr ""
+msgstr "Este servidor já possui um modelo com o nome **{template_name}**. Por favor, execute este comando novamente para fornecer outro."
 
 #: template_commands.py:1361
 msgid "What name should this field have?"
-msgstr ""
+msgstr "Que nome este campo deve ter?"
 
 #: template_commands.py:1369
 msgid "What prompt should be sent with this message?"
-msgstr ""
+msgstr "Qual alerta deve ser enviado com esta mensagem?"
 
 #: template_commands.py:1389
 msgid "Creating a new field has timed out."
-msgstr ""
+msgstr "O tempo de criação de um novo campo expirou."
 
 #: template_commands.py:1414
 msgid "Is this field optional?"
-msgstr ""
+msgstr "Este campo é opcional?"
 
 #: template_commands.py:1447
 msgid "What type is this field?"
-msgstr ""
+msgstr "Qual o tipo deste campo?"
 
 #: template_commands.py:1463
 msgid "Picking a field type has timed out."
-msgstr ""
+msgstr "Tempo limite para escolher um tipo de campo expirado."
 

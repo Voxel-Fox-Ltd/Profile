@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: profile-discord-bot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-05-02 14:33\n"
+"PO-Revision-Date: 2022-05-04 20:32\n"
 "Last-Translator: \n"
 "Language-Team: Turkish\n"
 "MIME-Version: 1.0\n"
@@ -59,7 +59,7 @@ msgstr "Devam etmeniz için bekleme zaman aşımına uğradı."
 
 #: profile_commands.py:346
 msgid "Could not get field information."
-msgstr ""
+msgstr "Gereken alan bilgisine erişilemedi."
 
 #: profile_commands.py:534
 msgid "Cancel profile setup"
@@ -67,7 +67,7 @@ msgstr "Profil kurulumunu iptal et"
 
 #: profile_commands.py:540
 msgid "You're already setting up a profile."
-msgstr ""
+msgstr "Zaten profil kuruyorsunuz."
 
 #: profile_commands.py:555
 msgid "Failed to get that profile."
@@ -106,7 +106,7 @@ msgstr "Size kendi profilinizi yollamaya çalışırken hata oluştu - `{error_t
 
 #: profile_commands.py:772
 msgid "It looks like the template was deleted while you were setting up your profile."
-msgstr ""
+msgstr "Gereken şablon, siz profili kurarken silinmiş."
 
 #: profile_commands.py:788
 #, python-brace-format
@@ -166,5 +166,5 @@ msgstr ""
 
 #: profile_commands.py:960
 msgid "Your profile hasn't been verified yet, and thus can't be sent."
-msgstr ""
+msgstr "Profiliniz daha doğrulanamadı ve bu yüzden yollanamaz."
 

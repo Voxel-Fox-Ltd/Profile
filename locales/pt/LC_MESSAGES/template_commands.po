@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: profile-discord-bot\n"
 "POT-Creation-Date: 2022-05-02 15:31+0100\n"
-"PO-Revision-Date: 2022-05-03 12:42\n"
+"PO-Revision-Date: 2022-05-04 13:57\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese\n"
 "Language: pt\n"
@@ -106,7 +106,7 @@ msgstr "Descreva o modelo e seus campos."
 #: template_commands.py:293
 #, python-brace-format
 msgid "Currently there are **{user_profile_count}** created profiles for this template."
-msgstr ""
+msgstr "No momento, existem **{user_profile_count}** perfis criados para este modelo."
 
 #: template_commands.py:335
 msgid "Edits a template."
@@ -227,7 +227,7 @@ msgstr "Aviso de campo"
 
 #: template_commands.py:893
 msgid "Field being optional"
-msgstr ""
+msgstr "O campo é opcional"
 
 #: template_commands.py:897
 msgid "Field type"
@@ -240,19 +240,19 @@ msgstr "Excluir campo"
 #: template_commands.py:917
 #, python-brace-format
 msgid "Editing the field **{field_name}**. Which part would you like to edit?"
-msgstr ""
+msgstr "Editando o campo **{field_name}**. Qual parte você gostaria de editar?"
 
 #: template_commands.py:934
 msgid "Timed out waiting for field attribute."
-msgstr ""
+msgstr "Tempo de espera excedido para o atributo do campo."
 
 #: template_commands.py:968
 msgid "Change Field Attribute"
-msgstr ""
+msgstr "Alterar Atributo do Campo"
 
 #: template_commands.py:974
 msgid "What name do you want the field to have?"
-msgstr ""
+msgstr "Que nome você deseja que o campo tenha?"
 
 #: template_commands.py:977
 msgid "What should the prompt for this field be?"

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: profile-discord-bot\n"
 "POT-Creation-Date: 2022-05-02 07:48+0100\n"
-"PO-Revision-Date: 2022-05-05 22:09\n"
+"PO-Revision-Date: 2022-05-05 23:20\n"
 "Last-Translator: \n"
 "Language-Team: Turkish\n"
 "Language: tr\n"
@@ -60,7 +60,7 @@ msgstr "Discord Kullanıcısı"
 
 #: template.py:582
 msgid "In this field, the owner of the created profile will be pinged."
-msgstr ""
+msgstr "Bu alanda, profilin yapımcısı pinglenecektir."
 
 #: template.py:615
 #, python-brace-format

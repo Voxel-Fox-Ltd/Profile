@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: profile-discord-bot\n"
 "POT-Creation-Date: 2022-05-02 09:21+0100\n"
-"PO-Revision-Date: 2022-05-02 09:41\n"
+"PO-Revision-Date: 2022-05-03 12:42\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese\n"
 "Language: pt\n"
@@ -21,52 +21,52 @@ msgstr ""
 
 #: profile_verification.py:59
 msgid "Approve"
-msgstr ""
+msgstr "Aprovar"
 
 #: profile_verification.py:64
 msgid "Decline"
-msgstr ""
+msgstr "Rejeitar"
 
 #: profile_verification.py:302
 #, python-brace-format
 msgid "Failed to get template with ID `{template_id}`."
-msgstr ""
+msgstr "Falha ao obter o template com ID `{template_id}`."
 
 #: profile_verification.py:330
 msgid "No reason provided."
-msgstr ""
+msgstr "Nenhuma razão fornecida."
 
 #: profile_verification.py:341
 msgid "Would you like to give a denial reason?"
-msgstr ""
+msgstr "Você gostaria de dar um motivo de recusa?"
 
 #: profile_verification.py:360
 msgid "Denial Reason"
-msgstr ""
+msgstr "Motivo da recusa"
 
 #: profile_verification.py:365
 msgid "Why are you denying this profile?"
-msgstr ""
+msgstr "Por que você está recusando este perfil?"
 
 #: profile_verification.py:408
 #, python-brace-format
 msgid "Your profile for **{template_name}** (`{profile_name}`) on `{guild_name}` has been verified."
-msgstr ""
+msgstr "O seu perfil para **{template_name}** (`{profile_name}`) em `{guild_name}` foi verificado."
 
 #: profile_verification.py:417
 #, python-brace-format
 msgid "Your profile for **{template_name}** (`{profile_name}`) on `{guild_name}` has been denied with the reason `{denial_reason}`."
-msgstr ""
+msgstr "Seu perfil para **{template_name}** (`{profile_name}`) em `{guild_name}` foi recusado com a razão `{denial_reason}`."
 
 #: profile_verification.py:442
 msgid "Failed to send profile archive message."
-msgstr ""
+msgstr "Falha ao enviar mensagem de arquivo de perfil."
 
 #: profile_verification.py:453
 msgid "Failed to add role to user."
-msgstr ""
+msgstr "Falha ao adicionar cargo ao usuário."
 
 #: profile_verification.py:464
 msgid "Profile dealt with successfully."
-msgstr ""
+msgstr "Perfil foi tratado com sucesso."
 

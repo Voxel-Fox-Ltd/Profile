@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: profile-discord-bot\n"
 "POT-Creation-Date: 2022-05-02 09:21+0100\n"
-"PO-Revision-Date: 2022-05-02 14:33\n"
+"PO-Revision-Date: 2022-05-04 20:32\n"
 "Last-Translator: \n"
 "Language-Team: Turkish\n"
 "Language: tr\n"
@@ -30,7 +30,7 @@ msgstr "Reddet"
 #: profile_verification.py:302
 #, python-brace-format
 msgid "Failed to get template with ID `{template_id}`."
-msgstr ""
+msgstr "`{template_id}` ID'li şablonu alırken hata oluştu."
 
 #: profile_verification.py:330
 msgid "No reason provided."
@@ -38,7 +38,7 @@ msgstr "Neden verilmedi."
 
 #: profile_verification.py:341
 msgid "Would you like to give a denial reason?"
-msgstr ""
+msgstr "Reddetme sebebinizi vermek ister misiniz?"
 
 #: profile_verification.py:360
 msgid "Denial Reason"
@@ -60,11 +60,11 @@ msgstr ""
 
 #: profile_verification.py:442
 msgid "Failed to send profile archive message."
-msgstr ""
+msgstr "Profil arşiv mesajını yollarken hata oluştu."
 
 #: profile_verification.py:453
 msgid "Failed to add role to user."
-msgstr ""
+msgstr "Rol kullanıcıya eklenirken hata oluştu."
 
 #: profile_verification.py:464
 msgid "Profile dealt with successfully."

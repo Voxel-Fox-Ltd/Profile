@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: profile-discord-bot\n"
 "POT-Creation-Date: 2022-05-02 15:31+0100\n"
-"PO-Revision-Date: 2022-05-04 20:32\n"
+"PO-Revision-Date: 2022-05-05 20:09\n"
 "Last-Translator: \n"
 "Language-Team: Turkish\n"
 "Language: tr\n"
@@ -339,7 +339,7 @@ msgstr ""
 
 #: template_commands.py:1291
 msgid "The maximum length of a profile name is 30 characters. Please run this command again to set a new one."
-msgstr "Profil ismi maksimum 30 karater olabilir. Lütfen bu komutu yeniden çalıştırıp yeni isim vermeye çalışın."
+msgstr "Profil ismi maksimum 30 karakter olabilir. Lütfen bu komutu yeniden çalıştırıp yeni isim vermeye çalışın."
 
 #: template_commands.py:1303
 #, python-brace-format

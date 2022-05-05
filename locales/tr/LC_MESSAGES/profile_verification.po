@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: profile-discord-bot\n"
 "POT-Creation-Date: 2022-05-02 09:21+0100\n"
-"PO-Revision-Date: 2022-05-04 20:32\n"
+"PO-Revision-Date: 2022-05-05 20:09\n"
 "Last-Translator: \n"
 "Language-Team: Turkish\n"
 "Language: tr\n"
@@ -30,7 +30,7 @@ msgstr "Reddet"
 #: profile_verification.py:302
 #, python-brace-format
 msgid "Failed to get template with ID `{template_id}`."
-msgstr "`{template_id}` ID'li şablonu alırken hata oluştu."
+msgstr "`{template_id}` IDli şablonu alırken hata oluştu."
 
 #: profile_verification.py:330
 msgid "No reason provided."

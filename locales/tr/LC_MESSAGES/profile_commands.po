@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: profile-discord-bot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-05-05 21:10\n"
+"PO-Revision-Date: 2022-05-05 22:09\n"
 "Last-Translator: \n"
 "Language-Team: Turkish\n"
 "MIME-Version: 1.0\n"
@@ -125,7 +125,7 @@ msgstr ""
 #: profile_commands.py:827 profile_commands.py:944
 #, python-brace-format
 msgid "You don't have any profiles for **{template_name}**."
-msgstr ""
+msgstr "**{template_name}** şablonunda hiçbir profilin yok."
 
 #: profile_commands.py:835
 msgid "Are you sure you want to delete this profile?"

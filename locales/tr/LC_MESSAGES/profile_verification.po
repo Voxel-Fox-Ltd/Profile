@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: profile-discord-bot\n"
 "POT-Creation-Date: 2022-05-02 09:21+0100\n"
-"PO-Revision-Date: 2022-05-05 20:09\n"
+"PO-Revision-Date: 2022-05-05 21:10\n"
 "Last-Translator: \n"
 "Language-Team: Turkish\n"
 "Language: tr\n"
@@ -68,5 +68,5 @@ msgstr "Rol kullanıcıya eklenirken hata oluştu."
 
 #: profile_verification.py:464
 msgid "Profile dealt with successfully."
-msgstr ""
+msgstr "Profil başarıyla güncellendi."
 

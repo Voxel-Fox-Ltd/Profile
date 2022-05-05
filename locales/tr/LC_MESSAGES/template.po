@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: profile-discord-bot\n"
 "POT-Creation-Date: 2022-05-02 07:48+0100\n"
-"PO-Revision-Date: 2022-05-05 20:09\n"
+"PO-Revision-Date: 2022-05-05 22:09\n"
 "Last-Translator: \n"
 "Language-Team: Turkish\n"
 "Language: tr\n"
@@ -66,11 +66,12 @@ msgstr ""
 #, python-brace-format
 msgid "Field ID `{field_id}` at position {position_index} with index {field_index}, type `{type}`.```\n"
 "{prompt}```"
-msgstr ""
+msgstr "Alan ID `{field_id}`, {position_index} Pozisyonunda, indeks {field_index}, tür `{type}`.```\n"
+"{prompt}```"
 
 #: template.py:630
 msgid "No fields have been added to this template."
-msgstr ""
+msgstr "Bu şablona hiçbir alan eklenmedi."
 
 #: template.py:640
 msgid "Fields"

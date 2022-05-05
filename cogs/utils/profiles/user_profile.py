@@ -180,7 +180,8 @@ class UserProfile(object):
             self,
             bot: vbu.Bot,
             ctx: Union[discord.Interaction, commands.Context, str],
-            member: Optional[discord.Member] = None) -> vbu.Embed:
+            member: Optional[discord.Member] = None,
+            use_guild: bool = False) -> vbu.Embed:
         """
         Converts the filled profile into an embed.
         """
@@ -202,7 +203,7 @@ class UserProfile(object):
 
         # Add the user
         embed.add_field(
-            name=vbu.translation(ctx, "user_profile", use_guild=True).gettext("Discord User"),
+            name=vbu.translation(ctx, "user_profile", use_guild=use_guild).gettext("Discord User"),
             value=f"<@{self.user_id}>",
         )
 

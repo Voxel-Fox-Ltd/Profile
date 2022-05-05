@@ -125,7 +125,7 @@ class ProfileVerification(vbu.Cog):
         channel: discord.PartialMessageable = self.bot.get_partial_messageable(archive_channel_id)
 
         # Send the data
-        embed: discord.Embed = user_profile.build_embed(self.bot, ctx, target_user)
+        embed: discord.Embed = user_profile.build_embed(self.bot, ctx, target_user, use_guild=True)
         try:
             return await channel.send(None if target_user is None else target_user.mention, embed=embed)
         except discord.HTTPException:
@@ -405,7 +405,7 @@ class ProfileVerification(vbu.Cog):
         # Tell the user about the decision
         if profile_user:
             try:
-                embed: discord.Embed = user_profile.build_embed(self.bot, interaction, profile_user)
+                embed: discord.Embed = user_profile.build_embed(self.bot, interaction, profile_user, use_guild=True)
                 if verify:
                     text = vbu.translation(interaction, "profile_verification", use_guild=True).gettext(
                         "Your profile for **{template_name}** (`{profile_name}`) on "

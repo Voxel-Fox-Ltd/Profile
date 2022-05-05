@@ -502,7 +502,8 @@ class Template(object):
             self,
             bot: vbu.Bot,
             ctx: Union[discord.Interaction, commands.Context, str],
-            brief: bool = False) -> discord.Embed:
+            brief: bool = False,
+            use_guild: bool = False) -> discord.Embed:
         """
         Create an embed to visualise all of the created fields and given information.
         """
@@ -513,22 +514,22 @@ class Template(object):
 
         # Work out what goes in the description
         description_lines = [
-            vbu.translation(ctx, "template", use_guild=True).gettext(
+            vbu.translation(ctx, "template", use_guild=use_guild).gettext(
                 "Template ID: `{template_id}`"
             ).format(template_id=self.template_id),
-            vbu.translation(ctx, "template", use_guild=True).gettext(
+            vbu.translation(ctx, "template", use_guild=use_guild).gettext(
                 "Guild ID: `{guild_id}`"
             ).format(guild_id=self.guild_id),
-            vbu.translation(ctx, "template", use_guild=True).gettext(
+            vbu.translation(ctx, "template", use_guild=use_guild).gettext(
                 "Maximum allowed profiles: `{max_profile_count}`"
             ).format(max_profile_count=self.max_profile_count),
-            vbu.translation(ctx, "template", use_guild=True).gettext(
+            vbu.translation(ctx, "template", use_guild=use_guild).gettext(
                 "Application command ID: `{application_command_id}`"
             ).format(application_command_id=self.application_command_id),
         ]
 
         # Add verification channel ID
-        verification_channel_str = vbu.translation(ctx, "template", use_guild=True).gettext("Verification channel: {value}")
+        verification_channel_str = vbu.translation(ctx, "template", use_guild=use_guild).gettext("Verification channel: {value}")
         if self.verification_channel_id:
             is_command, is_valid_command = CommandProcessor.get_is_command(self.verification_channel_id)
             if is_command:
@@ -542,7 +543,7 @@ class Template(object):
             description_lines.append(verification_channel_str.format(value="N/A"))
 
         # Add archive channel ID
-        archive_channel_str = vbu.translation(ctx, "template", use_guild=True).gettext("Archive channel: {value}")
+        archive_channel_str = vbu.translation(ctx, "template", use_guild=use_guild).gettext("Archive channel: {value}")
         if self.archive_channel_id:
             is_command, is_valid_command = CommandProcessor.get_is_command(self.archive_channel_id)
             if is_command:
@@ -556,7 +557,7 @@ class Template(object):
             description_lines.append(archive_channel_str.format(value="N/A"))
 
         # Add given role ID
-        given_role_str = vbu.translation(ctx, "template", use_guild=True).gettext("Given role: {value}")
+        given_role_str = vbu.translation(ctx, "template", use_guild=use_guild).gettext("Given role: {value}")
         if self.role_id:
             is_command, is_valid_command = CommandProcessor.get_is_command(self.role_id)
             if is_command:
@@ -575,10 +576,10 @@ class Template(object):
         # Add the user
         if brief is False:
             embed.add_field(
-                name=vbu.translation(ctx, "template", use_guild=True).gettext(
+                name=vbu.translation(ctx, "template", use_guild=use_guild).gettext(
                     "Discord User",
                 ),
-                value=vbu.translation(ctx, "template", use_guild=True).gettext(
+                value=vbu.translation(ctx, "template", use_guild=use_guild).gettext(
                     "In this field, the owner of the created profile will be pinged.",
                 ),
                 inline=False,
@@ -611,7 +612,7 @@ class Template(object):
             else:
                 embed.add_field(
                     name=f.name,
-                    value=vbu.translation(ctx, "template", use_guild=True).gettext(
+                    value=vbu.translation(ctx, "template", use_guild=use_guild).gettext(
                         "Field ID `{field_id}` at position {position_index} with index "
                         "{field_index}, type `{type}`.```\n{prompt}```",
                     ).format(
@@ -627,7 +628,7 @@ class Template(object):
         # If we're being brief, then just add all the field text at once
         if brief:
             if not text:
-                text = [vbu.translation(ctx, "template", use_guild=True).gettext("No fields have been added to this template.")]
+                text = [vbu.translation(ctx, "template", use_guild=use_guild).gettext("No fields have been added to this template.")]
             if len('\n'.join(text)) > 1000:
                 for index, name, ftype in char_limit_text:
                     embed.add_field(
@@ -637,7 +638,7 @@ class Template(object):
                     )
             else:
                 embed.add_field(
-                    name=vbu.translation(ctx, "template", use_guild=True).gettext("Fields"),
+                    name=vbu.translation(ctx, "template", use_guild=use_guild).gettext("Fields"),
                     value='\n'.join(text),
                     inline=False,
                 )

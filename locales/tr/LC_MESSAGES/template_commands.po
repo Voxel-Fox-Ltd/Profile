@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: profile-discord-bot\n"
 "POT-Creation-Date: 2022-05-02 15:31+0100\n"
-"PO-Revision-Date: 2022-05-05 22:09\n"
+"PO-Revision-Date: 2022-05-05 23:20\n"
 "Last-Translator: \n"
 "Language-Team: Turkish\n"
 "Language: tr\n"
@@ -80,7 +80,7 @@ msgstr "liste"
 
 #: template_commands.py:199
 msgid "Lists the templates that have been created for this server."
-msgstr ""
+msgstr "Bu sunucu için oluşturulmuş şablonları listele."
 
 #: template_commands.py:248 template_commands.py:325
 #: template_commands.py:1118 template_commands.py:1227
@@ -93,7 +93,7 @@ msgstr "kısa"
 
 #: template_commands.py:261
 msgid "If you want to display all stored information."
-msgstr ""
+msgstr "Bütün verileri görüntülemek isterseniz."
 
 #: template_commands.py:267
 msgid "describe"
@@ -106,7 +106,7 @@ msgstr "Şablonu ve şablonun alanlarını açıkla."
 #: template_commands.py:293
 #, python-brace-format
 msgid "Currently there are **{user_profile_count}** created profiles for this template."
-msgstr ""
+msgstr "Şuan bu şablon için **{user_profile_count}** tane oluşturulmuş profiliniz bulunmakta."
 
 #: template_commands.py:335
 msgid "Edits a template."
@@ -171,15 +171,15 @@ msgstr "Şablonun isminin ne olmasını istersin?"
 
 #: template_commands.py:600
 msgid "What channel do you want to set as the verification channel?"
-msgstr ""
+msgstr "Hangi kanalı doğrulama kanalı olarak ayarlamak istersiniz?"
 
 #: template_commands.py:604
 msgid "What channel do you want to set as the archive channel?"
-msgstr ""
+msgstr "Hangi kanalı arşiv kanalı olarak ayarlamak istersiniz?"
 
 #: template_commands.py:608
 msgid "What role do you want users to receive when their profile is approved?"
-msgstr ""
+msgstr "Şablon onaylanınca hangi rolün verilmesini istersiniz?"
 
 #: template_commands.py:612
 msgid "What do you want to set the max profile count to?"
@@ -240,7 +240,7 @@ msgstr "Alanı sil"
 #: template_commands.py:917
 #, python-brace-format
 msgid "Editing the field **{field_name}**. Which part would you like to edit?"
-msgstr ""
+msgstr "**{field_name}** düzenleniyor. Hangi bölümünü düzenlemek istersiniz?"
 
 #: template_commands.py:934
 msgid "Timed out waiting for field attribute."
@@ -296,7 +296,7 @@ msgstr "Bir şablon silindi."
 
 #: template_commands.py:1155
 msgid "By doing this, you'll delete all of the created profiles under this template as well. Would you like to proceed?"
-msgstr "Bunu yaparak, bu şablon ile yapılmış profilerde silinecek. Devam etmek istermisiniz?"
+msgstr "Bunu yaparak, bu şablon ile yapılmış profilleri de silinecek. Devam etmek ister misiniz?"
 
 #: template_commands.py:1172
 msgid "Template delete timed out - please try again later."
@@ -309,7 +309,7 @@ msgstr "Şablonun silinmesi iptal edildi."
 #: template_commands.py:1207
 #, python-brace-format
 msgid "All relevant data for template **{template_name}** (`{template_id}`) has been deleted."
-msgstr ""
+msgstr "**{template_name}** (`{template_id}`) şablonu ile ilgili tüm veriler silindi."
 
 #: template_commands.py:1223
 msgid "template_name"

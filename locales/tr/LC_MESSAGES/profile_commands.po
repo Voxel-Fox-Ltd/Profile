@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: profile-discord-bot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-05-05 20:09\n"
+"PO-Revision-Date: 2022-05-05 21:10\n"
 "Last-Translator: \n"
 "Language-Team: Turkish\n"
 "MIME-Version: 1.0\n"
@@ -55,7 +55,7 @@ msgstr "Tamam"
 #: profile_commands.py:305 profile_commands.py:385 profile_commands.py:431
 #: profile_commands.py:850
 msgid "Timed out waiting for you to continue."
-msgstr "Devam etmeniz için bekleme zaman aşımına uğradı."
+msgstr "Devam etmeniz beklenirken zaman aşımına uğradı."
 
 #: profile_commands.py:346
 msgid "Could not get field information."
@@ -67,7 +67,7 @@ msgstr "Profil kurulumunu iptal et"
 
 #: profile_commands.py:540
 msgid "You're already setting up a profile."
-msgstr "Zaten profil kuruyorsunuz."
+msgstr "Çoktan profil kuruyorsunuz."
 
 #: profile_commands.py:555
 msgid "Failed to get that profile."
@@ -93,7 +93,7 @@ msgstr "İptal et"
 
 #: profile_commands.py:645
 msgid "What attribute do you want to edit?"
-msgstr ""
+msgstr "Hangi özelliği düzenlemek istersiniz?"
 
 #: profile_commands.py:688
 msgid "Cancelled profile setup."

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: profile-discord-bot\n"
 "POT-Creation-Date: 2022-05-02 09:21+0100\n"
-"PO-Revision-Date: 2022-05-05 22:09\n"
+"PO-Revision-Date: 2022-05-05 23:20\n"
 "Last-Translator: \n"
 "Language-Team: Turkish\n"
 "Language: tr\n"
@@ -30,7 +30,7 @@ msgstr "Reddet"
 #: profile_verification.py:302
 #, python-brace-format
 msgid "Failed to get template with ID `{template_id}`."
-msgstr "`{template_id}` IDli şablonu alırken hata oluştu."
+msgstr "`{template_id}` ID'li şablonu alırken hata oluştu."
 
 #: profile_verification.py:330
 msgid "No reason provided."
@@ -51,12 +51,12 @@ msgstr "Bu profili neden reddediyorsunuz?"
 #: profile_verification.py:408
 #, python-brace-format
 msgid "Your profile for **{template_name}** (`{profile_name}`) on `{guild_name}` has been verified."
-msgstr ""
+msgstr "`{guild_name}` sunucusundaki **{template_name}** şablonunda olan `{profile_name}` profiliniz doğrulandı."
 
 #: profile_verification.py:417
 #, python-brace-format
 msgid "Your profile for **{template_name}** (`{profile_name}`) on `{guild_name}` has been denied with the reason `{denial_reason}`."
-msgstr ""
+msgstr "`{guild_name}` sunucusundaki **{template_name}** şablonunda olan `{profile_name}` profiliniz reddedildi. Reddedilme nedeni: `{denial_reason}`."
 
 #: profile_verification.py:442
 msgid "Failed to send profile archive message."

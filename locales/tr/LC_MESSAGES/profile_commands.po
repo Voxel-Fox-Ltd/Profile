@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: profile-discord-bot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-05-04 20:32\n"
+"PO-Revision-Date: 2022-05-05 20:09\n"
 "Last-Translator: \n"
 "Language-Team: Turkish\n"
 "MIME-Version: 1.0\n"
@@ -22,11 +22,11 @@ msgstr ""
 #: profile_commands.py:150
 #, python-brace-format
 msgid "This command can only be run as a slash command - run `/template edit {template_name}` to create it."
-msgstr "Bu komut sadece slash komut'u olarak kullanılabilir - `/template edit {template_name}` yazarak yaratabilirsiniz."
+msgstr "Bu komut sadece slash komutu olarak kullanılabilir - `/template edit {template_name}` yazarak yaratabilirsiniz."
 
 #: profile_commands.py:155
 msgid "This command can only be run as a slash command."
-msgstr "Bu komut sadece slash komut'u olarak kullanılabilir."
+msgstr "Bu komut sadece slash komutu olarak kullanılabilir."
 
 #: profile_commands.py:209
 msgid "default"
@@ -42,11 +42,11 @@ msgstr "Profilinize ne ismi vermek istersiniz?"
 
 #: profile_commands.py:262
 msgid "You're already using that name for this template. Please provide an alternative."
-msgstr "Bu ismi başka bir şablon için kullanııyorsunuz. Lütfen başka bir isim temin edin."
+msgstr "Bu ismi başka bir şablon için kullanıyorsunuz. Lütfen başka bir isim temin edin."
 
 #: profile_commands.py:269
 msgid "You can only use standard lettering and digits in your profile name. Please provide an alternative."
-msgstr "Sadece latin harfleri ve sayılar profil ismilerinde kullanılabilir. Lütfen başka bir isim temin edin."
+msgstr "Sadece Latin harfleri ve sayılar profil isimlerinde kullanılabilir. Lütfen başka bir isim temin edin."
 
 #: profile_commands.py:280 profile_commands.py:413
 msgid "Okay"
@@ -71,7 +71,7 @@ msgstr "Zaten profil kuruyorsunuz."
 
 #: profile_commands.py:555
 msgid "Failed to get that profile."
-msgstr "Profil hakkında bilgi alırken hata'ya uğrandı."
+msgstr "Profil hakkında bilgi alırken hataya uğrandı."
 
 #: profile_commands.py:564
 #, python-brace-format

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: profile-discord-bot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-05-05 22:09\n"
+"PO-Revision-Date: 2022-05-05 23:20\n"
 "Last-Translator: \n"
 "Language-Team: Turkish\n"
 "MIME-Version: 1.0\n"
@@ -111,7 +111,7 @@ msgstr "Gereken şablon, siz profili kurarken silinmiş."
 #: profile_commands.py:788
 #, python-brace-format
 msgid "Your profile has been sent to the **{guild_name}** staff team for verification - please hold tight!"
-msgstr ""
+msgstr "Profiliniz **{guild_name}** sunucusunun yönetici takımına doğrulanmak için yollandı - lütfen bekleyin!"
 
 #: profile_commands.py:792
 msgid "Your profile has been created and saved."
@@ -120,7 +120,7 @@ msgstr "Profiliniz yaratılmış ve kayıt edilmiştir."
 #: profile_commands.py:823 profile_commands.py:934
 #, python-brace-format
 msgid "You don't have a profile for **{template_name}** with the name **{profile_name}**."
-msgstr ""
+msgstr "**{template_name}** şablonunda **{profile_name}** isimli bir profile sahip değilsiniz."
 
 #: profile_commands.py:827 profile_commands.py:944
 #, python-brace-format
@@ -142,27 +142,27 @@ msgstr "Profiliniz silinmiştir."
 #: profile_commands.py:917
 #, python-brace-format
 msgid "{user} has multiple profiles for **{template_name}** - you need to specify one."
-msgstr ""
+msgstr "{user} kullanıcısı **{template_name}** şablonu içinde birden fazla profili var - bir profili belirtmeniz gerekir."
 
 #: profile_commands.py:921
 #, python-brace-format
 msgid "You have multiple profiles for **{template_name}** - you need to specify one."
-msgstr ""
+msgstr "**{template_name}** şablonunda birden fazla profilin var - bir profili belirtmeniz gerekir."
 
 #: profile_commands.py:930
 #, python-brace-format
 msgid "{user} doesn't have a profile for **{template_name}** with the name **{profile_name}**."
-msgstr ""
+msgstr "{user} kullanıcısı, **{template_name}** şablonunda **{profile_name}** isimli bir profile sahip değil."
 
 #: profile_commands.py:940
 #, python-brace-format
 msgid "{user} doesn't have any profiles for **{template_name}**."
-msgstr ""
+msgstr "{user} kullanıcısı, **{template_name}** şablonunda herhangi bir profile sahip değil."
 
 #: profile_commands.py:956
 #, python-brace-format
 msgid "{user}'s profile hasn't been verified yet, and thus can't be sent."
-msgstr ""
+msgstr "{user} kullanıcısının profili daha doğrulanamadı, bu yüzden yollanamaz."
 
 #: profile_commands.py:960
 msgid "Your profile hasn't been verified yet, and thus can't be sent."

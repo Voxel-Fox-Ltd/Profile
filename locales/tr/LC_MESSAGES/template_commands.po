@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: profile-discord-bot\n"
 "POT-Creation-Date: 2022-05-02 15:31+0100\n"
-"PO-Revision-Date: 2022-05-05 21:10\n"
+"PO-Revision-Date: 2022-05-05 22:09\n"
 "Last-Translator: \n"
 "Language-Team: Turkish\n"
 "Language: tr\n"
@@ -110,7 +110,7 @@ msgstr ""
 
 #: template_commands.py:335
 msgid "Edits a template."
-msgstr ""
+msgstr "Şablon düzenlendi."
 
 #: template_commands.py:356 template_commands.py:1146
 msgid "You're already editing a template."
@@ -167,7 +167,7 @@ msgstr "Slash komutunu güncellenirken hata oluştu - `{error}`."
 
 #: template_commands.py:596
 msgid "What do you want to set the template's name to?"
-msgstr ""
+msgstr "Şablonun isminin ne olmasını istersin?"
 
 #: template_commands.py:600
 msgid "What channel do you want to set as the verification channel?"
@@ -183,19 +183,19 @@ msgstr ""
 
 #: template_commands.py:612
 msgid "What do you want to set the max profile count to?"
-msgstr ""
+msgstr "Maksimum profil sayısı kaç olsun?"
 
 #: template_commands.py:729
 msgid "That template name is already in use."
-msgstr ""
+msgstr "Bu şablon ismi çoktan kullanılıyor."
 
 #: template_commands.py:739
 msgid "That template name is invalid - not within 1 and 30 characters in length."
-msgstr ""
+msgstr "Şablon ismi geçersiz - şablon ismi 1 ile 30 karakter uzunluğunda olmalı."
 
 #: template_commands.py:749
 msgid "You can only use standard lettering in your template name."
-msgstr ""
+msgstr "Şablon isminde sadece Latin harfleri kullanılabilir."
 
 #: template_commands.py:804
 msgid "New"
@@ -252,11 +252,11 @@ msgstr "Bu alanın özeliğini değiştir"
 
 #: template_commands.py:974
 msgid "What name do you want the field to have?"
-msgstr ""
+msgstr "Alanın isminin ne olmasını istersiniz?"
 
 #: template_commands.py:977
 msgid "What should the prompt for this field be?"
-msgstr ""
+msgstr "Bu alandaki soru ne olmalı?"
 
 #: template_commands.py:1001
 msgid "Timed out waiting for modal submission."
@@ -296,7 +296,7 @@ msgstr "Bir şablon silindi."
 
 #: template_commands.py:1155
 msgid "By doing this, you'll delete all of the created profiles under this template as well. Would you like to proceed?"
-msgstr ""
+msgstr "Bunu yaparak, bu şablon ile yapılmış profilerde silinecek. Devam etmek istermisiniz?"
 
 #: template_commands.py:1172
 msgid "Template delete timed out - please try again later."
@@ -331,11 +331,11 @@ msgstr "Bu sunucudaki maksimum şablon sayısı olan {max_template_count} sayıs
 #: template_commands.py:1270
 #, python-brace-format
 msgid "You already have {max_template_count} templates set for this server, which is the maximum number you are allowed - see `/info` and donate to get a higher profile count for your server."
-msgstr ""
+msgstr "Bu sunucudaki maksimum şablon sayısı olan {max_template_count} sayısına ulaştınız - '/info' yazarak daha çok bilgi edinebilir ve bağış yaparak maksimum profil limitini artırabilirsiniz."
 
 #: template_commands.py:1281
 msgid "You can only use normal lettering and digits in your command name. Please run this command again to set a new one."
-msgstr ""
+msgstr "Komut isminde sadece Latin harfleri ve sayılar kullanılabilir. Lütfen bu komutu yeniden çalıştırıp yeni bir isim temin edin."
 
 #: template_commands.py:1291
 msgid "The maximum length of a profile name is 30 characters. Please run this command again to set a new one."
@@ -344,7 +344,7 @@ msgstr "Profil ismi maksimum 30 karakter olabilir. Lütfen bu komutu yeniden ça
 #: template_commands.py:1303
 #, python-brace-format
 msgid "This server already has a template with name **{template_name}**. Please run this command again to provide another one."
-msgstr ""
+msgstr "Bu sunucuda **{template_name}** isimli şablon çoktan var. Lütfen bu komutu bir daha çalıştırıp başka bir isim temin edin."
 
 #: template_commands.py:1361
 msgid "What name should this field have?"

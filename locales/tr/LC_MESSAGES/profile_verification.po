@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: profile-discord-bot\n"
 "POT-Creation-Date: 2022-05-02 09:21+0100\n"
-"PO-Revision-Date: 2022-05-05 21:10\n"
+"PO-Revision-Date: 2022-05-05 22:09\n"
 "Last-Translator: \n"
 "Language-Team: Turkish\n"
 "Language: tr\n"
@@ -46,7 +46,7 @@ msgstr "Reddedilme Nedeni"
 
 #: profile_verification.py:365
 msgid "Why are you denying this profile?"
-msgstr "Bu profili neden reddetiyorsunuz?"
+msgstr "Bu profili neden reddediyorsunuz?"
 
 #: profile_verification.py:408
 #, python-brace-format

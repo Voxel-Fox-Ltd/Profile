@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: profile-discord-bot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-05-04 20:32\n"
+"PO-Revision-Date: 2022-05-05 23:20\n"
 "Last-Translator: \n"
 "Language-Team: Turkish\n"
 "MIME-Version: 1.0\n"
@@ -22,11 +22,11 @@ msgstr ""
 #: profile_commands.py:150
 #, python-brace-format
 msgid "This command can only be run as a slash command - run `/template edit {template_name}` to create it."
-msgstr "Bu komut sadece slash komut'u olarak kullanılabilir - `/template edit {template_name}` yazarak yaratabilirsiniz."
+msgstr "Bu komut sadece slash komutu olarak kullanılabilir - `/template edit {template_name}` yazarak yaratabilirsiniz."
 
 #: profile_commands.py:155
 msgid "This command can only be run as a slash command."
-msgstr "Bu komut sadece slash komut'u olarak kullanılabilir."
+msgstr "Bu komut sadece slash komutu olarak kullanılabilir."
 
 #: profile_commands.py:209
 msgid "default"
@@ -42,11 +42,11 @@ msgstr "Profilinize ne ismi vermek istersiniz?"
 
 #: profile_commands.py:262
 msgid "You're already using that name for this template. Please provide an alternative."
-msgstr "Bu ismi başka bir şablon için kullanııyorsunuz. Lütfen başka bir isim temin edin."
+msgstr "Bu ismi başka bir şablon için kullanıyorsunuz. Lütfen başka bir isim temin edin."
 
 #: profile_commands.py:269
 msgid "You can only use standard lettering and digits in your profile name. Please provide an alternative."
-msgstr "Sadece latin harfleri ve sayılar profil ismilerinde kullanılabilir. Lütfen başka bir isim temin edin."
+msgstr "Sadece Latin harfleri ve sayılar profil isimlerinde kullanılabilir. Lütfen başka bir isim temin edin."
 
 #: profile_commands.py:280 profile_commands.py:413
 msgid "Okay"
@@ -55,7 +55,7 @@ msgstr "Tamam"
 #: profile_commands.py:305 profile_commands.py:385 profile_commands.py:431
 #: profile_commands.py:850
 msgid "Timed out waiting for you to continue."
-msgstr "Devam etmeniz için bekleme zaman aşımına uğradı."
+msgstr "Devam etmeniz beklenirken zaman aşımına uğradı."
 
 #: profile_commands.py:346
 msgid "Could not get field information."
@@ -67,11 +67,11 @@ msgstr "Profil kurulumunu iptal et"
 
 #: profile_commands.py:540
 msgid "You're already setting up a profile."
-msgstr "Zaten profil kuruyorsunuz."
+msgstr "Çoktan profil kuruyorsunuz."
 
 #: profile_commands.py:555
 msgid "Failed to get that profile."
-msgstr "Profil hakkında bilgi alırken hata'ya uğrandı."
+msgstr "Profil hakkında bilgi alırken hataya uğrandı."
 
 #: profile_commands.py:564
 #, python-brace-format
@@ -93,7 +93,7 @@ msgstr "İptal et"
 
 #: profile_commands.py:645
 msgid "What attribute do you want to edit?"
-msgstr ""
+msgstr "Hangi özelliği düzenlemek istersiniz?"
 
 #: profile_commands.py:688
 msgid "Cancelled profile setup."
@@ -111,7 +111,7 @@ msgstr "Gereken şablon, siz profili kurarken silinmiş."
 #: profile_commands.py:788
 #, python-brace-format
 msgid "Your profile has been sent to the **{guild_name}** staff team for verification - please hold tight!"
-msgstr ""
+msgstr "Profiliniz **{guild_name}** sunucusunun yönetici takımına doğrulanmak için yollandı - lütfen bekleyin!"
 
 #: profile_commands.py:792
 msgid "Your profile has been created and saved."
@@ -120,12 +120,12 @@ msgstr "Profiliniz yaratılmış ve kayıt edilmiştir."
 #: profile_commands.py:823 profile_commands.py:934
 #, python-brace-format
 msgid "You don't have a profile for **{template_name}** with the name **{profile_name}**."
-msgstr ""
+msgstr "**{template_name}** şablonunda **{profile_name}** isimli bir profile sahip değilsiniz."
 
 #: profile_commands.py:827 profile_commands.py:944
 #, python-brace-format
 msgid "You don't have any profiles for **{template_name}**."
-msgstr ""
+msgstr "**{template_name}** şablonunda hiçbir profilin yok."
 
 #: profile_commands.py:835
 msgid "Are you sure you want to delete this profile?"
@@ -142,27 +142,27 @@ msgstr "Profiliniz silinmiştir."
 #: profile_commands.py:917
 #, python-brace-format
 msgid "{user} has multiple profiles for **{template_name}** - you need to specify one."
-msgstr ""
+msgstr "{user} kullanıcısı **{template_name}** şablonu içinde birden fazla profili var - bir profili belirtmeniz gerekir."
 
 #: profile_commands.py:921
 #, python-brace-format
 msgid "You have multiple profiles for **{template_name}** - you need to specify one."
-msgstr ""
+msgstr "**{template_name}** şablonunda birden fazla profilin var - bir profili belirtmeniz gerekir."
 
 #: profile_commands.py:930
 #, python-brace-format
 msgid "{user} doesn't have a profile for **{template_name}** with the name **{profile_name}**."
-msgstr ""
+msgstr "{user} kullanıcısı, **{template_name}** şablonunda **{profile_name}** isimli bir profile sahip değil."
 
 #: profile_commands.py:940
 #, python-brace-format
 msgid "{user} doesn't have any profiles for **{template_name}**."
-msgstr ""
+msgstr "{user} kullanıcısı, **{template_name}** şablonunda herhangi bir profile sahip değil."
 
 #: profile_commands.py:956
 #, python-brace-format
 msgid "{user}'s profile hasn't been verified yet, and thus can't be sent."
-msgstr ""
+msgstr "{user} kullanıcısının profili daha doğrulanamadı, bu yüzden yollanamaz."
 
 #: profile_commands.py:960
 msgid "Your profile hasn't been verified yet, and thus can't be sent."

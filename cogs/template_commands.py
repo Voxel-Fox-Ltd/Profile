@@ -1089,7 +1089,7 @@ class TemplateCommands(vbu.Cog):
             raise ValueError()
 
         # We want to defer now
-        await interaction.response.defer()
+        await interaction.response.defer_update()
 
         # Save the data
         async with vbu.Database() as db:

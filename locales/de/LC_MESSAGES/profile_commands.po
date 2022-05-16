@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: profile-discord-bot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-05-15 21:39\n"
+"PO-Revision-Date: 2022-05-16 21:55\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "MIME-Version: 1.0\n"
@@ -50,7 +50,7 @@ msgstr "Sie können nur Standardbeschriftungen und Ziffern in Ihrem Profilnamen 
 
 #: profile_commands.py:280 profile_commands.py:413
 msgid "Okay"
-msgstr "Ok"
+msgstr "Okay"
 
 #: profile_commands.py:305 profile_commands.py:385 profile_commands.py:431
 #: profile_commands.py:850

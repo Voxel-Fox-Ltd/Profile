@@ -359,6 +359,7 @@ class ProfileCommands(vbu.Cog):
                         custom_id=f"fieldText {field.id}",
                         value=current_value,
                         style=discord.TextStyle.long,
+                        max_length=1_000,
                     )
                 )
             ]

@@ -772,7 +772,11 @@ class ProfileCommands(vbu.Cog):
         user_profile.all_filled_fields = filled_field_dict
 
         # Make sure that the embed sends
-        await interaction.response.defer()
+        await interaction.response.edit_message(
+            content=vbu.translation(interaction, "profile_commands").gettext("Sending profile..."),
+            embeds=[],
+            components=None,
+        )
         try:
             await interaction.followup.send(
                 embed=user_profile.build_embed(self.bot, interaction, user),
@@ -838,8 +842,6 @@ class ProfileCommands(vbu.Cog):
             )
         await interaction.edit_original_message(
             content=message,
-            components=None,
-            embeds=[],
         )
 
     @commands.command(hidden=True)

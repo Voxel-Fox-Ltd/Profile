@@ -333,7 +333,8 @@ class ProfileCommands(vbu.Cog):
         Ask the user to fill in the content for a field given its prompt.
 
         The interaction given must not have been responded to.
-        The interaction returned must not have been responded to.
+        The interaction returned must not have been responded to if a filled field is given also,
+        otherwise it may be either as it is disregarded.
         """
 
         # Make a new ID for this set of components
@@ -417,24 +418,25 @@ class ProfileCommands(vbu.Cog):
                     field.field_type.check(field_content)
                 break
             except utils.errors.FieldCheckFailure as e:
-                if invalid_message:
-                    meth = invalid_message.edit
-                    kwargs = {}
-                else:
-                    meth = interaction.followup.send
-                    kwargs = {"ephemeral": True}
+                # if invalid_message:
+                #     meth = invalid_message.edit
+                #     kwargs = {}
+                # else:
+                meth = interaction.followup.send
+                kwargs = {"ephemeral": True}
                 invalid_message = await meth(
                     content=e.message,
-                    components=discord.ui.MessageComponents(
-                        discord.ui.ActionRow(
-                            discord.ui.Button(
-                                label=vbu.translation(interaction, "profile_commands").gettext("Okay"),
-                                custom_id=f"{id_to_use} {new_interaction_id}",
-                            )
-                        )
-                    ),
+                    # components=discord.ui.MessageComponents(
+                    #     discord.ui.ActionRow(
+                    #         discord.ui.Button(
+                    #             label=vbu.translation(interaction, "profile_commands").gettext("Okay"),
+                    #             custom_id=f"{id_to_use} {new_interaction_id}",
+                    #         )
+                    #     )
+                    # ),
                     **kwargs,
                 )
+                return (interaction, None)
 
             # Wait for them to click the okay button
             try:

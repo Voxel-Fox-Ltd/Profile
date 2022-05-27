@@ -323,7 +323,7 @@ class ProfileCommands(vbu.Cog):
     async def get_field_content(
             ctx: utils.types.GuildContext,
             interaction: discord.Interaction,
-            id_to_use: str,
+            original_id: str,
             profile_name: str,
             field: utils.Field,
             target_user: Union[discord.User, discord.Member],
@@ -335,6 +335,11 @@ class ProfileCommands(vbu.Cog):
         The interaction given must not have been responded to.
         The interaction returned must not have been responded to.
         """
+
+        # Make a new ID for this set of components
+        # id_to_use = str(uuid.uuid4())
+        new_interaction_id = str(uuid.uuid4())
+        id_to_use = original_id
 
         # See if the field is a command
         # If it is, then we can just add that to their profile and continue
@@ -359,6 +364,7 @@ class ProfileCommands(vbu.Cog):
                         custom_id=f"fieldText {field.id}",
                         value=current_value,
                         style=discord.TextStyle.long,
+                        min_length=None if field.optional else 1,
                         max_length=1_000,
                     )
                 )
@@ -366,9 +372,11 @@ class ProfileCommands(vbu.Cog):
         )
 
         # Ask the user for their input, loop until they give something valid
+        invalid_message: Optional[discord.WebhookMessage] = None  # the message used to show errors
         while True:
 
             # Send the modal
+            assert interaction.user
             try:
                 await interaction.response.send_modal(modal)
             except discord.InteractionResponded as e:
@@ -401,37 +409,38 @@ class ProfileCommands(vbu.Cog):
 
             # Try and validate their input
             field_content: str = interaction.components[0].components[0].value.strip()  # type: ignore
+            await interaction.response.defer_update()
             try:
                 if field_content:
                     if hasattr(field.field_type, "fix"):
                         field_content = await field.field_type.fix(field_content)  # type: ignore
                     field.field_type.check(field_content)
-                try:
-                    await interaction.response.defer_update()
-                except discord.HTTPException:
-                    # The interaction has already been responded to
-                    # I'm not super sure WHEN this could happen
-                    # But it does appear to be rather common
-                    pass
                 break
             except utils.errors.FieldCheckFailure as e:
-                await interaction.response.edit_message(
+                if invalid_message:
+                    meth = invalid_message.edit
+                    kwargs = {}
+                else:
+                    meth = interaction.followup.send
+                    kwargs = {"ephemeral": True}
+                invalid_message = await meth(
                     content=e.message,
                     components=discord.ui.MessageComponents(
                         discord.ui.ActionRow(
                             discord.ui.Button(
                                 label=vbu.translation(interaction, "profile_commands").gettext("Okay"),
-                                custom_id="OKAY",
+                                custom_id=f"{id_to_use} {new_interaction_id}",
                             )
                         )
-                    )
+                    ),
+                    **kwargs,
                 )
 
             # Wait for them to click the okay button
             try:
                 interaction = await ctx.bot.wait_for(
                     "component_interaction",
-                    check=lambda i: i.user.id == ctx.author.id and i.custom_id == "OKAY",
+                    check=lambda i: i.user.id == ctx.author.id and i.custom_id == f"{id_to_use} {new_interaction_id}",
                     timeout=60 * 3,
                 )
             except asyncio.TimeoutError:
@@ -445,6 +454,15 @@ class ProfileCommands(vbu.Cog):
                 except discord.HTTPException:
                     pass
                 return (interaction, None)
+
+        # Delete any errant erorr messages
+        if invalid_message:
+            try:
+                await invalid_message.edit(
+                    content=vbu.translation(interaction, "profile_commands").gettext("Error resolved."),
+                    components=None)
+            except:
+                pass
 
         # Add their filled field object to the list of data
         return interaction, utils.FilledField(
@@ -696,6 +714,8 @@ class ProfileCommands(vbu.Cog):
 
                 # See which button they've clicked
                 _, field_id = button_click.custom_id.split(" ")  # type: ignore
+
+                # Cancel button was clicked
                 if field_id == "CANCEL":
                     await button_click.response.edit_message(
                         content=vbu.translation(interaction, "profile_commands").gettext("Cancelled profile setup."),
@@ -703,9 +723,13 @@ class ProfileCommands(vbu.Cog):
                         embed=None,
                     )
                     return
+
+                # Done button was clicked
                 elif field_id == "DONE":
                     interaction = button_click
                     break
+
+                # No button was clicked - this is a callback from an edit
                 elif response_field:
                     filled_field_dict[response_field.field_id] = response_field
                     secondary_count = 0
@@ -719,7 +743,14 @@ class ProfileCommands(vbu.Cog):
                             if b.custom_id.endswith(" DONE"):
                                 b.enable()
                     continue
-                field = template.fields[field_id]
+
+                # One of the field buttons was clicked
+                try:
+                    field = template.fields[field_id]
+
+                # Invalid field ID
+                except KeyError:
+                    continue
 
                 # Send them a modal
                 current_response = filled_field_dict.get(field.field_id)

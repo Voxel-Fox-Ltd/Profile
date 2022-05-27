@@ -538,6 +538,8 @@ class ProfileCommands(vbu.Cog):
             user,
             current_value=current_value,
         )
+        if response_field is None:
+            return
         self.bot.dispatch("profile_edit_update", filled_field_modal, response_field)
 
     async def edit_or_create_profile(

@@ -393,6 +393,7 @@ class ProfileCommands(vbu.Cog):
                     check=lambda i: i.user.id == ctx.author.id and i.custom_id == modal.custom_id,
                     timeout=60 * 10,
                 )
+                await interaction.response.defer_update()
 
             # We timed out waiting
             except asyncio.TimeoutError:
@@ -409,7 +410,6 @@ class ProfileCommands(vbu.Cog):
 
             # Try and validate their input
             field_content: str = interaction.components[0].components[0].value.strip()  # type: ignore
-            await interaction.response.defer_update()
             try:
                 if field_content:
                     if hasattr(field.field_type, "fix"):
@@ -778,9 +778,8 @@ class ProfileCommands(vbu.Cog):
             components=None,
         )
         try:
-            await interaction.followup.send(
-                embed=user_profile.build_embed(self.bot, interaction, user),
-                ephemeral=True,
+            await interaction.edit_original_message(
+                embeds=[user_profile.build_embed(self.bot, interaction, user)],
             )
         except discord.HTTPException as e:
             error_text = vbu.translation(interaction, "profile_commands").gettext(
@@ -842,6 +841,7 @@ class ProfileCommands(vbu.Cog):
             )
         await interaction.edit_original_message(
             content=message,
+            components=None,
         )
 
     @commands.command(hidden=True)

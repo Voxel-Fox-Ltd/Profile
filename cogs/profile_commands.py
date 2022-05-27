@@ -460,7 +460,8 @@ class ProfileCommands(vbu.Cog):
             try:
                 await invalid_message.edit(
                     content=vbu.translation(interaction, "profile_commands").gettext("Error resolved."),
-                    components=None)
+                    components=None,
+                )
             except:
                 pass
 
@@ -771,7 +772,7 @@ class ProfileCommands(vbu.Cog):
         user_profile.all_filled_fields = filled_field_dict
 
         # Make sure that the embed sends
-        await interaction.response.defer_update()
+        await interaction.response.defer()
         try:
             await interaction.followup.send(
                 embed=user_profile.build_embed(self.bot, interaction, user),
@@ -835,7 +836,11 @@ class ProfileCommands(vbu.Cog):
             message = vbu.translation(interaction, "profile_commands").gettext(
                 "Your profile has been created and saved.",
             )
-        await interaction.followup.send(message, ephemeral=True)
+        await interaction.edit_original_message(
+            content=message,
+            components=None,
+            embeds=[],
+        )
 
     @commands.command(hidden=True)
     @commands.bot_has_permissions(send_messages=True)

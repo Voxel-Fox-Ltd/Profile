@@ -108,7 +108,7 @@ class NumberField(FieldType):
 class ImageField(FieldType):
 
     name = 'IMAGE'
-    IMAGE_MATCHER = re.compile(r"^(http(?:s?))://(((?:[/|.|\w|\s|-])*)\.(jpg|gif|png|jpeg|gif))((?:\?|#)(.+))?$")
+    IMAGE_MATCHER = re.compile(r"^(http(?:s?))://(((?:[/|.|\w|\s|-])*)\.(jpg|gif|png|jpeg|webp))((?:\?|#)(.+))?$")
 
     @classmethod
     def check(cls, value):
@@ -132,7 +132,6 @@ class ImageField(FieldType):
 
         In order:
 
-        * Will change a `media.discordapp.net` URL to a `cdn.discordapp.com` link.
         * Will remove `width` and `height` GET params if the URL is a Discord link.
         * Will take the first image if the given link is an Imgur album.
         """
@@ -142,12 +141,12 @@ class ImageField(FieldType):
             return value
 
         # Fix media.discord links
-        if url.host == "media.discordapp.net":
-            value = str(url).replace("//media.discordapp.net", "//cdn.discordapp.com", 1)
-            url = yarl.URL(value)
+        # if url.host == "media.discordapp.net":
+        #     value = str(url).replace("//media.discordapp.net", "//cdn.discordapp.com", 1)
+        #     url = yarl.URL(value)
 
         # Remove GET params
-        if url.host == "cdn.discordapp.com" and "height" in url.query or "width" in url.query:
+        if url.host in ["cdn.discordapp.com", "media.discordapp.net"] and "height" in url.query or "width" in url.query:
             url = url.update_query(height="", width="")
 
         # Check for Imgur links

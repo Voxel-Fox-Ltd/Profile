@@ -418,43 +418,10 @@ class ProfileCommands(vbu.Cog):
                     field.field_type.check(field_content)
                 break
             except utils.errors.FieldCheckFailure as e:
-                # if invalid_message:
-                #     meth = invalid_message.edit
-                #     kwargs = {}
-                # else:
-                meth = interaction.followup.send
-                kwargs = {"ephemeral": True}
-                invalid_message = await meth(
+                invalid_message = await interaction.followup.send(
                     content=e.message,
-                    # components=discord.ui.MessageComponents(
-                    #     discord.ui.ActionRow(
-                    #         discord.ui.Button(
-                    #             label=vbu.translation(interaction, "profile_commands").gettext("Okay"),
-                    #             custom_id=f"{id_to_use} {new_interaction_id}",
-                    #         )
-                    #     )
-                    # ),
-                    **kwargs,
+                    ephemeral=True,
                 )
-                return (interaction, None)
-
-            # Wait for them to click the okay button
-            try:
-                interaction = await ctx.bot.wait_for(
-                    "component_interaction",
-                    check=lambda i: i.user.id == ctx.author.id and i.custom_id == f"{id_to_use} {new_interaction_id}",
-                    timeout=60 * 3,
-                )
-            except asyncio.TimeoutError:
-                try:
-                    await interaction.edit_original_message(
-                        content=vbu.translation(interaction, "profile_commands").gettext(
-                            "Timed out waiting for you to continue."
-                        ),
-                        components=None
-                    )
-                except discord.HTTPException:
-                    pass
                 return (interaction, None)
 
         # Delete any errant erorr messages

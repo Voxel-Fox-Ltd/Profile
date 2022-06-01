@@ -450,8 +450,7 @@ class ProfileCommands(vbu.Cog):
     async def set_profile_meta(
             self,
             ctx: utils.types.GuildContext,
-            target_user: Optional[Union[discord.Member, discord.User]] = None
-            ):
+            target_user: Optional[Union[discord.Member, discord.User]] = None):
         """
         Talks a user through setting up a profile on a given server.
         """
@@ -472,8 +471,7 @@ class ProfileCommands(vbu.Cog):
             self,
             ctx: utils.types.GuildContext,
             *,
-            profile_name: str
-            ):
+            profile_name: str):
         """
         Edit one of your profiles.
         """
@@ -515,8 +513,7 @@ class ProfileCommands(vbu.Cog):
             interaction: discord.Interaction,
             template: utils.Template,
             user: discord.Member,
-            profile_name: Optional[str],
-            ):
+            profile_name: Optional[str]):
 
         # Set up some variables
         assert ctx.author
@@ -635,6 +632,9 @@ class ProfileCommands(vbu.Cog):
             # Set a flag for if we want to edit the original
             message_sent = False
 
+            # Keep track of pending tasks so we don't spawn two field fill waiters
+            field_fill_tasks: Dict[utils.Field, asyncio.Task] = {}
+
             # Loop forever until they click the done or cancel button
             while True:
 
@@ -728,7 +728,9 @@ class ProfileCommands(vbu.Cog):
                 current_response = filled_field_dict.get(field.field_id)
                 if current_response is not None:
                     current_response = current_response.value
-                self.bot.loop.create_task(self.get_field_content_with_dispatch(
+                if field in field_fill_tasks:
+                    field_fill_tasks[field].cancel()
+                field_fill_tasks[field] = self.bot.loop.create_task(self.get_field_content_with_dispatch(
                     ctx,
                     button_click,
                     component_id,

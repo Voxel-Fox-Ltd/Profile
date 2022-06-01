@@ -146,10 +146,10 @@ class ProfileCommands(vbu.Cog):
         # Make sure it's a slashie
         if not isinstance(ctx, commands.SlashContext):
             if not template.application_command_id:
-                text = vbu.translation(ctx, "profile_commands").gettext(
+                text = vbu.translation(ctx, "profile_commands").gettext((
                     "This command can only be run as a slash command - run "
                     "`/template edit {template_name}` to create it."
-                ).format(template_name=template.name)
+                )).format(template_name=template.name)
             else:
                 text = vbu.translation(ctx, "profile_commands").gettext(
                     "This command can only be run as a slash command."
@@ -265,10 +265,10 @@ class ProfileCommands(vbu.Cog):
 
                 # Make sure the name they gave is valid
                 if any([i for i in name_content if i not in string.ascii_letters + string.digits + ' ']):
-                    error_text = vbu.translation(interaction, "profile_commands").gettext(
+                    error_text = vbu.translation(interaction, "profile_commands").gettext((
                         "You can only use standard lettering and digits in your profile name. "
                         "Please provide an alternative."
-                    )
+                    ))
                     raise utils.errors.FieldCheckFailure(error_text)
 
             # We hit an error converting their name to something valid
@@ -338,8 +338,6 @@ class ProfileCommands(vbu.Cog):
         """
 
         # Make a new ID for this set of components
-        # id_to_use = str(uuid.uuid4())
-        new_interaction_id = str(uuid.uuid4())
         id_to_use = original_id
 
         # See if the field is a command
@@ -450,7 +448,7 @@ class ProfileCommands(vbu.Cog):
     async def set_profile_meta(
             self,
             ctx: utils.types.GuildContext,
-            target_user: Optional[Union[discord.Member, discord.User]] = None):
+            _: Optional[Union[discord.Member, discord.User]] = None):
         """
         Talks a user through setting up a profile on a given server.
         """
@@ -662,7 +660,7 @@ class ProfileCommands(vbu.Cog):
                             ),
                             self.bot.wait_for(
                                 "profile_edit_update",
-                                check=lambda i, ff: i.user.id == ctx.author.id and i.custom_id.startswith(component_id),
+                                check=lambda i, _: i.user.id == ctx.author.id and i.custom_id.startswith(component_id),
                             ),
                         ],
                         return_when=asyncio.FIRST_COMPLETED,

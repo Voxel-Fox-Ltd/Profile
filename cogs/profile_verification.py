@@ -14,8 +14,7 @@ class ProfileVerification(vbu.Cog):
             self,
             ctx: Union[discord.Interaction, commands.Context, str],
             user_profile: utils.UserProfile,
-            target_user: discord.Member,
-            ) -> Optional[discord.Message]:
+            target_user: discord.Member) -> Optional[discord.Message]:
         """
         Sends a profile in to the template's verification channel.
 

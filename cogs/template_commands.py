@@ -19,8 +19,7 @@ class TemplateCommands(vbu.Cog):
 
     @staticmethod
     def is_valid_template_name(
-            template_name: str
-            ) -> bool:
+            template_name: str) -> bool:
         """
         Returns whether a template name is technically valid.
 
@@ -41,7 +40,9 @@ class TemplateCommands(vbu.Cog):
         ))
 
     @staticmethod
-    def get_profile_application_command(name: str, description: Optional[str] = None) -> discord.ApplicationCommand:
+    def get_profile_application_command(
+            name: str,
+            description: Optional[str] = None) -> discord.ApplicationCommand:
         """
         Create an application command with the given name, and subcommands
         for create, edit, and delete.
@@ -181,7 +182,7 @@ class TemplateCommands(vbu.Cog):
         ),
     )
     @commands.bot_has_permissions(send_messages=True)
-    async def template(self, ctx: commands.SlashContext):
+    async def template(self, _: commands.SlashContext):
         """
         The parent group for all template commands.
         """
@@ -911,7 +912,6 @@ class TemplateCommands(vbu.Cog):
                 ),
             ),
         )
-        field_name = field_to_edit.name
         await interaction.response.edit_message(
             content=vbu.translation(ctx, "template_commands").gettext(
                 "Editing the field **{field_name}**. Which part would you like to edit?",
@@ -1151,10 +1151,10 @@ class TemplateCommands(vbu.Cog):
         async with self.template_editing_locks[str(uuid.uuid4())]:
 
             # Ask for confirmation
-            text = vbu.translation(ctx, "template_commands").gettext(
+            text = vbu.translation(ctx, "template_commands").gettext((
                 "By doing this, you'll delete all of the created profiles under this "
                 "template as well. Would you like to proceed?"
-            )
+            ))
             delete_confirmation_message = await interaction.followup.send(
                 text,
                 components=discord.ui.MessageComponents.boolean_buttons(),
@@ -1262,35 +1262,35 @@ class TemplateCommands(vbu.Cog):
         max_template_count = max(guild_settings[0]['max_template_count'], perks.max_template_count)
         if len(template_list) >= max_template_count:
             if perks.is_premium:
-                return await interaction.followup.send(vbu.translation(ctx, "template_commands").gettext(
+                return await interaction.followup.send(vbu.translation(ctx, "template_commands").gettext((
                     f"You already have {max_template_count} templates set for this server, which is the "
                     "maximum number you are allowed."
-                ))
-            return await interaction.followup.send(vbu.translation(ctx, "template_commands").gettext(
+                )))
+            return await interaction.followup.send(vbu.translation(ctx, "template_commands").gettext((
                 f"You already have {max_template_count} templates set for this server, which is the "
                 "maximum number you are allowed - see `/info` and donate to get a "
                 "higher profile count for your server."
-            ))
+            )))
 
         # And now we start creating the template itself
         async with self.template_editing_locks[str(uuid.uuid4())]:
 
                 # Check name for characters
             if not self.is_valid_template_name(template_name):
-                await interaction.followup.send(vbu.translation(ctx, "template_commands").gettext(
+                await interaction.followup.send(vbu.translation(ctx, "template_commands").gettext((
                     "You can only use normal lettering and digits in your command name. "
                     "Please run this command again to set a new one."
-                ))
+                )))
                 return
 
             # Check name for length
             if 30 >= len(template_name) >= 1:
                 pass
             else:
-                await interaction.followup.send(vbu.translation(ctx, "template_commands").gettext(
+                await interaction.followup.send(vbu.translation(ctx, "template_commands").gettext((
                     "The maximum length of a profile name is 30 characters. "
                     "Please run this command again to set a new one."
-                ))
+                )))
 
             # Check name is unique
             async with vbu.Database() as db:
@@ -1299,10 +1299,10 @@ class TemplateCommands(vbu.Cog):
                     ctx.guild.id, template_name,
                 )
             if template_exists:
-                await interaction.followup.send(vbu.translation(ctx, "template_commands").gettext(
+                await interaction.followup.send(vbu.translation(ctx, "template_commands").gettext((
                     f"This server already has a template with name **{template_name}**. "
                     "Please run this command again to provide another one."
-                ))
+                )))
                 return
 
             # Add new application command

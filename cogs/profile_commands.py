@@ -378,12 +378,14 @@ class ProfileCommands(vbu.Cog):
             assert interaction.user
             try:
                 await interaction.response.send_modal(modal)
-            except discord.InteractionResponded as e:
-                await interaction.followup.send(f"{interaction.user.mention} You hit an interaction responded error ({e}) - could you tell the dev how you did that? https://discord.gg/vfl")
+            except:
                 raise
-            except discord.HTTPException as e:
-                await interaction.followup.send(f"{interaction.user.mention} You hit a form body error ({e}) - could you tell the dev how you did that? https://discord.gg/vfl")
-                raise
+            # except discord.InteractionResponded as e:
+            #     await interaction.followup.send(f"{interaction.user.mention} You hit an interaction responded error ({e}) - could you tell the dev how you did that? https://discord.gg/vfl")
+            #     raise
+            # except discord.HTTPException as e:
+            #     await interaction.followup.send(f"{interaction.user.mention} You hit a form body error ({e}) - could you tell the dev how you did that? https://discord.gg/vfl")
+            #     raise
 
             # Wait for the user's input
             try:

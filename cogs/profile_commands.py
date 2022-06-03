@@ -145,8 +145,8 @@ class ProfileCommands(vbu.Cog):
         if not template:
             try:
                 await ctx.guild.delete_application_command(discord.Object(ctx.interaction.data['id']))
-            except:
-                pass
+            except Exception as e:
+                self.logger.error("failed to delete command", exc_info=e)
             return  # Fail silently on template doesn't exist
 
         # Get the metacommand

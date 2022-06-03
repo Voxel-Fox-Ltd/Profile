@@ -72,18 +72,27 @@ class ProfileCommands(vbu.Cog):
                 template_name,
                 fetch_fields=False,
             )
-            if not template:
-                self.logger.info(f"Failed at getting template '{template_name}' in guild {interaction.guild_id}")
-                return  # Fail silently on template doesn't exist
 
             # Find the user's profiles
-            options = interaction.options[0].options
-            user_id = interaction.user.id
-            if options:
-                for i in options:
-                    if i.name == "user" and i.value:
-                        user_id = int(i.value)
-            user_profiles = await template.fetch_all_profiles_for_user(db, user_id, fetch_filled_fields=False)
+            if template:
+                options = interaction.options[0].options
+                user_id = interaction.user.id
+                if options:
+                    for i in options:
+                        if i.name == "user" and i.value:
+                            user_id = int(i.value)
+                user_profiles = await template.fetch_all_profiles_for_user(db, user_id, fetch_filled_fields=False)
+
+        # Make sure a template exists
+        if not template:
+            self.logger.info(f"Failed at getting template '{template_name}' in guild {interaction.guild_id}")
+
+            # Delete the command's id
+            try:
+                await interaction.guild.delete_application_command(discord.Object(interaction.data['id']))
+            except:
+                pass
+            return
 
         # And return the profile names
         await interaction.response.send_autocomplete([
@@ -131,7 +140,13 @@ class ProfileCommands(vbu.Cog):
                 template_name,
                 fetch_fields=False,
             )
+
+        # Make sure a template exists
         if not template:
+            try:
+                await ctx.guild.delete_application_command(discord.Object(ctx.interaction.data['id']))
+            except:
+                pass
             return  # Fail silently on template doesn't exist
 
         # Get the metacommand

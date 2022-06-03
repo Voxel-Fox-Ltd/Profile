@@ -125,9 +125,13 @@ class ProfileCommands(vbu.Cog):
 
         # Find the template they asked for on their server
         async with vbu.Database() as db:
-            template = await utils.Template.fetch_template_by_name(db, guild_id, template_name, fetch_fields=False)
+            template = await utils.Template.fetch_template_by_name(
+                db,
+                guild_id,
+                template_name,
+                fetch_fields=False,
+            )
         if not template:
-            # self.logger.info(f"Failed at getting template '{template_name}' in guild {guild_id}")
             return  # Fail silently on template doesn't exist
 
         # Get the metacommand
@@ -140,8 +144,6 @@ class ProfileCommands(vbu.Cog):
             metacommand = self.delete_profile_meta
         elif command_operator == "edit":
             metacommand = self.edit_profile_meta
-        else:
-            raise ValueError(f"Couldn't get metacommand {command_operator}")
 
         # Make sure it's a slashie
         if not isinstance(ctx, commands.SlashContext):
@@ -376,16 +378,7 @@ class ProfileCommands(vbu.Cog):
 
             # Send the modal
             assert interaction.user
-            try:
-                await interaction.response.send_modal(modal)
-            except:
-                raise
-            # except discord.InteractionResponded as e:
-            #     await interaction.followup.send(f"{interaction.user.mention} You hit an interaction responded error ({e}) - could you tell the dev how you did that? https://discord.gg/vfl")
-            #     raise
-            # except discord.HTTPException as e:
-            #     await interaction.followup.send(f"{interaction.user.mention} You hit a form body error ({e}) - could you tell the dev how you did that? https://discord.gg/vfl")
-            #     raise
+            await interaction.response.send_modal(modal)
 
             # Wait for the user's input
             try:

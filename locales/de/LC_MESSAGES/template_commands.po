@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: profile-discord-bot\n"
 "POT-Creation-Date: 2022-05-02 15:31+0100\n"
-"PO-Revision-Date: 2022-05-02 17:41\n"
+"PO-Revision-Date: 2022-07-31 10:10\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -352,7 +352,7 @@ msgstr "Welchen Namen soll dieses Feld haben?"
 
 #: template_commands.py:1369
 msgid "What prompt should be sent with this message?"
-msgstr "Was soll ich sagen?"
+msgstr "Welche Aufforderung sollte mit dieser Nachricht gesendet werden?"
 
 #: template_commands.py:1389
 msgid "Creating a new field has timed out."

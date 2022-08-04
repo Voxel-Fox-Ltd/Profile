@@ -44,7 +44,8 @@ class ProfileCommands(vbu.Cog):
         # A basic filter to only deal with template get
         assert interaction.command_name
         command_name = interaction.command_name
-        if command_name.endswith(" get") or command_name.endswith(" delete") or command_name.endswith(" edit"):
+        valid_ends = [" get", " delete", " edit"]
+        if any(command_name.endswith(i) for i in valid_ends):
             pass
         else:
             return
@@ -61,8 +62,11 @@ class ProfileCommands(vbu.Cog):
         if template_name == "template":
             return  # Don't bother with the non-profile commands
 
-        # Find the template they asked for on their server
+        # Set up some vars
         assert interaction.guild_id
+        user_profiles = None
+
+        # Find the template they asked for on their server
         async with vbu.Database() as db:
 
             # Get the template
@@ -81,7 +85,11 @@ class ProfileCommands(vbu.Cog):
                     for i in options:
                         if i.name == "user" and i.value:
                             user_id = int(i.value)
-                user_profiles = await template.fetch_all_profiles_for_user(db, user_id, fetch_filled_fields=False)
+                user_profiles = await template.fetch_all_profiles_for_user(
+                    db,
+                    user_id,
+                    fetch_filled_fields=False,
+                )
 
         # Make sure a template exists
         if not template:
@@ -89,10 +97,12 @@ class ProfileCommands(vbu.Cog):
 
             # Delete the command's id
             try:
-                await interaction.guild.delete_application_command(discord.Object(interaction.data['id']))
+                command_id = discord.Object(interaction.data['id'])  # type: ignore
+                await interaction.guild.delete_application_command(command_id)  # type: ignore
             except:
                 pass
             return
+        assert user_profiles
 
         # And return the profile names
         await interaction.response.send_autocomplete([
@@ -161,6 +171,8 @@ class ProfileCommands(vbu.Cog):
             metacommand = self.delete_profile_meta
         elif command_operator == "edit":
             metacommand = self.edit_profile_meta
+        else:
+            raise Exception(f"Invalid command operator {command_operator}")
 
         # Make sure it's a slashie
         if not isinstance(ctx, commands.SlashContext):

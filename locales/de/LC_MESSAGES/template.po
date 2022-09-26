@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: profile-discord-bot\n"
 "POT-Creation-Date: 2022-05-02 07:48+0100\n"
-"PO-Revision-Date: 2022-05-02 09:41\n"
+"PO-Revision-Date: 2022-09-26 22:41\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -22,7 +22,7 @@ msgstr ""
 #: template.py:517
 #, python-brace-format
 msgid "Template ID: `{template_id}`"
-msgstr "Vorlagen-ID: `{template_id}`"
+msgstr "Vorlagen-ID: \"{template_id}"
 
 #: template.py:520
 #, python-brace-format

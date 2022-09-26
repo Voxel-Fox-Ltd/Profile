@@ -591,47 +591,48 @@ class TemplateCommands(vbu.Cog):
         """
 
         # Make up the text to be sent
+        # I hate discord and its ugly ass 45 charater limit on modals -catdotjs
         text: str
         if attribute == "name":
             text = vbu.translation(interaction, "template_commands").gettext(
-                "What do you want to set the template's name to?",
+                "Please enter a new template name",
             )
         elif attribute == "verification_channel_id":
             text = vbu.translation(interaction, "template_commands").gettext(
-                "What channel do you want to set as the verification channel?",
+                "Please enter a verification channel id",
             )
         elif attribute == "archive_channel_id":
             text = vbu.translation(interaction, "template_commands").gettext(
-                "What channel do you want to set as the archive channel?",
+                "Please enter a archive channel id",
             )
         elif attribute == "role_id":
             text = vbu.translation(interaction, "template_commands").gettext(
-                "What role do you want users to receive when their profile is approved?",
+                "Please enter a role for approved users to get",
             )
         elif attribute == "max_profile_count":
             text = vbu.translation(interaction, "template_commands").gettext(
-                "What do you want to set the max profile count to?",
+                "Please enter a new max profile count",
             )
         else:
             raise ValueError()
 
-        # Send the text
-        await interaction.response.edit_message(
-            content=text,
-            components=None,
-            embed=None,
+        modal = discord.ui.Modal(title=template.name,
+            components=[
+                discord.ui.ActionRow(
+                    discord.ui.InputText(
+                        label=text,
+                        min_length=1,
+                    )
+                )
+            ]
         )
+        # Send the modal
+        await interaction.response.send_modal(modal)
 
-        # Wait for them to respond
-        def check(message: discord.Message):
-            return all([
-                message.author.id == ctx.author.id,
-                message.channel.id == ctx.channel.id,  # type: ignore - here we'll be an actual Discord message
-            ])
         try:
-            value_message: discord.Message = await self.bot.wait_for(
-                "message",
-                check=check,
+            value_interaction = await self.bot.wait_for(
+                "modal_submit",
+                check=lambda i: i.user.id == ctx.author.id and i.custom_id == modal.custom_id,
                 timeout=60 * 2,
             )
         except asyncio.TimeoutError:
@@ -648,14 +649,16 @@ class TemplateCommands(vbu.Cog):
         # Try and convert their response
         converted: str
         try:
+            val = value_interaction.components[0].components[0].value.strip() # type: ignore
             if isinstance(converter, commands.Converter):
-                converted = str((await converter.convert(ctx, value_message.content)).id)
+                converted = str((await converter.convert(ctx, val)).id)
             else:
-                converted = converter(value_message.content)
+                converted = converter(val)
+
         except commands.BadArgument:
-            is_command, is_valid_command = utils.CommandProcessor.get_is_command(value_message.content)
+            is_command, is_valid_command = utils.CommandProcessor.get_is_command(val)
             if is_command and is_valid_command:
-                converted = value_message.content
+                converted = val
             else:
                 return interaction, False
         except ValueError:
@@ -674,12 +677,6 @@ class TemplateCommands(vbu.Cog):
         if checked_converted is None and attribute in ["name", "max_profile_count"]:
             return interaction, False
 
-        # Try and delete the message
-        try:
-            await value_message.delete()
-        except discord.HTTPException:
-            pass
-
         # Store our new shit
         setattr(template, attribute, checked_converted)
         async with vbu.Database() as db:
@@ -687,6 +684,7 @@ class TemplateCommands(vbu.Cog):
                 "UPDATE template SET {0}=$1 WHERE template_id=$2".format(attribute),
                 checked_converted, template.template_id,
             )
+        await value_interaction.response.send_message(vbu.translation(interaction, "template_commands").gettext("Changes Applied!"))
         return interaction, True
 
     async def validate_given_attribute(

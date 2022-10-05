@@ -23,10 +23,6 @@ class ProfileCommands(vbu.Cog):
         r"^(?P<template>\S{1,30}) (?P<command>set|create|get|delete|edit)(?:\s?(?P<args>.*))$",
         re.IGNORECASE,
     )
-    OLD_COMMAND_REGEX = re.compile(
-        r"^(?P<command>set|create|get|delete|edit)(?P<template>\S{1,30})",
-        re.IGNORECASE,
-    )
 
     def __init__(self, bot: vbu.Bot):
         super().__init__(bot)
@@ -136,7 +132,7 @@ class ProfileCommands(vbu.Cog):
         assert command_invokation
         assert guild_id
 
-        matches = self.COMMAND_REGEX.search(command_invokation) or self.OLD_COMMAND_REGEX.search(command_invokation)
+        matches = self.COMMAND_REGEX.search(command_invokation)
         if matches is None:
             return
         command_operator = matches.group("command").lower()  # get/get/delete/edit

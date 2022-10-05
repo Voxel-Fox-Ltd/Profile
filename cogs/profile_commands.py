@@ -89,7 +89,12 @@ class ProfileCommands(vbu.Cog):
 
         # Make sure a template exists
         if not template:
-            self.logger.info(f"Failed at getting template '{template_name}' in guild {interaction.guild_id}")
+            self.logger.info(
+                (
+                    f"Failed at getting template '{template_name}' "
+                    f"in guild {interaction.guild_id}"
+                )
+            )
 
             # Delete the command's id
             try:
@@ -102,12 +107,18 @@ class ProfileCommands(vbu.Cog):
 
         # And return the profile names
         await interaction.response.send_autocomplete([
-            discord.ApplicationCommandOptionChoice(name=i.name, value=i.name)
+            discord.ApplicationCommandOptionChoice(
+                name=i.name,
+                value=i.name,
+            )
             for i in user_profiles
         ])
 
     @vbu.Cog.listener()
-    async def on_command_error(self, ctx: utils.types.GuildContext, error: commands.CommandError):
+    async def on_command_error(
+            self,
+            ctx: utils.types.GuildContext,
+            error: commands.CommandError):
         """
         CommandNotFound handler so the bot can search for that custom command.
         """

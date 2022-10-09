@@ -61,6 +61,14 @@ class FieldType:
         cls.check(message.content)
         return message.content
 
+    @classmethod
+    async def fix(cls, value: str) -> str:
+        """
+        Fix an input string to become a better input string.
+        """
+
+        return value
+
 
 """
 The available types:

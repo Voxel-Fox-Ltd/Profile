@@ -1,2 +1,2 @@
-novus[vbu,speed]>=0.1.0
+novus[vbu,speed]>=0.2.1
 humanize

@@ -236,7 +236,7 @@ class Field:
         )
         embed.add_field(
             name=_("Name"),
-            value=self.name,
+            value=self.name or "\u200b",
             inline=False,
         )
         embed.add_field(
@@ -251,7 +251,7 @@ class Field:
                     len(self.prompt) > 100
                 else
                     self.prompt[:100].replace('\n', '\\n')
-            ),
+            ) or "\u200b",
             inline=False,
         )
         embed.add_field(

@@ -279,7 +279,8 @@ class Template(object):
     @property
     def field_list(self) -> List[Field]:
         """
-        Returns a list of `utils.Field` objects (in order) for the template.
+        Returns a list of non-deleted `utils.Field` objects
+        (in order) for the template.
         """
 
         return sorted(self.fields.values(), key=operator.attrgetter("index"))

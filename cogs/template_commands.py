@@ -296,6 +296,13 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                     f"FIELD_EDIT NAME {utils.uuid.encode(field.id)} "
                     f"{field.name}"
                 ),
+                style=(
+                    discord.ButtonStyle.secondary
+                    if
+                        field.name != ""
+                    else
+                        discord.ButtonStyle.primary
+                ),
             ),
             discord.ui.Button(
                 # TRANSLATORS: Text appearing on a button that edits the
@@ -303,6 +310,13 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                 label=_("Prompt"),
                 custom_id=(
                     f"FIELD_EDIT PROMPT {utils.uuid.encode(field.id)}"
+                ),
+                style=(
+                    discord.ButtonStyle.secondary
+                    if
+                        field.prompt != ""
+                    else
+                        discord.ButtonStyle.primary
                 ),
             ),
             discord.ui.Button(
@@ -864,6 +878,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
             )
 
         # Get and update the template
+        await interaction.response.defer_update()
         await self.update_template(
             interaction,
             template_id,
@@ -1245,17 +1260,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
             )
 
         # Get fields
-        fields = template.fields
-
-        # Format into an embed
-        embed = vbu.Embed(use_random_colour=True)
-        for f in fields.values():
-            name, prompt = f.name, f.prompt
-            embed.add_field(
-                name=name,
-                value=prompt,
-                inline=False,
-            )
+        fields = template.field_list
 
         # Make buttons
         rows = []
@@ -1265,10 +1270,10 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                     custom_id=f"FIELD_EDIT SELECT {encoded_template_id}",
                     options=[
                         discord.ui.SelectOption(
-                            label=f.name,
+                            label=f.name or f.id,
                             value=f.id,
                         )
-                        for f in fields.values()
+                        for f in fields
                     ],
                 ),
             ))
@@ -1299,7 +1304,11 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                     use_random_colour=True,
                     description="\n".join([
                         f"{f.index}. **{f.name}**"
-                        for f in fields.values()
+                        if f.name and f.prompt
+                        else f"{f.index}. ~~**{f.name}**~~"
+                        if f.name
+                        else f"{f.index}. ~~**{f.id}**~~"
+                        for f in fields
                     ])
                 )
             )
@@ -1458,8 +1467,6 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
             index=len(template.all_fields),
             template_id=template_id,
         )
-        field.name = field.id
-        field.prompt = field.id
 
         # Save field
         async with vbu.Database() as db:
@@ -1669,6 +1676,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
             )
 
         # Get and update the template
+        await interaction.response.defer_update()
         await self.update_field(
             interaction,
             field_id,
@@ -1804,7 +1812,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
             assert template
         has_image_field = bool([
             i
-            for i in template.fields.values()
+            for i in template.field_list
             if i.field_type == utils.ImageField
         ])
 

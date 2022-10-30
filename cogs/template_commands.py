@@ -1751,6 +1751,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         )
 
         # Get and update the template
+        await interaction.response.defer_update()
         await self.update_field(
             interaction,
             field_id,

@@ -135,6 +135,7 @@ class Template(object):
         "max_profile_count",
         "all_fields",
         "application_command_id",
+        "context_command_id",
         "deleted",
     )
 
@@ -144,6 +145,7 @@ class Template(object):
             name: str,
             guild_id: int,
             application_command_id: Optional[int] = None,
+            context_command_id: Optional[int] = None,
             colour: Optional[int] = None,
             verification_channel_id: Optional[str] = None,
             archive_channel_id: Optional[str] = None,
@@ -159,6 +161,7 @@ class Template(object):
         self.archive_channel_id: Optional[str] = archive_channel_id
         self.role_id: Optional[str] = role_id
         self.max_profile_count: int = max_profile_count
+        self.context_command_id: Optional[int] = context_command_id
         self.deleted: bool = deleted
 
         self.all_fields: Dict[str, Field] = dict()
@@ -616,6 +619,7 @@ class Template(object):
                     archive_channel_id,
                     role_id,
                     max_profile_count,
+                    context_command_id,
                     deleted
                 )
             VALUES
@@ -629,7 +633,8 @@ class Template(object):
                     $7,
                     $8,
                     $9,
-                    $10
+                    $10,
+                    $11
                 )
             ON CONFLICT
                 (id)
@@ -643,7 +648,8 @@ class Template(object):
                 archive_channel_id = $7,
                 role_id = $8,
                 max_profile_count = $9,
-                deleted = $10
+                context_command_id = $10,
+                deleted = $11
             """,
             self.id,
             self.name,
@@ -654,6 +660,7 @@ class Template(object):
             self.archive_channel_id,
             self.role_id,
             self.max_profile_count,
+            self.context_command_id,
             self.deleted,
         )
         return self
@@ -664,7 +671,8 @@ class Template(object):
             bot: vbu.Bot,
             interaction: discord.Interaction) -> discord.Embed:
         """
-        Create an embed to visualise all of the created fields and given information.
+        Create an embed to visualise all of the created fields and
+        given information.
         """
 
         # Create the initial embed

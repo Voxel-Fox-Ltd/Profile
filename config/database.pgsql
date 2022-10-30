@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS templates(
     role_id TEXT,
     max_profile_count SMALLINT NOT NULL DEFAULT 5,
     deleted BOOLEAN NOT NULL DEFAULT FALSE,
+    context_command_id BIGINT,
     UNIQUE (guild_id, name)
 );
 

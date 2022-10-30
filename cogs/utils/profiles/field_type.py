@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from typing import Optional, TYPE_CHECKING
+from typing import ClassVar, Optional, TYPE_CHECKING
 
 import yarl
 
@@ -20,7 +20,7 @@ class FieldType:
     The typing of a given profile field.
     """
 
-    name = None
+    name: ClassVar[str] = ""
     bot: Optional[vbu.Bot] = None
 
     def __str__(self):

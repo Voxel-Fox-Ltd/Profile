@@ -12,47 +12,23 @@ CREATE TABLE IF NOT EXISTS user_settings(
 );
 
 
-CREATE TABLE IF NOT EXISTS role_list(
-    guild_id BIGINT,
-    role_id BIGINT,
-    key VARCHAR(50),
-    value VARCHAR(50),
-    PRIMARY KEY (guild_id, role_id, key)
-);
-
-
-CREATE TABLE IF NOT EXISTS channel_list(
-    guild_id BIGINT,
-    channel_id BIGINT,
-    key VARCHAR(50),
-    value VARCHAR(50),
-    PRIMARY KEY (guild_id, channel_id, key)
-);
-
-
-CREATE TABLE IF NOT EXISTS template(
-    template_id UUID PRIMARY KEY,
-    name VARCHAR(30),
+CREATE TABLE IF NOT EXISTS templates(
+    id UUID NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    guild_id BIGINT NOT NULL,
     application_command_id BIGINT,
     colour INTEGER,
-    guild_id BIGINT NOT NULL,
     verification_channel_id TEXT,
     archive_channel_id TEXT,
     role_id TEXT,
-    -- max_field_count SMALLINT DEFAULT 10,
-    max_profile_count SMALLINT DEFAULT 5,
+    max_profile_count SMALLINT NOT NULL DEFAULT 5,
+    deleted BOOLEAN NOT NULL DEFAULT FALSE,
     UNIQUE (guild_id, name)
 );
--- A table to describe a profile in its entirety
--- template_id - the general ID of the profile
--- name - the name of the profile used in commands
--- colour - the colour of the embed field
--- guild_id - the guild that the profile is made for
--- verification_channel_id - the channel that profiles are sent to for approval; if null then no approval needed
 
 
 DO $$ BEGIN
-    CREATE TYPE FIELDTYPE AS ENUM(
+    CREATE TYPE field_type AS ENUM(
         '1000-CHAR',
         '200-CHAR',
         '50-CHAR',
@@ -66,32 +42,22 @@ END $$;
 -- the different types that a field can contain
 
 
-CREATE TABLE IF NOT EXISTS field(
-    field_id UUID PRIMARY KEY,
-    name VARCHAR(256),
+CREATE TABLE IF NOT EXISTS fields(
+    id UUID PRIMARY KEY,
+    name TEXT,
     index SMALLINT,
     prompt TEXT,
-    timeout SMALLINT,
-    field_type FIELDTYPE,
+    field_type field_type NOT NULL DEFAULT '1000-CHAR',
     optional BOOLEAN DEFAULT FALSE,
     deleted BOOLEAN DEFAULT FALSE,
-    template_id UUID REFERENCES template(template_id) ON DELETE CASCADE
+    template_id UUID REFERENCES templates(id) ON DELETE CASCADE
 );
--- A table to describe each individual field in a profile
--- field_id - general ID of the field
--- name - the name of the field to show in the embed
--- index - the index of the field in the profile to be used
--- prompt - the prompt given to the user when filling out this field
--- timeout - the timeout that will be given to the user when filling in this field
--- field_type - the datatype of the field to be converted to
--- optional - whether or not the field is optional
--- profile - the profile that this field is a part of
 
 
-CREATE TABLE IF NOT EXISTS created_profile(
+CREATE TABLE IF NOT EXISTS created_profiles(
     user_id BIGINT,
-    name VARCHAR(1000),
-    template_id UUID REFERENCES template(template_id) ON DELETE CASCADE,
+    name TEXT,
+    template_id UUID REFERENCES templates(id) ON DELETE CASCADE,
     verified BOOLEAN DEFAULT FALSE,
     posted_message_id BIGINT,
     posted_channel_id BIGINT,
@@ -103,11 +69,11 @@ CREATE TABLE IF NOT EXISTS created_profile(
 -- verified - whether or not the profile is a verified one
 
 
-CREATE TABLE IF NOT EXISTS filled_field(
+CREATE TABLE IF NOT EXISTS filled_fields(
     user_id BIGINT,
-    name VARCHAR(1000),
-    field_id UUID REFERENCES field(field_id) ON DELETE CASCADE,
-    value VARCHAR(1000),
+    name TEXT,
+    field_id UUID REFERENCES fields(id) ON DELETE CASCADE,
+    value TEXT,
     PRIMARY KEY (user_id, name, field_id)
 );
 -- A table for stored field data for a user

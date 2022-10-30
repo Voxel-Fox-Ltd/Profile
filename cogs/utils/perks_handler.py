@@ -35,12 +35,34 @@ async def get_perks_for_guild(db, guild_id: int) -> GuildPerks:
     Get the perks for a given guild.
     """
 
+    # Has overrides for settings
     guild_settings = await db(
-        """SELECT * FROM guild_settings WHERE guild_id=$1 OR guild_id=0 ORDER BY guild_id DESC""",
+        """
+        SELECT
+            *
+        FROM
+            guild_settings
+        WHERE
+            guild_id = $1
+        OR
+            guild_id = 0
+        ORDER BY
+            guild_id
+        DESC
+        """,
         guild_id,
     )
+
+    # Contains premium subscriptions
     guild_subscription = await db(
-        """SELECT * FROM guild_subscriptions WHERE guild_id=$1""",
+        """
+        SELECT
+            *
+        FROM
+            guild_subscriptions
+        WHERE
+            guild_id = $1
+        """,
         guild_id,
     )
     perks = SUBSCRIBED_GUILD_PERKS if guild_subscription else NO_GUILD_PERKS

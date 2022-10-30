@@ -1,15 +1,12 @@
 import discord
 from discord.ext import commands, vbu
 import regex as re
+from difflib import SequenceMatcher
 
 from cogs import utils
 
 
 GC = utils.types.GuildContext
-
-
-def _(a: str) -> str:
-    return a
 
 
 def _t(b: str | discord.Locale, a: str) -> str:
@@ -104,7 +101,6 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         """
 
         # Get and update the template
-        await interaction.response.defer_update()
         async with vbu.Database() as db:
             template = await utils.Template.fetch_template_by_id(
                 db,
@@ -121,8 +117,8 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
             interaction,
             template,
         )
-        kwargs.pop("ephemeral", False)
-        await interaction.edit_original_message(**kwargs)
+        del kwargs['ephemeral']
+        await interaction.response.edit_message(**kwargs)
 
     async def update_field(
             self,
@@ -146,10 +142,6 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         """
 
         # Get and update the field
-        try:
-            await interaction.response.defer_update()
-        except:
-            pass  # Allow already responded interactions
         async with vbu.Database() as db:
             field = await utils.Field.fetch_field_by_id(
                 db,
@@ -167,7 +159,10 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
             field,
         )
         kwargs.pop("ephemeral", False)
-        await interaction.edit_original_message(**kwargs)
+        try:
+            await interaction.response.edit_message(**kwargs)
+        except discord.InteractionResponded:
+            await interaction.edit_original_message(**kwargs)
 
     def get_template_edit_components(
             self,
@@ -262,6 +257,12 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         # Make components
         components = discord.ui.MessageComponents.add_buttons_with_rows(
             *buttons,
+            discord.ui.Button(
+                # TRANSLATORS: Text appearing on a button
+                label=_("Done"),
+                style=discord.ButtonStyle.success,
+                custom_id="TEMPLATE_EDIT DONE",
+            ),
         )
 
         # Define what we want to send
@@ -367,7 +368,9 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
     @commands.group(
         application_command_meta=commands.ApplicationCommandMeta(),
     )
-    async def template(self, _: GC):
+    async def template(
+            self,
+            _: GC):
         """
         A parent group for all of the template commands.
         """
@@ -378,8 +381,11 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         name="list",
         application_command_meta=commands.ApplicationCommandMeta(),
     )
+    @vbu.i18n(__name__)
     @commands.defer()
-    async def template_list(self, ctx: GC[discord.CommandInteraction]):
+    async def template_list(
+            self,
+            ctx: GC[discord.CommandInteraction]):
         """
         A list of all the templates created on your guild.
         """
@@ -450,6 +456,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
             ],
         ),
     )
+    @vbu.i18n(__name__)
     async def template_delete(
             self,
             ctx: GC[discord.CommandInteraction],
@@ -474,7 +481,6 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
             )
 
         # Try and get the template object
-        await ctx.interaction.response.defer(ephemeral=True)
         async with vbu.Database() as db:
             try:
                 template_o = await utils.Template.fetch_template_by_id(
@@ -490,7 +496,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
 
         # Tell them if the template doesn't exist
         if not template_o:
-            return await ctx.interaction.followup.send(
+            return await ctx.interaction.response.send_message(
                 _(
                     (
                         "There's no template with the name "
@@ -524,7 +530,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                 ),
             ),
         )
-        await ctx.interaction.followup.send(
+        await ctx.interaction.response.send_message(
             _(
                 (
                     "Are you sure you want to delete the "
@@ -551,6 +557,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
             ],
         ),
     )
+    @vbu.i18n(__name__)
     async def template_create(
             self,
             ctx: GC[discord.CommandInteraction],
@@ -571,7 +578,6 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
             )
 
         # Run some checks
-        await ctx.interaction.response.defer(ephemeral=True)
         async with vbu.Database() as db:
 
             # Check that the name isn't already in use
@@ -581,24 +587,49 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                 name,
             )
             if template:
-                return await ctx.interaction.followup.send(
+                return await ctx.interaction.response.send_message(
                     _("That template name is already in use."),
                     ephemeral=True,
                 )
 
             # Check that they're not at the template limit
-            self.logger.warning(
-                (
-                    "TODO check guild template limit when "
-                    "creating new templates."
-                )
+            all_templates = await utils.Template.fetch_all_templates_for_guild(
+                db,
+                ctx.guild.id,
+                fetch_fields=False,
             )
+            perks = await utils.get_perks_for_guild(
+                db,
+                ctx.guild.id,
+            )
+            if len(all_templates) >= perks.max_template_count:
+                error = _(
+                    (
+                        "You are at the maximum amount of templates "
+                        "allowed for this guild. "
+                    )
+                )
+                upsell = _(
+                    (
+                        "To get access more templates, use the "
+                        "{donate_command_button} command."
+                    )
+                ).format(donate_command_button="/donate")
+                if perks.is_premium:
+                    message = error
+                else:
+                    message = error + upsell
+                return await ctx.interaction.response.send_message(
+                    message,
+                    ephemeral=True,
+                )
 
             # Create the new template
             template = utils.Template(
                 id=None,
                 name=name,
                 guild_id=ctx.guild.id,
+                max_profile_count=0,
             )
             await template.update(db)
 
@@ -607,7 +638,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
             ctx.interaction,
             template,
         )
-        return await ctx.interaction.followup.send(**kwargs)
+        return await ctx.interaction.response.send_message(**kwargs)
 
     @template.command(
         name="edit",
@@ -620,10 +651,12 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                     ),
                     type=discord.ApplicationCommandOptionType.string,
                     required=True,
+                    autocomplete=True,
                 ),
             ],
         ),
     )
+    @vbu.i18n(__name__)
     async def template_edit(
             self,
             ctx: GC[discord.CommandInteraction],
@@ -633,7 +666,6 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         """
 
         # Run some checks
-        await ctx.interaction.response.defer(ephemeral=True)
         async with vbu.Database() as db:
 
             # Check that the name isn't already in use
@@ -643,7 +675,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                 name,
             )
             if not template:
-                return await ctx.interaction.followup.send(
+                return await ctx.interaction.response.send_message(
                     _("You don't have a template with that name."),
                     ephemeral=True,
                 )
@@ -653,11 +685,49 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
             ctx.interaction,
             template,
         )
-        return await ctx.interaction.followup.send(**kwargs)
+        return await ctx.interaction.response.send_message(**kwargs)
+
+    @template_edit.autocomplete
+    @template_delete.autocomplete
+    async def template_name_autocomplete(
+            self,
+            ctx,
+            interaction: discord.AutocompleteInteraction):
+        """
+        Send the user back a list of templates for their guild.
+        """
+
+        async with vbu.Database() as db:
+            templates = await utils.Template.fetch_all_templates_for_guild(
+                db,
+                guild_id=interaction.guild.id,  # type: ignore
+                fetch_fields=False,
+            )
+        options = [
+            discord.ApplicationCommandOptionChoice(name=i.name)
+            for i in templates
+        ]
+        current_val = ""
+        try:
+            current_val = [i.value for i in interaction.options][0]
+        except IndexError:
+            pass
+        options.sort(
+            key=lambda c: (
+                SequenceMatcher(
+                    None,
+                    c.name.lower(),
+                    (current_val or "").lower(),
+                ).ratio() * 100
+            ),
+            reverse=True,
+        )
+        await interaction.response.send_autocomplete(options)
 
     # TEMPLATE EDIT COMPONENT LISTENERS
 
     @vbu.Cog.listener("on_component_interaction")  # TEMPLATE_DELETE [action] [TID]
+    @vbu.i18n(__name__)
     async def template_delete_component_listener(
             self,
             interaction: discord.ComponentInteraction):
@@ -691,11 +761,6 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         template_id = utils.uuid.decode(encoded_template_id)
 
         # They said to delete, get the template data
-        await interaction.response.edit_message(
-            # TRANSLATORS: Loading text.
-            content=_("Deleting template..."),
-            components=None,
-        )
         async with vbu.Database() as db:
             template = await utils.Template.fetch_template_by_id(
                 db,
@@ -704,7 +769,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
 
             # Make sure the template wasn't already deleted
             if template is None:
-                return await interaction.edit_original_message(
+                return await interaction.response.edit_message(
                     content=_("That template has already been deleted."),
                 )
 
@@ -717,7 +782,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
             )
 
         # Tell them we're done
-        await interaction.edit_original_message(
+        await interaction.response.edit_message(
             content=(
                 _("Deleted the template **{template_name}**.")
                 .format(template_name=template_name)
@@ -726,6 +791,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         )
 
     @vbu.Cog.listener("on_component_interaction")  # TEMPLATE_EDIT NAME [TID] [CV]
+    @vbu.i18n(__name__)
     async def template_edit_name_component_listener(
             self,
             interaction: discord.ComponentInteraction):
@@ -762,6 +828,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         await interaction.response.send_modal(modal)
 
     @vbu.Cog.listener("on_modal_submit")  # TEMPLATE_SET NAME [TID]
+    @vbu.i18n(__name__)
     async def template_edit_name_modal_listener(
             self,
             interaction: discord.ModalInteraction):
@@ -786,6 +853,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
 
         # Check that the name is valid
         if not self.check_template_name(new_template_name):
+            # Send new message so they can still edit other attrs
             return await interaction.response.send_message(
                 (
                     _("The name **{template_name}** is not valid.")
@@ -803,6 +871,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         )
 
     @vbu.Cog.listener("on_component_interaction")  # TEMPLATE_EDIT ARCHIVE [TID] [CV]
+    @vbu.i18n(__name__)
     async def template_edit_archive_component_listener(
             self,
             interaction: discord.ComponentInteraction):
@@ -847,6 +916,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         )
 
     @vbu.Cog.listener("on_component_interaction")  # TEMPLATE_SET ARCHIVE [TID]
+    @vbu.i18n(__name__)
     async def template_edit_archive_dropdown_listener(
             self,
             interaction: discord.ComponentInteraction):
@@ -890,6 +960,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         )
 
     @vbu.Cog.listener("on_component_interaction")  # TEMPLATE_EDIT VERIFICATION [TID] [CV]
+    @vbu.i18n(__name__)
     async def template_edit_verification_component_listener(
             self,
             interaction: discord.ComponentInteraction):
@@ -934,6 +1005,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         )
 
     @vbu.Cog.listener("on_component_interaction")  # TEMPLATE_SET VERIFICATION [TID]
+    @vbu.i18n(__name__)
     async def template_edit_verification_dropdown_listener(
             self,
             interaction: discord.ComponentInteraction):
@@ -977,6 +1049,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         )
 
     @vbu.Cog.listener("on_component_interaction")  # TEMPLATE_EDIT ROLE [TID] [CV]
+    @vbu.i18n(__name__)
     async def template_edit_role_component_listener(
             self,
             interaction: discord.ComponentInteraction):
@@ -1019,6 +1092,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         )
 
     @vbu.Cog.listener("on_component_interaction")  # TEMPLATE_SET ROLE [TID]
+    @vbu.i18n(__name__)
     async def template_edit_role_dropdown_listener(
             self,
             interaction: discord.ComponentInteraction):
@@ -1062,6 +1136,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         )
 
     @vbu.Cog.listener("on_component_interaction")  # TEMPLATE_EDIT MAX_PROFILES [TID] [CV]
+    @vbu.i18n(__name__)
     async def template_edit_max_profiles_component_listener(
             self,
             interaction: discord.ComponentInteraction):
@@ -1098,6 +1173,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         await interaction.response.send_modal(modal)
 
     @vbu.Cog.listener("on_modal_submit")  # TEMPLATE_SET MAX_PROFILES [TID]
+    @vbu.i18n(__name__)
     async def template_edit_max_profiles_modal_listener(
             self,
             interaction: discord.ModalInteraction):
@@ -1122,6 +1198,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
 
         # Check that the name is valid
         if not re.match(r"^\d+$", new_template_limit):
+            # Send new message so they can still edit other attrs
             return await interaction.response.send_message(
                 # TRANSLATORS: Error message when setting a max profile count
                 _("The limit you have given is not valid."),
@@ -1141,6 +1218,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         )
 
     @vbu.Cog.listener("on_component_interaction")  # TEMPLATE_EDIT FIELDS [TID]
+    @vbu.i18n(__name__)
     async def template_edit_fields_component_listener(
             self,
             interaction: discord.ComponentInteraction):
@@ -1156,10 +1234,6 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         template_id = utils.uuid.decode(encoded_template_id)
 
         # Get template
-        try:
-            await interaction.response.defer_update()
-        except:
-            pass  # Allow the interaction to be already responded to
         async with vbu.Database() as db:
             template = await utils.Template.fetch_template_by_id(
                 db,
@@ -1231,15 +1305,31 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
             )
 
         # And send
-        await interaction.edit_original_message(
+        await interaction.response.edit_message(
             content=_("Select which field you want to edit."),
             embeds=embeds,
             components=components,
         )
 
+    @vbu.Cog.listener("on_component_interaction")  # TEMPLATE_EDIT DONE
+    @vbu.i18n(__name__)
+    async def template_edit_done_component_listener(
+            self,
+            interaction: discord.ComponentInteraction):
+        """
+        Listens for edit template done button to be pressed.
+        Deletes message.
+        """
+
+        if not interaction.custom_id.startswith("TEMPLATE_EDIT DONE"):
+            return
+        await interaction.response.defer_update()
+        await interaction.delete_original_message()
+
     # FIELD EDIT COMPONENT LISTENERS
 
     @vbu.Cog.listener("on_component_interaction")  # FIELD_EDIT DONE [TID]
+    @vbu.i18n(__name__)
     async def template_edit_fields_done_component_listener(
             self,
             interaction: discord.ComponentInteraction):
@@ -1255,7 +1345,6 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         template_id = utils.uuid.decode(encoded_template_id)
 
         # Get field
-        await interaction.response.defer_update()
         async with vbu.Database() as db:
             template = await utils.Template.fetch_template_by_id(
                 db,
@@ -1272,9 +1361,10 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
             template,
         )
         del kwargs['ephemeral']
-        return await interaction.edit_original_message(**kwargs)
+        return await interaction.response.edit_message(**kwargs)
 
     @vbu.Cog.listener("on_component_interaction")  # FIELD_EDIT SELECT [TID]
+    @vbu.i18n(__name__)
     async def template_edit_fields_select_component_listener(
             self,
             interaction: discord.ComponentInteraction):
@@ -1289,7 +1379,6 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         field_id = interaction.values[0]
 
         # Get field
-        await interaction.response.defer_update()
         async with vbu.Database() as db:
             field = await utils.Field.fetch_field_by_id(
                 db,
@@ -1306,9 +1395,10 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
             field,
         )
         del kwargs['ephemeral']
-        await interaction.edit_original_message(**kwargs)
+        await interaction.response.edit_message(**kwargs)
 
     @vbu.Cog.listener("on_component_interaction")  # FIELD_EDIT NEW [TID]
+    @vbu.i18n(__name__)
     async def template_edit_fields_new_component_listener(
             self,
             interaction: discord.ComponentInteraction):
@@ -1331,6 +1421,35 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
             )
             assert template
 
+            # Get perks
+            perks = await utils.get_perks_for_guild(
+                db,
+                interaction.guild.id,  # type: ignore
+            )
+            if len(template.fields) >= perks.max_field_count:
+                error = _(
+                    (
+                        "You are at the maximum amount of fields "
+                        "allowed for this template. "
+                    )
+                )
+                upsell = _(
+                    (
+                        "To get access more fields, use the "
+                        "{donate_command_button} command."
+                    )
+                ).format(donate_command_button="/donate")
+                if perks.is_premium:
+                    message = error
+                else:
+                    message = error + upsell
+
+                # Send new message so they can edit other attrs
+                return await interaction.followup.send(
+                    message,
+                    ephemeral=True,
+                )
+
         # Get a new ID
         field = utils.Field(
             id=None,
@@ -1343,7 +1462,6 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         field.prompt = field.id
 
         # Save field
-        await interaction.response.defer_update()
         async with vbu.Database() as db:
             await field.update(db)
 
@@ -1352,10 +1470,11 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
             interaction,
             field,
         )
-        kwargs.pop("ephemeral")
-        await interaction.edit_original_message(**kwargs)
+        del kwargs['ephemeral']
+        await interaction.response.edit_message(**kwargs)
 
     @vbu.Cog.listener("on_component_interaction")  # FIELD_EDIT DELETE [FID]
+    @vbu.i18n(__name__)
     async def template_edit_fields_delete_component_listener(
             self,
             interaction: discord.ComponentInteraction):
@@ -1371,7 +1490,6 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         field_id = utils.uuid.decode(encoded_field_id)
 
         # Try and get the template object
-        await interaction.response.defer_update()
         async with vbu.Database() as db:
             field = await utils.Field.fetch_field_by_id(
                 db,
@@ -1405,13 +1523,14 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                 ),
             ),
         )
-        await interaction.edit_original_message(
+        await interaction.response.edit_message(
             content=_("Are you sure you want to delete this field?"),
             embeds=[],
             components=components,
         )
 
     @vbu.Cog.listener("on_component_interaction")  # FIELD_DELETE [action] [TID]
+    @vbu.i18n(__name__)
     async def field_delete_component_listener(
             self,
             interaction: discord.ComponentInteraction):
@@ -1441,14 +1560,16 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         )
         field_id = utils.uuid.decode(encoded_field_id)
         if action == "CANCEL":
-            interaction.custom_id = f"TEMPLATE_EDIT FIELDS {encoded_template_id}"
+            interaction.custom_id = (
+                f"TEMPLATE_EDIT FIELDS "
+                f"{encoded_template_id}"
+            )
             return await self.template_edit_fields_component_listener(
                 interaction,
             )
         field_id = utils.uuid.decode(encoded_field_id)
 
         # Set field as deleted
-        await interaction.response.defer_update()
         async with vbu.Database() as db:
             field = await utils.Field.fetch_field_by_id(
                 db,
@@ -1457,7 +1578,10 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
 
             # Make sure the template wasn't already deleted
             if field is None:
-                interaction.custom_id = f"TEMPLATE_EDIT FIELDS {encoded_template_id}"
+                interaction.custom_id = (
+                    f"TEMPLATE_EDIT FIELDS "
+                    f"{encoded_template_id}"
+                )
                 return await self.template_edit_fields_component_listener(
                     interaction,
                 )
@@ -1473,6 +1597,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         )
 
     @vbu.Cog.listener("on_component_interaction")  # FIELD_EDIT NAME [FID] [CV]
+    @vbu.i18n(__name__)
     async def field_edit_name_component_listener(
             self,
             interaction: discord.ComponentInteraction):
@@ -1509,6 +1634,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         await interaction.response.send_modal(modal)
 
     @vbu.Cog.listener("on_modal_submit")  # FIELD_SET NAME [FID]
+    @vbu.i18n(__name__)
     async def field_edit_name_modal_listener(
             self,
             interaction: discord.ModalInteraction):
@@ -1550,6 +1676,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         )
 
     @vbu.Cog.listener("on_component_interaction")  # FIELD_EDIT PROMPT [FID]
+    @vbu.i18n(__name__)
     async def field_edit_prompt_component_listener(
             self,
             interaction: discord.ComponentInteraction):
@@ -1592,6 +1719,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         await interaction.response.send_modal(modal)
 
     @vbu.Cog.listener("on_modal_submit")  # FIELD_SET PROMPT [FID]
+    @vbu.i18n(__name__)
     async def field_edit_prompt_modal_listener(
             self,
             interaction: discord.ModalInteraction):
@@ -1622,6 +1750,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         )
 
     @vbu.Cog.listener("on_component_interaction")  # FIELD_EDIT OPTIONAL [FID]
+    @vbu.i18n(__name__)
     async def field_edit_optional_component_listener(
             self,
             interaction: discord.ModalInteraction):
@@ -1636,8 +1765,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         encoded_field_id = interaction.custom_id.split(" ")[2]
         field_id = utils.uuid.decode(encoded_field_id)
 
-        # Defer so we can get current
-        await interaction.response.defer_update()
+        # Get current
         async with vbu.Database() as db:
             field = await utils.Field.fetch_field_by_id(db, field_id)
             assert field
@@ -1650,6 +1778,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         )
 
     @vbu.Cog.listener("on_component_interaction")  # FIELD_EDIT TYPE [FID]
+    @vbu.i18n(__name__)
     async def field_edit_type_component_listener(
             self,
             interaction: discord.ComponentInteraction):
@@ -1667,7 +1796,6 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         template_id = utils.uuid.decode(encoded_template_id)
 
         # Get the template so we know what fields they can use
-        await interaction.response.defer_update()
         async with vbu.Database() as db:
             template = await utils.Template.fetch_template_by_id(
                 db,
@@ -1733,13 +1861,14 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         )
 
         # And send
-        await interaction.edit_original_message(
+        await interaction.response.edit_message(
             content=_("What do you want to set the field type to?"),
             embeds=[],
             components=components,
         )
 
     @vbu.Cog.listener("on_component_interaction")  # FIELD_SET TYPE [FID]
+    @vbu.i18n(__name__)
     async def field_edit_type_dropdown_component_listener(
             self,
             interaction: discord.ComponentInteraction):
@@ -1754,8 +1883,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         encoded_field_id = interaction.custom_id.split(" ")[2]
         field_id = utils.uuid.decode(encoded_field_id)
 
-        # Defer so we can get current
-        await interaction.response.defer_update()
+        # Get current
         async with vbu.Database() as db:
             field = await utils.Field.fetch_field_by_id(db, field_id)
             assert field

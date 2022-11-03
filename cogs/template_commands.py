@@ -732,7 +732,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                     None,
                     c.name.lower(),
                     (current_val or "").lower(),
-                ).ratio() * 100
+                ).quick_ratio()
             ),
             reverse=True,
         )

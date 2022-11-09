@@ -291,7 +291,8 @@ class Template(object):
             user_id:int,
             profile_name: Optional[str] = None,
             *,
-            fetch_filled_fields: bool = True) -> Optional[UserProfile]:
+            fetch_filled_fields: bool = True,
+            allow_deleted: bool = False) -> Optional[UserProfile]:
         """
         Gets the filled profile for a given user.
 
@@ -323,6 +324,7 @@ class Template(object):
         from .user_profile import UserProfile
 
         # Grab the user profile
+        extra = "" if allow_deleted else "AND deleted = false"
         if profile_name is None:
             profile_rows = await db.call(
                 """
@@ -334,7 +336,8 @@ class Template(object):
                     template_id = $1
                 AND
                     user_id = $2
-                """,
+                {0}
+                """.format(extra),
                 self.id, user_id,
             )
         else:
@@ -350,7 +353,8 @@ class Template(object):
                     user_id = $2
                 AND
                     LOWER(name) = LOWER($3)
-                """,
+                {0}
+                """.format(extra),
                 self.id, user_id, profile_name,
             )
 
@@ -377,7 +381,8 @@ class Template(object):
             db: vbu.Database,
             user_id: int,
             *,
-            fetch_filled_fields: bool = True) -> List[UserProfile]:
+            fetch_filled_fields: bool = True,
+            allow_deleted: bool = False) -> List[UserProfile]:
         """
         Gets the filled profile for a given user.
 
@@ -400,6 +405,7 @@ class Template(object):
         from .user_profile import UserProfile
 
         # Grab the user profile
+        extra = "" if allow_deleted else "AND deleted = false"
         profile_rows = await db.call(
             """
             SELECT
@@ -410,7 +416,8 @@ class Template(object):
                 template_id = $1
             AND
                 user_id = $2
-            """,
+            {0}
+            """.format(extra),
             self.id, user_id,
         )
         profiles = [
@@ -428,7 +435,8 @@ class Template(object):
             self,
             db: vbu.Database,
             *,
-            fetch_filled_fields: bool = True) -> List[UserProfile]:
+            fetch_filled_fields: bool = True,
+            allow_deleted: bool = False) -> List[UserProfile]:
         """
         Gets all of the filled profiles for this template.
 
@@ -449,6 +457,7 @@ class Template(object):
         from .user_profile import UserProfile
 
         # Grab the user profile
+        extra = "" if allow_deleted else "AND deleted = false"
         profile_rows = await db.call(
             """
             SELECT
@@ -457,7 +466,8 @@ class Template(object):
                 created_profiles
             WHERE
                 template_id = $1
-            """,
+            {0}
+            """.format(extra),
             self.id,
         )
         profiles = [
@@ -484,6 +494,7 @@ class Template(object):
         """
 
         # Grab the template
+        extra = "" if allow_deleted else "AND deleted = false"
         template_rows = await db.call(
             """
             SELECT
@@ -492,14 +503,13 @@ class Template(object):
                 templates
             WHERE
                 id = $1
-            """,
+            {0}
+            """.format(extra),
             template_id,
         )
         if not template_rows:
             return None
         template = cls(**template_rows[0])
-        if template.deleted and not allow_deleted:
-            return None
         if fetch_fields:
             await template.fetch_fields(db)
         return template
@@ -518,6 +528,7 @@ class Template(object):
         """
 
         # Grab the template
+        extra = "" if allow_deleted else "AND deleted = false"
         template_rows = await db.call(
             """
             SELECT
@@ -528,14 +539,13 @@ class Template(object):
                 guild_id = $1
             AND
                 LOWER(name) = LOWER($2)
-            """,
+            {0}
+            """.format(extra),
             guild_id, template_name,
         )
         if not template_rows:
             return None
         template = cls(**template_rows[0])
-        if template.deleted and not allow_deleted:
-            return None
         if fetch_fields:
             await template.fetch_fields(db)
         return template
@@ -553,7 +563,7 @@ class Template(object):
         """
 
         # Grab the template
-        additional = "AND deleted = FALSE" if not allow_deleted else ""
+        extra = "" if allow_deleted else "AND deleted = false"
         template_rows = await db.call(
             """
             SELECT
@@ -563,7 +573,7 @@ class Template(object):
             WHERE
                 guild_id = $1
             {0}
-            """.format(additional),
+            """.format(extra),
             guild_id,
         )
         template_list = [
@@ -666,7 +676,7 @@ class Template(object):
         )
         return self
 
-    # @vbu.i18n(__name__, 2)
+    @vbu.i18n(__name__, 2)
     def build_embed(
             self,
             bot: vbu.Bot,

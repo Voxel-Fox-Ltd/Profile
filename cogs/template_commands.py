@@ -118,7 +118,10 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
             template,
         )
         del kwargs['ephemeral']
-        await interaction.response.edit_message(**kwargs)
+        try:
+            await interaction.response.edit_message(**kwargs)
+        except discord.InteractionResponded:
+            await interaction.edit_original_message(**kwargs)
 
     async def update_field(
             self,
@@ -164,6 +167,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         except discord.InteractionResponded:
             await interaction.edit_original_message(**kwargs)
 
+    @vbu.i18n(__name__)
     def get_template_edit_components(
             self,
             interaction: discord.Interaction,
@@ -278,6 +282,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         }
         return kwargs
 
+    @vbu.i18n(__name__)
     def get_field_edit_components(
             self,
             interaction: discord.Interaction,
@@ -395,8 +400,8 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         name="list",
         application_command_meta=commands.ApplicationCommandMeta(),
     )
-    @vbu.i18n(__name__)
     @commands.defer()
+    @vbu.i18n(__name__)
     async def template_list(
             self,
             ctx: GC[discord.CommandInteraction]):
@@ -1907,6 +1912,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                 "IMAGE": utils.ImageField,
             }[interaction.values[0]],
         )
+
 
 def setup(bot: vbu.Bot):
     x = TemplateCommands(bot)

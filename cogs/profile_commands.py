@@ -30,7 +30,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
             WHERE
                 application_command_id = $1
             """,
-            interaction.data['id'],
+            discord.utils._get_as_snowflake(interaction.data, 'id'),
         )
         if template_rows:
             template_id = template_rows[0]['id']
@@ -101,6 +101,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
             case "delete":
                 ...
 
+    @vbu.i18n(__name__)
     async def profile_get(
             self,
             interaction: discord.CommandInteraction,
@@ -393,6 +394,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
         # Ask them to confirm
         await self.profile_delete_ask_confirm(interaction, profile)
 
+    @vbu.i18n(__name__)
     async def profile_edit(
             self,
             interaction: discord.CommandInteraction,
@@ -420,12 +422,12 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
 
         # Send a dropdown of their profile names - even if they only have one
         # profile. This is because we want to use the same listener for both.
-        short_template_id = utils.uuid.encode(user_profiles[0].template_id)
+        short_profile_id = utils.uuid.encode(user_profiles[0].id)
         components = discord.ui.MessageComponents(
             discord.ui.ActionRow(
                 discord.ui.SelectMenu(
                     custom_id=(
-                        f"PROFILE EDIT {short_template_id}"
+                        f"PROFILE EDIT {short_profile_id}"
                     ),
                     options=[
                         discord.ui.SelectOption(

@@ -82,6 +82,7 @@ class UserProfile:
         "posted_message_id",
         "posted_channel_id",
         "deleted",
+        "created",
     )
 
     def __init__(
@@ -95,7 +96,8 @@ class UserProfile:
             posted_message_id: Optional[int] = None,
             posted_channel_id: Optional[int] = None,
             template: Optional[Template] = None,
-            deleted: bool = False):
+            deleted: bool = False,
+            created: bool = False):
         self._id = id
         self.user_id: Optional[int] = user_id
         self.name: Optional[str] = name
@@ -104,6 +106,7 @@ class UserProfile:
         self.posted_message_id = posted_message_id
         self.posted_channel_id = posted_channel_id
         self.deleted: bool = deleted
+        self.created: bool = created  # Whether or not the profile has left the editing stage
         self.all_filled_fields: Dict[str, FilledField] = dict()
         self.template: Optional[Template] = template
 
@@ -123,8 +126,8 @@ class UserProfile:
     @property
     def template_id(self) -> str:
         if self._template_id is None:
-            self.template_id = uuid.uuid4()
-        return str(self.template_id)
+            self._template_id = uuid.uuid4()
+        return str(self._template_id)
 
     @template_id.setter
     def template_id(self, value: Union[str, uuid.UUID]):
@@ -177,15 +180,13 @@ class UserProfile:
             SELECT
                 *
             FROM
-                filled_field
+                filled_fields
             WHERE
-                user_id = $1
+                profile_id = $1
             AND
-                name = $2
-            AND
-                field_id = ANY($3::UUID[])
+                field_id = ANY($2::UUID[])
             """,
-            self.user_id, self.name, self.template.all_fields.keys(),
+            self.id, self.template.all_fields.keys(),
         )
         self.all_filled_fields.clear()
 
@@ -361,7 +362,7 @@ class UserProfile:
         await db.call(
             """
             INSERT INTO
-                templates
+                created_profiles
                 (
                     user_id,
                     name,

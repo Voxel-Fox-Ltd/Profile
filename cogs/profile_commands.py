@@ -1,5 +1,7 @@
 import uuid
-from typing import Tuple
+from typing import Optional, Tuple
+import random
+
 import discord
 from discord.ext import vbu
 
@@ -100,6 +102,8 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
                 return await self.profile_create(interaction, template)
             case "delete":
                 return await self.profile_delete(interaction, template)
+            case "edit":
+                return await self.profile_edit(interaction, template)
 
     @vbu.i18n(__name__)
     async def profile_get(
@@ -373,54 +377,83 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
     async def profile_edit(
             self,
             interaction: discord.CommandInteraction,
-            template: utils.Template):
+            template: utils.Template,
+            profile: Optional[utils.UserProfile] = None):
         """
         Run when someone tries to edit a profile for a given user.
         """
 
         # See what profiles the user has for that template
+        if not profile:
+            async with vbu.Database() as db:
+                try:
+                    profile = await template.fetch_profile_for_user(
+                        db,
+                        interaction.user.id,
+                        interaction.options[0].options[0].value,
+                    )
+                except Exception as e:
+                    self.logger.error("err", exc_info=e)
+                    raise
+
+                # Make sure they have something
+                if not profile:
+                    message = _(
+                        "You have no profiles for the template **{template}** with that name.",
+                    )
+                    return await interaction.response.send_message(
+                        message.format(template=template.name),
+                        ephemeral=True,
+                    )
+        profile.template = template
+
+        # Make buttons for them to edit
+        short_profile_id = utils.uuid.encode(profile.id)
+        buttons = []
+        for field in profile.template.field_list:
+            buttons.append(
+                discord.ui.Button(
+                    label=field.name,
+                    custom_id=f"PROFILE EDIT {short_profile_id} {field.id}",
+                    disabled=not field.is_command,
+                )
+            )
+
+        # Send the buttons
+        embed = profile.build_embed(self.bot, interaction, interaction.user)
+        await interaction.response.send_message(
+            _("What would you like to edit?"),
+            embeds=[
+                embed,
+            ]
+        )
+
+    @vbu.i18n(__name__)
+    async def profile_create(
+            self,
+            interaction: discord.CommandInteraction,
+            template: utils.Template):
+        """
+        Run when someone tries to create a profile for a given user.
+        """
+
+        # Get a random name from the animals file
+        with open("config/animals.txt") as f:
+            animals = f.read().strip().splitlines()
+        name = random.choice(animals)
+
+        # Create a usable profile
+        profile = utils.UserProfile(
+            user_id=interaction.user.id,
+            template_id=template.id,
+            name=name,
+        )
+        profile.template = template
+
+        # Create an ID for that user's profile
         async with vbu.Database() as db:
-            user_profiles = await template.fetch_all_profiles_for_user(
-                db,
-                interaction.user.id,
-            )
-
-        # Make sure they have something
-        if not user_profiles:
-            message = _(
-                "You don't have any profiles for the template **{template}**.",
-            )
-            return await interaction.response.send_message(
-                message.format(template=template.name),
-                ephemeral=True,
-            )
-
-        # Send a dropdown of their profile names - even if they only have one
-        # profile. This is because we want to use the same listener for both.
-        short_profile_id = utils.uuid.encode(user_profiles[0].id)
-        components = discord.ui.MessageComponents(
-            discord.ui.ActionRow(
-                discord.ui.SelectMenu(
-                    custom_id=(
-                        f"PROFILE EDIT {short_profile_id}"
-                    ),
-                    options=[
-                        discord.ui.SelectOption(
-                            label=profile.name,
-                            value=str(profile.name),
-                        )
-                        for profile in user_profiles
-                    ],
-                    max_values=1,
-                    min_values=1,
-                ),
-            ),
-        )
-        return await interaction.response.send_message(
-            _("Please select a profile to edit."),
-            components=components,
-            ephemeral=True,
-        )
+            await profile.update(db)
+        return await self.profile_edit(interaction, template, profile)
 
 
 def setup(bot: vbu.Bot):

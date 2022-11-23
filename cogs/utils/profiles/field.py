@@ -115,7 +115,7 @@ class Field:
     @property
     def id(self) -> str:
         if self._id is None:
-            self.id = uuid.uuid4()
+            self._id = uuid.uuid4()
         return str(self._id)
 
     @id.setter

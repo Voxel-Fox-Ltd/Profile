@@ -492,11 +492,16 @@ class ProfileCommands(vbu.Cog):
     async def edit_profile_meta(
             self,
             ctx: utils.types.GuildContext,
+            user: Optional[discord.Member] = None,
             *,
             profile_name: str):
         """
         Edit one of your profiles.
         """
+
+        # You can only delete someone else's profile if you're a moderator
+        if user and ctx.author != user and not utils.checks.member_is_moderator(self.bot, ctx.author):
+            raise commands.MissingPermissions(["manage_roles"])
 
         await self.edit_or_create_profile(
             ctx,

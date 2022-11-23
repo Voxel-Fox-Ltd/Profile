@@ -222,6 +222,177 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
             ],
         )
 
+    async def profile_delete(
+            self,
+            interaction: discord.CommandInteraction,
+            template: utils.Template):
+        """
+        Run when someone tries to delete a profile for a given user.
+        """
+
+        # See what profiles the user has for that template
+        async with vbu.Database() as db:
+            user_profiles = await template.fetch_all_profiles_for_user(
+                db,
+                interaction.user.id,
+            )
+
+        # Make sure they have something
+        if not user_profiles:
+            message = _(
+                "You don't have any profiles for the template **{template}**.",
+            )
+            return await interaction.response.send_message(
+                message.format(template=template.name),
+                ephemeral=True,
+            )
+
+        # If they only have one, ask if they're sure
+        if len(user_profiles) == 1:
+            profile = user_profiles[0]
+            return await self.profile_delete_ask_confirm(interaction, profile)
+
+        # If they have multiple, send a dropdown of their profile names
+        short_template_id = utils.uuid.encode(user_profiles[0].template_id)
+        components = discord.ui.MessageComponents(
+            discord.ui.ActionRow(
+                discord.ui.SelectMenu(
+                    custom_id=(
+                        f"PROFILE DELETE {short_template_id}"
+                    ),
+                    options=[
+                        discord.ui.SelectOption(
+                            label=profile.name,
+                            value=str(profile.name),
+                        )
+                        for profile in user_profiles
+                    ],
+                    max_values=1,
+                    min_values=1,
+                ),
+            ),
+        )
+        return await interaction.response.send_message(
+            _("Please select a profile to delete."),
+            components=components,
+            ephemeral=True,
+        )
+
+    async def profile_delete_ask_confirm(
+            self,
+            interaction: discord.CommandInteraction | discord.ComponentInteraction,
+            profile: utils.UserProfile):
+        """
+        Asks the user to confirm they want to delete a profile.
+        """
+
+        message = _(
+            "Are you sure you want to delete your profile **{profile}**?",
+        )
+        message = message.format(profile=profile.name)
+        components = discord.ui.MessageComponents(
+            discord.ui.ActionRow(
+                discord.ui.Button(
+                    # TRANSLATORS: This is the label for a button
+                    # that confirms a profile deletion
+                    label=_("Yes."),
+                    custom_id=(
+                        f"PROFILE CONFIRM_DELETE "
+                        f"{profile.template_id} {profile.name}"
+                    ),
+                    style=discord.ButtonStyle.danger,
+                ),
+            ),
+        )
+        return await interaction.response.send_message(
+            message,
+            components=components,
+            ephemeral=True,
+        )
+
+    @vbu.Cog.listener("on_component_interaction")
+    async def profile_delete_button_listener(
+            self,
+            interaction: discord.ComponentInteraction):
+        """
+        Listens for a profile delete button to be interacted with.
+        """
+
+        # Check it's a profile delete button
+        if not interaction.custom_id.startswith("PROFILE CONFIRM_DELETE"):
+            return
+
+        # Get the template ID
+        template_id = interaction.custom_id.split(" ")[2]
+
+        # Get the profile name
+        profile_name = interaction.custom_id.split(" ")[3]
+
+        # Open a DB connection for fetching the profile and template
+        async with vbu.Database() as db:
+
+            # Get the template
+            template = await utils.Template.fetch_template_by_id(
+                db,
+                template_id,
+            )
+            assert template
+
+            # Get the profile
+            profile = await template.fetch_profile_for_user(
+                db,
+                interaction.user.id,
+                profile_name,
+            )
+            assert profile
+
+            # Set the profile as deleted
+            original_name = profile.name
+            await profile.update(
+                db,
+                name=f"{uuid.uuid4()} {profile.name}",
+                deleted=True,
+            )
+
+        # Send a confirmation message
+        message = _("Your profile **{profile}** has been deleted.")
+        message = message.format(profile=original_name)
+        await interaction.response.send_message(
+            message,
+            ephemeral=True,
+        )
+
+    @vbu.Cog.listener("on_component_interaction")
+    async def profile_delete_dropdown_listener(
+            self,
+            interaction: discord.ComponentInteraction):
+        """
+        Listens for a profile delete dropdown to be interacted with.
+        """
+
+        # Check it's a profile delete dropdown
+        if not interaction.custom_id.startswith("PROFILE DELETE"):
+            return
+
+        # Get the profile
+        short_template_id = interaction.custom_id.split(" ")[-1]
+        template_id = utils.uuid.decode(short_template_id)
+        async with vbu.Database() as db:
+            template = await utils.Template.fetch_template_by_id(
+                db,
+                template_id,
+            )
+            assert template
+            profile = await template.fetch_profile_for_user(
+                db,
+                interaction.user.id,
+                interaction.values[0],
+            )
+            assert profile
+
+        # Ask them to confirm
+        await self.profile_delete_ask_confirm(interaction, profile)
+
 
 def setup(bot: vbu.Bot):
     x = ProfileCommands(bot)

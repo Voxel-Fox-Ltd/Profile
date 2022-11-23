@@ -233,9 +233,9 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                 # TRANSLATORS: Text appearing on a button
                 label=_("Update template command"),
                 custom_id=(
-                    f"TEMPLATE_EDIT SLASH {utils.uuid.encode(template.id)}"
+                    f"TEMPLATE_EDIT SLASH {utils.uuid.encode(template.id)} "
+                    f"{template.application_command_id or 0}"
                 ),
-                disabled=True,
             ),
         ]
 
@@ -1376,6 +1376,61 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
             interaction,
             template_id,
             max_profile_count=valid_new_template_limit,
+        )
+
+    @vbu.Cog.listener("on_component_interaction")  # TEMPLATE_EDIT SLASH [TID]
+    @vbu.i18n(__name__)
+    async def template_slash_component_listener(
+            self,
+            interaction: discord.ComponentInteraction):
+        """
+        Listens for edit template slash button to be pressed.
+        """
+
+        # Get the ID of the template
+        if not interaction.custom_id.startswith("TEMPLATE_EDIT SLASH"):
+            return
+        encoded_template_id = interaction.custom_id.split(" ")[2]
+        template_id = utils.uuid.decode(encoded_template_id)
+        application_command_id = int(interaction.custom_id.split(" ")[3])
+
+        # Get the template
+        async with vbu.Database() as db:
+            template = await utils.Template.fetch_template_by_id(
+                db,
+                template_id,
+            )
+            assert template
+
+        # See if the command exists
+        guild = interaction.guild
+        assert isinstance(guild, discord.Guild)
+        application_commands = await guild.fetch_application_commands()
+        application_command = discord.utils.get(
+            application_commands,
+            id=application_command_id,
+        )
+        if application_command is None:
+            try:
+                application_command = await guild.create_application_command(
+                    self.get_profile_application_command(
+                        template.name,
+                    )
+                )
+            except Exception as e:
+                return await interaction.response.send_message(
+                    "Failed to update template, {}".format(e),
+                )
+        await interaction.response.send_message(
+            _("Updated slash command."),
+            ephemeral=True,
+        )
+
+        # Get and update the template
+        await self.update_template(
+            interaction,
+            template_id,
+            application_command_id=application_command.id,
         )
 
     @vbu.Cog.listener("on_component_interaction")  # TEMPLATE_EDIT FIELDS [TID]

@@ -453,9 +453,6 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                         i: _t(i, "Delete one of your profiles.")
                         for i in discord.Locale
                     },
-                    options=[
-                        NAME_OPTION,
-                    ],
                 ),
 
                 # Get
@@ -1421,16 +1418,16 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                 return await interaction.response.send_message(
                     "Failed to update template, {}".format(e),
                 )
-        await interaction.response.send_message(
-            _("Updated slash command."),
-            ephemeral=True,
-        )
 
         # Get and update the template
         await self.update_template(
             interaction,
             template_id,
             application_command_id=application_command.id,
+        )
+        await interaction.followup.send(
+            _("Updated slash command."),
+            ephemeral=True,
         )
 
     @vbu.Cog.listener("on_component_interaction")  # TEMPLATE_EDIT FIELDS [TID]

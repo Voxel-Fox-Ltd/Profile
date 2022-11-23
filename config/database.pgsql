@@ -67,12 +67,14 @@ CREATE TABLE IF NOT EXISTS created_profiles(
     posted_message_id BIGINT,
     posted_channel_id BIGINT,
     deleted BOOLEAN DEFAULT FALSE,
+    created BOOLEAN DEFAULT FALSE,
     UNIQUE (user_id, name, template_id)
 );
 -- A table describing an entire profile filled by a user
 -- user_id - the user filling the profile
 -- template_id - the profile being filled
 -- verified - whether or not the profile is a verified one
+-- created - a flag to say that a given profile is in the process of being edited
 
 
 CREATE TABLE IF NOT EXISTS filled_fields(

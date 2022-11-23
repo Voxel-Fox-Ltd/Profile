@@ -97,9 +97,9 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
             case "get":
                 return await self.profile_get(interaction, template)
             case "create":
-                ...
+                return await self.profile_create(interaction, template)
             case "delete":
-                ...
+                return await self.profile_delete(interaction, template)
 
     @vbu.i18n(__name__)
     async def profile_get(
@@ -223,6 +223,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
             ],
         )
 
+    @vbu.i18n(__name__)
     async def profile_delete(
             self,
             interaction: discord.CommandInteraction,
@@ -233,15 +234,16 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
 
         # See what profiles the user has for that template
         async with vbu.Database() as db:
-            user_profiles = await template.fetch_all_profiles_for_user(
+            user_profiles = await template.fetch_profile_for_user(
                 db,
                 interaction.user.id,
+                interaction.options[0].options[0].value,
             )
 
         # Make sure they have something
         if not user_profiles:
             message = _(
-                "You don't have any profiles for the template **{template}**.",
+                "You don't have a profile for the template **{template}** with that name.",
             )
             return await interaction.response.send_message(
                 message.format(template=template.name),
@@ -249,35 +251,8 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
             )
 
         # If they only have one, ask if they're sure
-        if len(user_profiles) == 1:
-            profile = user_profiles[0]
-            return await self.profile_delete_ask_confirm(interaction, profile)
-
-        # If they have multiple, send a dropdown of their profile names
-        short_template_id = utils.uuid.encode(user_profiles[0].template_id)
-        components = discord.ui.MessageComponents(
-            discord.ui.ActionRow(
-                discord.ui.SelectMenu(
-                    custom_id=(
-                        f"PROFILE DELETE {short_template_id}"
-                    ),
-                    options=[
-                        discord.ui.SelectOption(
-                            label=profile.name,
-                            value=str(profile.name),
-                        )
-                        for profile in user_profiles
-                    ],
-                    max_values=1,
-                    min_values=1,
-                ),
-            ),
-        )
-        return await interaction.response.send_message(
-            _("Please select a profile to delete."),
-            components=components,
-            ephemeral=True,
-        )
+        profile = user_profiles[0]
+        return await self.profile_delete_ask_confirm(interaction, profile)
 
     async def profile_delete_ask_confirm(
             self,

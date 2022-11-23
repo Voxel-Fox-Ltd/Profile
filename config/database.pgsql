@@ -56,6 +56,7 @@ CREATE TABLE IF NOT EXISTS fields(
 
 
 CREATE TABLE IF NOT EXISTS created_profiles(
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id BIGINT,
     name TEXT,
     template_id UUID REFERENCES templates(id) ON DELETE CASCADE,
@@ -63,7 +64,7 @@ CREATE TABLE IF NOT EXISTS created_profiles(
     posted_message_id BIGINT,
     posted_channel_id BIGINT,
     deleted BOOLEAN DEFAULT FALSE,
-    PRIMARY KEY (user_id, name, template_id)
+    UNIQUE (user_id, name, template_id)
 );
 -- A table describing an entire profile filled by a user
 -- user_id - the user filling the profile
@@ -72,11 +73,10 @@ CREATE TABLE IF NOT EXISTS created_profiles(
 
 
 CREATE TABLE IF NOT EXISTS filled_fields(
-    user_id BIGINT,
-    name TEXT,
+    profile_id UUID REFERENCES created_profiles(id) ON DELETE CASCADE,
     field_id UUID REFERENCES fields(id) ON DELETE CASCADE,
     value TEXT,
-    PRIMARY KEY (user_id, name, field_id)
+    PRIMARY KEY (profile_id, field_id)
 );
 -- A table for stored field data for a user
 -- user_id - the user that filled in the field

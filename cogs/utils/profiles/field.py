@@ -14,6 +14,7 @@ from .field_type import (
     NumberField,
     BooleanField,
 )
+from .command_processor import CommandProcessor
 
 
 def _(a: str) -> str:
@@ -134,6 +135,13 @@ class Field:
             self._template_id = value
         else:
             self._template_id = uuid.UUID(value)
+
+    @property
+    def is_command(self):
+        is_command, _ = CommandProcessor.get_is_command(
+            self.prompt,
+        )
+        return is_command
 
     async def update(self, db: vbu.Database, **kwargs) -> Self:
         """

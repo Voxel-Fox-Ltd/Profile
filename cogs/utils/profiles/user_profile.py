@@ -8,16 +8,16 @@ import operator
 import discord
 from discord.ext import commands, vbu
 
-from cogs.utils.profiles.template import Template
-from cogs.utils.profiles.filled_field import FilledField
-from cogs.utils.profiles.field_type import ImageField
-from cogs.utils.profiles.command_processor import (
+from .template import Template
+from .filled_field import FilledField
+from .field_type import ImageField
+from .command_processor import (
     CommandProcessor,
     InvalidCommandText
 )
 
 
-class UserProfile(object):
+class UserProfile:
     """
     A filled user template.
     This represents a template filled by a user containing all of their
@@ -30,6 +30,8 @@ class UserProfile(object):
 
     Parameters
     -----------
+    id: Union[:class:`str`, :class:`uuid.UUID`]
+        The ID of the profile.
     user_id: :class:`int`
         The ID of the user whose profile this is.
     name: :class:`str`
@@ -70,9 +72,10 @@ class UserProfile(object):
     """
 
     __slots__ = (
+        "_id",
         "user_id",
         "name",
-        "template_id",
+        "_template_id",
         "verified",
         "all_filled_fields",
         "template",
@@ -83,23 +86,77 @@ class UserProfile(object):
 
     def __init__(
             self,
-            user_id: int,
-            name: str,
-            template_id: Union[str, uuid.UUID],
-            verified: bool,
+            *,
+            id: Union[str, uuid.UUID, None] = None,
+            user_id: Optional[int] = None,
+            name: Optional[str] = None,
+            template_id: Union[str, uuid.UUID, None] = None,
+            verified: bool = False,
             posted_message_id: Optional[int] = None,
             posted_channel_id: Optional[int] = None,
             template: Optional[Template] = None,
             deleted: bool = False):
-        self.user_id: int = user_id
-        self.name: str = name
-        self.template_id: str = str(template_id)
+        self._id = id
+        self.user_id: Optional[int] = user_id
+        self.name: Optional[str] = name
+        self._template_id = template_id
         self.verified: bool = verified
         self.posted_message_id = posted_message_id
         self.posted_channel_id = posted_channel_id
         self.deleted: bool = deleted
         self.all_filled_fields: Dict[str, FilledField] = dict()
         self.template: Optional[Template] = template
+
+    @property
+    def id(self) -> str:
+        if self._id is None:
+            self.id = uuid.uuid4()
+        return str(self._id)
+
+    @id.setter
+    def id(self, value: Union[str, uuid.UUID]):
+        if isinstance(value, uuid.UUID):
+            self._id = value
+        else:
+            self._id = uuid.UUID(value)
+
+    @property
+    def template_id(self) -> str:
+        if self._template_id is None:
+            self.template_id = uuid.uuid4()
+        return str(self.template_id)
+
+    @template_id.setter
+    def template_id(self, value: Union[str, uuid.UUID]):
+        if isinstance(value, uuid.UUID):
+            self.template_id = value
+        else:
+            self.template_id = uuid.UUID(value)
+
+    @classmethod
+    async def fetch_profile_by_id(
+            cls,
+            db: vbu.Database,
+            profile_id: str) -> Optional[Self]:
+        """
+        Fetch the fields for this profile and store them in .all_filled_fields.
+        """
+
+        # Get the fields that have been filled in
+        profile_rows = await db(
+            """
+            SELECT
+                *
+            FROM
+                user_profiles
+            WHERE
+                id = $1
+            """,
+            profile_id,
+        )
+        if not profile_rows:
+            return None
+        return cls(**profile_rows[0])
 
     async def fetch_filled_fields(self, db) -> Dict[str, FilledField]:
         """

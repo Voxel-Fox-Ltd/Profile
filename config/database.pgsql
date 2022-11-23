@@ -1,3 +1,6 @@
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+
 CREATE TABLE IF NOT EXISTS guild_settings(
     guild_id BIGINT PRIMARY KEY,
     prefix VARCHAR(30),

@@ -393,6 +393,58 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
         # Ask them to confirm
         await self.profile_delete_ask_confirm(interaction, profile)
 
+    async def profile_edit(
+            self,
+            interaction: discord.CommandInteraction,
+            template: utils.Template):
+        """
+        Run when someone tries to edit a profile for a given user.
+        """
+
+        # See what profiles the user has for that template
+        async with vbu.Database() as db:
+            user_profiles = await template.fetch_all_profiles_for_user(
+                db,
+                interaction.user.id,
+            )
+
+        # Make sure they have something
+        if not user_profiles:
+            message = _(
+                "You don't have any profiles for the template **{template}**.",
+            )
+            return await interaction.response.send_message(
+                message.format(template=template.name),
+                ephemeral=True,
+            )
+
+        # Send a dropdown of their profile names - even if they only have one
+        # profile. This is because we want to use the same listener for both.
+        short_template_id = utils.uuid.encode(user_profiles[0].template_id)
+        components = discord.ui.MessageComponents(
+            discord.ui.ActionRow(
+                discord.ui.SelectMenu(
+                    custom_id=(
+                        f"PROFILE EDIT {short_template_id}"
+                    ),
+                    options=[
+                        discord.ui.SelectOption(
+                            label=profile.name,
+                            value=str(profile.name),
+                        )
+                        for profile in user_profiles
+                    ],
+                    max_values=1,
+                    min_values=1,
+                ),
+            ),
+        )
+        return await interaction.response.send_message(
+            _("Please select a profile to edit."),
+            components=components,
+            ephemeral=True,
+        )
+
 
 def setup(bot: vbu.Bot):
     x = ProfileCommands(bot)

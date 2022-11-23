@@ -386,20 +386,19 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
         # See what profiles the user has for that template
         if not profile:
             async with vbu.Database() as db:
-                try:
-                    profile = await template.fetch_profile_for_user(
-                        db,
-                        interaction.user.id,
-                        interaction.options[0].options[0].value,
-                    )
-                except Exception as e:
-                    self.logger.error("err", exc_info=e)
-                    raise
+                profile = await template.fetch_profile_for_user(
+                    db,
+                    interaction.user.id,
+                    interaction.options[0].options[0].value,
+                )
 
                 # Make sure they have something
                 if not profile:
                     message = _(
-                        "You have no profiles for the template **{template}** with that name.",
+                        (
+                            "You have no profiles for the template "
+                            "**{template}** with that name."
+                        ),
                     )
                     return await interaction.response.send_message(
                         message.format(template=template.name),
@@ -409,23 +408,40 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
 
         # Make buttons for them to edit
         short_profile_id = utils.uuid.encode(profile.id)
-        buttons = []
+        buttons = [
+            discord.ui.Button(
+                # TRANSLATORS: This is the label for a button
+                # that edits a profile's name
+                label=_("Edit name"),
+                custom_id=f"PROFILE EDIT_NAME {short_profile_id}",
+                style=discord.ButtonStyle.primary,
+            ),
+        ]
         for field in profile.template.field_list:
             buttons.append(
                 discord.ui.Button(
                     label=field.name,
                     custom_id=f"PROFILE EDIT {short_profile_id} {field.id}",
-                    disabled=not field.is_command,
+                    disabled=field.is_command,
                 )
             )
+        buttons.append(
+            discord.ui.Button(
+                # TRANSLATORS: This is the label for a button that submits
+                # a profile.
+                label=_("Submit"),
+                custom_id=f"PROFILE SUBMIT {short_profile_id}",
+                style=discord.ButtonStyle.success,
+            ),
+        )
+        components = discord.ui.MessageComponents.add_buttons_with_rows(*buttons)
 
         # Send the buttons
         embed = profile.build_embed(self.bot, interaction, interaction.user)
         await interaction.response.send_message(
             _("What would you like to edit?"),
-            embeds=[
-                embed,
-            ]
+            embeds=[embed],
+            components=components,
         )
 
     @vbu.i18n(__name__)

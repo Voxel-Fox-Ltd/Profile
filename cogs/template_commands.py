@@ -382,6 +382,147 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         }
         return kwargs
 
+    @staticmethod
+    def get_profile_application_command(
+            name: str,
+            description: str | None = None) -> discord.ApplicationCommand:
+        """
+        Create an application command with the given name, and subcommands
+        for create, edit, and delete.
+        """
+
+        # Set description
+        description = description or name
+
+        # Name option for reuse
+        NAME_OPTION = discord.ApplicationCommandOption(
+            name="name",
+            description="The name of the profile.",
+            type=discord.ApplicationCommandOptionType.string,
+            autocomplete=True,
+            name_localizations={
+                # TRANSLATORS: name for an option in a command;
+                # eg "character get [name]"
+                i: _t(i, "name")
+                for i in discord.Locale
+            },
+            description_localizations={
+                # TRANSLATORS: description for an option in a
+                # command; eg "character get [name]"
+                i: _t(i, "The name of the profile.")
+                for i in discord.Locale
+            },
+        )
+
+        # Create command
+        command = discord.ApplicationCommand(
+            name=name.lower(),
+            description=description,
+            type=discord.ApplicationCommandType.chat_input,
+            options=[
+
+                # Create
+                discord.ApplicationCommandOption(
+                    name="create",
+                    description="Create a new profile.",
+                    type=discord.ApplicationCommandOptionType.subcommand,
+                    name_localizations={
+                        # TRANSLATORS: subcommand name, eg "profile create"
+                        i: _t(i, "create")
+                        for i in discord.Locale
+                    },
+                    description_localizations={
+                        # TRANSLATORS: description of a command
+                        i: _t(i, "Create a new profile.")
+                        for i in discord.Locale
+                    },
+                ),
+
+                # Delete
+                discord.ApplicationCommandOption(
+                    name="delete",
+                    description="Delete one of your profiles.",
+                    type=discord.ApplicationCommandOptionType.subcommand,
+                    name_localizations={
+                        # TRANSLATORS: subcommand name, eg "profile delete"
+                        i: _t(i, "delete")
+                        for i in discord.Locale
+                    },
+                    description_localizations={
+                        # TRANSLATORS: description of a command
+                        i: _t(i, "Delete one of your profiles.")
+                        for i in discord.Locale
+                    },
+                    options=[
+                        NAME_OPTION,
+                    ],
+                ),
+
+                # Get
+                discord.ApplicationCommandOption(
+                    name="get",
+                    description="Display a created profile.",
+                    type=discord.ApplicationCommandOptionType.subcommand,
+                    name_localizations={
+                        # TRANSLATORS: subcommand name, eg "profile get"
+                        i: _t(i, "get")
+                        for i in discord.Locale
+                    },
+                    description_localizations={
+                        # TRANSLATORS: description of a command
+                        i: _t(i, "Display a created profile")
+                        for i in discord.Locale
+                    },
+                    options=[
+                        discord.ApplicationCommandOption(
+                            name="user",
+                            description=(
+                                "The person whose profile you want to get."
+                            ),
+                            type=discord.ApplicationCommandOptionType.user,
+                            required=False,
+                            name_localizations={
+                                # TRANSLATORS: parameter name in "profile get
+                                # [user]"
+                                i: _t(i, "user")
+                                for i in discord.Locale
+                            },
+                            description_localizations={
+                                # TRANSLATORS: parameter name descrtiption for
+                                # user in "profile get [user]"
+                                i: _t(
+                                    i,
+                                    "The person whose profile you want to get.",
+                                )
+                                for i in discord.Locale
+                            },
+                        ),
+                    ],
+                ),
+
+                # Edit
+                discord.ApplicationCommandOption(
+                    name="edit",
+                    description="Edit one of your profiles.",
+                    type=discord.ApplicationCommandOptionType.subcommand,
+                    name_localizations={
+                        # TRANSLATORS: subcommand name, eg "profile edit"
+                        i: _t(i, "edit")
+                        for i in discord.Locale
+                    },
+                    description_localizations={
+                        # TRANSLATORS: description of a command
+                        i: _t(i, "Edit one of your profiles.")
+                        for i in discord.Locale
+                    },
+                    options=[
+                        NAME_OPTION,
+                    ],
+                ),
+            ]
+        )
+        return command
+
     # TEMPLATE COMMANDS
 
     @commands.group(

@@ -144,6 +144,10 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
             assert template, "Template has been deleted."
             profile.template = template
 
+            # Get all relevant fields
+            await template.fetch_fields(db)
+            await profile.fetch_filled_fields(db)
+
             # Get field
             field = profile.template.fields.get(field_id)
             assert field, "Field has been deleted."

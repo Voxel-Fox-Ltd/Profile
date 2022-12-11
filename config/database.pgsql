@@ -60,21 +60,21 @@ CREATE TABLE IF NOT EXISTS fields(
 
 CREATE TABLE IF NOT EXISTS created_profiles(
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id BIGINT,
-    name TEXT,
+    user_id BIGINT NOT NULL,
+    name TEXT NOT NULL,
     template_id UUID REFERENCES templates(id) ON DELETE CASCADE,
-    verified BOOLEAN DEFAULT FALSE,
     posted_message_id BIGINT,
     posted_channel_id BIGINT,
-    deleted BOOLEAN DEFAULT FALSE,
-    created BOOLEAN DEFAULT FALSE,
+    verified BOOLEAN NOT NULL DEFAULT FALSE,
+    draft BOOLEAN NOT NULL DEFAULT TRUE,
+    deleted BOOLEAN NOT NULL DEFAULT FALSE,
     UNIQUE (user_id, name, template_id)
 );
 -- A table describing an entire profile filled by a user
 -- user_id - the user filling the profile
 -- template_id - the profile being filled
 -- verified - whether or not the profile is a verified one
--- created - a flag to say that a given profile is in the process of being edited
+-- draft - a flag to say that a given profile is in the process of being edited
 
 
 CREATE TABLE IF NOT EXISTS filled_fields(

@@ -1,6 +1,5 @@
 import discord
 from discord.ext import commands, vbu
-import regex as re
 from difflib import SequenceMatcher
 
 from cogs import utils

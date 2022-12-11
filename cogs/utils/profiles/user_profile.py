@@ -82,7 +82,7 @@ class UserProfile:
         "posted_message_id",
         "posted_channel_id",
         "deleted",
-        "created",
+        "draft",
     )
 
     def __init__(
@@ -97,7 +97,7 @@ class UserProfile:
             posted_channel_id: Optional[int] = None,
             template: Optional[Template] = None,
             deleted: bool = False,
-            created: bool = False):
+            draft: bool = True):
         self._id = id
         self.user_id: Optional[int] = user_id
         self.name: Optional[str] = name
@@ -106,7 +106,7 @@ class UserProfile:
         self.posted_message_id = posted_message_id
         self.posted_channel_id = posted_channel_id
         self.deleted: bool = deleted
-        self.created: bool = created  # Whether or not the profile has left the editing stage
+        self.draft: bool = draft  # Whether or not the profile has left the editing stage
         self.all_filled_fields: Dict[str, FilledField] = dict()
         self.template: Optional[Template] = template
 

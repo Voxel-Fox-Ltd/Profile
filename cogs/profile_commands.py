@@ -86,7 +86,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
             )
             if ans is None:
                 return
-            subcommand, template = ans
+            _, template = ans
 
             # Get a list of profiles for the user in this template
             profiles = await template.fetch_all_profiles_for_user(
@@ -98,7 +98,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
         # Return them some options
         await interaction.response.send_autocomplete([
             discord.ApplicationCommandOptionChoice(
-                name=profile.name,
+                name=str(profile.name),
                 value=str(profile.id),
             )
             for profile in profiles
@@ -240,7 +240,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
                 db,
                 template_id,
             )
-            assert template
+            assert template, "Template does not exist."
 
             # Get the profile
             profile = await template.fetch_profile_for_user(
@@ -248,7 +248,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
                 user_id,
                 interaction.values[0],
             )
-            assert profile
+            assert profile, "Profile does not exist."
 
         # Send the profile - defer so it doesn't stay as ephemeral
         await interaction.response.defer_update()
@@ -280,6 +280,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
             )
 
         # Do some basic checks
+        assert profile, "Profile does not exist."
         assert not profile.deleted
         assert profile.user_id == interaction.user.id
 
@@ -414,9 +415,10 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
     @vbu.i18n(__name__)
     async def profile_edit(
             self,
-            interaction: discord.CommandInteraction,
+            interaction: discord.CommandInteraction | discord.ModalInteraction,
             template: utils.Template,
-            profile: Optional[utils.UserProfile] = None):
+            profile: Optional[utils.UserProfile] = None,
+            edit_original: bool = False):
         """
         Run when someone tries to edit a profile for a given user.
         """
@@ -441,6 +443,9 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
                         message.format(template=template.name),
                         ephemeral=True,
                     )
+
+                # Get fields
+                await profile.fetch_filled_fields(db)
 
         # Do some basic checks
         assert not profile.deleted
@@ -483,15 +488,23 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
                 # that edits a profile's name
                 label=_("Edit name"),
                 custom_id=f"PROFILE EDIT_NAME {short_profile_id}",
-                style=discord.ButtonStyle.primary,
+                style=discord.ButtonStyle.success,
             ),
         ]
         for field in profile.template.field_list:
             short_field_id = utils.uuid.encode(field.id)
+            button_style = (
+                discord.ButtonStyle.secondary
+                if
+                    profile.filled_fields.get(field.id)
+                else
+                    discord.ButtonStyle.danger
+            )
             buttons.append(
                 discord.ui.Button(
                     label=field.name,
                     custom_id=f"PROFILE EDIT {short_profile_id} {short_field_id}",
+                    style=button_style,
                     disabled=field.is_command,
                 )
             )
@@ -508,12 +521,19 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
 
         # Send the buttons
         embed = profile.build_embed(self.bot, interaction, interaction.user)
-        await interaction.response.send_message(
-            _("What would you like to edit?"),
-            embeds=[embed],
-            components=components,
-            ephemeral=True,
-        )
+        if edit_original:
+            await interaction.edit_original_message(
+                content=_("What would you like to edit?"),
+                embeds=[embed],
+                components=components,
+            )
+        else:
+            await interaction.response.send_message(
+                _("What would you like to edit?"),
+                embeds=[embed],
+                components=components,
+                ephemeral=True,
+            )
 
     @vbu.i18n(__name__)
     async def profile_create(

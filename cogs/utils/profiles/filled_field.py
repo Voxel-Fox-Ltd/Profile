@@ -1,7 +1,15 @@
-import typing
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Union, Optional
 import uuid
 
-from cogs.utils.profiles.field import Field
+from .field import Field
+
+if TYPE_CHECKING:
+    from discord.ext import vbu
+
+
+any_id = Union[str, uuid.UUID]
 
 
 class FilledField:
@@ -11,24 +19,17 @@ class FilledField:
 
     Parameters
     -----------
-    user_id: :class:`int`
-        The ID of the user who owns this field.
-    name: :class:`str`
-        The name of the profile that the field is added to.
-    field_id: Union[:class:`str`, :class:`uuid.UUID`
-        The ID of the field which has been filled.
-    value: :class:`str`
-        The value provided by the user for this field.
+    profile_id
+    field_id
+    value
     field: Optional[:class:`cogs.utils.profiles.field.Field`]
         The field that's been filled.
 
     Attributes
     -----------
-    user_id: :class:`int`
-        The ID of the user who owns this field.
-    name: :class:`str`
-        The name of the profile that the field is added to.
-    field_id: Union[:class:`str`, :class:`uuid.UUID`
+    profile_id: :class:`str`
+        The ID of the profile associated.
+    field_id: :class:`str`
         The ID of the field which has been filled.
     value: :class:`str`
         The value provided by the user for this field.
@@ -36,17 +37,88 @@ class FilledField:
         The field that's been filled.
     """
 
-    __slots__ = ("user_id", "name", "field_id", "value", "field")
+    __slots__ = (
+        "_profile_id",
+        "_field_id",
+        "value",
+        "field",
+    )
 
     def __init__(
             self,
-            user_id: int,
-            name: str,
-            field_id: typing.Union[str, uuid.UUID],
+            profile_id: any_id,
+            field_id: any_id,
             value: str,
-            field: typing.Optional[Field] = None):
-        self.user_id: int = user_id
-        self.name: str = name
-        self.field_id: str = str(field_id)
+            field: Optional[Field] = None):
+        self.profile_id = profile_id  # type: ignore
+        self.field_id = field_id  # type: ignore
         self.value: str = value
-        self.field: typing.Optional[Field] = field
+        self.field: Optional[Field] = field
+
+    @property
+    def profile_id(self) -> str:
+        if self._profile_id is None:
+            self._profile_id = uuid.uuid4()
+        return str(self._profile_id)
+
+    @profile_id.setter
+    def profile_id(self, value: str | uuid.UUID):
+        if isinstance(value, uuid.UUID):
+            self._profile_id = value
+        else:
+            self._profile_id = uuid.UUID(value)
+
+    @property
+    def field_id(self) -> str:
+        if self._field_id is None:
+            self._field_id = uuid.uuid4()
+        return str(self._field_id)
+
+    @field_id.setter
+    def field_id(self, value: str | uuid.UUID):
+        if isinstance(value, uuid.UUID):
+            self._field_id = value
+        else:
+            self._field_id = uuid.UUID(value)
+
+    @classmethod
+    async def update_by_id(
+            cls,
+            db: vbu.Database,
+            profile_id: any_id,
+            field_id: any_id,
+            new_value: str):
+        """
+        Update a filled field value in the database, creating if one does not
+        exist.
+        """
+
+        await db.call(
+            """
+            INSERT INTO
+                filled_fields
+                (
+                    profile_id,
+                    field_id,
+                    value
+                )
+            VALUES
+                (
+                    $1,
+                    $2,
+                    $3
+                )
+            ON CONFLICT
+                (profile_id, field_id)
+            DO UPDATE
+            SET
+                value = $3
+            """,
+            profile_id, field_id, new_value,
+        )
+
+        return cls(
+            profile_id=profile_id,
+            field_id=field_id,
+            value=new_value,
+        )

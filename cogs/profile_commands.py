@@ -441,7 +441,39 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
                         message.format(template=template.name),
                         ephemeral=True,
                     )
+
+        # Do some basic checks
+        assert not profile.deleted
+        assert profile.user_id == interaction.user.id
+
+        # And let's go
         profile.template = template
+
+        # Make sure the profile is a draft
+        if not profile.draft:
+            buttons = [
+                discord.ui.Button(
+                    # TRANSLATORS: The confirm button for editing a profile
+                    label=_("Yes"),
+                    custom_id=f"PROFILE CONFIRM_EDIT {profile.id}",
+                    style=discord.ButtonStyle.success,
+                ),
+            ]
+            return await interaction.response.send_message(
+                _(
+                    (
+                        "To edit this profile, it must be converted to a "
+                        "draft. This will unsubmit it, and it will need to be "
+                        "re-verified before others can see it again. "
+                        "Are you sure you want to continue?"
+                    )
+                ),
+                components=(
+                    discord.ui.MessageComponents
+                    .add_buttons_with_rows(*buttons)
+                ),
+                ephemeral=True,
+            )
 
         # Make buttons for them to edit
         short_profile_id = utils.uuid.encode(profile.id)
@@ -455,10 +487,11 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
             ),
         ]
         for field in profile.template.field_list:
+            short_field_id = utils.uuid.encode(field.id)
             buttons.append(
                 discord.ui.Button(
                     label=field.name,
-                    custom_id=f"PROFILE EDIT {short_profile_id} {field.id}",
+                    custom_id=f"PROFILE EDIT {short_profile_id} {short_field_id}",
                     disabled=field.is_command,
                 )
             )

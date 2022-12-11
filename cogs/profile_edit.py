@@ -103,9 +103,9 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
                     discord.ui.InputText(
                         label=field.prompt,
                         value=current_value,
-                        min_length=1,
+                        # min_length=1,
                         max_length=1_000,
-                        required=True,
+                        # required=True,
                     ),
                 ),
             ],
@@ -156,37 +156,38 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
         given_value: str = interaction.components[0].components[0].value
 
         # Validate the value
-        try:
-            field.field_type.check(given_value)
-            given_value = await field.field_type.fix(given_value)
-        except utils.FieldCheckFailure:
-            # TRANSLATORS: Catch all error message that shouldn't be shown
-            message: str = _("I encountered an error.")
-            match field.field_type:
-                case utils.TextField:
-                    message = _(
-                        (
-                            "The length of your input must be between 1 and "
-                            "1000 characters."
+        if given_value:
+            try:
+                field.field_type.check(given_value)
+                given_value = await field.field_type.fix(given_value)
+            except utils.FieldCheckFailure:
+                # TRANSLATORS: Catch all error message that shouldn't be shown
+                message: str = _("I encountered an error.")
+                match field.field_type:
+                    case utils.TextField:
+                        message = _(
+                            (
+                                "The length of your input must be between 1 "
+                                "and 1000 characters."
+                            )
                         )
-                    )
-                case utils.NumberField:
-                    message = _(
-                        (
-                            "You did not give a valid number."
+                    case utils.NumberField:
+                        message = _(
+                            (
+                                "You did not give a valid number."
+                            )
                         )
-                    )
-                case utils.ImageField:
-                    message = _(
-                        (
-                            "The image URL you gave isn't valid. "
-                            "Please give a direct link to an image."
+                    case utils.ImageField:
+                        message = _(
+                            (
+                                "The image URL you gave isn't valid. "
+                                "Please give a direct link to an image."
+                            )
                         )
-                    )
-            return await interaction.response.send_message(
-                message,
-                ephemeral=True,
-            )
+                return await interaction.response.send_message(
+                    message,
+                    ephemeral=True,
+                )
 
         # Save the value
         async with vbu.Database() as db:
@@ -194,10 +195,13 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
                 db,
                 profile_id,
                 field_id,
-                given_value,
+                given_value or None,
             )
-        profile.all_filled_fields[field_id] = filled_field
-        filled_field.field = field
+        if filled_field:
+            profile.all_filled_fields[field_id] = filled_field
+            filled_field.field = field
+        else:
+            profile.all_filled_fields.pop(field_id, None)
 
         # Edit the original message
         cog: Optional[ProfileCommands] = self.bot.get_cog("ProfileCommands")

@@ -492,15 +492,20 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
                 style=discord.ButtonStyle.success,
             ),
         ]
+        unfilled_field_count = 0
         for field in profile.template.field_list:
             short_field_id = utils.uuid.encode(field.id)
             button_style = (
                 discord.ButtonStyle.secondary
                 if
                     profile.filled_fields.get(field.id)
+                or
+                    field.is_command
                 else
                     discord.ButtonStyle.danger
             )
+            if button_style is discord.ButtonStyle.danger:
+                unfilled_field_count += 1
             buttons.append(
                 discord.ui.Button(
                     label=field.name,
@@ -516,6 +521,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
                 label=_("Submit"),
                 custom_id=f"PROFILE SUBMIT {short_profile_id}",
                 style=discord.ButtonStyle.success,
+                disabled=unfilled_field_count > 0,
             ),
         )
         components = discord.ui.MessageComponents.add_buttons_with_rows(*buttons)

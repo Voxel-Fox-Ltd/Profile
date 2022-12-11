@@ -87,11 +87,25 @@ class FilledField:
             db: vbu.Database,
             profile_id: any_id,
             field_id: any_id,
-            new_value: str):
+            new_value: Optional[str]):
         """
         Update a filled field value in the database, creating if one does not
         exist.
         """
+
+        if new_value is None:
+            await db.call(
+                """
+                DELETE FROM
+                    filled_fields
+                WHERE
+                    profile_id = $1
+                AND
+                    field_id = $2
+                """,
+                profile_id, field_id,
+            )
+            return
 
         await db.call(
             """
@@ -116,7 +130,6 @@ class FilledField:
             """,
             profile_id, field_id, new_value,
         )
-
         return cls(
             profile_id=profile_id,
             field_id=field_id,

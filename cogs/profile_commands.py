@@ -210,6 +210,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
         return await interaction.response.send_message(
             _("Please select a profile to view."),
             components=components,
+            ephemeral=True,
         )
 
     @vbu.Cog.listener("on_component_interaction")

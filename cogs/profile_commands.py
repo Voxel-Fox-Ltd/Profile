@@ -16,7 +16,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
     async def try_application_command(
             self,
             db: vbu.Database,
-            interaction: discord.CommandInteraction) -> Tuple[str, utils.Template] | None:
+            interaction: discord.CommandInteraction | discord.AutocompleteInteraction) -> Tuple[str, utils.Template] | None:
         """
         Search all rows of the template table in the database to work out
         which context command was called for which template.
@@ -68,6 +68,41 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
 
         # Oh well
         return None
+
+    @vbu.Cog.listener()
+    async def on_autocomplete_interaction(
+            self,
+            interaction: discord.AutocompleteInteraction):
+        """
+        Dispatched for all autocompletes. The bot shouldn't have any
+        autocompletes other than profiles.
+        """
+
+        # Try and get the template
+        async with vbu.Database() as db:
+            ans = await self.try_application_command(
+                db,
+                interaction,
+            )
+            if ans is None:
+                return
+            subcommand, template = ans
+
+            # Get a list of profiles for the user in this template
+            profiles = await template.fetch_all_profiles_for_user(
+                db,
+                interaction.user.id,
+                fetch_filled_fields=False,
+            )
+
+        # Return them some options
+        await interaction.response.send_autocomplete([
+            discord.ApplicationCommandOptionChoice(
+                name=profile.name,
+                value=str(profile.id),
+            )
+            for profile in profiles
+        ])
 
     @vbu.Cog.listener()
     async def on_slash_command(

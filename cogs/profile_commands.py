@@ -274,14 +274,17 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
 
         # See what profiles the user has for that template
         async with vbu.Database() as db:
-            user_profiles = await template.fetch_profile_for_user(
+            profile = await utils.UserProfile.fetch_profile_by_id(
                 db,
-                interaction.user.id,
                 interaction.options[0].options[0].value,
             )
 
+        # Do some basic checks
+        assert not profile.deleted
+        assert profile.user_id == interaction.user.id
+
         # Make sure they have something
-        if not user_profiles:
+        if not profile:
             message = _(
                 "You don't have a profile for the template **{template}** with that name.",
             )
@@ -291,7 +294,6 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
             )
 
         # If they only have one, ask if they're sure
-        profile = user_profiles[0]
         return await self.profile_delete_ask_confirm(interaction, profile)
 
     async def profile_delete_ask_confirm(
@@ -311,7 +313,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
                 discord.ui.Button(
                     # TRANSLATORS: This is the label for a button
                     # that confirms a profile deletion
-                    label=_("Yes."),
+                    label=_("Yes"),
                     custom_id=(
                         f"PROFILE CONFIRM_DELETE "
                         f"{profile.template_id} {profile.name}"
@@ -422,9 +424,8 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
         # See what profiles the user has for that template
         if not profile:
             async with vbu.Database() as db:
-                profile = await template.fetch_profile_for_user(
+                profile = await utils.UserProfile.fetch_profile_by_id(
                     db,
-                    interaction.user.id,
                     interaction.options[0].options[0].value,
                 )
 
@@ -478,6 +479,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
             _("What would you like to edit?"),
             embeds=[embed],
             components=components,
+            ephemeral=True,
         )
 
     @vbu.i18n(__name__)
@@ -499,6 +501,8 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
             user_id=interaction.user.id,
             template_id=template.id,
             name=name,
+            draft=True,
+            verified=False,
         )
         profile.template = template
 

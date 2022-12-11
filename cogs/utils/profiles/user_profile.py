@@ -151,7 +151,7 @@ class UserProfile:
             SELECT
                 *
             FROM
-                user_profiles
+                created_profiles
             WHERE
                 id = $1
             """,

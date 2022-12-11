@@ -151,6 +151,39 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
         # Get the value
         given_value: str = interaction.components[0].components[0].value
 
+        # Validate the value
+        try:
+            field.field_type.check(given_value)
+            given_value = await field.field_type.fix(given_value)
+        except utils.FieldCheckFailure:
+            # TRANSLATORS: Catch all error message that shouldn't be shown
+            message: str = _("I encountered an error.")
+            match field.field_type:
+                case utils.TextField:
+                    message = _(
+                        (
+                            "The length of your input must be between 1 and "
+                            "1000 characters."
+                        )
+                    )
+                case utils.NumberField:
+                    message = _(
+                        (
+                            "You did not give a valid number."
+                        )
+                    )
+                case utils.ImageField:
+                    message = _(
+                        (
+                            "The image URL you gave isn't valid. "
+                            "Please give a direct link to an image."
+                        )
+                    )
+            return await interaction.response.send_message(
+                message,
+                ephemeral=True,
+            )
+
         # Save the value
         async with vbu.Database() as db:
             filled_field = await utils.FilledField.update_by_id(

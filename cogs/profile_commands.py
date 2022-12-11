@@ -445,6 +445,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
                     )
 
                 # Get fields
+                profile.template = template
                 await profile.fetch_filled_fields(db)
 
         # Do some basic checks

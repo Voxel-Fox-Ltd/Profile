@@ -434,10 +434,8 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
                 # Make sure they have something
                 if not profile:
                     message = _(
-                        (
-                            "You have no profiles for the template "
-                            "**{template}** with that name."
-                        ),
+                        "You have no profiles for the template "
+                        "**{template}** with that name."
                     )
                     return await interaction.response.send_message(
                         message.format(template=template.name),
@@ -467,12 +465,10 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
             ]
             return await interaction.response.send_message(
                 _(
-                    (
-                        "To edit this profile, it must be converted to a "
-                        "draft. This will unsubmit it, and it will need to be "
-                        "re-verified before others can see it again. "
-                        "Are you sure you want to continue?"
-                    )
+                    "To edit this profile, it must be converted to a "
+                    "draft. This will unsubmit it, and it will need to be "
+                    "re-verified before others can see it again. "
+                    "Are you sure you want to continue?"
                 ),
                 components=(
                     discord.ui.MessageComponents

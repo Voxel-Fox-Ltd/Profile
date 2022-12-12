@@ -46,10 +46,8 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
         # Tell them it's done
         await interaction.response.send_message(
             _(
-                (
-                    "Your profile has been converted to a draft. "
-                    "You can now edit it."
-                )
+                "Your profile has been converted to a draft. "
+                "You can now edit it."
             ),
             ephemeral=True,
         )
@@ -166,23 +164,17 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
                 match field.field_type:
                     case utils.TextField:
                         message = _(
-                            (
-                                "The length of your input must be between 1 "
-                                "and 1000 characters."
-                            )
+                            "The length of your input must be between 1 "
+                            "and 1000 characters."
                         )
                     case utils.NumberField:
                         message = _(
-                            (
-                                "You did not give a valid number."
-                            )
+                            "You did not give a valid number."
                         )
                     case utils.ImageField:
                         message = _(
-                            (
-                                "The image URL you gave isn't valid. "
-                                "Please give a direct link to an image."
-                            )
+                            "The image URL you gave isn't valid. "
+                            "Please give a direct link to an image."
                         )
                 return await interaction.response.send_message(
                     message,

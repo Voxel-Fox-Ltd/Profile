@@ -1,6 +1,8 @@
+import re
+from difflib import SequenceMatcher
+
 import discord
 from discord.ext import commands, vbu
-from difflib import SequenceMatcher
 
 from cogs import utils
 
@@ -13,7 +15,7 @@ def _t(b: str | discord.Locale, a: str) -> str:
     Translate function for non-commands.
     """
 
-    return vbu.translation(b, __name__).gettext(a)
+    return vbu.translation(b, "profile").gettext(a)
 
 
 class TemplateCommands(vbu.Cog[vbu.Bot]):
@@ -1501,10 +1503,14 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                     use_random_colour=True,
                     description="\n".join([
                         f"{f.index}. **{f.name}**"
-                        if f.name and f.prompt
-                        else f"{f.index}. ~~**{f.name}**~~"
-                        if f.name
-                        else f"{f.index}. ~~**{f.id}**~~"
+                        if
+                            f.name and f.prompt
+                        else
+                            f"{f.index}. ~~**{f.name}**~~"
+                        if
+                            f.name
+                        else
+                            f"{f.index}. ~~**{f.id}**~~"
                         for f in fields
                     ])
                 )
@@ -1634,17 +1640,13 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
             )
             if len(template.fields) >= perks.max_field_count:
                 error = _(
-                    (
-                        "You are at the maximum amount of fields "
-                        "allowed for this template. "
-                    )
+                    "You are at the maximum amount of fields "
+                    "allowed for this template. "
                 )
                 upsell = _(
-                    (
-                        "To get access more fields, use the "
-                        "{donate_command_button} command."
-                    )
-                ).format(donate_command_button="/donate")
+                    "To get access more fields, use the "
+                    "{donate_command_button} command."
+                ).format(donate_command_button="/donate")  # TODO: mention command
                 if perks.is_premium:
                     message = error
                 else:
@@ -1751,10 +1753,8 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         if not self.check_permissions(interaction):
             return await interaction.response.edit_message(
                 content=_(
-                    (
-                        "Only users with the **manage guild** permission "
-                        "can manage templates."
-                    )
+                    "Only users with the **manage guild** permission "
+                    "can manage templates."
                 ),
             )
 
@@ -2022,10 +2022,8 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                 label=_("Text"),
                 value="TEXT",
                 description=_(
-                    (
-                        "This is used when you want users to input up to 1000 "
-                        "characters into a field"
-                    )
+                    "This is used when you want users to input up to 1000 "
+                    "characters into a field"
                 ),
             ),
             discord.ui.SelectOption(
@@ -2034,9 +2032,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                 label=_("Number"),
                 value="NUMBER",
                 description=_(
-                    (
-                        "Used when you want users to input a number."
-                    )
+                    "Used when you want users to input a number."
                 ),
             ),
         ]
@@ -2048,10 +2044,8 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                     label=_("Image"),
                     value="IMAGE",
                     description=_(
-                        (
-                            "Used when you want users to input an image URL, "
-                            "which will appear on their profile."
-                        )
+                        "Used when you want users to input an image URL, "
+                        "which will appear on their profile."
                     ),
                 )
             )

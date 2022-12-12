@@ -166,7 +166,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         except discord.InteractionResponded:
             await interaction.edit_original_message(**kwargs)
 
-    @vbu.i18n(__name__)
+    @vbu.i18n("profile")
     def get_template_edit_components(
             self,
             interaction: discord.Interaction,
@@ -281,7 +281,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         }
         return kwargs
 
-    @vbu.i18n(__name__)
+    @vbu.i18n("profile")
     def get_field_edit_components(
             self,
             interaction: discord.Interaction,
@@ -538,7 +538,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         application_command_meta=commands.ApplicationCommandMeta(),
     )
     @commands.defer()
-    @vbu.i18n(__name__)
+    @vbu.i18n("profile")
     async def template_list(
             self,
             ctx: GC[discord.CommandInteraction]):
@@ -612,7 +612,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
             ],
         ),
     )
-    @vbu.i18n(__name__)
+    @vbu.i18n("profile")
     async def template_delete(
             self,
             ctx: GC[discord.CommandInteraction],
@@ -713,7 +713,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
             ],
         ),
     )
-    @vbu.i18n(__name__)
+    @vbu.i18n("profile")
     async def template_create(
             self,
             ctx: GC[discord.CommandInteraction],
@@ -812,7 +812,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
             ],
         ),
     )
-    @vbu.i18n(__name__)
+    @vbu.i18n("profile")
     async def template_edit(
             self,
             ctx: GC[discord.CommandInteraction],
@@ -883,7 +883,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
     # TEMPLATE EDIT COMPONENT LISTENERS
 
     @vbu.Cog.listener("on_component_interaction")  # TEMPLATE_DELETE [action] [TID]
-    @vbu.i18n(__name__)
+    @vbu.i18n("profile")
     async def template_delete_component_listener(
             self,
             interaction: discord.ComponentInteraction):
@@ -947,7 +947,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         )
 
     @vbu.Cog.listener("on_component_interaction")  # TEMPLATE_EDIT NAME [TID] [CV]
-    @vbu.i18n(__name__)
+    @vbu.i18n("profile")
     async def template_edit_name_component_listener(
             self,
             interaction: discord.ComponentInteraction):
@@ -984,7 +984,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         await interaction.response.send_modal(modal)
 
     @vbu.Cog.listener("on_modal_submit")  # TEMPLATE_SET NAME [TID]
-    @vbu.i18n(__name__)
+    @vbu.i18n("profile")
     async def template_edit_name_modal_listener(
             self,
             interaction: discord.ModalInteraction):
@@ -1028,7 +1028,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         )
 
     @vbu.Cog.listener("on_component_interaction")  # TEMPLATE_EDIT ARCHIVE [TID] [CV]
-    @vbu.i18n(__name__)
+    @vbu.i18n("profile")
     async def template_edit_archive_component_listener(
             self,
             interaction: discord.ComponentInteraction):
@@ -1073,7 +1073,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         )
 
     @vbu.Cog.listener("on_component_interaction")  # TEMPLATE_SET ARCHIVE [TID]
-    @vbu.i18n(__name__)
+    @vbu.i18n("profile")
     async def template_edit_archive_dropdown_listener(
             self,
             interaction: discord.ComponentInteraction):
@@ -1117,7 +1117,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         )
 
     @vbu.Cog.listener("on_component_interaction")  # TEMPLATE_EDIT VERIFICATION [TID] [CV]
-    @vbu.i18n(__name__)
+    @vbu.i18n("profile")
     async def template_edit_verification_component_listener(
             self,
             interaction: discord.ComponentInteraction):
@@ -1162,7 +1162,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         )
 
     @vbu.Cog.listener("on_component_interaction")  # TEMPLATE_SET VERIFICATION [TID]
-    @vbu.i18n(__name__)
+    @vbu.i18n("profile")
     async def template_edit_verification_dropdown_listener(
             self,
             interaction: discord.ComponentInteraction):
@@ -1206,7 +1206,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         )
 
     @vbu.Cog.listener("on_component_interaction")  # TEMPLATE_EDIT ROLE [TID] [CV]
-    @vbu.i18n(__name__)
+    @vbu.i18n("profile")
     async def template_edit_role_component_listener(
             self,
             interaction: discord.ComponentInteraction):
@@ -1249,7 +1249,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         )
 
     @vbu.Cog.listener("on_component_interaction")  # TEMPLATE_SET ROLE [TID]
-    @vbu.i18n(__name__)
+    @vbu.i18n("profile")
     async def template_edit_role_dropdown_listener(
             self,
             interaction: discord.ComponentInteraction):
@@ -1293,7 +1293,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         )
 
     @vbu.Cog.listener("on_component_interaction")  # TEMPLATE_EDIT MAX_PROFILES [TID] [CV]
-    @vbu.i18n(__name__)
+    @vbu.i18n("profile")
     async def template_edit_max_profiles_component_listener(
             self,
             interaction: discord.ComponentInteraction):
@@ -1330,7 +1330,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         await interaction.response.send_modal(modal)
 
     @vbu.Cog.listener("on_modal_submit")  # TEMPLATE_SET MAX_PROFILES [TID]
-    @vbu.i18n(__name__)
+    @vbu.i18n("profile")
     async def template_edit_max_profiles_modal_listener(
             self,
             interaction: discord.ModalInteraction):
@@ -1375,7 +1375,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         )
 
     @vbu.Cog.listener("on_component_interaction")  # TEMPLATE_EDIT SLASH [TID]
-    @vbu.i18n(__name__)
+    @vbu.i18n("profile")
     async def template_slash_component_listener(
             self,
             interaction: discord.ComponentInteraction):
@@ -1430,7 +1430,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         )
 
     @vbu.Cog.listener("on_component_interaction")  # TEMPLATE_EDIT FIELDS [TID]
-    @vbu.i18n(__name__)
+    @vbu.i18n("profile")
     async def template_edit_fields_component_listener(
             self,
             interaction: discord.ComponentInteraction):
@@ -1518,7 +1518,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         )
 
     @vbu.Cog.listener("on_component_interaction")  # TEMPLATE_EDIT DONE
-    @vbu.i18n(__name__)
+    @vbu.i18n("profile")
     async def template_edit_done_component_listener(
             self,
             interaction: discord.ComponentInteraction):
@@ -1535,7 +1535,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
     # FIELD EDIT COMPONENT LISTENERS
 
     @vbu.Cog.listener("on_component_interaction")  # FIELD_EDIT DONE [TID]
-    @vbu.i18n(__name__)
+    @vbu.i18n("profile")
     async def template_edit_fields_done_component_listener(
             self,
             interaction: discord.ComponentInteraction):
@@ -1570,7 +1570,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         return await interaction.response.edit_message(**kwargs)
 
     @vbu.Cog.listener("on_component_interaction")  # FIELD_EDIT SELECT [TID]
-    @vbu.i18n(__name__)
+    @vbu.i18n("profile")
     async def template_edit_fields_select_component_listener(
             self,
             interaction: discord.ComponentInteraction):
@@ -1604,7 +1604,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         await interaction.response.edit_message(**kwargs)
 
     @vbu.Cog.listener("on_component_interaction")  # FIELD_EDIT NEW [TID]
-    @vbu.i18n(__name__)
+    @vbu.i18n("profile")
     async def template_edit_fields_new_component_listener(
             self,
             interaction: discord.ComponentInteraction):
@@ -1678,7 +1678,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         await interaction.response.edit_message(**kwargs)
 
     @vbu.Cog.listener("on_component_interaction")  # FIELD_EDIT DELETE [FID]
-    @vbu.i18n(__name__)
+    @vbu.i18n("profile")
     async def template_edit_fields_delete_component_listener(
             self,
             interaction: discord.ComponentInteraction):
@@ -1734,7 +1734,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         )
 
     @vbu.Cog.listener("on_component_interaction")  # FIELD_DELETE [action] [TID]
-    @vbu.i18n(__name__)
+    @vbu.i18n("profile")
     async def field_delete_component_listener(
             self,
             interaction: discord.ComponentInteraction):
@@ -1801,7 +1801,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         )
 
     @vbu.Cog.listener("on_component_interaction")  # FIELD_EDIT NAME [FID] [CV]
-    @vbu.i18n(__name__)
+    @vbu.i18n("profile")
     async def field_edit_name_component_listener(
             self,
             interaction: discord.ComponentInteraction):
@@ -1838,7 +1838,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         await interaction.response.send_modal(modal)
 
     @vbu.Cog.listener("on_modal_submit")  # FIELD_SET NAME [FID]
-    @vbu.i18n(__name__)
+    @vbu.i18n("profile")
     async def field_edit_name_modal_listener(
             self,
             interaction: discord.ModalInteraction):
@@ -1881,7 +1881,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         )
 
     @vbu.Cog.listener("on_component_interaction")  # FIELD_EDIT PROMPT [FID]
-    @vbu.i18n(__name__)
+    @vbu.i18n("profile")
     async def field_edit_prompt_component_listener(
             self,
             interaction: discord.ComponentInteraction):
@@ -1924,7 +1924,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         await interaction.response.send_modal(modal)
 
     @vbu.Cog.listener("on_modal_submit")  # FIELD_SET PROMPT [FID]
-    @vbu.i18n(__name__)
+    @vbu.i18n("profile")
     async def field_edit_prompt_modal_listener(
             self,
             interaction: discord.ModalInteraction):
@@ -1956,7 +1956,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         )
 
     @vbu.Cog.listener("on_component_interaction")  # FIELD_EDIT OPTIONAL [FID]
-    @vbu.i18n(__name__)
+    @vbu.i18n("profile")
     async def field_edit_optional_component_listener(
             self,
             interaction: discord.ModalInteraction):
@@ -1984,7 +1984,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         )
 
     @vbu.Cog.listener("on_component_interaction")  # FIELD_EDIT TYPE [FID]
-    @vbu.i18n(__name__)
+    @vbu.i18n("profile")
     async def field_edit_type_component_listener(
             self,
             interaction: discord.ComponentInteraction):
@@ -2074,7 +2074,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         )
 
     @vbu.Cog.listener("on_component_interaction")  # FIELD_SET TYPE [FID]
-    @vbu.i18n(__name__)
+    @vbu.i18n("profile")
     async def field_edit_type_dropdown_component_listener(
             self,
             interaction: discord.ComponentInteraction):

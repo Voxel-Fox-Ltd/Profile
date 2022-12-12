@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 class ProfileEdit(vbu.Cog[vbu.Bot]):
 
     @vbu.Cog.listener("on_component_interaction")
-    @vbu.i18n(__name__)
+    @vbu.i18n("profile")
     async def profile_set_draft(
             self,
             interaction: discord.ComponentInteraction):
@@ -55,7 +55,7 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
         )
 
     @vbu.Cog.listener("on_component_interaction")
-    @vbu.i18n(__name__)
+    @vbu.i18n("profile")
     async def profile_edit_selector(
             self,
             interaction: discord.ComponentInteraction):
@@ -113,7 +113,7 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
         await interaction.response.send_modal(modal)
 
     @vbu.Cog.listener("on_modal_submit")
-    @vbu.i18n(__name__)
+    @vbu.i18n("profile")
     async def profile_edit_set(
             self,
             interaction: discord.ModalInteraction):

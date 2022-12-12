@@ -140,7 +140,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
             case "edit":
                 return await self.profile_edit(interaction, template)
 
-    @vbu.i18n(__name__)
+    @vbu.i18n("profile")
     async def profile_get(
             self,
             interaction: discord.CommandInteraction,
@@ -263,7 +263,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
             ],
         )
 
-    @vbu.i18n(__name__)
+    @vbu.i18n("profile")
     async def profile_delete(
             self,
             interaction: discord.CommandInteraction,
@@ -412,7 +412,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
         # Ask them to confirm
         await self.profile_delete_ask_confirm(interaction, profile)
 
-    @vbu.i18n(__name__)
+    @vbu.i18n("profile")
     async def profile_edit(
             self,
             interaction: discord.CommandInteraction | discord.ModalInteraction,
@@ -542,7 +542,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
                 ephemeral=True,
             )
 
-    @vbu.i18n(__name__)
+    @vbu.i18n("profile")
     async def profile_create(
             self,
             interaction: discord.CommandInteraction,

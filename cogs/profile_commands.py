@@ -483,7 +483,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
             discord.ui.Button(
                 # TRANSLATORS: This is the label for a button
                 # that edits a profile's name
-                label=_("Edit name"),
+                label=_("Edit profile name"),
                 custom_id=f"PROFILE EDIT_NAME {short_profile_id}",
                 style=discord.ButtonStyle.success,
             ),

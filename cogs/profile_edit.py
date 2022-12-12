@@ -62,7 +62,7 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
         """
 
         # Check the interaction is from a profile edit selector
-        if not interaction.custom_id.startswith("PROFILE EDIT"):
+        if not interaction.custom_id.startswith("PROFILE EDIT "):
             return
 
         # Get the profile they're trying to edit

@@ -78,6 +78,10 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
         autocompletes other than profiles.
         """
 
+        # Make sure it's not a template autocomplete
+        if interaction.command_name.startswith("template "):
+            return
+
         # Try and get the template
         async with vbu.Database() as db:
             ans = await self.try_application_command(
@@ -452,6 +456,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
 
         # And let's go
         profile.template = template
+        short_profile_id = utils.uuid.encode(profile.id)
 
         # Make sure the profile is a draft
         if not profile.draft:
@@ -459,7 +464,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
                 discord.ui.Button(
                     # TRANSLATORS: The confirm button for editing a profile
                     label=_("Yes"),
-                    custom_id=f"PROFILE CONFIRM_EDIT {profile.id}",
+                    custom_id=f"PROFILE CONFIRM_EDIT {short_profile_id}",
                     style=discord.ButtonStyle.success,
                 ),
             ]
@@ -478,7 +483,6 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
             )
 
         # Make buttons for them to edit
-        short_profile_id = utils.uuid.encode(profile.id)
         buttons = [
             discord.ui.Button(
                 # TRANSLATORS: This is the label for a button

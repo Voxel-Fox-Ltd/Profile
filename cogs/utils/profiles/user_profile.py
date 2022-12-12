@@ -364,13 +364,15 @@ class UserProfile:
             INSERT INTO
                 created_profiles
                 (
+                    id,
                     user_id,
                     name,
                     template_id,
                     verified,
                     posted_message_id,
                     posted_channel_id,
-                    deleted
+                    deleted,
+                    draft
                 )
             VALUES
                 (
@@ -380,20 +382,24 @@ class UserProfile:
                     $4,
                     $5,
                     $6,
-                    $7
+                    $7,
+                    $8,
+                    $9
                 )
             ON CONFLICT
-                (user_id, name, template_id)
+                (id)
             DO UPDATE
             SET
-                user_id = $1,
-                name = $2,
-                template_id = $3,
-                verified = $4,
-                posted_message_id = $5,
-                posted_channel_id = $6,
-                deleted = $7
+                user_id = $2,
+                name = $3,
+                template_id = $4,
+                verified = $5,
+                posted_message_id = $6,
+                posted_channel_id = $7,
+                deleted = $8,
+                draft = $9
             """,
+            self.id,
             self.user_id,
             self.name,
             self.template_id,
@@ -401,5 +407,6 @@ class UserProfile:
             self.posted_message_id,
             self.posted_channel_id,
             self.deleted,
+            self.draft,
         )
         return self

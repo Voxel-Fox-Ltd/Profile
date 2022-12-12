@@ -103,7 +103,54 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
                         value=current_value,
                         # min_length=1,
                         max_length=1_000,
-                        # required=True,
+                        required=False,
+                    ),
+                ),
+            ],
+        )
+        await interaction.response.send_modal(modal)
+
+    @vbu.Cog.listener("on_component_interaction")
+    @vbu.i18n("profile")
+    async def profile_name_change(
+            self,
+            interaction: discord.ComponentInteraction):
+        """
+        Allow people to change the name of their profiles.
+        """
+
+        # Check the interaction is from a profile edit selector
+        if not interaction.custom_id.startswith("PROFILE EDIT_NAME"):
+            return
+
+        # Get the profile they're trying to edit
+        short_profile_id = interaction.custom_id.split(" ")[2]
+        profile_id = utils.uuid.decode(short_profile_id)
+
+        # Get the profile, template, and current field value
+        async with vbu.Database() as db:
+
+            # Get profile
+            profile = await UserProfile.fetch_profile_by_id(db, profile_id)
+            assert profile, "Profile does not exist."
+
+            # Get template
+            template = await profile.fetch_template(db)
+            assert template, "Template does not exist."
+
+        # Ask the user to fill in the field
+        current_value = profile.name
+        modal = discord.ui.Modal(
+            title=template.name,
+            custom_id=f"PROFILE SET_NAME {short_profile_id}",
+            components=[
+                discord.ui.ActionRow(
+                    discord.ui.InputText(
+                        label=_("Set the name of your modal"),
+                        value=current_value,
+                        min_length=1,
+                        max_length=32,
+                        required=True,
                     ),
                 ),
             ],
@@ -194,6 +241,77 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
             filled_field.field = field
         else:
             profile.all_filled_fields.pop(field_id, None)
+
+        # Edit the original message
+        cog: Optional[ProfileCommands] = self.bot.get_cog("ProfileCommands")
+        assert cog, "Cog not loaded."
+        await interaction.response.defer_update()
+        await cog.profile_edit(
+            interaction,
+            template,
+            profile,
+            edit_original=True,
+        )
+
+    @vbu.Cog.listener("on_modal_submit")
+    @vbu.i18n("profile")
+    async def profile_name_set(
+            self,
+            interaction: discord.ModalInteraction):
+        """
+        Set a profile field, saving in database and editing the original
+        message to show an updated embed.
+        """
+
+        # Check the interaction is from a profile edit selector
+        if not interaction.custom_id.startswith("PROFILE SET_NAME "):
+            return
+
+        # Get the profile they're trying to edit
+        short_profile_id = interaction.custom_id.split(" ")[2]
+        profile_id = utils.uuid.decode(short_profile_id)
+
+        # Get the profile, template, and current field value
+        async with vbu.Database() as db:
+
+            # Get profile
+            profile = await UserProfile.fetch_profile_by_id(db, profile_id)
+            assert profile, "Profile has been deleted."
+
+            # Get template
+            template = await profile.fetch_template(db)
+            assert template, "Template does not exist."
+
+            # Get all of user's profiles
+            assert profile.user_id, "Profile not assigned to a user."
+            all_profiles = await template.fetch_all_profiles_for_user(
+                db,
+                profile.user_id,
+            )
+
+            # Get the value
+            given_value: str = interaction.components[0].components[0].value
+
+            # Make sure they don't have a profile existing with that
+            # name already
+            profiles_with_name = [
+                i
+                for i in all_profiles
+                if
+                    i.name
+                and
+                    i.name.casefold() == given_value.casefold()
+                and
+                    i.id != profile.id
+            ]
+            if profiles_with_name:
+                return await interaction.response.send_message(
+                    _("You already have a profile with that name."),
+                    ephemeral=True,
+                )
+
+            # Edit the profile name
+            await profile.update(db, name=given_value)
 
         # Edit the original message
         cog: Optional[ProfileCommands] = self.bot.get_cog("ProfileCommands")

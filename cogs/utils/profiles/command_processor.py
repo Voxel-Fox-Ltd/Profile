@@ -24,27 +24,16 @@ class CommandProcessor:
     )
     VALID_COMMAND_REGEX = re.compile(
         r'''
-        {{
-            DEFAULT\s*(?<!\\)\"(?P<default>.+?)(?<!\\)\"
-            (\s*
-                (?P<command>
-                    (?P<commandname>HASROLE|HASANYROLE|FIELDVALUE)
-                    \((?P<commandparams>(?:\d{16,23}(?:,\s*)?)+|(?:(?<!\\)\".+(?<!\\)\"(?:,\s*)?)+)\)
-                    \s*SAYS\s*(?<!\\)\"(?P<text>.+?)(?<!\\)\"
-                )
-            )+
-        }}
+        {{\s*(HASROLE\s*"[^"]+"\s*"[^"]+"\s*)*\s*DEFAULT\s*"([^"]+)"\s*}}
         ''',
         re.IGNORECASE | re.MULTILINE | re.VERBOSE | re.DOTALL
     )
-    COMMAND_PARAMETERS_REGEX = re.compile(
-        r'''
-        (?P<command>
-            (?P<commandname>HASROLE|HASANYROLE|FIELDVALUE)
-            \((?P<commandparams>(?:\d{16,23}(?:,\s*)?)+|(?:(?<!\\)\".+(?<!\\)\"(?:,\s*)?)+)\)
-            \s*SAYS\s*(?<!\\)\"(?P<text>.+?)(?<!\\)\"
-        )
-        ''',
+    HASROLE_REGEX = re.compile(
+        r'''HASROLE\s*"([^"]+)"\s*"([^"]+)"''',
+        re.IGNORECASE | re.MULTILINE | re.VERBOSE | re.DOTALL
+    )
+    ELSE_REGEX = re.compile(
+        r'''DEFAULT\s*"([^"]+)"''',
         re.IGNORECASE | re.MULTILINE | re.VERBOSE | re.DOTALL
     )
 
@@ -72,7 +61,10 @@ class CommandProcessor:
         )
 
     @classmethod
-    def get_value(cls, text: str, member: typing.Optional[discord.Member] = None) -> str:
+    def get_value(
+            cls,
+            text: str,
+            member: typing.Optional[discord.Member] = None) -> str:
         """
         Return the value for a field after it's run through a command.
 
@@ -97,39 +89,23 @@ class CommandProcessor:
         """
 
         # See if it's a command
-        valid_command = cls.VALID_COMMAND_REGEX.search(text)
-        if valid_command is None:
-            raise InvalidCommandText()
+        valid_command_match = cls.VALID_COMMAND_REGEX.search(text)
+        if valid_command_match is None:
+            return ""
 
         # Get the command values
-        default_text = valid_command.group("default")
-        command_list = cls.COMMAND_PARAMETERS_REGEX.finditer(text)
+        default_text_match = cls.ELSE_REGEX.search(text)
+        if not default_text_match:
+            return ""
+        hasrole_match_iter = cls.HASROLE_REGEX.finditer(text)
 
-        # Work out how we're applying each thing
-        for command in command_list:
-            command_name = command.group("commandname")
-            command_params = command.group("commandparams")
+        # See if the member has the relevant role
+        for hasrole_match in hasrole_match_iter:
+            if member is None:
+                raise ValueError("Member is required for this command.")
+            role_id = int(hasrole_match.group(1))
+            if role_id in member.role_ids:
+                return hasrole_match.group(2)
 
-            # hasrole command processing
-            if command_name.upper() in ["HASROLE", "HASANYROLE"]:
-                if member is None:
-                    raise ValueError("No provided member")
-                role_strings_to_check = [i.strip(' "') for i in command_params.split(',')]
-                role_ids_to_check = [int(i) for i in role_strings_to_check if i.isdigit()]
-
-                # hasrole check
-                if command_name.upper() == "HASROLE":
-                    if len([i for i in role_ids_to_check if i in member._roles]) == len(role_ids_to_check):
-                        return command.group("text").replace('\\n', '\n').replace('\\"', '"')
-
-                # hasanyrole check
-                elif command_name.upper() == "HASANYROLE":
-                    if any([i for i in role_ids_to_check if i in member._roles]):
-                        return command.group("text").replace('\\n', '\n').replace('\\"', '"')
-
-            # fieldvalue can't apply here so we'll ignore it
-            if command_name.upper() == "FIELDVALUE":
-                return "Could not process field value"
-
-        # Guess we'll have to return the default
-        return default_text
+        # Otherwise return the default
+        return default_text_match.group(1)

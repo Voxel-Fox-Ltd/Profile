@@ -328,12 +328,12 @@ class UserProfile:
             # Filter deleted or unset data
             if f.field.deleted:
                 continue
-            try:
+            if CommandProcessor.COMMAND_REGEX.search(f.field.prompt):
                 field_value = CommandProcessor.get_value(f.field.prompt, member)
-            except InvalidCommandText:
+                if field_value is None or field_value == "":
+                    continue
+            else:
                 field_value = f.value
-            if field_value is None or field_value == "":
-                continue
 
             # Set data
             if f.field.field_type == ImageField:

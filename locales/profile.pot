@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2022-12-12 15:36+0000\n"
+"POT-Creation-Date: 2022-12-12 21:55+0000\n"
 "PO-Revision-Date: 2022-12-12 15:17+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -17,26 +17,69 @@ msgstr ""
 "X-Poedit-SearchPathExcluded-1: cogs/_profile_verification.py\n"
 "X-Poedit-SearchPathExcluded-2: cogs/_template_commands.py\n"
 
-#: cogs/profile_commands.py:163
+#. TRANSLATORS: Label for a button to approve
+#. a profile
+#: cogs/_profile_verificationnnn.py:62 cogs/profile_verification.py:92
+msgid "Approve"
+msgstr ""
+
+#: cogs/_profile_verificationnnn.py:67
+msgid "Decline"
+msgstr ""
+
+#: cogs/_profile_verificationnnn.py:331
+#, python-brace-format
+msgid "Failed to get template with ID `{template_id}`."
+msgstr ""
+
+#: cogs/_profile_verificationnnn.py:387
+msgid "No reason provided."
+msgstr ""
+
+#: cogs/_profile_verificationnnn.py:398
+msgid "Would you like to give a denial reason?"
+msgstr ""
+
+#: cogs/_profile_verificationnnn.py:420
+msgid "Denial Reason"
+msgstr ""
+
+#: cogs/_profile_verificationnnn.py:424
+msgid "Why are you denying this profile?"
+msgstr ""
+
+#: cogs/_profile_verificationnnn.py:514
+msgid "Failed to send profile archive message."
+msgstr ""
+
+#: cogs/_profile_verificationnnn.py:523
+msgid "Failed to add role to user."
+msgstr ""
+
+#: cogs/_profile_verificationnnn.py:533
+msgid "Profile dealt with successfully."
+msgstr ""
+
+#: cogs/profile_commands.py:167
 #, python-brace-format
 msgid "You don't have any profiles for the template **{template}**."
 msgstr ""
 
-#: cogs/profile_commands.py:166
+#: cogs/profile_commands.py:170
 #, python-brace-format
 msgid "**{user}** doesn't have any profiles for the template **{template}**."
 msgstr ""
 
-#: cogs/profile_commands.py:211
+#: cogs/profile_commands.py:215
 msgid "Please select a profile to view."
 msgstr ""
 
-#: cogs/profile_commands.py:290
+#: cogs/profile_commands.py:294
 #, python-brace-format
 msgid "You don't have a profile for the template **{template}** with that name."
 msgstr ""
 
-#: cogs/profile_commands.py:309
+#: cogs/profile_commands.py:313
 #, python-brace-format
 msgid "Are you sure you want to delete your profile **{profile}**?"
 msgstr ""
@@ -45,64 +88,106 @@ msgstr ""
 #. that confirms a profile deletion
 #. TRANSLATORS: The confirm button for editing a profile
 #. TRANSLATORS: Text appearing on a button.
-#: cogs/profile_commands.py:317 cogs/profile_commands.py:461
+#: cogs/profile_commands.py:321 cogs/profile_commands.py:466
 #: cogs/template_commands.py:673 cogs/template_commands.py:1714
 msgid "Yes"
 msgstr ""
 
-#: cogs/profile_commands.py:377
+#: cogs/profile_commands.py:381
 #, python-brace-format
 msgid "Your profile **{profile}** has been deleted."
 msgstr ""
 
-#: cogs/profile_commands.py:437
+#: cogs/profile_commands.py:441
 #, python-brace-format
 msgid "You have no profiles for the template **{template}** with that name."
 msgstr ""
 
-#: cogs/profile_commands.py:468
+#: cogs/profile_commands.py:473
 msgid "To edit this profile, it must be converted to a draft. This will unsubmit it, and it will need to be re-verified before others can see it again. Are you sure you want to continue?"
 msgstr ""
 
 #. TRANSLATORS: This is the label for a button
 #. that edits a profile's name
-#: cogs/profile_commands.py:486
-msgid "Edit name"
+#: cogs/profile_commands.py:490
+msgid "Edit profile name"
 msgstr ""
 
 #. TRANSLATORS: This is the label for a button that submits
 #. a profile.
-#: cogs/profile_commands.py:517
+#: cogs/profile_commands.py:521
 msgid "Submit"
 msgstr ""
 
-#: cogs/profile_commands.py:529 cogs/profile_commands.py:535
+#: cogs/profile_commands.py:533 cogs/profile_commands.py:539
 msgid "What would you like to edit?"
 msgstr ""
 
-#: cogs/profile_edit.py:49
+#: cogs/profile_edit.py:75
 msgid "Your profile has been converted to a draft. You can now edit it."
 msgstr ""
 
+#: cogs/profile_edit.py:175
+msgid "Set the name of your modal"
+msgstr ""
+
 #. TRANSLATORS: Catch all error message that shouldn't be shown
-#: cogs/profile_edit.py:163
+#: cogs/profile_edit.py:236
 msgid "I encountered an error."
 msgstr ""
 
-#: cogs/profile_edit.py:167
+#: cogs/profile_edit.py:240
 msgid "The length of your input must be between 1 and 1000 characters."
 msgstr ""
 
-#: cogs/profile_edit.py:172
+#: cogs/profile_edit.py:245
 msgid "You did not give a valid number."
 msgstr ""
 
-#: cogs/profile_edit.py:176
+#: cogs/profile_edit.py:249
 msgid "The image URL you gave isn't valid. Please give a direct link to an image."
 msgstr ""
 
-#: cogs/profile_verification.py:49
+#: cogs/profile_edit.py:335
+msgid "You already have a profile with that name."
+msgstr ""
+
+#: cogs/profile_verification.py:57
 msgid "You have not submitted the most recent version of your profile. Please re-run the edit command in order to submit your profile."
+msgstr ""
+
+#. TRANSLATORS: Label for a button to deny
+#. a profile
+#: cogs/profile_verification.py:99
+msgid "Deny"
+msgstr ""
+
+#: cogs/profile_verification.py:109
+msgid "Failed to send your profile to the verification channel. Please let an admin know, and then try again later."
+msgstr ""
+
+#: cogs/profile_verification.py:118
+msgid "Your profile has been submitted for verification."
+msgstr ""
+
+#: cogs/profile_verification.py:146
+msgid "Failed to send your profile to the archive channel. Please let an admin know, and then try again later."
+msgstr ""
+
+#: cogs/profile_verification.py:155
+msgid "Your profile has been submitted to the archive."
+msgstr ""
+
+#: cogs/profile_verification.py:234
+msgid "Failed to send the profile to the archive channel."
+msgstr ""
+
+#: cogs/profile_verification.py:258
+msgid "Your profile has been approved and is now publicly available :)"
+msgstr ""
+
+#: cogs/profile_verification.py:335
+msgid "Your profile has been denied."
 msgstr ""
 
 #. TRANSLATORS: Text appearing on a button that edits the
@@ -374,32 +459,32 @@ msgstr ""
 msgid "Field Type"
 msgstr ""
 
-#: cogs/utils/profiles/template.py:695
+#: cogs/utils/profiles/template.py:693
 #, python-brace-format
 msgid "Template ID: `{0}`"
 msgstr ""
 
-#: cogs/utils/profiles/template.py:696
+#: cogs/utils/profiles/template.py:694
 #, python-brace-format
 msgid "Guild ID: `{0}`"
 msgstr ""
 
-#: cogs/utils/profiles/template.py:697
+#: cogs/utils/profiles/template.py:695
 #, python-brace-format
 msgid "Maximum allowed profiles: {0}"
 msgstr ""
 
-#: cogs/utils/profiles/template.py:701
+#: cogs/utils/profiles/template.py:699
 #, python-brace-format
 msgid "Archive channel: {0}"
 msgstr ""
 
-#: cogs/utils/profiles/template.py:720
+#: cogs/utils/profiles/template.py:718
 #, python-brace-format
 msgid "Verification channel: {0}"
 msgstr ""
 
-#: cogs/utils/profiles/template.py:739
+#: cogs/utils/profiles/template.py:737
 #, python-brace-format
 msgid "Given role: {0}"
 msgstr ""

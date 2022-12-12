@@ -524,7 +524,10 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
                 disabled=unfilled_field_count > 0,
             ),
         )
-        components = discord.ui.MessageComponents.add_buttons_with_rows(*buttons)
+        components = (
+            discord.ui.MessageComponents
+            .add_buttons_with_rows(*buttons)
+        )
 
         # Send the buttons
         embed = profile.build_embed(self.bot, interaction, interaction.user)

@@ -29,27 +29,63 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
         profile_id = utils.uuid.decode(short_profile_id)
 
         # Get the profile object
+        partial_message = None
         async with vbu.Database() as db:
             profile = await utils.UserProfile.fetch_profile_by_id(
                 db,
                 profile_id,
             )
             if not profile:
-                return await interaction.response.send_message(
-                    "That profile doesn't exist.",
-                    ephemeral=True,
+                return await interaction.response.edit_message(
+                    content=_("That profile doesn't exist."),
+                    components=None,
+                    embeds=[],
                 )
 
+            # See if it's already a draft
+            if profile.draft:
+                return await interaction.response.edit_message(
+                    content=_("That profile is already a draft."),
+                    components=None,
+                    embeds=[],
+                )
+
+            # Get a partial message if there's one posted already
+            if profile.posted_channel_id:
+                partial_channel = discord.PartialMessageable(
+                    state=self.bot._connection,
+                    id=profile.posted_channel_id,
+                    type=discord.ChannelType.text,
+                )
+                if profile.posted_message_id:
+                    partial_message = partial_channel.get_partial_message(
+                        profile.posted_message_id,
+                    )
+
             # Set the draft flag
-            await profile.update(db, draft=True)
+            await profile.update(
+                db,
+                verified=False,
+                draft=True,
+                posted_message_id=None,
+                posted_channel_id=None,
+            )
+
+        # Delete message if applicable
+        if partial_message:
+            try:
+                await partial_message.delete()
+            except discord.HTTPException:
+                pass
 
         # Tell them it's done
-        await interaction.response.send_message(
-            _(
+        await interaction.response.edit_message(
+            content=_(
                 "Your profile has been converted to a draft. "
                 "You can now edit it."
             ),
-            ephemeral=True,
+            components=None,
+            embeds=[],
         )
 
     @vbu.Cog.listener("on_component_interaction")
@@ -78,6 +114,16 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
             profile = await UserProfile.fetch_profile_by_id(db, profile_id)
             assert profile, "Profile does not exist."
 
+            # Only allow editing of draft profiles
+            if not profile.draft:
+                return await interaction.response.edit_message(
+                    content=_(
+                        "You can only edit draft profiles. "
+                        "Convert this profile to a draft to proceed."
+                    ),
+                    components=None,
+                )
+
             # Get template
             template = await Template.fetch_template_by_id(db, profile.template_id)
             assert template, "Template does not exist."
@@ -87,6 +133,23 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
             field = profile.template.fields.get(field_id)
             assert field, "Field does not exist."
             filled_fields = await profile.fetch_filled_fields(db)
+
+            # Only allow editing if a newly generated embed is the same as the
+            # one attached to the message they clicked on
+            past_embed = interaction.message.embeds[0]
+            new_embed = profile.build_embed(
+                self.bot,
+                interaction,
+                interaction.user,
+            )
+            if new_embed != past_embed:
+                return await interaction.response.edit_message(
+                    content=_(
+                        "This is not the most recent version of your profile. "
+                        "Please re-run the edit command to continue."
+                    ),
+                    components=None,
+                )
 
         # Ask the user to fill in the field
         try:

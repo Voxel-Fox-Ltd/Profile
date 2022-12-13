@@ -10,6 +10,7 @@ from discord.ext import commands, vbu
 
 from .template import Template
 from .filled_field import FilledField
+from .field import Field
 from .field_type import ImageField
 from .command_processor import (
     CommandProcessor,
@@ -300,11 +301,6 @@ class UserProfile:
             raise ValueError("Invalid member object passed to build embed")
 
         # Create the initial embed
-        fields: List[FilledField]
-        fields = sorted(
-            self.filled_fields.values(),
-            key=operator.attrgetter("field.index"),
-        )
         embed = vbu.Embed(use_random_colour=True)
         if not self.template:
             raise AttributeError("Missing template field for user profile")
@@ -318,29 +314,45 @@ class UserProfile:
             value=f"<@{self.user_id}>",
         )
 
+        # Add the fields
+        fields: List[FilledField | Field]
+        fields = sorted(
+            self.filled_fields.values(),
+            key=operator.attrgetter("field.index"),
+        )
+        for f in self.template.field_list:
+            if f.deleted:
+                continue
+            if f.is_command:
+                fields.append(f)
+
         # Add each of the fields
         for f in fields:
 
+            # Make it easier to iterate
+            field = f if isinstance(f, Field) else f.field
+
             # Make sure we only do this for fields with values
-            if not f.field:
+            if not field:
+                continue
+            field_value: str
+            if field.deleted:
                 continue
 
             # Filter deleted or unset data
-            if f.field.deleted:
-                continue
-            if CommandProcessor.COMMAND_REGEX.search(f.field.prompt):
-                field_value = CommandProcessor.get_value(f.field.prompt, member)
+            if isinstance(f, Field):
+                field_value = CommandProcessor.get_value(field.prompt, member)
                 if field_value is None or field_value == "":
                     continue
             else:
                 field_value = f.value
 
             # Set data
-            if f.field.field_type == ImageField:
+            if field.field_type == ImageField:
                 embed.set_image(url=field_value)
             else:
                 embed.add_field(
-                    name=f.field.name,
+                    name=field.name,
                     value=field_value,
                     inline=len(field_value) <= 100,
                 )

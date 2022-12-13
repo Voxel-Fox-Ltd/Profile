@@ -142,6 +142,10 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
                 interaction,
                 interaction.user,
             )
+            past_embed.remove_footer()
+            past_embed.colour = 0
+            new_embed.remove_footer()
+            new_embed.colour = 0
             if new_embed != past_embed:
                 return await interaction.response.edit_message(
                     content=_(
@@ -164,7 +168,6 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
                     discord.ui.InputText(
                         label=field.prompt,
                         value=current_value,
-                        # min_length=1,
                         max_length=1_000,
                         required=False,
                     ),

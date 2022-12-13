@@ -66,6 +66,7 @@ class ProfileVerification(vbu.Cog[vbu.Bot]):
                         "Please re-run the edit command to continue."
                     ),
                     ephemeral=True,
+                    components=None,
                 )
 
         # Defer the interaction so we can post the embed to the archive
@@ -121,11 +122,13 @@ class ProfileVerification(vbu.Cog[vbu.Bot]):
                         "channel. Please let an admin know, and then try again "
                         "later."
                     ),
+                    components=None,
                 )
 
             # Tell them it's done
             await interaction.edit_original_message(
                 content=_("Your profile has been submitted for verification."),
+                components=None,
             )
 
         # Send to the verification channel
@@ -155,11 +158,13 @@ class ProfileVerification(vbu.Cog[vbu.Bot]):
                         "channel. Please let an admin know, and then try "
                         "again later."
                     ),
+                    components=None,
                 )
 
             # Tell them it's done
             await interaction.edit_original_message(
                 content=_("Your profile has been submitted to the archive."),
+                components=None,
             )
 
         # Save newly sent message

@@ -380,9 +380,9 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
         # Send a confirmation message
         message = _("Your profile **{profile}** has been deleted.")
         message = message.format(profile=original_name)
-        await interaction.response.send_message(
-            message,
-            ephemeral=True,
+        await interaction.response.edit_message(
+            content=message,
+            components=None,
         )
 
     @vbu.Cog.listener("on_component_interaction")

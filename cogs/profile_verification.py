@@ -45,6 +45,20 @@ class ProfileVerification(vbu.Cog[vbu.Bot]):
                 )
                 return
 
+            # See if they're able to submit any more profiles
+            all_profiles = await template.fetch_all_profiles_for_user(
+                db,
+                interaction.user.id,
+            )
+            if len(all_profiles) >= template.max_profile_count:
+                return await interaction.response.edit_message(
+                    content=_(
+                        "You have already submitted the maximum number of "
+                        "profiles for this template."
+                    ),
+                    components=None,
+                )
+
             # Make sure the embed attached to the message is the same as a
             # newly-made embed (minus the colour)
             embed = profile.build_embed(

@@ -1,8 +1,8 @@
-import re
 from difflib import SequenceMatcher
 
 import discord
 from discord.ext import commands, vbu
+import regex as re  # must be external module
 
 from cogs import utils
 
@@ -84,7 +84,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
             self,
             interaction: discord.Interaction,
             template_id: str,
-            **kwargs) -> None:
+            **kwargs) -> utils.Template:
         """
         Update a template with given kwargs, and then update the original
         message associated with the interaction with the updated template
@@ -123,6 +123,9 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
             await interaction.response.edit_message(**kwargs)
         except discord.InteractionResponded:
             await interaction.edit_original_message(**kwargs)
+
+        # Return new template
+        return template
 
     async def update_field(
             self,
@@ -974,7 +977,6 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                         # TRANSLATORS: Max 45 characters; label of text input
                         label=_("What do you want to set the name to?")[:45],
                         style=discord.TextStyle.short,
-                        custom_id=f"TEMPLATE_DATA NAME {encoded_template_id}",
                         min_length=1,
                         max_length=30,
                         required=True,
@@ -1021,12 +1023,41 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                 ephemeral=True,
             )
 
+        # Check that the name isn't already in use
+        async with vbu.Database() as db:
+            templates = await utils.Template.fetch_all_templates_for_guild(
+                db,
+                interaction.guild_id,
+                fetch_fields=False,
+            )
+        name_in_use = [
+            i
+            for i in templates
+            if i.id != template_id
+            and i.name.casefold() == new_template_name.casefold()
+        ]
+        if name_in_use:
+            return await interaction.response.send_message(
+                _(
+                    "That template name is already in use. "
+                    "Please provide another one."
+                ),
+                ephemeral=True,
+            )
+
         # Get and update the template
         await interaction.response.defer_update()
-        await self.update_template(
+        template = await self.update_template(
             interaction,
             template_id,
             name=new_template_name,
+        )
+
+        # Edit application command
+        assert isinstance(interaction.guild, discord.Guild), "Guild must exist"
+        await interaction.guild.edit_application_command(
+            discord.Object(template.application_command_id),
+            name=template.name.casefold(),
         )
 
     @vbu.Cog.listener("on_component_interaction")  # TEMPLATE_EDIT ARCHIVE [TID] [CV]
@@ -1419,6 +1450,11 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                 return await interaction.response.send_message(
                     "Failed to update template, {}".format(e),
                 )
+        else:
+            await guild.edit_application_command(
+                application_command,
+                name=template.name.casefold(),
+            )
 
         # Get and update the template
         await self.update_template(

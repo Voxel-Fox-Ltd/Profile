@@ -692,6 +692,7 @@ class Template(object):
         description_lines = [
             _("Template ID: `{0}`").format(self.id),
             _("Guild ID: `{0}`").format(self.guild_id),
+            _("Command ID: `{0}`").format(self.application_command_id),
             _("Maximum allowed profiles: {0}").format(self.max_profile_count),
         ]
 

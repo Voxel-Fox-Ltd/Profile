@@ -923,6 +923,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
             if template is None:
                 return await interaction.response.edit_message(
                     content=_("That template has already been deleted."),
+                    components=None,
                 )
 
             # Mark the template as deleted
@@ -940,6 +941,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                 .format(template_name=template_name)
             ),
             allowed_mentions=discord.AllowedMentions.none(),
+            components=None,
         )
 
     @vbu.Cog.listener("on_component_interaction")  # TEMPLATE_EDIT NAME [TID] [CV]

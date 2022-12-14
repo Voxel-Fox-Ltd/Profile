@@ -1047,11 +1047,12 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         )
 
         # Edit application command
-        assert isinstance(interaction.guild, discord.Guild), "Guild must exist"
-        await interaction.guild.edit_application_command(
-            discord.Object(template.application_command_id),
-            name=template.name.casefold(),
-        )
+        if template.application_command_id:
+            assert isinstance(interaction.guild, discord.Guild), "Guild must exist"
+            await interaction.guild.edit_application_command(
+                discord.Object(template.application_command_id),
+                name=template.name.casefold(),
+            )
 
     @vbu.Cog.listener("on_component_interaction")  # TEMPLATE_EDIT ARCHIVE [TID] [CV]
     @vbu.i18n("profile")

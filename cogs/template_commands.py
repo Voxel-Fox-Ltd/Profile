@@ -678,15 +678,6 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                         f"TEMPLATE_DELETE CONFIRM "
                         f"{utils.uuid.encode(template_o.id)}"
                     ),
-                    style=discord.ButtonStyle.success,
-                ),
-                discord.ui.Button(
-                    # TRANSLATORS: Text appearing on a button.
-                    label=_("No"),
-                    custom_id=(
-                        f"TEMPLATE_DELETE CANCEL "
-                        f"{utils.uuid.encode(template_o.id)}"
-                    ),
                     style=discord.ButtonStyle.danger,
                 ),
             ),

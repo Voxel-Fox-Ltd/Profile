@@ -1,5 +1,5 @@
 import uuid
-from typing import Optional, Tuple
+from typing import TYPE_CHECKING, Optional, Tuple
 import random
 
 import discord
@@ -7,11 +7,16 @@ from discord.ext import vbu
 
 from cogs import utils
 
+if TYPE_CHECKING:
+    from .profile_verification import ProfileVerification
+
 
 class ProfileCommands(vbu.Cog[vbu.Bot]):
     """
     Commands and events that allow users to create and manage profiles.
     """
+
+    PROFILES_ARE_PRIVATE = True
 
     async def try_application_command(
             self,
@@ -136,13 +141,32 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
         # See what they're trying to do
         match action:
             case "get":
-                return await self.profile_get(interaction, template)
+                if interaction.resolved.members:
+                    return await self.profile_get(
+                        interaction,
+                        template,
+                        list(interaction.resolved.members.values())[0],
+                    )
+                else:
+                    return await self.profile_get(
+                        interaction,
+                        template,
+                    )
             case "create":
-                return await self.profile_create(interaction, template)
+                return await self.profile_create(
+                    interaction,
+                    template,
+                )
             case "delete":
-                return await self.profile_delete(interaction, template)
+                return await self.profile_delete(
+                    interaction,
+                    template,
+                )
             case "edit":
-                return await self.profile_edit(interaction, template)
+                return await self.profile_edit(
+                    interaction,
+                    template,
+                )
 
     @vbu.i18n("profile")
     async def profile_get(
@@ -187,7 +211,8 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
                         interaction,
                         user or interaction.user,  # type: ignore
                     ),
-                ]
+                ],
+                ephemeral=self.PROFILES_ARE_PRIVATE,
             )
 
         # If they have multiple, send a dropdown of their profile names
@@ -265,6 +290,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
                     interaction.user,
                 ),
             ],
+            ephemeral=self.PROFILES_ARE_PRIVATE,
         )
 
     @vbu.i18n("profile")
@@ -321,7 +347,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
                     label=_("Yes"),
                     custom_id=(
                         f"PROFILE CONFIRM_DELETE "
-                        f"{profile.template_id} {profile.name}"
+                        f"{utils.uuid.encode(profile.id)}"
                     ),
                     style=discord.ButtonStyle.danger,
                 ),
@@ -334,6 +360,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
         )
 
     @vbu.Cog.listener("on_component_interaction")
+    @vbu.i18n("profile")
     async def profile_delete_button_listener(
             self,
             interaction: discord.ComponentInteraction):
@@ -342,30 +369,20 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
         """
 
         # Check it's a profile delete button
-        if not interaction.custom_id.startswith("PROFILE CONFIRM_DELETE"):
+        if not interaction.custom_id.startswith("PROFILE CONFIRM_DELETE "):
             return
 
-        # Get the template ID
-        template_id = interaction.custom_id.split(" ")[2]
-
         # Get the profile name
-        profile_name = interaction.custom_id.split(" ")[3]
+        short_profile_id = interaction.custom_id.split(" ")[2]
+        profile_id = utils.uuid.decode(short_profile_id)
 
-        # Open a DB connection for fetching the profile and template
+        # Open a DB connection for fetching the profile
         async with vbu.Database() as db:
 
-            # Get the template
-            template = await utils.Template.fetch_template_by_id(
-                db,
-                template_id,
-            )
-            assert template
-
             # Get the profile
-            profile = await template.fetch_profile_for_user(
+            profile = await utils.UserProfile.fetch_profile_by_id(
                 db,
-                interaction.user.id,
-                profile_name,
+                profile_id,
             )
             assert profile
 
@@ -571,7 +588,22 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
 
         # Create an ID for that user's profile
         async with vbu.Database() as db:
+
+            # See if they're able to submit any more profiles
+            cog: ProfileVerification = self.bot.get_cog("ProfileVerification")  # type: ignore
+            if await cog.check_if_max_profiles_hit(db, template, interaction.user.id):
+                return await interaction.response.send_message(
+                    content=_(
+                        "You have already submitted the maximum number of "
+                        "profiles for this template."
+                    ),
+                    ephemeral=True,
+                )
+
+            # If they can, save this one
             await profile.update(db)
+
+        # And update the message
         return await self.profile_edit(interaction, template, profile)
 
 

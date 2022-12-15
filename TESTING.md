@@ -26,6 +26,9 @@ Testing procedures for profile.
 - [x] The given role can be changed.
 - [x] The given role can be removed.
 - [x] A slash command can be added/updated.
+    - [ ] If the max number of profiles is 0 when this is run, the slash
+    command is deleted.
+- [ ] A context menu command can be added/updated/removed.
 - [x] A maximum number of profiles can be set.
 
 ### Field editing
@@ -56,33 +59,42 @@ Testing procedures for profile.
 
 ### Base editing
 
+- [x] A profile needs to be a draft to be edited.
+    - [x] If a profile is not a draft, the user is asked to convert it to one.
+    - [x] When a profile is converted to a draft, the sent messages (either to
+    the verification or archive channel) are deleted.
 - [x] The name on a profile can be changed.
     - [x] The bot will check that the given name is not already in use.
-- [ ] A profile can be submitted.
-    - [ ] The bot will check that the maximum number of profiles has not been
+- [x] A profile can be submitted.
+    - [x] The bot will check that the maximum number of profiles has not been
     exceeded.
 
 ### Field editing
 
-- [ ] All fields added to the template can be set.
-    - [ ] The fields must have valid values as per their type.
+- [x] All fields added to the template can be set.
+    - [x] The fields must have valid values as per their type.
     - [ ] Optional fields do not need to be filled, and can be cleared.
     - [ ] Fields with a command set should not be filled.
 
 ## Submission
 
-- [ ] If a template has a verification channel, a profile must be verified before
+- [x] If a template has a verification channel, a profile must be verified before
 it is sent to the archive channel.
-- [ ] If there is no verification channel but there is an archive channel, the
+- [x] If there is no verification channel but there is an archive channel, the
 profile is sent to the archive channel without being checked.
+- [ ] If there are neither, the profile is just marked as both submitted
+and verified.
 
 ## Verification
 
-- [ ] When a profile is sent to the verification channel, an "approve" and "deny"
+- [x] When a profile is sent to the verification channel, an "approve" and "deny"
 button are both added to the associated profile.
-- [ ] If the approve button is pressed, the message is deleted, the profile is sent
-to the archive channel (if one is set), and the user is sent a DM saying their
-profile was verified.
-- [ ] If the deny button is pressed, the moderator is asked for a reason. After a
-reason is given, the message is deleted, and the user is sent a DM saying their
-profile was denied, along with the reason.
+- [ ] If the approve button is pressed,
+    - [ ] the message is deleted,
+    - [ ] the profile is sent to the archive channel (if one is set),
+    - [ ] and the user is sent a DM saying their profile was verified.
+- [ ] If the deny button is pressed,
+    - [ ] the moderator is asked for a reason.
+    - [ ] After a reason is given, the message is deleted,
+    - [ ] and the user is sent a DM saying their profile was denied,
+    - [ ] along with the reason.

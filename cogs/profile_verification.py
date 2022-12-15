@@ -12,7 +12,9 @@ class ProfileVerification(vbu.Cog[vbu.Bot]):
             self,
             db: vbu.Database,
             template: utils.Template,
-            user_id: int) -> bool:
+            user_id: int,
+            *,
+            submitted: bool = False) -> bool:
         """
         Return whether or not the maximum profile count for the user has been
         hit for the given template.
@@ -23,6 +25,11 @@ class ProfileVerification(vbu.Cog[vbu.Bot]):
             db,
             user_id,
         )
+        if submitted:
+            return (
+                len([i for i in all_profiles if not i.draft])
+                >= template.max_profile_count
+            )
         return len(all_profiles) >= template.max_profile_count
 
     @vbu.Cog.listener("on_component_interaction")
@@ -63,7 +70,9 @@ class ProfileVerification(vbu.Cog[vbu.Bot]):
                 return
 
             # See if they're able to submit any more profiles
-            if await self.check_if_max_profiles_hit(db, template, interaction.user.id):
+            if await self.check_if_max_profiles_hit(
+                        db, template, interaction.user.id,
+                        submitted=True):
                 return await interaction.response.edit_message(
                     content=_(
                         "You have already submitted the maximum number of "

@@ -2,6 +2,13 @@
 
 Testing procedures for profile.
 
+## Bot options
+
+- [ ] Allow users to enable "advanced" mode.
+    - [ ] This will increase the prompt limit to 1000 characters for fields.
+    - [ ] This will allow users to input text for their archive and
+    verification channels.
+
 ## Templates
 
 ### Creation and deletion

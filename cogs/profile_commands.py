@@ -518,6 +518,8 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
                     profile.filled_fields.get(field.id)
                 or
                     field.is_command
+                or
+                    field.optional
                 else
                     discord.ButtonStyle.danger
             )

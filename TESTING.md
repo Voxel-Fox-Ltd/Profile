@@ -73,7 +73,7 @@ Testing procedures for profile.
 
 - [x] All fields added to the template can be set.
     - [x] The fields must have valid values as per their type.
-    - [ ] Optional fields do not need to be filled, and can be cleared.
+    - [x] Optional fields do not need to be filled, and can be cleared.
     - [ ] Fields with a command set should not be filled.
 
 ## Submission

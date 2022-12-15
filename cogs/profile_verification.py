@@ -8,6 +8,23 @@ from cogs import utils
 
 class ProfileVerification(vbu.Cog[vbu.Bot]):
 
+    async def check_if_max_profiles_hit(
+            self,
+            db: vbu.Database,
+            template: utils.Template,
+            user_id: int) -> bool:
+        """
+        Return whether or not the maximum profile count for the user has been
+        hit for the given template.
+        """
+
+        # See if they're able to submit any more profiles
+        all_profiles = await template.fetch_all_profiles_for_user(
+            db,
+            user_id,
+        )
+        return len(all_profiles) >= template.max_profile_count
+
     @vbu.Cog.listener("on_component_interaction")
     @vbu.i18n("profile")
     async def submit_button_press(
@@ -46,11 +63,7 @@ class ProfileVerification(vbu.Cog[vbu.Bot]):
                 return
 
             # See if they're able to submit any more profiles
-            all_profiles = await template.fetch_all_profiles_for_user(
-                db,
-                interaction.user.id,
-            )
-            if len(all_profiles) >= template.max_profile_count:
+            if await self.check_if_max_profiles_hit(db, template, interaction.user.id):
                 return await interaction.response.edit_message(
                     content=_(
                         "You have already submitted the maximum number of "

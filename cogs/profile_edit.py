@@ -379,6 +379,9 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
             # Edit the profile name
             await profile.update(db, name=given_value)
 
+            # Get filled fields so we can pass it straight back to edit
+            await profile.fetch_filled_fields(db)
+
         # Edit the original message
         cog: Optional[ProfileCommands] = self.bot.get_cog("ProfileCommands")
         assert cog, "Cog not loaded."

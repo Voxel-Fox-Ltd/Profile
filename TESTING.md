@@ -81,7 +81,7 @@ Testing procedures for profile.
 - [x] All fields added to the template can be set.
     - [x] The fields must have valid values as per their type.
     - [x] Optional fields do not need to be filled, and can be cleared.
-    - [ ] Fields with a command set should not be filled.
+    - [x] Fields with a command set should not be filled.
 
 ## Submission
 
@@ -96,12 +96,18 @@ and verified.
 
 - [x] When a profile is sent to the verification channel, an "approve" and "deny"
 button are both added to the associated profile.
-- [ ] If the approve button is pressed,
-    - [ ] the message is deleted,
-    - [ ] the profile is sent to the archive channel (if one is set),
-    - [ ] and the user is sent a DM saying their profile was verified.
-- [ ] If the deny button is pressed,
+- [x] If the approve button is pressed,
+    - [x] the message is deleted,
+    - [x] the profile is sent to the archive channel (if one is set),
+    - [x] and the user is sent a DM saying their profile was verified.
+    - [x] The profile is marked as verified.
+    - [ ] The moderator, profile JSON dump, and time are logged into
+    the database.
+- [x] If the deny button is pressed,
     - [ ] the moderator is asked for a reason.
-    - [ ] After a reason is given, the message is deleted,
-    - [ ] and the user is sent a DM saying their profile was denied,
+    - [x] After a reason is given, the message is deleted,
+    - [x] and the user is sent a DM saying their profile was denied,
     - [ ] along with the reason.
+    - [x] The profile is converted back to a draft.
+    - [ ] The moderator, profile JSON dump, time, and reason are logged into
+    the database.

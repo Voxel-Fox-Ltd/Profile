@@ -82,7 +82,7 @@ Testing procedures for profile.
 it is sent to the archive channel.
 - [x] If there is no verification channel but there is an archive channel, the
 profile is sent to the archive channel without being checked.
-- [ ] If there are neither, the profile is just marked as both submitted
+- [x] If there are neither, the profile is just marked as both submitted
 and verified.
 
 ## Verification

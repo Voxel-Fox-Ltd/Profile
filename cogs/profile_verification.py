@@ -113,6 +113,7 @@ class ProfileVerification(vbu.Cog[vbu.Bot]):
         sent_message: Optional[discord.Message] = None
 
         # Send to the verification channel
+        verified = False  # Whether or not the profile is verified
         if verification_channel_id is not None:
             channel = discord.PartialMessageable(
                 state=self.bot._connection,
@@ -201,6 +202,17 @@ class ProfileVerification(vbu.Cog[vbu.Bot]):
                 content=_("Your profile has been submitted to the archive."),
                 components=None,
             )
+            verified = True
+
+        # No archive or verification channel; just tell the user it's done :)
+        else:
+            return await interaction.edit_original_message(
+                content=_(
+                    "Your profile has been submitted."
+                ),
+                components=None,
+            )
+            verified = True
 
         # Save newly sent message
         async with vbu.Database() as db:
@@ -213,7 +225,7 @@ class ProfileVerification(vbu.Cog[vbu.Bot]):
                     sent_message.channel.id if sent_message else None
                 ),
                 draft=False,
-                verified=False,
+                verified=verified,
             )
 
     @vbu.Cog.listener("on_component_interaction")

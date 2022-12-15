@@ -5,13 +5,13 @@ from .profiles.field_type import (
     TextField,
     NumberField,
     ImageField,
-    FieldCheckFailure
+    # FieldCheckFailure
 )
 from .profiles.template import Template
 from .profiles.user_profile import UserProfile
 from .profiles.filled_field import FilledField
 from .profiles.command_processor import CommandProcessor
-from .perks_handler import GuildPerks, get_perks_for_guild
+from .perks_handler import GuildPerks
 
 
 __all__ = (
@@ -29,5 +29,4 @@ __all__ = (
     'FilledField',
     'CommandProcessor',
     'GuildPerks',
-    'get_perks_for_guild',
 )

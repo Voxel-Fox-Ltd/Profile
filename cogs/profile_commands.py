@@ -49,10 +49,17 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
             try:
                 assert template
             except AssertionError as e:
-                raise ValueError((
+                self.logger.warning((
                     f"Somehow failed to get template of id {template_id} via "
                     f"application command ID {interaction.data['id']}"
-                )) from e
+                ))
+                self.logger.warning(f"Deleting command ID {interaction.data['id']}")
+                command_id = discord.utils._get_as_snowflake(interaction.data, 'id')
+                assert command_id and isinstance(interaction.guild, discord.Guild)
+                await interaction.guild.delete_application_command(
+                    discord.Object(command_id),
+                )
+                return None
             return action, template
 
         # See if it's a context command
@@ -65,7 +72,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
             WHERE
                 context_command_id = $1
             """,
-            interaction.data['id'],
+            discord.utils._get_as_snowflake(interaction.data, 'id'),
         )
         if template_rows:
             template_id = template_rows[0]['id']
@@ -77,10 +84,17 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
             try:
                 assert template
             except AssertionError as e:
-                raise ValueError((
+                self.logger.warning((
                     f"Somehow failed to get template of id {template_id} via "
                     f"context command ID {interaction.data['id']}"
-                )) from e
+                ))
+                self.logger.warning(f"Deleting command ID {interaction.data['id']}")
+                command_id = discord.utils._get_as_snowflake(interaction.data, 'id')
+                assert command_id and isinstance(interaction.guild, discord.Guild)
+                await interaction.guild.delete_application_command(
+                    discord.Object(command_id),
+                )
+                return None
             return "get", template
 
         # Oh well

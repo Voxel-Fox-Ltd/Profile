@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS user_settings(
 
 
 CREATE TABLE IF NOT EXISTS templates(
-    id UUID NOT NULL PRIMARY KEY,
+    id UUID NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
     name TEXT NOT NULL,
     guild_id BIGINT NOT NULL,
     application_command_id BIGINT,
@@ -47,7 +47,7 @@ END $$;
 
 
 CREATE TABLE IF NOT EXISTS fields(
-    id UUID PRIMARY KEY,
+    id UUID NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
     name TEXT,
     index SMALLINT,
     prompt TEXT,
@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS fields(
 
 
 CREATE TABLE IF NOT EXISTS created_profiles(
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id BIGINT NOT NULL,
     name TEXT NOT NULL,
     template_id UUID REFERENCES templates(id) ON DELETE CASCADE,

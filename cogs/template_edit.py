@@ -426,6 +426,10 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
         if not interaction.custom_id.startswith("TEMPLATE_EDIT NAME"):
             return
         encoded_template_id, current_name = interaction.custom_id.split(" ")[2:]
+        self.logger.info(
+            "Sending template name change modal for template %s",
+            utils.uuid.decode(encoded_template_id),
+        )
 
         # Build and send modal
         modal = discord.ui.Modal(
@@ -463,6 +467,7 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
             return
         encoded_template_id = interaction.custom_id.split(" ")[2]
         template_id = utils.uuid.decode(encoded_template_id)
+        self.logger.info("Changing name for template %s", template_id)
 
         # Get the new name from the components
         new_template_name: str = (
@@ -537,6 +542,10 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
         if not interaction.custom_id.startswith("TEMPLATE_EDIT ARCHIVE"):
             return
         encoded_template_id = interaction.custom_id.split(" ")[2]
+        self.logger.info(
+            "Sending dropdown for archive channel for template %s",
+            utils.uuid.decode(encoded_template_id),
+        )
 
         # Send a channel dropdown
         components = discord.ui.MessageComponents(
@@ -604,6 +613,10 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
                 .resolved
                 .channels
                 .keys())[0])
+        self.logger.info(
+            "Setting archive channel for template %s to %s",
+            template_id, new_archive_channel_id,
+        )
 
         # Get and update the template
         await self.update_template(
@@ -626,6 +639,10 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
         if not interaction.custom_id.startswith("TEMPLATE_EDIT VERIFICATION"):
             return
         encoded_template_id = interaction.custom_id.split(" ")[2]
+        self.logger.info(
+            "Sending dropdown for verification channel for template %s",
+            utils.uuid.decode(encoded_template_id),
+        )
 
         # Send a channel dropdown
         components = discord.ui.MessageComponents(
@@ -693,6 +710,10 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
                 .resolved
                 .channels
                 .keys())[0])
+        self.logger.info(
+            "Setting verification channel for template %s to %s",
+            template_id, new_verification_channel_id,
+        )
 
         # Get and update the template
         await self.update_template(
@@ -715,6 +736,10 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
         if not interaction.custom_id.startswith("TEMPLATE_EDIT ROLE"):
             return
         encoded_template_id = interaction.custom_id.split(" ")[2]
+        self.logger.info(
+            "Sending dropdown for role for template %s",
+            utils.uuid.decode(encoded_template_id),
+        )
 
         # Send a channel dropdown
         components = discord.ui.MessageComponents(
@@ -780,6 +805,10 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
                 .resolved
                 .roles
                 .keys())[0])
+        self.logger.info(
+            "Setting role for template %s to %s",
+            template_id, new_role_id,
+        )
 
         # Get and update the template
         await self.update_template(
@@ -802,6 +831,10 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
         if not interaction.custom_id.startswith("TEMPLATE_EDIT MAX_PROFILES"):
             return
         encoded_template_id, current_limit = interaction.custom_id.split(" ")[2:]
+        self.logger.info(
+            "Sending modal for template max profile edit for template %s",
+            utils.uuid.decode(encoded_template_id),
+        )
 
         # Build and send modal
         modal = discord.ui.Modal(
@@ -862,6 +895,10 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
         # Check that the limit is valid
         await interaction.response.defer_update()
         valid_new_template_limit = int(new_template_limit)
+        self.logger.info(
+            "Trying to set max profiles for template %s to %s",
+            template_id, valid_new_template_limit,
+        )
 
         # Check that the limit is within range
         assert interaction.guild_id
@@ -905,6 +942,10 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
         encoded_template_id = interaction.custom_id.split(" ")[2]
         template_id = utils.uuid.decode(encoded_template_id)
         application_command_id = int(interaction.custom_id.split(" ")[3])
+        self.logger.info(
+            "Trying to update slash command for template %s",
+            template_id,
+        )
 
         # Get the template
         async with vbu.Database() as db:

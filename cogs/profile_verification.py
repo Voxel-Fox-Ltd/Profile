@@ -49,6 +49,10 @@ class ProfileVerification(vbu.Cog[vbu.Bot]):
         short_profile_id = interaction.custom_id.split(" ")[2]
         profile_id = utils.uuid.decode(short_profile_id)
         user = cast(discord.Member, interaction.user)
+        self.logger.info(
+            "Processing profile submission for %s, profile %s",
+            user.id, profile_id,
+        )
 
         # Get the profile object
         async with vbu.Database() as db:
@@ -265,6 +269,7 @@ class ProfileVerification(vbu.Cog[vbu.Bot]):
         # Get the profile ID
         short_profile_id = interaction.custom_id.split(" ")[2]
         profile_id = utils.uuid.decode(short_profile_id)
+        self.logger.info(f"Approving profile {profile_id}")
 
         # Get the profile object
         async with vbu.Database() as db:
@@ -390,6 +395,7 @@ class ProfileVerification(vbu.Cog[vbu.Bot]):
         # Get the profile ID
         short_profile_id = interaction.custom_id.split(" ")[2]
         profile_id = utils.uuid.decode(short_profile_id)
+        self.logger.info(f"Denying profile {profile_id}")
 
         # Get the profile object
         async with vbu.Database() as db:

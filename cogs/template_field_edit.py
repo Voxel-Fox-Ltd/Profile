@@ -182,6 +182,10 @@ class TemplateFieldEdit(vbu.Cog[vbu.Bot]):
             return
         encoded_template_id = interaction.custom_id.split(" ")[2]
         template_id = utils.uuid.decode(encoded_template_id)
+        self.logger.info(
+            "Sending field edit buttons for template %s",
+            template_id,
+        )
 
         # Get template
         async with vbu.Database() as db:
@@ -416,6 +420,7 @@ class TemplateFieldEdit(vbu.Cog[vbu.Bot]):
             return
         encoded_field_id = interaction.custom_id.split(" ")[2]
         field_id = utils.uuid.decode(encoded_field_id)
+        self.logger.info("Asking to confirm deletion of field %s", field_id)
 
         # Try and get the template object
         async with vbu.Database() as db:
@@ -496,7 +501,7 @@ class TemplateFieldEdit(vbu.Cog[vbu.Bot]):
             return await self.template_edit_fields_component_listener(
                 interaction,
             )
-        field_id = utils.uuid.decode(encoded_field_id)
+        self.logger.info("Deleting field %s", field_id)
 
         # Set field as deleted
         async with vbu.Database() as db:
@@ -539,6 +544,10 @@ class TemplateFieldEdit(vbu.Cog[vbu.Bot]):
         if not interaction.custom_id.startswith("FIELD_EDIT NAME"):
             return
         encoded_field_id, current_name = interaction.custom_id.split(" ")[2:]
+        self.logger.info(
+            "Sending modal for field name change for field %s",
+            utils.uuid.decode(encoded_field_id),
+        )
 
         # Build and send modal
         modal = discord.ui.Modal(
@@ -596,6 +605,10 @@ class TemplateFieldEdit(vbu.Cog[vbu.Bot]):
                 allowed_mentions=discord.AllowedMentions.none(),
                 ephemeral=True,
             )
+        self.logger.info(
+            "Setting name for field %s to %s",
+            field_id, new_field_name,
+        )
 
         # Get and update the template
         await interaction.response.defer_update()
@@ -620,6 +633,10 @@ class TemplateFieldEdit(vbu.Cog[vbu.Bot]):
             return
         encoded_field_id = interaction.custom_id.split(" ")[2]
         field_id = utils.uuid.decode(encoded_field_id)
+        self.logger.info(
+            "Sending modal for prompt edit for field %s",
+            field_id,
+        )
 
         # Get current value
         async with vbu.Database() as db:
@@ -671,6 +688,10 @@ class TemplateFieldEdit(vbu.Cog[vbu.Bot]):
             .components[0]  # type: ignore - not an issue for modals
             .value
         )
+        self.logger.info(
+            "Updating prompt for field %s",
+            field_id,
+        )
 
         # Get and update the template
         await interaction.response.defer_update()
@@ -695,6 +716,10 @@ class TemplateFieldEdit(vbu.Cog[vbu.Bot]):
             return
         encoded_field_id = interaction.custom_id.split(" ")[2]
         field_id = utils.uuid.decode(encoded_field_id)
+        self.logger.info(
+            "Updating optional for field %s",
+            field_id,
+        )
 
         # Get current
         async with vbu.Database() as db:
@@ -725,6 +750,10 @@ class TemplateFieldEdit(vbu.Cog[vbu.Bot]):
             interaction.custom_id.split(" ")[2:]
         )
         template_id = utils.uuid.decode(encoded_template_id)
+        self.logger.info(
+            "Sending type dropdown for field field %s",
+            utils.uuid.decode(encoded_field_id),
+        )
 
         # Get the template so we know what fields they can use
         async with vbu.Database() as db:
@@ -807,6 +836,10 @@ class TemplateFieldEdit(vbu.Cog[vbu.Bot]):
             return
         encoded_field_id = interaction.custom_id.split(" ")[2]
         field_id = utils.uuid.decode(encoded_field_id)
+        self.logger.info(
+            "Updating type for field field %s to %s",
+            field_id, interaction.values[0],
+        )
 
         # Get current
         async with vbu.Database() as db:

@@ -27,6 +27,7 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
         # Get the profile ID
         short_profile_id = interaction.custom_id.split(" ")[2]
         profile_id = utils.uuid.decode(short_profile_id)
+        self.logger.info("Setting profile %s to a draft", profile_id)
 
         # Get the profile object
         partial_message = None
@@ -106,6 +107,10 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
         profile_id = utils.uuid.decode(short_profile_id)
         short_field_id = interaction.custom_id.split(" ")[3]
         field_id = utils.uuid.decode(short_field_id)
+        self.logger.info(
+            "Sending modal for profile %s, field %s",
+            profile_id, field_id,
+        )
 
         # Get the profile, template, and current field value
         async with vbu.Database() as db:
@@ -194,6 +199,7 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
         # Get the profile they're trying to edit
         short_profile_id = interaction.custom_id.split(" ")[2]
         profile_id = utils.uuid.decode(short_profile_id)
+        self.logger.info("Sending modal for profile name %s", profile_id)
 
         # Get the profile, template, and current field value
         async with vbu.Database() as db:
@@ -244,6 +250,10 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
         profile_id = utils.uuid.decode(short_profile_id)
         short_field_id = interaction.custom_id.split(" ")[3]
         field_id = utils.uuid.decode(short_field_id)
+        self.logger.info(
+            "Setting profile value for profile %s, field %s",
+            profile_id, field_id,
+        )
 
         # Get the profile, template, and current field value
         async with vbu.Database() as db:
@@ -345,6 +355,10 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
         # Get the profile they're trying to edit
         short_profile_id = interaction.custom_id.split(" ")[2]
         profile_id = utils.uuid.decode(short_profile_id)
+        self.logger.info(
+            "Setting profile name for profile %s",
+            profile_id
+        )
 
         # Get the profile, template, and current field value
         async with vbu.Database() as db:

@@ -139,6 +139,10 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
         action, template = data
 
         # See what they're trying to do
+        self.logger.info(
+            f"/{template.name} {action} ({template.id}) "
+            f"(G{interaction.guild_id}/U{interaction.user.id})"
+        )
         match action:
             case "get":
                 if interaction.resolved.members:

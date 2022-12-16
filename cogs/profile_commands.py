@@ -46,7 +46,13 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
                 db,
                 template_id,
             )
-            assert template
+            try:
+                assert template
+            except AssertionError as e:
+                raise ValueError((
+                    f"Somehow failed to get template of id {template_id} via "
+                    f"application command ID {interaction.data['id']}"
+                )) from e
             return action, template
 
         # See if it's a context command
@@ -68,7 +74,13 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
                 db,
                 template_id,
             )
-            assert template
+            try:
+                assert template
+            except AssertionError as e:
+                raise ValueError((
+                    f"Somehow failed to get template of id {template_id} via "
+                    f"context command ID {interaction.data['id']}"
+                )) from e
             return "get", template
 
         # Oh well

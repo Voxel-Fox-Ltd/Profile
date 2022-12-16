@@ -169,6 +169,7 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
                     discord.ui.InputText(
                         label=field.prompt,
                         value=current_value,
+                        style=discord.TextStyle.long,
                         max_length=1_000,
                         required=False,
                     ),

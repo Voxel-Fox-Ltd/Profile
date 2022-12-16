@@ -134,7 +134,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
         await interaction.response.send_autocomplete([
             discord.ApplicationCommandOptionChoice(
                 name=str(profile.name),
-                value=str(profile.id),
+                value=profile.id,
             )
             for profile in profiles
         ])
@@ -289,6 +289,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
                 interaction.values[0],
             )
             assert profile, "Profile does not exist."
+            await profile.fetch_template(db)
 
         # Send the profile - defer so it doesn't stay as ephemeral
         await interaction.response.defer_update()

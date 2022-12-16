@@ -278,7 +278,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                 error = _(
                     (
                         "You are at the maximum amount of templates "
-                        "allowed for this guild. "
+                        "allowed for this guild."
                     )
                 )
                 upsell = _(

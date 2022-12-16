@@ -363,7 +363,7 @@ class TemplateFieldEdit(vbu.Cog[vbu.Bot]):
             if len(template.fields) >= perks.max_field_count:
                 error = _(
                     "You are at the maximum amount of fields "
-                    "allowed for this template. "
+                    "allowed for this template."
                 )
                 upsell = _(
                     "To get access more fields, you can donate via the use the "

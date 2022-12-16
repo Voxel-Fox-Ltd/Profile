@@ -412,6 +412,23 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
             components=None,
         )
 
+        # Delete the application command
+        assert isinstance(interaction.guild, discord.Guild)
+        if template.application_command_id:
+            try:
+                await interaction.guild.delete_application_command(
+                    discord.Object(template.application_command_id),
+                )
+            except discord.HTTPException:
+                pass
+        if template.context_command_id:
+            try:
+                await interaction.guild.delete_application_command(
+                    discord.Object(template.context_command_id),
+                )
+            except discord.HTTPException:
+                pass
+
     @vbu.Cog.listener("on_component_interaction")  # TEMPLATE_EDIT NAME [TID] [CV]
     @vbu.i18n("profile")
     async def template_edit_name_component_listener(

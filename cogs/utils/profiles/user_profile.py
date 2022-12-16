@@ -296,9 +296,9 @@ class UserProfile(Generic[T]):
 
         # See if they're the right person
         if member and member.id != self.user_id:
-            raise ValueError("Invalid user passed to build embed")
+            raise ValueError("Invalid user passed to build embed - wrong person for this profile")
         if member and not isinstance(member, discord.Member):
-            raise ValueError("Invalid member object passed to build embed")
+            raise ValueError("Invalid member object passed to build embed - not a guild member")
 
         # Create the initial embed
         embed = vbu.Embed(use_random_colour=True)

@@ -246,18 +246,14 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
             )
 
         # If they have multiple, send a dropdown of their profile names
-        short_template_id = utils.uuid.encode(user_profiles[0].template_id)
         components = discord.ui.MessageComponents(
             discord.ui.ActionRow(
                 discord.ui.SelectMenu(
-                    custom_id=(
-                        f"PROFILE GET {user_profiles[0].user_id} "
-                        f"{short_template_id}"
-                    ),
+                    custom_id="PROFILE GET",
                     options=[
                         discord.ui.SelectOption(
                             label=profile.name,
-                            value=str(profile.name),
+                            value=profile.id,
                         )
                         for profile in user_profiles
                     ],
@@ -284,27 +280,12 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
         if not interaction.custom_id.startswith("PROFILE GET"):
             return
 
-        # Get the user ID
-        user_id = int(interaction.custom_id.split(" ")[2])
-
-        # Work out our args
-        short_template_id = interaction.custom_id.split(" ")[-1]
-        template_id = utils.uuid.decode(short_template_id)
-
         # Open a DB connection for fetching the profile and template
         async with vbu.Database() as db:
 
-            # Get the template
-            template = await utils.Template.fetch_template_by_id(
-                db,
-                template_id,
-            )
-            assert template, "Template does not exist."
-
             # Get the profile
-            profile = await template.fetch_profile_for_user(
+            profile = await utils.UserProfile.fetch_profile_by_id(
                 db,
-                user_id,
                 interaction.values[0],
             )
             assert profile, "Profile does not exist."
@@ -312,13 +293,15 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
         # Send the profile - defer so it doesn't stay as ephemeral
         await interaction.response.defer_update()
         await interaction.delete_original_message()
-        assert isinstance(interaction.user, discord.Member)
+        assert profile.user_id
+        assert isinstance(interaction.guild, discord.Guild)
+        profile_user = await interaction.guild.fetch_member(profile.user_id)
         await interaction.followup.send(
             embeds=[
                 profile.build_embed(
                     self.bot,
                     interaction,
-                    interaction.user,
+                    profile_user,
                 ),
             ],
             ephemeral=self.PROFILES_ARE_PRIVATE,

@@ -228,6 +228,26 @@ class ProfileVerification(vbu.Cog[vbu.Bot]):
                 verified=verified,
             )
 
+        # If they've been verified, add the relevant role to them
+        if verified:
+            user = cast(discord.Member, interaction.user)
+            role_id_to_add = template.get_role_id(user)
+            if role_id_to_add:
+                try:
+                    await user.add_roles(
+                        discord.Object(role_id_to_add),
+                        reason="Profile has been verified.",
+                    )
+                except discord.HTTPException:
+                    await interaction.followup.send(
+                        _(
+                            "I couldn't add the role to you for some reason. "
+                            "Please let an admin know, and they should be able to "
+                            "fix this."
+                        ),
+                        ephemeral=True,
+                    )
+
     @vbu.Cog.listener("on_component_interaction")
     @vbu.i18n("profile")
     async def approve_button_clicked(
@@ -335,6 +355,23 @@ class ProfileVerification(vbu.Cog[vbu.Bot]):
 
         # Delete the original message
         await interaction.delete_original_message()
+
+        # Add the role to the user
+        role_id_to_add = template.get_role_id(user)
+        if role_id_to_add:
+            try:
+                await user.add_roles(
+                    discord.Object(role_id_to_add),
+                    reason="Profile has been verified.",
+                )
+            except discord.HTTPException:
+                await interaction.followup.send(
+                    _(
+                        "I couldn't failed to add the role for this template "
+                        "to the user."
+                    ),
+                    ephemeral=True,
+                )
 
     @vbu.Cog.listener("on_component_interaction")
     @vbu.i18n("profile")

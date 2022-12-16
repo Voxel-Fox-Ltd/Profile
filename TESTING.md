@@ -6,8 +6,10 @@ Testing procedures for profile.
 
 - [ ] Allow users to enable "advanced" mode.
     - [ ] This will increase the prompt limit to 1000 characters for fields.
+    This will allow users to input commands, and multi-fields.
     - [ ] This will allow users to input text for their archive and
-    verification channels.
+    verification channels; up to 1000 characters.
+    This will allow users to input commands.
 
 ## Templates
 
@@ -63,6 +65,9 @@ Testing procedures for profile.
     - [ ] The bot can only see profiles that they made,
     - [ ] or profiles that have been verified already.
     - [x] There should be an error message if the user pinged has no profiles.
+    - [ ] The message will be ephemeral by default, but a button will be
+    present for verified profiles to repost the profile publicly.
+    - [ ] Multi-fields; https://canary.discord.com/channels/208895639164026880/1052974864513896478/1052994405184847943
 
 ### Base editing
 
@@ -82,6 +87,8 @@ Testing procedures for profile.
     - [x] The fields must have valid values as per their type.
     - [x] Optional fields do not need to be filled, and can be cleared.
     - [x] Fields with a command set should not be filled.
+    - [ ] If a multi-field is created, each line of the prompt should be added
+    to a modal.
 
 ## Submission
 
@@ -89,8 +96,10 @@ Testing procedures for profile.
 it is sent to the archive channel.
 - [x] If there is no verification channel but there is an archive channel, the
 profile is sent to the archive channel without being checked.
+    - [x] The associated role (if present) is added to the user.
 - [x] If there are neither, the profile is just marked as both submitted
 and verified.
+    - [x] The associated role (if present) is added to the user.
 
 ## Verification
 
@@ -101,6 +110,7 @@ button are both added to the associated profile.
     - [x] the profile is sent to the archive channel (if one is set),
     - [x] and the user is sent a DM saying their profile was verified.
     - [x] The profile is marked as verified.
+    - [x] The associated role (if present) is added to the user.
     - [ ] The moderator, profile JSON dump, and time are logged into
     the database.
 - [x] If the deny button is pressed,

@@ -1,4 +1,5 @@
 from __future__ import annotations
+import inspect
 
 from typing import Optional, Type
 from typing_extensions import Self
@@ -21,19 +22,11 @@ def _(a: str) -> str:
     return a
 
 
-def _t(b: str | discord.Locale, a: str) -> str:
-    """
-    Translate function for non-commands.
-    """
-
-    return vbu.translation(b, __name__).gettext(a)
-
-
 class Field:
     """
     The abstract field object for a given template.
-    This itself does not store any user information, but rather the meta information
-    associated with a field from a template.
+    This itself does not store any user information, but rather the meta
+    information associated with a field from a template.
 
     Attributes
     -----------
@@ -42,10 +35,12 @@ class Field:
     name: :class:`str`
         The name of the field.
     index: :class:`int`
-        The index of the field. May not specifically refer to its location in the embed,
-        but *will* in relation to the other indexes of the fields.
+        The index of the field. May not specifically refer to its
+        location in the embed, but *will* in relation to the other indexes of
+        the fields.
     prompt: :class:`str`
-        The prompt shown to the user when they're asked to fill in this field information.
+        The prompt shown to the user when they're asked to fill in this
+        field information.
     field_type :class:`cogs.utils.profiles.field_type.FieldType`:
         The type given to this field
     template_id: :class:`str`
@@ -62,10 +57,11 @@ class Field:
     name: :class:`str`
         The name of the field.
     index: :class:`int`
-        The index of the field. May not specifically refer to its location in the embed,
-        but *will* in relation to the other indexes of the fields.
+        The index of the field. May not specifically refer to its location
+        in the embed, but *will* in relation to the other indexes of the fields.
     prompt: :class:`str`
-        The prompt shown to the user when they're asked to fill in this field information.
+        The prompt shown to the user when they're asked to fill in this field
+        information.
     field_type: :class:`FieldType`
         The type given to this field
     template_id: Union[:class:`str`, :class:`uuid.UUID`]
@@ -94,7 +90,7 @@ class Field:
             index: int,
             prompt: str,
             template_id: str | uuid.UUID,
-            field_type: Type[FieldType] = TextField,
+            field_type: Type[FieldType] | str = TextField,
             optional: bool = False,
             deleted: bool = False):
         self._id: Optional[uuid.UUID] = id
@@ -103,12 +99,16 @@ class Field:
         self.prompt: str = prompt
         self._template_id: Optional[uuid.UUID]
         self.template_id = template_id
-        self.field_type: Type[FieldType] = {
-            '1000-CHAR': TextField,
-            'INT': NumberField,
-            'IMAGE': ImageField,
-            'BOOLEAN': BooleanField,
-        }[getattr(field_type, 'name', field_type) or '1000-CHAR']
+        self.field_type: Type[FieldType]
+        if isinstance(field_type, str) or inspect.isclass(field_type):
+            self.field_type = {
+                '1000-CHAR': TextField,
+                'INT': NumberField,
+                'IMAGE': ImageField,
+                'BOOLEAN': BooleanField,
+            }[getattr(field_type, 'name', field_type) or '1000-CHAR']
+        elif FieldType in field_type.mro():
+            self.field_type = field_type
         self.optional: bool = optional
         self.deleted: bool = deleted
 
@@ -226,10 +226,11 @@ class Field:
             return cls(**data[0])
         return None
 
+    @vbu.i18n("profile", 2)
     def build_embed(
             self,
             bot: vbu.Bot,
-            interaction: discord.Interaction,
+            interaction: discord.Interaction,  # pyright: ignore - this is here for i18n.
             *,
             full: bool = False) -> discord.Embed:
         """

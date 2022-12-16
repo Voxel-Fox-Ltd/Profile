@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, cast
 import discord
 from discord.ext import vbu
 
@@ -137,6 +137,7 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
             # Only allow editing if a newly generated embed is the same as the
             # one attached to the message they clicked on
             past_embed = interaction.message.embeds[0]
+            assert isinstance(interaction.user, discord.Member)
             new_embed = profile.build_embed(
                 self.bot,
                 interaction,
@@ -264,7 +265,12 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
             assert field, "Field has been deleted."
 
         # Get the value
-        given_value: str = interaction.components[0].components[0].value
+        given_value: str = (
+            interaction
+            .components[0]
+            .components[0]   # pyright: ignore - I know more than you
+            .value
+        )  # pyright: ignore - I know more than you
 
         # Validate the value
         if given_value:
@@ -304,12 +310,14 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
             )
         if filled_field:
             profile.all_filled_fields[field_id] = filled_field
-            filled_field.field = field
+            filled_field.field = field  # pyright: ignore - about to reassign
+            filled_field = cast(utils.FilledField[utils.Field], filled_field)
         else:
             profile.all_filled_fields.pop(field_id, None)
 
         # Edit the original message
-        cog: Optional[ProfileCommands] = self.bot.get_cog("ProfileCommands")
+        cog: Optional[ProfileCommands]
+        cog = self.bot.get_cog("ProfileCommands")  # pyright: ignore
         assert cog, "Cog not loaded."
         await interaction.response.defer_update()
         await cog.profile_edit(
@@ -356,7 +364,12 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
             )
 
             # Get the value
-            given_value: str = interaction.components[0].components[0].value
+            given_value: str = (
+                interaction
+                .components[0]  # pyright: ignore
+                .components[0]
+                .value
+            )  # pyright: ignore
 
             # Make sure they don't have a profile existing with that
             # name already
@@ -383,7 +396,8 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
             await profile.fetch_filled_fields(db)
 
         # Edit the original message
-        cog: Optional[ProfileCommands] = self.bot.get_cog("ProfileCommands")
+        cog: Optional[ProfileCommands]
+        cog = self.bot.get_cog("ProfileCommands")  # pyright: ignore
         assert cog, "Cog not loaded."
         await interaction.response.defer_update()
         await cog.profile_edit(

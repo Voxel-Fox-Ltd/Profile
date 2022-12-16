@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Union, Optional
+from typing import TYPE_CHECKING, TypeVar, Union, Optional, Generic, overload
 import uuid
 
 from .field import Field
@@ -10,9 +10,10 @@ if TYPE_CHECKING:
 
 
 any_id = Union[str, uuid.UUID]
+F = TypeVar("F", Field, None)
 
 
-class FilledField:
+class FilledField(Generic[F]):
     """
     A class holding the filled information of a user for a particular field of a
     particular profile.
@@ -49,11 +50,11 @@ class FilledField:
             profile_id: any_id,
             field_id: any_id,
             value: str,
-            field: Optional[Field] = None):
+            field: F = None):
         self.profile_id = profile_id  # type: ignore
         self.field_id = field_id  # type: ignore
         self.value: str = value
-        self.field: Optional[Field] = field
+        self.field: F = field
 
     @property
     def profile_id(self) -> str:
@@ -81,13 +82,33 @@ class FilledField:
         else:
             self._field_id = uuid.UUID(value)
 
+    @overload
     @classmethod
     async def update_by_id(
             cls,
             db: vbu.Database,
             profile_id: any_id,
             field_id: any_id,
-            new_value: Optional[str]):
+            new_value: None) -> None:
+        ...
+
+    @overload
+    @classmethod
+    async def update_by_id(
+            cls,
+            db: vbu.Database,
+            profile_id: any_id,
+            field_id: any_id,
+            new_value: str) -> FilledField[None]:
+        ...
+
+    @classmethod
+    async def update_by_id(
+            cls,
+            db: vbu.Database,
+            profile_id: any_id,
+            field_id: any_id,
+            new_value: Optional[str]) -> FilledField | None:
         """
         Update a filled field value in the database, creating if one does not
         exist.

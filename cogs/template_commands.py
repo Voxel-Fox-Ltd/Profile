@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from difflib import SequenceMatcher
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 import discord
 from discord.ext import commands, vbu
@@ -144,7 +144,9 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         # a template. This command does not directly delete the template.
 
         # See if the user has permission to run this command
-        cog: TemplateEdit = self.bot.get_cog("TemplateEdit")  # type: ignore
+        cog: Optional[TemplateEdit]
+        cog = self.bot.get_cog("TemplateEdit")  # type: ignore
+        assert cog, "Cog not loaded."
         if not cog.check_template_edit_permissions(ctx.interaction):
             return await ctx.interaction.response.send_message(
                 _(
@@ -234,7 +236,9 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         """
 
         # Check that the name is valid
-        cog: TemplateEdit = self.bot.get_cog("TemplateEdit")  # type: ignore
+        cog: Optional[TemplateEdit]
+        cog = self.bot.get_cog("TemplateEdit")  # type: ignore
+        assert cog, "Cog not loaded."
         if not cog.check_template_name(name):
             return await ctx.interaction.response.send_message(
                 (
@@ -302,7 +306,9 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
             await template.update(db)
 
         # Send them the template edit components
-        cog: TemplateEdit = self.bot.get_cog("TemplateEdit")  # type: ignore
+        cog: Optional[TemplateEdit]
+        cog = self.bot.get_cog("TemplateEdit")  # type: ignore
+        assert cog, "Cog not loaded."
         kwargs = cog.get_template_edit_components(
             ctx.interaction,
             template,
@@ -350,7 +356,9 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                 )
 
         # Send them the template edit components
-        cog: TemplateEdit = self.bot.get_cog("TemplateEdit")  # type: ignore
+        cog: Optional[TemplateEdit]
+        cog = self.bot.get_cog("TemplateEdit")  # type: ignore
+        assert cog, "Cog not loaded."
         kwargs = cog.get_template_edit_components(
             ctx.interaction,
             template,
@@ -361,7 +369,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
     @template_delete.autocomplete  # type: ignore
     async def template_name_autocomplete(
             self,
-            ctx,
+            _,
             interaction: discord.AutocompleteInteraction):
         """
         Send the user back a list of templates for their guild.

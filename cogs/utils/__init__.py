@@ -5,7 +5,7 @@ from .profiles.field_type import (
     TextField,
     NumberField,
     ImageField,
-    # FieldCheckFailure
+    FieldCheckFailure,
 )
 from .profiles.template import Template
 from .profiles.user_profile import UserProfile
@@ -29,4 +29,5 @@ __all__ = (
     'FilledField',
     'CommandProcessor',
     'GuildPerks',
+    'FieldCheckFailure',
 )

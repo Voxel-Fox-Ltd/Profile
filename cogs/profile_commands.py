@@ -282,6 +282,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
         # Send the profile - defer so it doesn't stay as ephemeral
         await interaction.response.defer_update()
         await interaction.delete_original_message()
+        assert isinstance(interaction.user, discord.Member)
         await interaction.followup.send(
             embeds=[
                 profile.build_embed(
@@ -306,7 +307,12 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
         async with vbu.Database() as db:
             profile = await utils.UserProfile.fetch_profile_by_id(
                 db,
-                interaction.options[0].options[0].value,
+                (
+                    interaction
+                    .options[0]  # pyright: ignore
+                    .options[0]
+                    .value
+                ),  # pyright: ignore
             )
 
         # Do some basic checks
@@ -449,7 +455,12 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
             async with vbu.Database() as db:
                 profile = await utils.UserProfile.fetch_profile_by_id(
                     db,
-                    interaction.options[0].options[0].value,
+                    (
+                        interaction
+                        .options[0]  # pyright: ignore
+                        .options[0]
+                        .value
+                    ),  # pyright: ignore
                 )
 
                 # Make sure they have something
@@ -549,6 +560,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
         )
 
         # Send the buttons
+        assert isinstance(interaction.user, discord.Member)
         embed = profile.build_embed(self.bot, interaction, interaction.user)
         if edit_original:
             await interaction.edit_original_message(
@@ -592,7 +604,9 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
         async with vbu.Database() as db:
 
             # See if they're able to submit any more profiles
-            cog: ProfileVerification = self.bot.get_cog("ProfileVerification")  # type: ignore
+            cog: Optional[ProfileVerification]
+            cog = self.bot.get_cog("ProfileVerification")  # type: ignore
+            assert cog, "Cog not loaded."
             if await cog.check_if_max_profiles_hit(db, template, interaction.user.id):
                 return await interaction.response.send_message(
                     content=_(

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Union, Optional, Dict, List
+from typing import Generic, TypeVar, Union, Optional, Dict, List
 from typing_extensions import Self
 import uuid
 import operator
@@ -12,13 +12,13 @@ from .template import Template
 from .filled_field import FilledField
 from .field import Field
 from .field_type import ImageField
-from .command_processor import (
-    CommandProcessor,
-    InvalidCommandText
-)
+from .command_processor import CommandProcessor
 
 
-class UserProfile:
+T = TypeVar('T', Template, None)
+
+
+class UserProfile(Generic[T]):
     """
     A filled user template.
     This represents a template filled by a user containing all of their
@@ -96,7 +96,7 @@ class UserProfile:
             verified: bool = False,
             posted_message_id: Optional[int] = None,
             posted_channel_id: Optional[int] = None,
-            template: Optional[Template] = None,
+            template: T = None,
             deleted: bool = False,
             draft: bool = True):
         self._id = id
@@ -109,7 +109,7 @@ class UserProfile:
         self.deleted: bool = deleted
         self.draft: bool = draft  # Whether or not the profile has left the editing stage
         self.all_filled_fields: Dict[str, FilledField] = dict()
-        self.template: Optional[Template] = template
+        self.template: T = template
 
     @property
     def id(self) -> str:

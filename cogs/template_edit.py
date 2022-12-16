@@ -1,13 +1,9 @@
-from typing import TYPE_CHECKING
 import discord
 from discord.ext import vbu
 
 import regex as re
 
 from cogs import utils
-
-if TYPE_CHECKING:
-    from .template_field_edit import TemplateFieldEdit
 
 
 def _t(b: str | discord.Locale, a: str) -> str:
@@ -589,7 +585,7 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
         # See if we should be clearing the value
         clear: bool
         try:
-            encoded_template_id, d = interaction.custom_id.split(" ")[2:]
+            encoded_template_id, d = interaction.custom_id.split(" ")[2:]  # pyright: ignore
             clear = True
         except ValueError:
             encoded_template_id = interaction.custom_id.split(" ")[2]
@@ -678,7 +674,7 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
         # See if we should be clearing the value
         clear: bool
         try:
-            encoded_template_id, d = interaction.custom_id.split(" ")[2:]
+            encoded_template_id, d = interaction.custom_id.split(" ")[2:]  # pyright: ignore
             clear = True
         except ValueError:
             encoded_template_id = interaction.custom_id.split(" ")[2]
@@ -765,7 +761,7 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
         # See if we should be clearing the value
         clear: bool
         try:
-            encoded_template_id, d = interaction.custom_id.split(" ")[2:]
+            encoded_template_id, d = interaction.custom_id.split(" ")[2:]  # pyright: ignore
             clear = True
         except ValueError:
             encoded_template_id = interaction.custom_id.split(" ")[2]

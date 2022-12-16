@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 import discord
 from discord.ext import vbu
 
@@ -54,7 +54,9 @@ class TemplateFieldEdit(vbu.Cog[vbu.Bot]):
             field = await field.update(db, **kwargs)
 
         # And send the new template to the user
-        cog: TemplateFieldEdit = self.bot.get_cog("TemplateFieldEdit")  # type: ignore
+        cog: Optional[TemplateFieldEdit]
+        cog = self.bot.get_cog("TemplateFieldEdit")  # type: ignore
+        assert cog, "Cog not loaded."
         kwargs = cog.get_field_edit_components(
             interaction,
             field,
@@ -285,7 +287,9 @@ class TemplateFieldEdit(vbu.Cog[vbu.Bot]):
             )
 
         # Send them the template edit components
-        cog: TemplateEdit = self.bot.get_cog("TemplateEdit")  # type: ignore
+        cog: Optional[TemplateEdit]
+        cog = self.bot.get_cog("TemplateEdit")  # type: ignore
+        assert cog, "Cog not loaded."
         kwargs = cog.get_template_edit_components(
             interaction,
             template,
@@ -468,7 +472,9 @@ class TemplateFieldEdit(vbu.Cog[vbu.Bot]):
             return
 
         # Check they still have permissions to press these buttons
-        cog: TemplateEdit = self.bot.get_cog("TemplateEdit")  # type: ignore
+        cog: Optional[TemplateEdit]
+        cog = self.bot.get_cog("TemplateEdit")  # type: ignore
+        assert cog, "Cog not loaded."
         if not cog.check_template_edit_permissions(interaction):
             return await interaction.response.edit_message(
                 content=_(

@@ -206,7 +206,7 @@ class ProfileVerification(vbu.Cog[vbu.Bot]):
 
         # No archive or verification channel; just tell the user it's done :)
         else:
-            return await interaction.edit_original_message(
+            await interaction.edit_original_message(
                 content=_(
                     "Your profile has been submitted."
                 ),
@@ -260,11 +260,9 @@ class ProfileVerification(vbu.Cog[vbu.Bot]):
         # Get the user so we can build their embed properly
         user: discord.Member
         try:
-            user = await (
-                interaction
-                .guild
-                .fetch_member(profile.user_id)
-            )
+            guild = cast(discord.Guild, interaction.guild)
+            assert profile.user_id is not None
+            user = await guild.fetch_member(profile.user_id)
         except (discord.HTTPException):
 
             # The user left the guild - convert their profile back to a draft
@@ -370,11 +368,9 @@ class ProfileVerification(vbu.Cog[vbu.Bot]):
         # Get the user so we can build their embed properly
         user: discord.Member
         try:
-            user = await (
-                interaction
-                .guild
-                .fetch_member(profile.user_id)
-            )
+            guild = cast(discord.Guild, interaction.guild)
+            assert profile.user_id is not None
+            user = await guild.fetch_member(profile.user_id)
         except (discord.HTTPException):
 
             # The user left the guild - convert their profile back to a draft

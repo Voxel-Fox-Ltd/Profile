@@ -324,11 +324,21 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
                 ),
             ),
             discord.ui.Button(
-                # TRANSLATORS: Text appearing on a button
-                label=_("Update template command"),
+                label=(
+                    # TRANSLATORS: Text appearing on a button
+                    _("Update template command")
+                    if template.application_command_id
+                    # TRANSLATORS: Text appearing on a button
+                    else _("Create template command")
+                ),
                 custom_id=(
                     f"TEMPLATE_EDIT SLASH {utils.uuid.encode(template.id)} "
                     f"{template.application_command_id or 0}"
+                ),
+                style=(
+                    discord.ButtonStyle.secondary
+                    if template.application_command_id
+                    else discord.ButtonStyle.danger
                 ),
             ),
         ]

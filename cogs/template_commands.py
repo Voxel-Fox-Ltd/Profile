@@ -829,9 +829,14 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
 
         # Base case
         options = []
+        interaction_options = interaction.options[0].options[0].options  # pyright: ignore
+        interaction_options = cast(
+            list[discord.ApplicationCommandInteractionDataOption],
+            interaction_options,
+        )
 
         # See if the template option is focused
-        if interaction.options[0].focused:
+        if interaction_options[0].focused:
             async with vbu.Database() as db:
                 templates = await utils.Template.fetch_all_templates_for_guild(
                     db,
@@ -848,7 +853,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
 
         # The profile option is focused
         else:
-            template_id = interaction.options[0].value  # Get the template ID
+            template_id = interaction_options[0].value  # Get the template ID
             if template_id:
                 async with vbu.Database() as db:
                     template = await utils.Template.fetch_template_by_id(
@@ -875,7 +880,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         try:
             current_val = [
                 i.value
-                for i in interaction.options
+                for i in interaction_options
                 if i.focused
             ][0]
         except IndexError:

@@ -23,6 +23,7 @@ if __debug__:
 class BotInfo(vbu.Cog[vbu.Bot]):
 
     @commands.command(
+        aliases=["information"],
         application_command_meta=commands.ApplicationCommandMeta(
             name_localizations={
                 i: _t(i, "information").casefold()
@@ -51,7 +52,8 @@ class BotInfo(vbu.Cog[vbu.Bot]):
             .add_field(
                 # TRANSLATORS: Text appearing on a button in the info command.
                 _("Website"),
-                f"[{_('Website')}](https://profile.voxelfox.co.uk)",
+                # TRANSLATORS: Text for a hyperlink.
+                f"[{_('Click here')}](https://profile.voxelfox.co.uk)",
             )
             .add_field(
                 # TRANSLATORS: Text appearing on a button in the info command.

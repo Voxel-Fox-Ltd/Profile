@@ -15,6 +15,7 @@ class ApplicationCommandMentions(vbu.Cog[vbu.Bot]):
         """
 
         await self.bot.wait_until_ready()
+        await asyncio.sleep(10)  # Just to make sure the other cogs have loaded
         app_commands = await self.bot.fetch_global_application_commands()
         for i in app_commands:
             bot_command = self.bot.get_command(i.name)

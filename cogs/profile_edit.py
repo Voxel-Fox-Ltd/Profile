@@ -167,12 +167,12 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
         except:
             current_value = None
         modal = discord.ui.Modal(
-            title=field.name,
+            title=field.name[:45],
             custom_id=f"PROFILE SET {short_profile_id} {short_field_id}",
             components=[
                 discord.ui.ActionRow(
                     discord.ui.InputText(
-                        label=field.prompt,
+                        label=field.prompt[:45],
                         value=current_value,
                         style=discord.TextStyle.long,
                         max_length=1_000,
@@ -215,12 +215,12 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
         # Ask the user to fill in the field
         current_value = profile.name
         modal = discord.ui.Modal(
-            title=template.name,
+            title=template.name[:45],
             custom_id=f"PROFILE SET_NAME {short_profile_id}",
             components=[
                 discord.ui.ActionRow(
                     discord.ui.InputText(
-                        label=_("Set the name of your modal"),
+                        label=_("Set the name of your modal")[:45],
                         value=current_value,
                         min_length=1,
                         max_length=32,

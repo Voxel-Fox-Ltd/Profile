@@ -1,6 +1,5 @@
 import uuid
-from typing import TYPE_CHECKING, Optional, Tuple
-import random
+from typing import TYPE_CHECKING, Optional, Tuple, cast
 
 import discord
 from discord.ext import vbu
@@ -313,22 +312,24 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
     async def profile_delete(
             self,
             interaction: discord.CommandInteraction,
-            template: utils.Template):
+            template: utils.Template,
+            profile: utils.UserProfile | None = None):
         """
         Run when someone tries to delete a profile for a given user.
         """
 
         # See what profiles the user has for that template
-        async with vbu.Database() as db:
-            profile = await utils.UserProfile.fetch_profile_by_id(
-                db,
-                (
-                    interaction
-                    .options[0]  # pyright: ignore
-                    .options[0]
-                    .value
-                ),  # pyright: ignore
-            )
+        if not profile:
+            async with vbu.Database() as db:
+                profile = await utils.UserProfile.fetch_profile_by_id(
+                    db,
+                    (
+                        interaction
+                        .options[0]  # pyright: ignore
+                        .options[0]
+                        .value
+                    ),  # pyright: ignore
+                )
 
         # Do some basic checks
         assert profile, "Profile does not exist."
@@ -495,7 +496,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
 
         # Do some basic checks
         assert not profile.deleted
-        assert profile.user_id == interaction.user.id
+        # assert profile.user_id == interaction.user.id
 
         # And let's go
         profile.template = template
@@ -595,25 +596,22 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
     async def profile_create(
             self,
             interaction: discord.CommandInteraction,
-            template: utils.Template):
+            template: utils.Template,
+            user: discord.Member | None = None):
         """
         Run when someone tries to create a profile for a given user.
         """
 
-        # Get a random name from the animals file
-        with open("config/animals.txt") as f:
-            animals = f.read().strip().splitlines()
-        name = random.choice(animals)
-
         # Create a usable profile
         profile = utils.UserProfile(
-            user_id=interaction.user.id,
+            user_id=user.id if user else interaction.user.id,
             template_id=template.id,
-            name=name,
+            name=utils.get_animal_name(),
             draft=True,
             verified=False,
         )
-        profile.template = template
+        profile.template = template  # pyright: ignore
+        profile = cast(utils.UserProfile[utils.Template], profile)
 
         # Create an ID for that user's profile
         async with vbu.Database() as db:
@@ -622,7 +620,8 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
             cog: Optional[ProfileVerification]
             cog = self.bot.get_cog("ProfileVerification")  # type: ignore
             assert cog, "Cog not loaded."
-            if await cog.check_if_max_profiles_hit(db, template, interaction.user.id):
+            if await cog.check_if_max_profiles_hit(
+                    db, template, user.id if user else interaction.user.id):
                 return await interaction.response.send_message(
                     content=_(
                         "You have already submitted the maximum number of "

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from difflib import SequenceMatcher
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, cast
 
 import discord
 from discord.ext import commands, vbu
@@ -10,9 +10,95 @@ from cogs import utils
 
 if TYPE_CHECKING:
     from .template_edit import TemplateEdit
+    from .profile_commands import ProfileCommands
 
 
 GC = utils.types.GuildContext
+
+
+def _t(b: str | discord.Locale, a: str) -> str:
+    """
+    Translate function for non-commands.
+    """
+
+    return vbu.translation(b, "profile").gettext(a)
+
+
+if __debug__:
+    # For POEditor
+    _poeditor = lambda x: x
+    # TRANSLATORS: Command name.
+    _poeditor("template")
+
+    # TRANSLATORS: Subcommand name.
+    _poeditor("list")
+    # TRANSLATORS: Description for a command.
+    _poeditor("A list of all the templates created on your guild.")
+
+    # TRANSLATORS: Subcommand name.
+    _poeditor("delete")
+    # TRANSLATORS: Description for a command.
+    _poeditor("Delete one of your templates.")
+
+    # TRANSLATORS: Subcommand name.
+    _poeditor("create")
+    # TRANSLATORS: Description for a command.
+    _poeditor("Create a new template for your guild.")
+
+    # TRANSLATORS: Subcommand name.
+    _poeditor("edit")
+    # TRANSLATORS: Description for a command.
+    _poeditor("Edit an already existing template.")
+
+    # TRANSLATORS: Subcommand name.
+    _poeditor("manage")
+
+    # TRANSLATORS: Subcommand name.
+    _poeditor("create")
+    # TRANSLATORS: Description for a command.
+    _poeditor("Create a command for another person.")
+    # TRANSLATORS: Option for a command.
+    _poeditor("template")
+    # TRANSLATORS: Description for a command option.
+    _poeditor("The template you want to create a profile in.")
+    # TRANSLATORS: Option for a command.
+    _poeditor("user")
+    # TRANSLATORS: Description for a command option.
+    _poeditor("The user that you want to create a profile for.")
+
+    # TRANSLATORS: Subcommand name.
+    _poeditor("delete")
+    # TRANSLATORS: Description for a command option.
+    _poeditor("Delete a command for another person.")
+    # TRANSLATORS: Option for a command.
+    _poeditor("template")
+    # TRANSLATORS: Description for a command option.
+    _poeditor("The template you want to delete a profile in.")
+    # TRANSLATORS: Option for a command.
+    _poeditor("user")
+    # TRANSLATORS: Description for a command option.
+    _poeditor("The user that you want to create a profile for.")
+    # TRANSLATORS: Option for a command.
+    _poeditor("profile")
+    # TRANSLATORS: Description for a command option.
+    _poeditor("The profile that you want to delete.")
+
+    # TRANSLATORS: Subcommand name.
+    _poeditor("edit")
+    # TRANSLATORS: Description for a command option.
+    _poeditor("Edit a command for another person.")
+    # TRANSLATORS: Option for a command.
+    _poeditor("template")
+    # TRANSLATORS: Description for a command option.
+    _poeditor("The template you want to edit a profile in.")
+    # TRANSLATORS: Option for a command.
+    _poeditor("user")
+    # TRANSLATORS: Description for a command option.
+    _poeditor("The user that you want to edit a profile for.")
+    # TRANSLATORS: Option for a command.
+    _poeditor("profile")
+    # TRANSLATORS: Description for a command option.
+    _poeditor("The profile that you want to edit.")
 
 
 class TemplateCommands(vbu.Cog[vbu.Bot]):
@@ -41,7 +127,14 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
     """
 
     @commands.group(
-        application_command_meta=commands.ApplicationCommandMeta(),
+        application_command_meta=commands.ApplicationCommandMeta(
+            name_localizations={
+                i: _t(i, "template")
+                for i in discord.Locale
+            },
+            permissions=discord.Permissions(manage_guild=True),
+            guild_only=True,
+        ),
     )
     async def template(
             self,
@@ -54,7 +147,16 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
 
     @template.command(
         name="list",
-        application_command_meta=commands.ApplicationCommandMeta(),
+        application_command_meta=commands.ApplicationCommandMeta(
+            name_localizations={
+                i: _t(i, "list")
+                for i in discord.Locale
+            },
+            description_localizations={
+                i: _t(i, "A list of all the templates created on your guild.")
+                for i in discord.Locale
+            },
+        ),
     )
     @commands.defer()
     @vbu.i18n("profile")
@@ -119,6 +221,14 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
     @template.command(
         name="delete",
         application_command_meta=commands.ApplicationCommandMeta(
+            name_localizations={
+                i: _t(i, "delete")
+                for i in discord.Locale
+            },
+            description_localizations={
+                i: _t(i, "Delete one of your templates.")
+                for i in discord.Locale
+            },
             options=[
                 discord.ApplicationCommandOption(
                     name="template",
@@ -214,6 +324,14 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
     @template.command(
         name="create",
         application_command_meta=commands.ApplicationCommandMeta(
+            name_localizations={
+                i: _t(i, "create")
+                for i in discord.Locale
+            },
+            description_localizations={
+                i: _t(i, "Create a new template for your guild.")
+                for i in discord.Locale
+            },
             options=[
                 discord.ApplicationCommandOption(
                     name="name",
@@ -319,6 +437,14 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
     @template.command(
         name="edit",
         application_command_meta=commands.ApplicationCommandMeta(
+            name_localizations={
+                i: _t(i, "edit")
+                for i in discord.Locale
+            },
+            description_localizations={
+                i: _t(i, "Edit an already existing template.")
+                for i in discord.Locale
+            },
             options=[
                 discord.ApplicationCommandOption(
                     name="name",
@@ -366,8 +492,294 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         )
         return await ctx.interaction.response.send_message(**kwargs)
 
-    @template_edit.autocomplete  # type: ignore
-    @template_delete.autocomplete  # type: ignore
+    @template.group(
+        name="manage",
+        application_command_meta=commands.ApplicationCommandMeta(
+            name_localizations={
+                i: _t(i, "manage")
+                for i in discord.Locale
+            },
+        ),
+    )
+    async def template_manage(
+            self,
+            _: GC):
+        """
+        Parent group for template management.
+        """
+
+        ...
+
+    @template_manage.command(
+        name="create",
+        application_command_meta=commands.ApplicationCommandMeta(
+            name_localizations={
+                i: _t(i, "create")
+                for i in discord.Locale
+            },
+            description_localizations={
+                i: _t(i, "Create a command for another person.")
+                for i in discord.Locale
+            },
+            options=[
+                discord.ApplicationCommandOption(
+                    name="template",
+                    description=(
+                        "The template you want to create a profile in."
+                    ),
+                    type=discord.ApplicationCommandOptionType.string,
+                    required=True,
+                    autocomplete=True,
+                    name_localizations={
+                        i: _t(i, "template")
+                        for i in discord.Locale
+                    },
+                    description_localizations={
+                        i: _t(i, "The template you want to create a profile in.")
+                        for i in discord.Locale
+                    },
+                ),
+                discord.ApplicationCommandOption(
+                    name="user",
+                    description=(
+                        "The user that you want to create a profile for."
+                    ),
+                    type=discord.ApplicationCommandOptionType.user,
+                    required=True,
+                    name_localizations={
+                        i: _t(i, "user")
+                        for i in discord.Locale
+                    },
+                    description_localizations={
+                        i: _t(i, "The user that you want to create a profile for.")
+                        for i in discord.Locale
+                    },
+                ),
+            ],
+        ),
+    )
+    async def template_manage_delete(
+            self,
+            ctx: GC[discord.CommandInteraction],
+            template: str,
+            user: discord.Member):
+        """
+        Create a profile for other users.
+        """
+
+        # Get the template
+        async with vbu.Database() as db:
+            template_object = await utils.Template.fetch_template_by_id(
+                db, template,
+            )
+            assert template_object, "Template does not exist."
+
+        # Process profile creation
+        cog: Optional[ProfileCommands]
+        cog = self.bot.get_cog("ProfileCommands")  # pyright: ignore
+        assert cog, "Cog not loaded."
+        await cog.profile_create(ctx.interaction, template_object, user)
+
+    @template_manage.command(
+        name="delete",
+        application_command_meta=commands.ApplicationCommandMeta(
+            name_localizations={
+                i: _t(i, "delete")
+                for i in discord.Locale
+            },
+            description_localizations={
+                i: _t(i, "Delete a command for another person.")
+                for i in discord.Locale
+            },
+            options=[
+                discord.ApplicationCommandOption(
+                    name="template",
+                    description=(
+                        "The template you want to delete a profile in."
+                    ),
+                    type=discord.ApplicationCommandOptionType.string,
+                    required=True,
+                    autocomplete=True,
+                    name_localizations={
+                        i: _t(i, "template")
+                        for i in discord.Locale
+                    },
+                    description_localizations={
+                        i: _t(i, "The template you want to delete a profile in.")
+                        for i in discord.Locale
+                    },
+                ),
+                discord.ApplicationCommandOption(
+                    name="user",
+                    description=(
+                        "The user that you want to delete a profile for."
+                    ),
+                    type=discord.ApplicationCommandOptionType.user,
+                    required=True,
+                    name_localizations={
+                        i: _t(i, "user")
+                        for i in discord.Locale
+                    },
+                    description_localizations={
+                        i: _t(i, "The user that you want to create a profile for.")
+                        for i in discord.Locale
+                    },
+                ),
+                discord.ApplicationCommandOption(
+                    name="profile",
+                    description=(
+                        "The profile that you want to delete."
+                    ),
+                    type=discord.ApplicationCommandOptionType.string,
+                    required=True,
+                    autocomplete=True,
+                    name_localizations={
+                        i: _t(i, "profile")
+                        for i in discord.Locale
+                    },
+                    description_localizations={
+                        i: _t(i, "The profile that you want to delete.")
+                        for i in discord.Locale
+                    },
+                ),
+            ],
+        ),
+    )
+    async def template_manage_delete(
+            self,
+            ctx: GC[discord.CommandInteraction],
+            template: str,
+            user: discord.Member,
+            profile: str):
+        """
+        Delete a profile for other users.
+        """
+
+        async with vbu.Database() as db:
+
+            # Get the template
+            template_object = await utils.Template.fetch_template_by_id(
+                db, template,
+            )
+            assert template_object, "Profile does not exist."
+
+            # Get the profile
+            profile_object = await utils.UserProfile.fetch_profile_by_id(
+                db, profile,
+            )
+            assert profile_object, "Profile does not exist."
+
+        # Process profile creation
+        cog: Optional[ProfileCommands]
+        cog = self.bot.get_cog("ProfileCommands")  # pyright: ignore
+        assert cog, "Cog not loaded."
+        await cog.profile_delete(
+            ctx.interaction,
+            template_object,
+            profile_object,
+        )
+
+    @template_manage.command(
+        name="edit",
+        application_command_meta=commands.ApplicationCommandMeta(
+            name_localizations={
+                i: _t(i, "edit")
+                for i in discord.Locale
+            },
+            description_localizations={
+                i: _t(i, "Edit a command for another person.")
+                for i in discord.Locale
+            },
+            options=[
+                discord.ApplicationCommandOption(
+                    name="template",
+                    description=(
+                        "The template you want to edit a profile in."
+                    ),
+                    type=discord.ApplicationCommandOptionType.string,
+                    required=True,
+                    autocomplete=True,
+                    name_localizations={
+                        i: _t(i, "template")
+                        for i in discord.Locale
+                    },
+                    description_localizations={
+                        i: _t(i, "The template you want to edit a profile in.")
+                        for i in discord.Locale
+                    },
+                ),
+                discord.ApplicationCommandOption(
+                    name="user",
+                    description=(
+                        "The user that you want to edit a profile for."
+                    ),
+                    type=discord.ApplicationCommandOptionType.user,
+                    required=True,
+                    name_localizations={
+                        i: _t(i, "user")
+                        for i in discord.Locale
+                    },
+                    description_localizations={
+                        i: _t(i, "The user that you want to edit a profile for.")
+                        for i in discord.Locale
+                    },
+                ),
+                discord.ApplicationCommandOption(
+                    name="profile",
+                    description=(
+                        "The profile that you want to edit."
+                    ),
+                    type=discord.ApplicationCommandOptionType.string,
+                    required=True,
+                    autocomplete=True,
+                    name_localizations={
+                        i: _t(i, "profile")
+                        for i in discord.Locale
+                    },
+                    description_localizations={
+                        i: _t(i, "The profile that you want to edit.")
+                        for i in discord.Locale
+                    },
+                ),
+            ],
+        ),
+    )
+    async def template_manage_edit(
+            self,
+            ctx: GC[discord.CommandInteraction],
+            template: str,
+            user: discord.Member,
+            profile: str):
+        """
+        Create a profile for other users.
+        """
+
+        async with vbu.Database() as db:
+
+            # Get the template
+            template_object = await utils.Template.fetch_template_by_id(
+                db, template,
+            )
+            assert template_object, "Profile does not exist."
+
+            # Get the profile
+            profile_object = await utils.UserProfile.fetch_profile_by_id(
+                db, profile,
+            )
+            assert profile_object, "Profile does not exist."
+
+        # Process profile creation
+        cog: Optional[ProfileCommands]
+        cog = self.bot.get_cog("ProfileCommands")  # pyright: ignore
+        assert cog, "Cog not loaded."
+        await cog.profile_edit(
+            ctx.interaction,
+            template_object,
+            profile_object,
+        )
+
+    @template_edit.autocomplete  # pyright: ignore
+    @template_delete.autocomplete  # pyright: ignore
     async def template_name_autocomplete(
             self,
             _,
@@ -389,6 +801,83 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         current_val = ""
         try:
             current_val = [i.value for i in interaction.options][0]
+        except IndexError:
+            pass
+        options.sort(
+            key=lambda c: (
+                SequenceMatcher(
+                    None,
+                    c.name.lower(),
+                    (current_val or "").lower(),
+                ).quick_ratio()
+            ),
+            reverse=True,
+        )
+        await interaction.response.send_autocomplete(options)
+
+    @template_manage_delete.autocomplete  # pyright: ignore
+    @template_manage_delete.autocomplete  # pyright: ignore
+    @template_manage_edit.autocomplete  # pyright: ignore
+    async def template_manage_autocomplete(
+            self,
+            _,
+            interaction: discord.AutocompleteInteraction):
+        """
+        Send the user back a list of templates for their guild if focused,
+        and a list of profiles as well.
+        """
+
+        # Base case
+        options = []
+
+        # See if the template option is focused
+        if interaction.options[0].focused:
+            async with vbu.Database() as db:
+                templates = await utils.Template.fetch_all_templates_for_guild(
+                    db,
+                    guild_id=interaction.guild.id,  # type: ignore
+                    fetch_fields=False,
+                )
+            options = [
+                discord.ApplicationCommandOptionChoice(
+                    name=i.name,
+                    value=i.id,
+                )
+                for i in templates
+            ]
+
+        # The profile option is focused
+        else:
+            template_id = interaction.options[0].value  # Get the template ID
+            if template_id:
+                async with vbu.Database() as db:
+                    template = await utils.Template.fetch_template_by_id(
+                        db, template_id,
+                    )
+                    if template:
+                        profiles = await (
+                            template
+                            .fetch_all_profiles_for_user(
+                                db,
+                                int(interaction.options[1].value),  # type: ignore
+                                fetch_filled_fields=False,
+                            )
+                        )
+                        options = [
+                            discord.ApplicationCommandOptionChoice(
+                                name=i.name or i.id,
+                                value=i.id,
+                            )
+                            for i in profiles
+                        ]
+
+        current_val = ""
+        try:
+            current_val = [
+                i.value
+                for i in interaction.options
+                if i.focused
+            ][0]
         except IndexError:
             pass
         options.sort(

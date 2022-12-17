@@ -1,4 +1,5 @@
 from typing import Any
+import random
 
 import discord
 from discord.ext import commands
@@ -37,6 +38,7 @@ __all__ = (
     'FieldCheckFailure',
     'mention_command',
     'compare_embeds',
+    'get_animal_name',
 )
 
 
@@ -93,3 +95,13 @@ def compare_embeds(
 
     # If we got here, then the embeds are the same
     return True
+
+
+def get_animal_name() -> str:
+    """
+    Get a random name from the animals file.
+    """
+
+    with open("config/animals.txt") as f:
+        animals = f.read().strip().splitlines()
+    return random.choice(animals)

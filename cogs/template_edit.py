@@ -19,30 +19,29 @@ def _t(b: str | discord.Locale, a: str) -> str:
 if __debug__:
     # For POEditor
     _poeditor = lambda x: x
-
-    # TRANSLATORS: name for an option in a command; eg "character get [name]"
+    # TRANSLATORS: Command name.
     _poeditor("name")
-    # TRANSLATORS: description for an option in a command; eg "character get [name]"
+    # TRANSLATORS: Command description.
     _poeditor("The name of the profile.")
-    # TRANSLATORS: subcommand name, eg "profile create"
+    # TRANSLATORS: Subcommand name.
     _poeditor("create")
-    # TRANSLATORS: description of a command
+    # TRANSLATORS: Command description.
     _poeditor("Create a new profile.")
-    # TRANSLATORS: subcommand name, eg "profile delete"
+    # TRANSLATORS: Subcommand name.
     _poeditor("delete")
-    # TRANSLATORS: description of a command
+    # TRANSLATORS: Command description.
     _poeditor("Delete one of your profiles.")
-    # TRANSLATORS: subcommand name, eg "profile get"
+    # TRANSLATORS: Subcommand name.
     _poeditor("get")
-    # TRANSLATORS: description of a command
+    # TRANSLATORS: Command description.
     _poeditor("Display a created profile")
-    # TRANSLATORS: parameter name in "profile get [user]"
+    # TRANSLATORS: Parameter name in "profile get [user]".
     _poeditor("user")
-    # TRANSLATORS: parameter name descrtiption for user in "profile get [user]"
+    # TRANSLATORS: Parameter name descrtiption for user in "profile get [user]".
     _poeditor("The person whose profile you want to get.")
-    # TRANSLATORS: subcommand name, eg "profile edit"
+    # TRANSLATORS: Subcommand name.
     _poeditor("edit")
-    # TRANSLATORS: description of a command
+    # TRANSLATORS: Command description.
     _poeditor("Edit one of your profiles.")
 
 

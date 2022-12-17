@@ -1038,6 +1038,7 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
             "Trying to update slash command for template %s",
             template_id,
         )
+        await interaction.response.defer_update()
 
         # Get the template
         async with vbu.Database() as db:
@@ -1063,8 +1064,9 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
                     )
                 )
             except Exception as e:
-                return await interaction.response.send_message(
+                return await interaction.followup.send(
                     "Failed to update template, {}".format(e),
+                    ephemeral=True,
                 )
         else:
             new_application_command = self.get_profile_application_command(
@@ -1106,6 +1108,7 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
             "Trying to update context command for template %s",
             template_id,
         )
+        await interaction.response.defer_update()
 
         # Get the template
         async with vbu.Database() as db:
@@ -1135,8 +1138,9 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
                     )
                 )
             except Exception as e:
-                return await interaction.response.send_message(
+                return await interaction.followup.send(
                     "Failed to create command, {}".format(e),
+                    ephemeral=True,
                 )
             else:
                 new_command_id = application_command.id

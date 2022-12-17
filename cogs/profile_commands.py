@@ -485,6 +485,8 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
                         "You have no profiles for the template "
                         "**{template}** with that name."
                     )
+                    # No need to do a management version - they literally
+                    # cannot get to this point without a valid profile
                     return await interaction.response.send_message(
                         message.format(template=template.name),
                         ephemeral=True,
@@ -496,7 +498,6 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
 
         # Do some basic checks
         assert not profile.deleted
-        # assert profile.user_id == interaction.user.id
 
         # And let's go
         profile.template = template
@@ -576,8 +577,11 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
         )
 
         # Send the buttons
-        assert isinstance(interaction.user, discord.Member)
-        embed = profile.build_embed(self.bot, interaction, interaction.user)
+        user = cast(discord.Member, interaction.user)
+        if user.id != profile.user_id and profile.user_id:
+            assert isinstance(interaction.guild, discord.Guild)
+            user = await interaction.guild.fetch_member(profile.user_id)
+        embed = profile.build_embed(self.bot, interaction, user)
         if edit_original:
             await interaction.edit_original_message(
                 content=_("What would you like to edit?"),
@@ -623,9 +627,17 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
             if await cog.check_if_max_profiles_hit(
                     db, template, user.id if user else interaction.user.id):
                 return await interaction.response.send_message(
-                    content=_(
-                        "You have already submitted the maximum number of "
-                        "profiles for this template."
+                    content=(
+                        _(
+                            "You have already submitted the maximum number of "
+                            "profiles for this template."
+                        )
+                        if interaction.user.id == profile.user_id
+                        else
+                        _(
+                            "{user} has already submitted the maximum number "
+                            "of profiles for this template."
+                        ).format(user=f"<@{profile.user_id}>")
                     ),
                     ephemeral=True,
                 )

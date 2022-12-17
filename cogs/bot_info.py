@@ -12,11 +12,12 @@ def _t(b: str | discord.Locale, a: str) -> str:
 
 if __debug__:
     # For POEditor
+    _poeditor = lambda x: x
 
     # TRANSLATORS: The name of a command.
-    _("information")
+    _poeditor("information")
     # TRANSLATORS: The description for a command.
-    _("Get information and links for the bot.")
+    _poeditor("Get information and links for the bot.")
 
 
 class BotInfo(vbu.Cog[vbu.Bot]):

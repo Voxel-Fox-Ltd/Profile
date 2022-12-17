@@ -16,31 +16,32 @@ def _t(b: str | discord.Locale, a: str) -> str:
 
 if __debug__:
     # For POEditor
+    _poeditor = lambda x: x
 
     # TRANSLATORS: name for an option in a command; eg "character get [name]"
-    _("name")
+    _poeditor("name")
     # TRANSLATORS: description for an option in a command; eg "character get [name]"
-    _("The name of the profile.")
+    _poeditor("The name of the profile.")
     # TRANSLATORS: subcommand name, eg "profile create"
-    _("create")
+    _poeditor("create")
     # TRANSLATORS: description of a command
-    _("Create a new profile.")
+    _poeditor("Create a new profile.")
     # TRANSLATORS: subcommand name, eg "profile delete"
-    _("delete")
+    _poeditor("delete")
     # TRANSLATORS: description of a command
-    _("Delete one of your profiles.")
+    _poeditor("Delete one of your profiles.")
     # TRANSLATORS: subcommand name, eg "profile get"
-    _("get")
+    _poeditor("get")
     # TRANSLATORS: description of a command
-    _("Display a created profile")
+    _poeditor("Display a created profile")
     # TRANSLATORS: parameter name in "profile get [user]"
-    _("user")
+    _poeditor("user")
     # TRANSLATORS: parameter name descrtiption for user in "profile get [user]"
-    _("The person whose profile you want to get.")
+    _poeditor("The person whose profile you want to get.")
     # TRANSLATORS: subcommand name, eg "profile edit"
-    _("edit")
+    _poeditor("edit")
     # TRANSLATORS: description of a command
-    _("Edit one of your profiles.")
+    _poeditor("Edit one of your profiles.")
 
 
 class TemplateEdit(vbu.Cog[vbu.Bot]):

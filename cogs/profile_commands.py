@@ -290,6 +290,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
             )
             assert profile, "Profile does not exist."
             await profile.fetch_template(db)
+            await profile.fetch_filled_fields(db)
 
         # Send the profile - defer so it doesn't stay as ephemeral
         await interaction.response.defer_update()

@@ -1,3 +1,5 @@
+from typing import cast
+
 import discord
 from discord.ext import vbu
 
@@ -187,6 +189,26 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
         )
         return command
 
+    @classmethod
+    @vbu.i18n("profile")
+    def get_profile_context_command(
+                cls,
+                name: str) -> discord.ApplicationCommand:
+            """
+            Create a context menu command with the given name.
+            """
+
+            # Create command
+            command = discord.ApplicationCommand(
+                name=(
+                    # TRANSLATORS: Name of a context menu command
+                    _("Get {template_name} profiles for user.")
+                    .format(template_name=name)
+                ),
+                type=discord.ApplicationCommandType.user,
+            )
+            return command
+
     def check_template_edit_permissions(
             self,
             interaction: discord.Interaction) -> bool:
@@ -339,6 +361,18 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
                     discord.ButtonStyle.secondary
                     if template.application_command_id
                     else discord.ButtonStyle.danger
+                ),
+            ),
+            discord.ui.Button(
+                label=(
+                    # TRANSLATORS: Text appearing on a button
+                    _("Remove context command")
+                    if template.context_command_id
+                    # TRANSLATORS: Text appearing on a button
+                    else _("Create context command")
+                ),
+                custom_id=(
+                    f"TEMPLATE_EDIT CONTEXT {utils.uuid.encode(template.id)}"
                 ),
             ),
         ]
@@ -1052,6 +1086,66 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
         await interaction.followup.send(
             _("Updated slash command."),
             ephemeral=True,
+        )
+
+    @vbu.Cog.listener("on_component_interaction")  # TEMPLATE_EDIT CONTEXT [TID]
+    @vbu.i18n("profile")
+    async def template_context_component_listener(
+            self,
+            interaction: discord.ComponentInteraction):
+        """
+        Listens for edit template context button to be pressed.
+        """
+
+        # Get the ID of the template
+        if not interaction.custom_id.startswith("TEMPLATE_EDIT CONTEXT "):
+            return
+        encoded_template_id = interaction.custom_id.split(" ")[2]
+        template_id = utils.uuid.decode(encoded_template_id)
+        self.logger.info(
+            "Trying to update context command for template %s",
+            template_id,
+        )
+
+        # Get the template
+        async with vbu.Database() as db:
+            template = await utils.Template.fetch_template_by_id(
+                db,
+                template_id,
+            )
+            assert template
+
+        # If we've got a stored context command, try and delete it
+        guild = cast(discord.Guild, interaction.guild)
+        new_command_id = None
+        if template.context_command_id is not None:
+            try:
+                await guild.delete_application_command(
+                    discord.Object(template.context_command_id),
+                )
+            except discord.NotFound:
+                pass
+
+        # If not, create one
+        else:
+            try:
+                application_command = await guild.create_application_command(
+                    self.get_profile_context_command(
+                        template.name,
+                    )
+                )
+            except Exception as e:
+                return await interaction.response.send_message(
+                    "Failed to create command, {}".format(e),
+                )
+            else:
+                new_command_id = application_command.id
+
+        # Get and update the template
+        await self.update_template(
+            interaction,
+            template_id,
+            context_command_id=new_command_id,
         )
 
     @vbu.Cog.listener("on_component_interaction")  # TEMPLATE_EDIT DONE

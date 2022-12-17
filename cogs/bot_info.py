@@ -70,3 +70,8 @@ class BotInfo(vbu.Cog[vbu.Bot]):
             )
         )
         return await ctx.interaction.response.send_message(embeds=embeds)
+
+
+def setup(bot: vbu.Bot):
+    x = BotInfo(bot)
+    bot.add_cog(x)

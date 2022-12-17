@@ -14,6 +14,35 @@ def _t(b: str | discord.Locale, a: str) -> str:
     return vbu.translation(b, "profile").gettext(a)
 
 
+if __debug__:
+    # For POEditor
+
+    # TRANSLATORS: name for an option in a command; eg "character get [name]"
+    _("name")
+    # TRANSLATORS: description for an option in a command; eg "character get [name]"
+    _("The name of the profile.")
+    # TRANSLATORS: subcommand name, eg "profile create"
+    _("create")
+    # TRANSLATORS: description of a command
+    _("Create a new profile.")
+    # TRANSLATORS: subcommand name, eg "profile delete"
+    _("delete")
+    # TRANSLATORS: description of a command
+    _("Delete one of your profiles.")
+    # TRANSLATORS: subcommand name, eg "profile get"
+    _("get")
+    # TRANSLATORS: description of a command
+    _("Display a created profile")
+    # TRANSLATORS: parameter name in "profile get [user]"
+    _("user")
+    # TRANSLATORS: parameter name descrtiption for user in "profile get [user]"
+    _("The person whose profile you want to get.")
+    # TRANSLATORS: subcommand name, eg "profile edit"
+    _("edit")
+    # TRANSLATORS: description of a command
+    _("Edit one of your profiles.")
+
+
 class TemplateEdit(vbu.Cog[vbu.Bot]):
 
     @staticmethod

@@ -92,14 +92,10 @@ class ProfileVerification(vbu.Cog[vbu.Bot]):
                 interaction,
                 user,
             )
-            embed.colour = 0
-            embed.remove_footer()
             current_embed = None
             if interaction.message:
                 current_embed = interaction.message.embeds[0]
-                current_embed.colour = 0
-                current_embed.remove_footer()
-            if not embed == current_embed:
+            if not utils.compare_embeds(embed, current_embed):
                 return await interaction.response.edit_message(
                     content=_(
                         "This is not the most recent version of your profile. "

@@ -25,7 +25,7 @@ class BotInfo(vbu.Cog[vbu.Bot]):
     @commands.command(
         application_command_meta=commands.ApplicationCommandMeta(
             name_localizations={
-                i: _t(i, "information")
+                i: _t(i, "information").casefold()
                 for i in discord.Locale
             },
             description_localizations={
@@ -51,7 +51,7 @@ class BotInfo(vbu.Cog[vbu.Bot]):
             .add_field(
                 # TRANSLATORS: Text appearing on a button in the info command.
                 _("Website"),
-                "https://profile.voxelfox.co.uk",
+                f"[{_('Website')}](https://profile.voxelfox.co.uk)",
             )
             .add_field(
                 # TRANSLATORS: Text appearing on a button in the info command.

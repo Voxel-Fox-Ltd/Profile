@@ -67,7 +67,7 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
             name_localizations={
                 # TRANSLATORS: name for an option in a command;
                 # eg "character get [name]"
-                i: _t(i, "name")
+                i: _t(i, "name").casefold()
                 for i in discord.Locale
             },
             description_localizations={
@@ -92,7 +92,7 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
                     type=discord.ApplicationCommandOptionType.subcommand,
                     name_localizations={
                         # TRANSLATORS: subcommand name, eg "profile create"
-                        i: _t(i, "create")
+                        i: _t(i, "create").casefold()
                         for i in discord.Locale
                     },
                     description_localizations={
@@ -109,7 +109,7 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
                     type=discord.ApplicationCommandOptionType.subcommand,
                     name_localizations={
                         # TRANSLATORS: subcommand name, eg "profile delete"
-                        i: _t(i, "delete")
+                        i: _t(i, "delete").casefold()
                         for i in discord.Locale
                     },
                     description_localizations={
@@ -129,7 +129,7 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
                     type=discord.ApplicationCommandOptionType.subcommand,
                     name_localizations={
                         # TRANSLATORS: subcommand name, eg "profile get"
-                        i: _t(i, "get")
+                        i: _t(i, "get").casefold()
                         for i in discord.Locale
                     },
                     description_localizations={
@@ -148,7 +148,7 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
                             name_localizations={
                                 # TRANSLATORS: parameter name in "profile get
                                 # [user]"
-                                i: _t(i, "user")
+                                i: _t(i, "user").casefold()
                                 for i in discord.Locale
                             },
                             description_localizations={
@@ -171,7 +171,7 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
                     type=discord.ApplicationCommandOptionType.subcommand,
                     name_localizations={
                         # TRANSLATORS: subcommand name, eg "profile edit"
-                        i: _t(i, "edit")
+                        i: _t(i, "edit").casefold()
                         for i in discord.Locale
                     },
                     description_localizations={

@@ -927,12 +927,13 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
                     _("The template limit you have given is too large."),
                     ephemeral=True,
                 )
+            mention = utils.mention_command(self.bot.get_command("info"))
             return await interaction.followup.send(
                 _(
                     "The template limit you have given is too large. "
                     "To get access to more templates, you can donate via the "
                     "{donate_command_button} command."
-                ).format(donate_command_button="/donate"),  # TODO: mention command
+                ).format(donate_command_button=mention),
                 ephemeral=True,
             )
 

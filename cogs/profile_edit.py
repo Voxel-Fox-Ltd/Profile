@@ -146,7 +146,13 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
             new_embed = profile.build_embed(
                 self.bot,
                 interaction,
-                interaction.user,
+                (
+                    interaction.user
+                    if
+                        interaction.user.id == profile.user_id
+                    else
+                        await interaction.guild.fetch_member(profile.user_id)  # pyright: ignore
+                ),
             )
             if not utils.compare_embeds(past_embed, new_embed):
                 return await interaction.response.edit_message(

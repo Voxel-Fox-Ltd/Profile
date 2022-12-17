@@ -48,7 +48,7 @@ class ProfileVerification(vbu.Cog[vbu.Bot]):
         # Get the profile ID
         short_profile_id = interaction.custom_id.split(" ")[2]
         profile_id = utils.uuid.decode(short_profile_id)
-        user = cast(discord.Member, interaction.user)
+        user = cast(discord.Member, interaction.user)  # May be wrong user, checked later
         self.logger.info(
             "Processing profile submission for %s, profile %s",
             user.id, profile_id,
@@ -73,9 +73,15 @@ class ProfileVerification(vbu.Cog[vbu.Bot]):
                 )
                 return
 
+            # Make sure we have the right user
+            if user.id != profile.user_id:
+                assert isinstance(interaction.guild, discord.Guild)
+                assert profile.user_id
+                user = await interaction.guild.fetch_member(profile.user_id)
+
             # See if they're able to submit any more profiles
             if await self.check_if_max_profiles_hit(
-                        db, template, interaction.user.id,
+                        db, template, user.id,
                         submitted=True):
                 return await interaction.response.edit_message(
                     content=_(
@@ -85,24 +91,24 @@ class ProfileVerification(vbu.Cog[vbu.Bot]):
                     components=None,
                 )
 
-            # Make sure the embed attached to the message is the same as a
-            # newly-made embed (minus the colour)
-            embed = profile.build_embed(
-                self.bot,
-                interaction,
-                user,
+        # Make sure the embed attached to the message is the same as a
+        # newly-made embed (minus the colour)
+        embed = profile.build_embed(
+            self.bot,
+            interaction,
+            user,
+        )
+        current_embed = None
+        if interaction.message:
+            current_embed = interaction.message.embeds[0]
+        if not utils.compare_embeds(embed, current_embed):
+            return await interaction.response.edit_message(
+                content=_(
+                    "This is not the most recent version of the profile. "
+                    "Please re-run the edit command to continue."
+                ),
+                components=None,
             )
-            current_embed = None
-            if interaction.message:
-                current_embed = interaction.message.embeds[0]
-            if not utils.compare_embeds(embed, current_embed):
-                return await interaction.response.edit_message(
-                    content=_(
-                        "This is not the most recent version of your profile. "
-                        "Please re-run the edit command to continue."
-                    ),
-                    components=None,
-                )
 
         # Defer the interaction so we can post the embed to the archive
         await interaction.response.defer_update()
@@ -154,7 +160,7 @@ class ProfileVerification(vbu.Cog[vbu.Bot]):
             except discord.HTTPException:
                 return await interaction.edit_original_message(
                     content=_(
-                        "Failed to send your profile to the verification "
+                        "Failed to send the profile to the verification "
                         "channel. Please let an admin know, and then try again "
                         "later."
                     ),
@@ -163,7 +169,7 @@ class ProfileVerification(vbu.Cog[vbu.Bot]):
 
             # Tell them it's done
             await interaction.edit_original_message(
-                content=_("Your profile has been submitted for verification."),
+                content=_("This profile has been submitted for verification."),
                 components=None,
             )
 
@@ -190,7 +196,7 @@ class ProfileVerification(vbu.Cog[vbu.Bot]):
             except discord.HTTPException:
                 return await interaction.edit_original_message(
                     content=_(
-                        "Failed to send your profile to the archive "
+                        "Failed to send the profile to the archive "
                         "channel. Please let an admin know, and then try "
                         "again later."
                     ),
@@ -199,7 +205,7 @@ class ProfileVerification(vbu.Cog[vbu.Bot]):
 
             # Tell them it's done
             await interaction.edit_original_message(
-                content=_("Your profile has been submitted to the archive."),
+                content=_("This profile has been submitted to the archive."),
                 components=None,
             )
             verified = True
@@ -208,7 +214,7 @@ class ProfileVerification(vbu.Cog[vbu.Bot]):
         else:
             await interaction.edit_original_message(
                 content=_(
-                    "Your profile has been submitted."
+                    "This profile has been submitted."
                 ),
                 components=None,
             )
@@ -230,7 +236,6 @@ class ProfileVerification(vbu.Cog[vbu.Bot]):
 
         # If they've been verified, add the relevant role to them
         if verified:
-            user = cast(discord.Member, interaction.user)
             role_id_to_add = template.get_role_id(user)
             if role_id_to_add:
                 try:

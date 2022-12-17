@@ -864,7 +864,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                             template
                             .fetch_all_profiles_for_user(
                                 db,
-                                int(interaction.options[1].value),  # type: ignore
+                                int(interaction_options[1].value),  # type: ignore
                                 fetch_filled_fields=False,
                             )
                         )

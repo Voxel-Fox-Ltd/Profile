@@ -47,7 +47,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
             )
             try:
                 assert template
-            except AssertionError as e:
+            except AssertionError:
                 self.logger.warning((
                     f"Somehow failed to get template of id {template_id} via "
                     f"application command ID {interaction.data['id']}"
@@ -334,12 +334,13 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
         # Do some basic checks
         assert profile, "Profile does not exist."
         assert not profile.deleted
-        assert profile.user_id == interaction.user.id
+        # assert profile.user_id == interaction.user.id
 
         # Make sure they have something
         if not profile:
             message = _(
-                "You don't have a profile for the template **{template}** with that name.",
+                "You don't have a profile for the template **{template}** "
+                "with that name."
             )
             return await interaction.response.send_message(
                 message.format(template=template.name),
@@ -358,7 +359,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
         """
 
         message = _(
-            "Are you sure you want to delete your profile **{profile}**?",
+            "Are you sure you want to delete the profile **{profile}**?",
         )
         message = message.format(profile=profile.name)
         components = discord.ui.MessageComponents(
@@ -417,7 +418,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
             )
 
         # Send a confirmation message
-        message = _("Your profile **{profile}** has been deleted.")
+        message = _("The profile **{profile}** has been deleted.")
         message = message.format(profile=original_name)
         await interaction.response.edit_message(
             content=message,

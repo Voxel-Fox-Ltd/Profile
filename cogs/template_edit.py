@@ -1038,7 +1038,7 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
             "Trying to update slash command for template %s",
             template_id,
         )
-        await interaction.response.defer_update()
+        await interaction.response.defer(ephemeral=True)
 
         # Get the template
         async with vbu.Database() as db:
@@ -1108,7 +1108,7 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
             "Trying to update context command for template %s",
             template_id,
         )
-        await interaction.response.defer_update()
+        await interaction.response.defer(ephemeral=True)
 
         # Get the template
         async with vbu.Database() as db:

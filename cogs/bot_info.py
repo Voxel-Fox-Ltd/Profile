@@ -73,5 +73,6 @@ class BotInfo(vbu.Cog[vbu.Bot]):
 
 
 def setup(bot: vbu.Bot):
+    bot.remove_command("info")
     x = BotInfo(bot)
     bot.add_cog(x)

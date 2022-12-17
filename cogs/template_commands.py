@@ -129,7 +129,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
     @commands.group(
         application_command_meta=commands.ApplicationCommandMeta(
             name_localizations={
-                i: _t(i, "template")
+                i: _t(i, "template").casefold()
                 for i in discord.Locale
             },
             permissions=discord.Permissions(manage_guild=True),
@@ -149,7 +149,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         name="list",
         application_command_meta=commands.ApplicationCommandMeta(
             name_localizations={
-                i: _t(i, "list")
+                i: _t(i, "list").casefold()
                 for i in discord.Locale
             },
             description_localizations={
@@ -222,7 +222,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         name="delete",
         application_command_meta=commands.ApplicationCommandMeta(
             name_localizations={
-                i: _t(i, "delete")
+                i: _t(i, "delete").casefold()
                 for i in discord.Locale
             },
             description_localizations={
@@ -325,7 +325,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         name="create",
         application_command_meta=commands.ApplicationCommandMeta(
             name_localizations={
-                i: _t(i, "create")
+                i: _t(i, "create").casefold()
                 for i in discord.Locale
             },
             description_localizations={
@@ -438,7 +438,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         name="edit",
         application_command_meta=commands.ApplicationCommandMeta(
             name_localizations={
-                i: _t(i, "edit")
+                i: _t(i, "edit").casefold()
                 for i in discord.Locale
             },
             description_localizations={
@@ -496,7 +496,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         name="manage",
         application_command_meta=commands.ApplicationCommandMeta(
             name_localizations={
-                i: _t(i, "manage")
+                i: _t(i, "manage").casefold()
                 for i in discord.Locale
             },
         ),
@@ -514,7 +514,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         name="create",
         application_command_meta=commands.ApplicationCommandMeta(
             name_localizations={
-                i: _t(i, "create")
+                i: _t(i, "create").casefold()
                 for i in discord.Locale
             },
             description_localizations={
@@ -531,7 +531,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                     required=True,
                     autocomplete=True,
                     name_localizations={
-                        i: _t(i, "template")
+                        i: _t(i, "template").casefold()
                         for i in discord.Locale
                     },
                     description_localizations={
@@ -547,7 +547,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                     type=discord.ApplicationCommandOptionType.user,
                     required=True,
                     name_localizations={
-                        i: _t(i, "user")
+                        i: _t(i, "user").casefold()
                         for i in discord.Locale
                     },
                     description_localizations={
@@ -558,7 +558,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
             ],
         ),
     )
-    async def template_manage_delete(
+    async def template_manage_create(
             self,
             ctx: GC[discord.CommandInteraction],
             template: str,
@@ -584,7 +584,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         name="delete",
         application_command_meta=commands.ApplicationCommandMeta(
             name_localizations={
-                i: _t(i, "delete")
+                i: _t(i, "delete").casefold()
                 for i in discord.Locale
             },
             description_localizations={
@@ -601,7 +601,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                     required=True,
                     autocomplete=True,
                     name_localizations={
-                        i: _t(i, "template")
+                        i: _t(i, "template").casefold()
                         for i in discord.Locale
                     },
                     description_localizations={
@@ -617,7 +617,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                     type=discord.ApplicationCommandOptionType.user,
                     required=True,
                     name_localizations={
-                        i: _t(i, "user")
+                        i: _t(i, "user").casefold()
                         for i in discord.Locale
                     },
                     description_localizations={
@@ -634,7 +634,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                     required=True,
                     autocomplete=True,
                     name_localizations={
-                        i: _t(i, "profile")
+                        i: _t(i, "profile").casefold()
                         for i in discord.Locale
                     },
                     description_localizations={
@@ -683,7 +683,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         name="edit",
         application_command_meta=commands.ApplicationCommandMeta(
             name_localizations={
-                i: _t(i, "edit")
+                i: _t(i, "edit").casefold()
                 for i in discord.Locale
             },
             description_localizations={
@@ -700,7 +700,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                     required=True,
                     autocomplete=True,
                     name_localizations={
-                        i: _t(i, "template")
+                        i: _t(i, "template").casefold()
                         for i in discord.Locale
                     },
                     description_localizations={
@@ -716,7 +716,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                     type=discord.ApplicationCommandOptionType.user,
                     required=True,
                     name_localizations={
-                        i: _t(i, "user")
+                        i: _t(i, "user").casefold()
                         for i in discord.Locale
                     },
                     description_localizations={
@@ -733,7 +733,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                     required=True,
                     autocomplete=True,
                     name_localizations={
-                        i: _t(i, "profile")
+                        i: _t(i, "profile").casefold()
                         for i in discord.Locale
                     },
                     description_localizations={
@@ -815,7 +815,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         )
         await interaction.response.send_autocomplete(options)
 
-    @template_manage_delete.autocomplete  # pyright: ignore
+    @template_manage_create.autocomplete  # pyright: ignore
     @template_manage_delete.autocomplete  # pyright: ignore
     @template_manage_edit.autocomplete  # pyright: ignore
     async def template_manage_autocomplete(

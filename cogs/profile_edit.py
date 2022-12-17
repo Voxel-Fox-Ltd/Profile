@@ -148,11 +148,7 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
                 interaction,
                 interaction.user,
             )
-            past_embed.remove_footer()
-            past_embed.colour = 0
-            new_embed.remove_footer()
-            new_embed.colour = 0
-            if new_embed != past_embed:
+            if not utils.compare_embeds(past_embed, new_embed):
                 return await interaction.response.edit_message(
                     content=_(
                         "This is not the most recent version of your profile. "

@@ -13,6 +13,7 @@ from .filled_field import FilledField
 from .field import Field
 from .field_type import ImageField
 from .command_processor import CommandProcessor
+from ..utils import pad_field_prompt_value
 
 
 T = TypeVar('T', Template, None)
@@ -347,7 +348,7 @@ class UserProfile(Generic[T]):
             else:
                 if "\n" in f.field.prompt.strip():
                     field_value = ""
-                    for x, y in zip(f.field.prompt.split("\n"), f.value.split("\n")):
+                    for x, y in zip(*pad_field_prompt_value(f.field.prompt, f.value)):
                         field_value += f"{x.strip()}: {y.strip()}\n"
                 else:
                     field_value = f.value

@@ -168,17 +168,10 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
             current_value = filled_fields[field_id].value.strip()
         except:
             current_value = ""
-        prompt_split = field.prompt.strip().split("\n")
-        current_value = current_value.split("\n")
-
-        # Change the length of the prompt and current value until they work together
-        while len(prompt_split) > len(current_value):
-            # Pad out value
-            current_value.append("")
-        while len(prompt_split) < len(current_value):
-            # Combine the last elements in the current_value list until it matches the length of prompt_split
-            current_value[-2] = f"{current_value[-2]}\n{current_value[-1]}"
-            current_value.pop(-1)
+        prompt_split, value_split = utils.pad_field_prompt_value(
+            field.prompt,
+            current_value,
+        )
 
         # Ask the user to fill in the field
         modal = discord.ui.Modal(
@@ -198,7 +191,7 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
                         required=False,
                     ),
                 )
-                for p, v in zip(prompt_split, current_value)
+                for p, v in zip(prompt_split, value_split)
             ],
         )
         await interaction.response.send_modal(modal)

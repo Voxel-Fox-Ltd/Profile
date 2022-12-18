@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2022-12-17 23:10+0000\n"
-"PO-Revision-Date: 2022-12-17 23:12+0000\n"
+"POT-Creation-Date: 2022-12-18 06:55+0000\n"
+"PO-Revision-Date: 2022-12-18 06:55+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: de\n"
@@ -52,6 +52,58 @@ msgstr "Support"
 #: cogs/bot_info.py:69
 msgid "Source Code"
 msgstr "Quellcode"
+
+#. TRANSLATORS: Command name.
+#: cogs/bot_settings.py:18
+msgid "advanced"
+msgstr "Fortgeschrittene"
+
+#. TRANSLATORS: Command description.
+#: cogs/bot_settings.py:20
+msgid "The group command for advanced settings."
+msgstr "Der Gruppenbefehl für erweiterte Einstellungen."
+
+#. TRANSLATORS: Command name.
+#: cogs/bot_settings.py:23
+msgid "enable"
+msgstr "aktivieren"
+
+#. TRANSLATORS: Command description.
+#: cogs/bot_settings.py:25
+#| msgid "There are no created templates for this guild."
+msgid "Enable advanced mode for this guild."
+msgstr "Aktiviere den erweiterten Modus für diese Gilde."
+
+#. TRANSLATORS: Command name.
+#: cogs/bot_settings.py:28
+msgid "disable"
+msgstr "deaktivieren"
+
+#. TRANSLATORS: Command description.
+#: cogs/bot_settings.py:30
+#| msgid "There are no created templates for this guild."
+msgid "Disable advanced mode for this guild."
+msgstr "Deaktiviere den erweiterten Modus für diese Gilde."
+
+#: cogs/bot_settings.py:108
+msgid ""
+"Advanced settings have been enabled for your guild. This means that the "
+"character limits for field prompts have been disabled in modals, allowing "
+"you to input commands and use multi-fields in your templates.\n"
+"The character limits still apply, however, and any prompts that _aren't_ "
+"multi-field prompts or commands will be truncated without warning."
+msgstr ""
+"Die erweiterten Einstellungen wurden für deine Gilde aktiviert. Das "
+"bedeutet, dass die Zeichenbegrenzung für Feldaufforderungen in Modals "
+"deaktiviert wurde, sodass du Befehle eingeben und mehrere Felder in deinen "
+"Vorlagen verwenden kannst.\n"
+"Die Zeichenbeschränkungen gelten jedoch weiterhin und alle "
+"Eingabeaufforderungen, die keine Mehrfeld-Eingabeaufforderungen oder Befehle "
+"sind, werden ohne Warnung abgeschnitten."
+
+#: cogs/bot_settings.py:141
+msgid "Advanced settings have been disabled for your guild."
+msgstr "Die erweiterten Einstellungen wurden für deine Gilde deaktiviert."
 
 #: cogs/profile_commands.py:220
 #, python-brace-format
@@ -132,9 +184,6 @@ msgstr ""
 
 #: cogs/profile_commands.py:639
 #, python-brace-format
-#| msgid ""
-#| "You have already submitted the maximum number of profiles for this "
-#| "template."
 msgid ""
 "{user} has already submitted the maximum number of profiles for this "
 "template."
@@ -171,31 +220,32 @@ msgstr ""
 "Dies ist nicht die aktuellste Version deines Profils. Bitte führe den "
 "Bearbeitungsbefehl erneut aus, um fortzufahren."
 
-#: cogs/profile_edit.py:225
-msgid "Set the name of your modal"
-msgstr "Lege den Namen deines Modals fest"
+#: cogs/profile_edit.py:243
+#| msgid "Set the name of your modal"
+msgid "Set the name of your profile"
+msgstr "Legen Sie den Namen für Ihr Profil fest"
 
 #. TRANSLATORS: Catch all error message that shouldn't be shown
-#: cogs/profile_edit.py:295
+#: cogs/profile_edit.py:311
 msgid "I encountered an error."
 msgstr "Ich bin auf einen Fehler gestoßen."
 
-#: cogs/profile_edit.py:299
+#: cogs/profile_edit.py:315
 msgid "The length of your input must be between 1 and 1000 characters."
 msgstr "Die Länge deiner Eingabe muss zwischen 1 und 1000 Zeichen liegen."
 
-#: cogs/profile_edit.py:304
+#: cogs/profile_edit.py:320
 msgid "You did not give a valid number."
 msgstr "Du hast keine gültige Nummer angegeben."
 
-#: cogs/profile_edit.py:308
+#: cogs/profile_edit.py:324
 msgid ""
 "The image URL you gave isn't valid. Please give a direct link to an image."
 msgstr ""
 "Die von dir angegebene Bild-URL ist nicht gültig. Bitte gib einen direkten "
 "Link zu einem Bild an."
 
-#: cogs/profile_edit.py:405
+#: cogs/profile_edit.py:421
 msgid "You already have a profile with that name."
 msgstr "Du hast bereits ein Profil mit diesem Namen."
 
@@ -339,7 +389,6 @@ msgstr "Erstelle einen Befehl für eine andere Person."
 
 #. TRANSLATORS: Description for a command option.
 #: cogs/template_commands.py:63
-#| msgid "Display a created profile"
 msgid "The template you want to create a profile in."
 msgstr "Die Vorlage, in der Sie ein Profil erstellen möchten."
 
@@ -352,19 +401,16 @@ msgstr "Benutzer"
 
 #. TRANSLATORS: Description for a command option.
 #: cogs/template_commands.py:67 cogs/template_commands.py:80
-#| msgid "Are you sure you want to delete your profile **{profile}**?"
 msgid "The user that you want to create a profile for."
 msgstr "Der Benutzer, für den Sie ein Profil erstellen möchten."
 
 #. TRANSLATORS: Description for a command option.
 #: cogs/template_commands.py:72
-#| msgid "Delete one of your templates."
 msgid "Delete a command for another person."
 msgstr "Lösche einen Befehl für eine andere Person."
 
 #. TRANSLATORS: Description for a command option.
 #: cogs/template_commands.py:76
-#| msgid "Are you sure you want to delete your profile **{profile}**?"
 msgid "The template you want to delete a profile in."
 msgstr "Die Vorlage, in der du ein Profil löschen möchtest."
 
@@ -375,7 +421,6 @@ msgstr "Profil"
 
 #. TRANSLATORS: Description for a command option.
 #: cogs/template_commands.py:84
-#| msgid "The person whose profile you want to get."
 msgid "The profile that you want to delete."
 msgstr "Das Profil, das du löschen möchtest."
 
@@ -386,19 +431,16 @@ msgstr "Bearbeite einen Befehl für eine andere Person."
 
 #. TRANSLATORS: Description for a command option.
 #: cogs/template_commands.py:93
-#| msgid "What role do you want people to get profile verification?"
 msgid "The template you want to edit a profile in."
 msgstr "Die Vorlage, in der du ein Profil bearbeiten möchtest."
 
 #. TRANSLATORS: Description for a command option.
 #: cogs/template_commands.py:97
-#| msgid "What do you want to set the prompt to?"
 msgid "The user that you want to edit a profile for."
 msgstr "Der Benutzer, für den du ein Profil bearbeiten möchtest."
 
 #. TRANSLATORS: Description for a command option.
 #: cogs/template_commands.py:101
-#| msgid "The person whose profile you want to get."
 msgid "The profile that you want to edit."
 msgstr "Das Profil, das du bearbeiten möchtest."
 
@@ -709,22 +751,22 @@ msgid "The name **{field_name}** is not valid."
 msgstr "Der Name **{field_name}** ist nicht gültig."
 
 #. TRANSLATORS: Max 45 characters; title of modal
-#: cogs/template_field_edit.py:650
+#: cogs/template_field_edit.py:653
 msgid "Set field prompt"
 msgstr "Feldaufforderung einstellen"
 
 #. TRANSLATORS: Max 45 characters; label of text input
-#: cogs/template_field_edit.py:656
+#: cogs/template_field_edit.py:659
 msgid "What do you want to set the prompt to?"
 msgstr "Auf was willst du die Eingabeaufforderung einstellen?"
 
 #. TRANSLATORS: Text appearing in a select menu describing a
 #. field type
-#: cogs/template_field_edit.py:777
+#: cogs/template_field_edit.py:784
 msgid "Text"
 msgstr "Text"
 
-#: cogs/template_field_edit.py:780
+#: cogs/template_field_edit.py:787
 msgid ""
 "This is used when you want users to input up to 1000 characters into a field"
 msgstr ""
@@ -733,21 +775,21 @@ msgstr ""
 
 #. TRANSLATORS: Text appearing in a select menu describing a
 #. field type
-#: cogs/template_field_edit.py:787
+#: cogs/template_field_edit.py:794
 msgid "Number"
 msgstr "Nummer"
 
-#: cogs/template_field_edit.py:790
+#: cogs/template_field_edit.py:797
 msgid "Used when you want users to input a number."
 msgstr "Wird verwendet, wenn du willst, dass die Benutzer eine Zahl eingeben."
 
 #. TRANSLATORS: Text appearing in a select menu describing a
 #. field type
-#: cogs/template_field_edit.py:799
+#: cogs/template_field_edit.py:806
 msgid "Image"
 msgstr "Bild"
 
-#: cogs/template_field_edit.py:802
+#: cogs/template_field_edit.py:809
 msgid ""
 "Used when you want users to input an image URL, which will appear on their "
 "profile."
@@ -755,7 +797,7 @@ msgstr ""
 "Wird verwendet, wenn du möchtest, dass die Nutzer eine Bild-URL eingeben, "
 "die in ihrem Profil erscheint."
 
-#: cogs/template_field_edit.py:820
+#: cogs/template_field_edit.py:827
 msgid "What do you want to set the field type to?"
 msgstr "Auf was möchtest du den Feldtyp einstellen?"
 

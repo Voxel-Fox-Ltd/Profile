@@ -2,6 +2,34 @@ import discord
 from discord.ext import commands, vbu
 
 
+def _t(b: str | discord.Locale, a: str) -> str:
+    """
+    Translate function for non-commands.
+    """
+
+    return vbu.translation(b, "profile").gettext(a)
+
+
+if __debug__:
+    # For POEditor
+    _poeditor = lambda x: x
+
+    # TRANSLATORS: Command name.
+    _poeditor("advanced")
+    # TRANSLATORS: Command description.
+    _poeditor("The group command for advanced settings.")
+
+    # TRANSLATORS: Command name.
+    _poeditor("enable")
+    # TRANSLATORS: Command description.
+    _poeditor("Enable advanced mode for this guild.")
+
+    # TRANSLATORS: Command name.
+    _poeditor("disable")
+    # TRANSLATORS: Command description.
+    _poeditor("Disable advanced mode for this guild.")
+
+
 class BotSettings(vbu.Cog[vbu.Bot]):
 
     @classmethod
@@ -36,7 +64,15 @@ class BotSettings(vbu.Cog[vbu.Bot]):
     @commands.group(
         application_command_meta=commands.ApplicationCommandMeta(
             guild_only=True,
-            permissions=discord.Permissions(manage_guild=True)
+            permissions=discord.Permissions(manage_guild=True),
+            name_localizations={
+                i: _t(i, "advanced").casefold()
+                for i in discord.Locale
+            },
+            description_localizations={
+                i: _t(i, "The group command for advanced settings.")
+                for i in discord.Locale
+            },
         ),
     )
     async def advanced(self, _):
@@ -47,12 +83,23 @@ class BotSettings(vbu.Cog[vbu.Bot]):
         ...
 
     @advanced.command(
-        application_command_meta=commands.ApplicationCommandMeta()
+        application_command_meta=commands.ApplicationCommandMeta(
+            guild_only=True,
+            permissions=discord.Permissions(manage_guild=True),
+            name_localizations={
+                i: _t(i, "enable").casefold()
+                for i in discord.Locale
+            },
+            description_localizations={
+                i: _t(i, "Enable advanced mode for this guild.")
+                for i in discord.Locale
+            },
+        ),
     )
     @vbu.i18n("profile")
     async def enable(self, ctx: vbu.SlashContext):
         """
-        Enable advanced settings.
+        Enable advanced mode for this guild.
         """
 
         await self.set_advanced(ctx.guild.id, True)
@@ -70,12 +117,23 @@ class BotSettings(vbu.Cog[vbu.Bot]):
         )
 
     @advanced.command(
-        application_command_meta=commands.ApplicationCommandMeta()
+        application_command_meta=commands.ApplicationCommandMeta(
+            guild_only=True,
+            permissions=discord.Permissions(manage_guild=True),
+            name_localizations={
+                i: _t(i, "disable").casefold()
+                for i in discord.Locale
+            },
+            description_localizations={
+                i: _t(i, "Disable advanced mode for this guild.")
+                for i in discord.Locale
+            },
+        ),
     )
     @vbu.i18n("profile")
     async def disable(self, ctx: vbu.SlashContext):
         """
-        Disable advanced settings.
+        Disable advanced mode for this guild.
         """
 
         await self.set_advanced(ctx.guild.id, False)

@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2022-12-17 23:10+0000\n"
+"POT-Creation-Date: 2022-12-18 06:55+0000\n"
 "PO-Revision-Date: 2022-12-12 15:17+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -47,6 +47,46 @@ msgstr ""
 #. TRANSLATORS: Text appearing on a button in the info command.
 #: cogs/bot_info.py:69
 msgid "Source Code"
+msgstr ""
+
+#. TRANSLATORS: Command name.
+#: cogs/bot_settings.py:18
+msgid "advanced"
+msgstr ""
+
+#. TRANSLATORS: Command description.
+#: cogs/bot_settings.py:20
+msgid "The group command for advanced settings."
+msgstr ""
+
+#. TRANSLATORS: Command name.
+#: cogs/bot_settings.py:23
+msgid "enable"
+msgstr ""
+
+#. TRANSLATORS: Command description.
+#: cogs/bot_settings.py:25
+msgid "Enable advanced mode for this guild."
+msgstr ""
+
+#. TRANSLATORS: Command name.
+#: cogs/bot_settings.py:28
+msgid "disable"
+msgstr ""
+
+#. TRANSLATORS: Command description.
+#: cogs/bot_settings.py:30
+msgid "Disable advanced mode for this guild."
+msgstr ""
+
+#: cogs/bot_settings.py:108
+msgid ""
+"Advanced settings have been enabled for your guild. This means that the character limits for field prompts have been disabled in modals, allowing you to input commands and use multi-fields in your templates.\n"
+"The character limits still apply, however, and any prompts that _aren't_ multi-field prompts or commands will be truncated without warning."
+msgstr ""
+
+#: cogs/bot_settings.py:141
+msgid "Advanced settings have been disabled for your guild."
 msgstr ""
 
 #: cogs/profile_commands.py:220
@@ -141,28 +181,28 @@ msgstr ""
 msgid "This is not the most recent version of your profile. Please re-run the edit command to continue."
 msgstr ""
 
-#: cogs/profile_edit.py:225
-msgid "Set the name of your modal"
+#: cogs/profile_edit.py:243
+msgid "Set the name of your profile"
 msgstr ""
 
 #. TRANSLATORS: Catch all error message that shouldn't be shown
-#: cogs/profile_edit.py:295
+#: cogs/profile_edit.py:311
 msgid "I encountered an error."
 msgstr ""
 
-#: cogs/profile_edit.py:299
+#: cogs/profile_edit.py:315
 msgid "The length of your input must be between 1 and 1000 characters."
 msgstr ""
 
-#: cogs/profile_edit.py:304
+#: cogs/profile_edit.py:320
 msgid "You did not give a valid number."
 msgstr ""
 
-#: cogs/profile_edit.py:308
+#: cogs/profile_edit.py:324
 msgid "The image URL you gave isn't valid. Please give a direct link to an image."
 msgstr ""
 
-#: cogs/profile_edit.py:405
+#: cogs/profile_edit.py:421
 msgid "You already have a profile with that name."
 msgstr ""
 
@@ -635,46 +675,46 @@ msgid "The name **{field_name}** is not valid."
 msgstr ""
 
 #. TRANSLATORS: Max 45 characters; title of modal
-#: cogs/template_field_edit.py:650
+#: cogs/template_field_edit.py:653
 msgid "Set field prompt"
 msgstr ""
 
 #. TRANSLATORS: Max 45 characters; label of text input
-#: cogs/template_field_edit.py:656
+#: cogs/template_field_edit.py:659
 msgid "What do you want to set the prompt to?"
 msgstr ""
 
 #. TRANSLATORS: Text appearing in a select menu describing a
 #. field type
-#: cogs/template_field_edit.py:777
+#: cogs/template_field_edit.py:784
 msgid "Text"
 msgstr ""
 
-#: cogs/template_field_edit.py:780
+#: cogs/template_field_edit.py:787
 msgid "This is used when you want users to input up to 1000 characters into a field"
 msgstr ""
 
 #. TRANSLATORS: Text appearing in a select menu describing a
 #. field type
-#: cogs/template_field_edit.py:787
+#: cogs/template_field_edit.py:794
 msgid "Number"
 msgstr ""
 
-#: cogs/template_field_edit.py:790
+#: cogs/template_field_edit.py:797
 msgid "Used when you want users to input a number."
 msgstr ""
 
 #. TRANSLATORS: Text appearing in a select menu describing a
 #. field type
-#: cogs/template_field_edit.py:799
+#: cogs/template_field_edit.py:806
 msgid "Image"
 msgstr ""
 
-#: cogs/template_field_edit.py:802
+#: cogs/template_field_edit.py:809
 msgid "Used when you want users to input an image URL, which will appear on their profile."
 msgstr ""
 
-#: cogs/template_field_edit.py:820
+#: cogs/template_field_edit.py:827
 msgid "What do you want to set the field type to?"
 msgstr ""
 

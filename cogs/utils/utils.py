@@ -117,10 +117,16 @@ def pad_field_prompt_value(
     """
     Pad a prompt and value to lists of equal length, where the value is resized
     down to fit the size of the prompt.
+
+    The prompt will be hard limited to 5 values. Anything given AFTER those
+    5 values will be ignored.
     """
 
     prompt_split = prompt.strip().split("\n")
     value_split = value.strip().split("\n")
+
+    # Truncate the prompt list to 5 values
+    prompt_split = prompt_split[:5]
 
     # Change the length of the prompt and current value until they
     # work together

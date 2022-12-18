@@ -4,9 +4,9 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE IF NOT EXISTS guild_settings(
     guild_id BIGINT PRIMARY KEY,
     prefix VARCHAR(30),
-    max_template_count NOT NULL SMALLINT DEFAULT 0,
-    max_template_field_count NOT NULL SMALLINT DEFAULT 0,
-    max_template_profile_count NOT NULL SMALLINT DEFAULT 0,
+    max_template_count SMALLINT NOT NULL DEFAULT 0,
+    max_template_field_count SMALLINT NOT NULL DEFAULT 0,
+    max_template_profile_count SMALLINT NOT NULL DEFAULT 0,
     advanced BOOLEAN NOT NULL DEFAULT FALSE
 );
 

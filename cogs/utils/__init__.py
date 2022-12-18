@@ -2,7 +2,7 @@ from typing import Any
 import random
 
 import discord
-from discord.ext import commands
+from discord.ext import commands, vbu
 
 from . import checks, errors, types, uuid_ as uuid
 from .profiles.field import Field
@@ -39,6 +39,7 @@ __all__ = (
     'mention_command',
     'compare_embeds',
     'get_animal_name',
+    'is_guild_advanced',
 )
 
 
@@ -115,3 +116,25 @@ def get_animal_name() -> str:
     with open("config/animals.txt") as f:
         animals = f.read().strip().splitlines()
     return random.choice(animals)
+
+
+async def is_guild_advanced(db: vbu.Database, guild_id: int | None) -> bool:
+    """
+    Returns whether or not the guild associated with the given ID is set to
+    advanced.
+    """
+
+    if guild_id is None:
+        return False
+    rows = await db.call(
+        """
+        SELECT
+            advanced
+        FROM
+            guild_settings
+        WHERE
+            guild_id = $1
+        """,
+        guild_id,
+    )
+    return bool(rows[0]["advanced"]) if rows else False

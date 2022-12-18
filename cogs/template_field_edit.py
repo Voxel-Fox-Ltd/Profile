@@ -644,6 +644,9 @@ class TemplateFieldEdit(vbu.Cog[vbu.Bot]):
             field = await utils.Field.fetch_field_by_id(db, field_id)
             assert field
 
+            # See if the guild is set to advanced
+            advanced = utils.is_guild_advanced(db, interaction.guild_id)
+
         # Build and send modal
         modal = discord.ui.Modal(
             # TRANSLATORS: Max 45 characters; title of modal
@@ -654,10 +657,14 @@ class TemplateFieldEdit(vbu.Cog[vbu.Bot]):
                     discord.ui.InputText(
                         # TRANSLATORS: Max 45 characters; label of text input
                         label=_("What do you want to set the prompt to?")[:45],
-                        style=discord.TextStyle.long,
+                        style=(
+                            discord.TextStyle.long
+                            if advanced
+                            else discord.TextStyle.short
+                        ),
                         custom_id=f"FIELD_DATA PROMPT {encoded_field_id}",
                         min_length=1,
-                        max_length=45,
+                        max_length=None if advanced else 45,
                         required=True,
                         value=field.prompt,
                     ),

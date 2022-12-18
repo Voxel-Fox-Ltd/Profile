@@ -163,24 +163,42 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
                     components=None,
                 )
 
-        # Ask the user to fill in the field
+        # Work out what we want to fill the modal with
         try:
-            current_value = filled_fields[field_id].value
+            current_value = filled_fields[field_id].value.strip()
         except:
-            current_value = None
+            current_value = ""
+        prompt_split = field.prompt.split("\n")
+        current_value = current_value.split("\n")
+
+        # Change the length of the prompt and current value until they work together
+        while len(prompt_split) > len(current_value):
+            # Pad out value
+            current_value.append("")
+        while len(prompt_split) < len(current_value):
+            # Combine the last elements in the current_value list until it matches the length of prompt_split
+            current_value[-2] = f"{current_value[-2]}\n{current_value[-1]}"
+            current_value.pop(-1)
+
+        # Ask the user to fill in the field
         modal = discord.ui.Modal(
             title=field.name[:45],
             custom_id=f"PROFILE SET {short_profile_id} {short_field_id}",
             components=[
                 discord.ui.ActionRow(
                     discord.ui.InputText(
-                        label=field.prompt[:45],
-                        value=current_value,
-                        style=discord.TextStyle.long,
+                        label=p[:45],
+                        value=v,
+                        style=(
+                            discord.TextStyle.long
+                            if len(prompt_split) == 1
+                            else discord.TextStyle.short
+                        ),
                         max_length=1_000,
                         required=False,
                     ),
-                ),
+                )
+                for p, v in zip(prompt_split, current_value)
             ],
         )
         await interaction.response.send_modal(modal)
@@ -222,7 +240,7 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
             components=[
                 discord.ui.ActionRow(
                     discord.ui.InputText(
-                        label=_("Set the name of your modal")[:45],
+                        label=_("Set the name of your profile")[:45],
                         value=current_value,
                         min_length=1,
                         max_length=32,
@@ -278,12 +296,10 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
             assert field, "Field has been deleted."
 
         # Get the value
-        given_value: str = (
-            interaction
-            .components[0]
-            .components[0]   # pyright: ignore - I know more than you
-            .value
-        )  # pyright: ignore - I know more than you
+        given_value: str = "\n".join(
+            action_row.components[0].value  # pyright: ignore
+            for action_row in interaction.components
+        ).strip()
 
         # Validate the value
         if given_value:

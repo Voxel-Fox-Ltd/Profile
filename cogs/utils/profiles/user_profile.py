@@ -302,7 +302,7 @@ class UserProfile(Generic[T]):
 
         # Create the initial embed
         embed = vbu.Embed(use_random_colour=True)
-        if not self.template:
+        if self.template is None:
             raise AttributeError("Missing template field for user profile")
         embed.title = f"{self.template.name} | {self.name}"
         if self.template.colour:
@@ -315,7 +315,7 @@ class UserProfile(Generic[T]):
         )
 
         # Add the fields
-        fields: List[FilledField | Field]
+        fields: List[FilledField[Field] | Field]
         fields = sorted(
             self.filled_fields.values(),
             key=operator.attrgetter("field.index"),
@@ -345,7 +345,13 @@ class UserProfile(Generic[T]):
                 if field_value is None or field_value == "":
                     continue
             else:
-                field_value = f.value
+                if "\n" in f.field.prompt.strip():
+                    field_value = ""
+                    for x, y in zip(f.field.prompt.split("\n"), f.value.split("\n")):
+                        field_value += f"{x.strip()}: {y.strip()}\n"
+                else:
+                    field_value = f.value
+            field_value = field_value.strip()
 
             # Set data
             if field.field_type == ImageField:

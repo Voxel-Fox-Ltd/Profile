@@ -71,24 +71,34 @@ def compare_embeds(
     embed2_dict = embed2.to_dict()
 
     # Compare the title
-    if embed1_dict.get("title") != embed2_dict.get("title"):
+    if (
+            embed1_dict.get("title", "").strip()
+            != embed2_dict.get("title", "").strip()):
         return False
 
     # Compare the description
-    if embed1_dict.get("description") != embed2_dict.get("description"):
+    if (
+            embed1_dict.get("description", "").strip()
+            != embed2_dict.get("description", "").strip()):
         return False
 
     # Compare the image URL - we're not gonna compare the image
     # size etc becuase Novus doesn't set it but the API does
-    if embed1_dict.get("image", {}).get("url") != embed2_dict.get("image", {}).get("url"):
+    if (
+            embed1_dict.get("image", {}).get("url", "").strip()
+            != embed2_dict.get("image", {}).get("url", "").strip()):
         return False
 
     # Iterate through the fields and make sure each of the value,
     # inline, and name are the same
-    for field1, field2 in zip(embed1_dict.get("fields", list()), embed2_dict.get("fields", list())):
-        if field1["name"] != field2["name"]:
+    field_zip = zip(
+        embed1_dict.get("fields", list()),
+        embed2_dict.get("fields", list())
+    )
+    for field1, field2 in field_zip:
+        if field1["name"].strip() != field2["name"].strip():
             return False
-        if field1["value"] != field2["value"]:
+        if field1["value"].strip() != field2["value"].strip():
             return False
         if field1.get("inline", True) != field2.get("inline", True):
             return False

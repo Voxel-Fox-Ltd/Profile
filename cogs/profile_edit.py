@@ -168,7 +168,7 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
             current_value = filled_fields[field_id].value.strip()
         except:
             current_value = ""
-        prompt_split = field.prompt.split("\n")
+        prompt_split = field.prompt.strip().split("\n")
         current_value = current_value.split("\n")
 
         # Change the length of the prompt and current value until they work together

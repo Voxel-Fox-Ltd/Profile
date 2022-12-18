@@ -30,7 +30,7 @@ if __debug__:
     _poeditor("Disable advanced mode for this guild.")
 
 
-class BotSettings(vbu.Cog[vbu.Bot]):
+class AdvancedSettings(vbu.Cog[vbu.Bot]):
 
     @classmethod
     async def set_advanced(cls, guild_id: int, enabled: bool) -> None:
@@ -144,5 +144,5 @@ class BotSettings(vbu.Cog[vbu.Bot]):
 
 
 def setup(bot: vbu.Bot):
-    x = BotSettings(bot)
+    x = AdvancedSettings(bot)
     bot.add_cog(x)

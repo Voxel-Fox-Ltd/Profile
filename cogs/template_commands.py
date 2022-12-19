@@ -156,6 +156,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                 i: _t(i, "A list of all the templates created on your guild.")
                 for i in discord.Locale
             },
+            guild_only=True,
         ),
     )
     @commands.defer()
@@ -231,7 +232,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
             },
             options=[
                 discord.ApplicationCommandOption(
-                    name="template",
+                    name="name",
                     type=discord.ApplicationCommandOptionType.string,
                     description=(
                         "The name of the template that you want to delete."
@@ -239,19 +240,27 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                     autocomplete=True,
                 )
             ],
+            guild_only=True,
         ),
     )
     @vbu.i18n("profile")
     async def template_delete(
             self,
             ctx: GC[discord.CommandInteraction],
-            template: str):
+            name: str):
         """
         Delete one of your templates.
         """
 
         # This command will spawn the buttons that allow a moderator to delete
         # a template. This command does not directly delete the template.
+
+        # Make sure they used the autocomplete to get the template
+        if not utils.uuid.check(name):
+            return await ctx.interaction.response.send_message(
+                _("Please use the autocomplete to select a template."),
+                ephemeral=True,
+            )
 
         # See if the user has permission to run this command
         cog: Optional[TemplateEdit]
@@ -273,13 +282,13 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
             try:
                 template_o = await utils.Template.fetch_template_by_id(
                     db,
-                    template,
+                    name,
                 )
             except:
                 template_o = await utils.Template.fetch_template_by_name(
                     db,
                     ctx.guild.id,
-                    template,
+                    name,
                 )
 
         # Tell them if the template doesn't exist
@@ -290,7 +299,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                         "There's no template with the name "
                         "**{template_name}** in this guild."
                     )
-                ).format(template_name=template),
+                ).format(template_name=name),
                 allowed_mentions=discord.AllowedMentions.none(),
                 ephemeral=True,
             )
@@ -342,6 +351,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                     required=True,
                 ),
             ],
+            guild_only=True,
         ),
     )
     @vbu.i18n("profile")
@@ -456,6 +466,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                     autocomplete=True,
                 ),
             ],
+            guild_only=True,
         ),
     )
     @vbu.i18n("profile")
@@ -466,6 +477,13 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         """
         Edit an already existing template.
         """
+
+        # Make sure they used the autocomplete to get the template
+        if not utils.uuid.check(name):
+            return await ctx.interaction.response.send_message(
+                _("Please use the autocomplete to select a template."),
+                ephemeral=True,
+            )
 
         # Run some checks
         async with vbu.Database() as db:
@@ -499,6 +517,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                 i: _t(i, "manage").casefold()
                 for i in discord.Locale
             },
+            guild_only=True,
         ),
     )
     async def template_manage(
@@ -556,6 +575,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                     },
                 ),
             ],
+            guild_only=True,
         ),
     )
     async def template_manage_create(
@@ -566,6 +586,13 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         """
         Create a profile for other users.
         """
+
+        # Make sure they used the autocomplete to get the template
+        if not utils.uuid.check(template):
+            return await ctx.interaction.response.send_message(
+                _("Please use the autocomplete to select a template."),
+                ephemeral=True,
+            )
 
         # Get the template
         async with vbu.Database() as db:
@@ -643,6 +670,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                     },
                 ),
             ],
+            guild_only=True,
         ),
     )
     async def template_manage_delete(
@@ -654,6 +682,20 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         """
         Delete a profile for other users.
         """
+
+        # Make sure they used the autocomplete to get the template
+        if not utils.uuid.check(template):
+            return await ctx.interaction.response.send_message(
+                _("Please use the autocomplete to select a template."),
+                ephemeral=True,
+            )
+
+        # Make sure they used the autocomplete to get the profile
+        if not utils.uuid.check(profile):
+            return await ctx.interaction.response.send_message(
+                _("Please use the autocomplete to select a profile."),
+                ephemeral=True,
+            )
 
         async with vbu.Database() as db:
 
@@ -742,6 +784,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                     },
                 ),
             ],
+            guild_only=True,
         ),
     )
     async def template_manage_edit(
@@ -753,6 +796,20 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         """
         Create a profile for other users.
         """
+
+        # Make sure they used the autocomplete to get the template
+        if not utils.uuid.check(template):
+            return await ctx.interaction.response.send_message(
+                _("Please use the autocomplete to select a template."),
+                ephemeral=True,
+            )
+
+        # Make sure they used the autocomplete to get the profile
+        if not utils.uuid.check(profile):
+            return await ctx.interaction.response.send_message(
+                _("Please use the autocomplete to select a profile."),
+                ephemeral=True,
+            )
 
         async with vbu.Database() as db:
 

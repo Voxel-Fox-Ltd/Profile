@@ -4,12 +4,26 @@ import string
 
 
 __all__ = (
-    "encode",
-    "decode",
+    'encode',
+    'decode',
+    'check',
 )
 
 
 ALPHABET = string.digits + string.ascii_letters
+
+
+def check(possible_uuid: str) -> bool:
+    """
+    Check whether the given string is a valid UUID.
+    """
+
+    try:
+        uuid.UUID(possible_uuid)
+    except ValueError:
+        return False
+    else:
+        return True
 
 
 def encode(decoded: uuid.UUID | str) -> str:

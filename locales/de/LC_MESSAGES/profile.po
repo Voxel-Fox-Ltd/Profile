@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2022-12-18 06:55+0000\n"
-"PO-Revision-Date: 2022-12-18 06:55+0000\n"
+"POT-Creation-Date: 2022-12-19 21:59+0000\n"
+"PO-Revision-Date: 2022-12-19 22:01+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: de\n"
@@ -17,6 +17,56 @@ msgstr ""
 "X-Poedit-SearchPathExcluded-0: cogs/_profile_commands.py\n"
 "X-Poedit-SearchPathExcluded-1: cogs/_profile_verification.py\n"
 "X-Poedit-SearchPathExcluded-2: cogs/_template_commands.py\n"
+
+#. TRANSLATORS: Command name.
+#: cogs/advanced_settings.py:18
+msgid "advanced"
+msgstr "Fortgeschrittene"
+
+#. TRANSLATORS: Command description.
+#: cogs/advanced_settings.py:20
+msgid "The group command for advanced settings."
+msgstr "Der Gruppenbefehl für erweiterte Einstellungen."
+
+#. TRANSLATORS: Command name.
+#: cogs/advanced_settings.py:23
+msgid "enable"
+msgstr "aktivieren"
+
+#. TRANSLATORS: Command description.
+#: cogs/advanced_settings.py:25
+msgid "Enable advanced mode for this guild."
+msgstr "Aktiviere den erweiterten Modus für diese Gilde."
+
+#. TRANSLATORS: Command name.
+#: cogs/advanced_settings.py:28
+msgid "disable"
+msgstr "deaktivieren"
+
+#. TRANSLATORS: Command description.
+#: cogs/advanced_settings.py:30
+msgid "Disable advanced mode for this guild."
+msgstr "Deaktiviere den erweiterten Modus für diese Gilde."
+
+#: cogs/advanced_settings.py:108
+msgid ""
+"Advanced settings have been enabled for your guild. This means that the "
+"character limits for field prompts have been disabled in modals, allowing "
+"you to input commands and use multi-fields in your templates.\n"
+"The character limits still apply, however, and any prompts that _aren't_ "
+"multi-field prompts or commands will be truncated without warning."
+msgstr ""
+"Die erweiterten Einstellungen wurden für deine Gilde aktiviert. Das "
+"bedeutet, dass die Zeichenbegrenzung für Feldaufforderungen in Modals "
+"deaktiviert wurde, sodass du Befehle eingeben und mehrere Felder in deinen "
+"Vorlagen verwenden kannst.\n"
+"Die Zeichenbeschränkungen gelten jedoch weiterhin und alle "
+"Eingabeaufforderungen, die keine Mehrfeld-Eingabeaufforderungen oder Befehle "
+"sind, werden ohne Warnung abgeschnitten."
+
+#: cogs/advanced_settings.py:141
+msgid "Advanced settings have been disabled for your guild."
+msgstr "Die erweiterten Einstellungen wurden für deine Gilde deaktiviert."
 
 #. TRANSLATORS: Command name.
 #: cogs/bot_info.py:17
@@ -53,58 +103,6 @@ msgstr "Support"
 msgid "Source Code"
 msgstr "Quellcode"
 
-#. TRANSLATORS: Command name.
-#: cogs/bot_settings.py:18
-msgid "advanced"
-msgstr "Fortgeschrittene"
-
-#. TRANSLATORS: Command description.
-#: cogs/bot_settings.py:20
-msgid "The group command for advanced settings."
-msgstr "Der Gruppenbefehl für erweiterte Einstellungen."
-
-#. TRANSLATORS: Command name.
-#: cogs/bot_settings.py:23
-msgid "enable"
-msgstr "aktivieren"
-
-#. TRANSLATORS: Command description.
-#: cogs/bot_settings.py:25
-#| msgid "There are no created templates for this guild."
-msgid "Enable advanced mode for this guild."
-msgstr "Aktiviere den erweiterten Modus für diese Gilde."
-
-#. TRANSLATORS: Command name.
-#: cogs/bot_settings.py:28
-msgid "disable"
-msgstr "deaktivieren"
-
-#. TRANSLATORS: Command description.
-#: cogs/bot_settings.py:30
-#| msgid "There are no created templates for this guild."
-msgid "Disable advanced mode for this guild."
-msgstr "Deaktiviere den erweiterten Modus für diese Gilde."
-
-#: cogs/bot_settings.py:108
-msgid ""
-"Advanced settings have been enabled for your guild. This means that the "
-"character limits for field prompts have been disabled in modals, allowing "
-"you to input commands and use multi-fields in your templates.\n"
-"The character limits still apply, however, and any prompts that _aren't_ "
-"multi-field prompts or commands will be truncated without warning."
-msgstr ""
-"Die erweiterten Einstellungen wurden für deine Gilde aktiviert. Das "
-"bedeutet, dass die Zeichenbegrenzung für Feldaufforderungen in Modals "
-"deaktiviert wurde, sodass du Befehle eingeben und mehrere Felder in deinen "
-"Vorlagen verwenden kannst.\n"
-"Die Zeichenbeschränkungen gelten jedoch weiterhin und alle "
-"Eingabeaufforderungen, die keine Mehrfeld-Eingabeaufforderungen oder Befehle "
-"sind, werden ohne Warnung abgeschnitten."
-
-#: cogs/bot_settings.py:141
-msgid "Advanced settings have been disabled for your guild."
-msgstr "Die erweiterten Einstellungen wurden für deine Gilde deaktiviert."
-
 #: cogs/profile_commands.py:220
 #, python-brace-format
 msgid "You don't have any profiles for the template **{template}**."
@@ -135,7 +133,7 @@ msgstr "Bist du sicher, dass du dein Profil **{profile}** löschen möchtest?"
 #. TRANSLATORS: The confirm button for editing a profile
 #. TRANSLATORS: Text appearing on a button.
 #: cogs/profile_commands.py:370 cogs/profile_commands.py:512
-#: cogs/template_commands.py:303 cogs/template_field_edit.py:442
+#: cogs/template_commands.py:312 cogs/template_field_edit.py:442
 msgid "Yes"
 msgstr "Ja"
 
@@ -220,32 +218,31 @@ msgstr ""
 "Dies ist nicht die aktuellste Version deines Profils. Bitte führe den "
 "Bearbeitungsbefehl erneut aus, um fortzufahren."
 
-#: cogs/profile_edit.py:243
-#| msgid "Set the name of your modal"
+#: cogs/profile_edit.py:236
 msgid "Set the name of your profile"
 msgstr "Legen Sie den Namen für Ihr Profil fest"
 
 #. TRANSLATORS: Catch all error message that shouldn't be shown
-#: cogs/profile_edit.py:311
+#: cogs/profile_edit.py:304
 msgid "I encountered an error."
 msgstr "Ich bin auf einen Fehler gestoßen."
 
-#: cogs/profile_edit.py:315
+#: cogs/profile_edit.py:308
 msgid "The length of your input must be between 1 and 1000 characters."
 msgstr "Die Länge deiner Eingabe muss zwischen 1 und 1000 Zeichen liegen."
 
-#: cogs/profile_edit.py:320
+#: cogs/profile_edit.py:313
 msgid "You did not give a valid number."
 msgstr "Du hast keine gültige Nummer angegeben."
 
-#: cogs/profile_edit.py:324
+#: cogs/profile_edit.py:317
 msgid ""
 "The image URL you gave isn't valid. Please give a direct link to an image."
 msgstr ""
 "Die von dir angegebene Bild-URL ist nicht gültig. Bitte gib einen direkten "
 "Link zu einem Bild an."
 
-#: cogs/profile_edit.py:421
+#: cogs/profile_edit.py:414
 msgid "You already have a profile with that name."
 msgstr "Du hast bereits ein Profil mit diesem Namen."
 
@@ -444,37 +441,49 @@ msgstr "Der Benutzer, für den du ein Profil bearbeiten möchtest."
 msgid "The profile that you want to edit."
 msgstr "Das Profil, das du bearbeiten möchtest."
 
-#: cogs/template_commands.py:172
+#: cogs/template_commands.py:173
 #, python-brace-format
 msgid "\\u2022 **{template_name}** (0 profiles)"
 msgstr "\\u2022 **{template_name}** (0 Profile)"
 
-#: cogs/template_commands.py:175
+#: cogs/template_commands.py:176
 #, python-brace-format
 msgid "\\u2022 **{template_name}** ({profile_count} profile)"
 msgstr "\\u2022 **{template_name}** ({profile_count} Profil)"
 
-#: cogs/template_commands.py:178
+#: cogs/template_commands.py:179
 #, python-brace-format
 msgid "\\u2022 **{template_name}** ({profile_count} profiles)"
 msgstr "\\u2022 **{template_name}** ({profile_count} Profile)"
 
-#: cogs/template_commands.py:217
+#: cogs/template_commands.py:218
 msgid "There are no created templates for this guild."
 msgstr "Es gibt keine erstellten Vorlagen für diese Gilde."
 
-#: cogs/template_commands.py:363 cogs/template_edit.py:575
+#: cogs/template_commands.py:261 cogs/template_commands.py:484
+#: cogs/template_commands.py:593 cogs/template_commands.py:689
+#: cogs/template_commands.py:803
+msgid "Please use the autocomplete to select a template."
+msgstr "Bitte verwende die Autovervollständigung, um eine Vorlage auszuwählen."
+
+#: cogs/template_commands.py:373 cogs/template_edit.py:575
 #, python-brace-format
 msgid "The name **{template_name}** is not valid."
 msgstr "Der Name **{template_name}** ist nicht gültig."
 
-#: cogs/template_commands.py:381
+#: cogs/template_commands.py:391
 msgid "That template name is already in use."
 msgstr "Dieser Vorlagenname ist bereits in Gebrauch."
 
-#: cogs/template_commands.py:481
+#: cogs/template_commands.py:499
 msgid "You don't have a template with that name."
 msgstr "Du hast keine Vorlage mit diesem Namen."
+
+#: cogs/template_commands.py:696 cogs/template_commands.py:810
+#| msgid "The user that you want to edit a profile for."
+msgid "Please use the autocomplete to select a profile."
+msgstr ""
+"Bitte verwenden Sie die Autovervollständigung, um ein Profil auszuwählen."
 
 #. TRANSLATORS: Command name.
 #: cogs/template_edit.py:23
@@ -849,7 +858,7 @@ msgstr "Verifizierungskanal: {0}"
 msgid "Given role: {0}"
 msgstr "Gegebene Rolle: {0}"
 
-#: cogs/utils/profiles/user_profile.py:313
+#: cogs/utils/profiles/user_profile.py:314
 msgid "Discord User"
 msgstr "Discord Benutzer"
 

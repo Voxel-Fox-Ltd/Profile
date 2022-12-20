@@ -483,9 +483,8 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         async with vbu.Database() as db:
 
             # Check that the name isn't already in use
-            template = await utils.Template.fetch_template_by_name(
+            template = await utils.Template.fetch_template_by_id(
                 db,
-                ctx.guild.id,
                 name,
             )
             if not template:

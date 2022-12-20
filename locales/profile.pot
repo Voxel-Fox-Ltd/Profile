@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2022-12-19 21:59+0000\n"
+"POT-Creation-Date: 2022-12-20 17:10+0000\n"
 "PO-Revision-Date: 2022-12-12 15:17+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -89,26 +89,39 @@ msgstr ""
 msgid "Source Code"
 msgstr ""
 
-#: cogs/profile_commands.py:220
+#: cogs/message_utils.py:25
+#, python-brace-format
+msgid "Message requested by {user}."
+msgstr ""
+
+#: cogs/message_utils.py:46
+msgid "You don't have permission to send messages in this channel."
+msgstr ""
+
+#: cogs/profile_commands.py:37
+msgid "Make public"
+msgstr ""
+
+#: cogs/profile_commands.py:244
 #, python-brace-format
 msgid "You don't have any profiles for the template **{template}**."
 msgstr ""
 
-#: cogs/profile_commands.py:223
+#: cogs/profile_commands.py:247
 #, python-brace-format
 msgid "**{user}** doesn't have any profiles for the template **{template}**."
 msgstr ""
 
-#: cogs/profile_commands.py:265
+#: cogs/profile_commands.py:290
 msgid "Please select a profile to view."
 msgstr ""
 
-#: cogs/profile_commands.py:342
+#: cogs/profile_commands.py:368
 #, python-brace-format
 msgid "You don't have a profile for the template **{template}** with that name."
 msgstr ""
 
-#: cogs/profile_commands.py:362
+#: cogs/profile_commands.py:388
 #, python-brace-format
 msgid "Are you sure you want to delete the profile **{profile}**?"
 msgstr ""
@@ -117,46 +130,46 @@ msgstr ""
 #. that confirms a profile deletion
 #. TRANSLATORS: The confirm button for editing a profile
 #. TRANSLATORS: Text appearing on a button.
-#: cogs/profile_commands.py:370 cogs/profile_commands.py:512
+#: cogs/profile_commands.py:396 cogs/profile_commands.py:538
 #: cogs/template_commands.py:312 cogs/template_field_edit.py:442
 msgid "Yes"
 msgstr ""
 
-#: cogs/profile_commands.py:421
+#: cogs/profile_commands.py:447
 #, python-brace-format
 msgid "The profile **{profile}** has been deleted."
 msgstr ""
 
-#: cogs/profile_commands.py:486
+#: cogs/profile_commands.py:512
 #, python-brace-format
 msgid "You have no profiles for the template **{template}** with that name."
 msgstr ""
 
-#: cogs/profile_commands.py:519
+#: cogs/profile_commands.py:545
 msgid "To edit this profile, it must be converted to a draft. This will unsubmit it, and it will need to be re-verified before others can see it again. Are you sure you want to continue?"
 msgstr ""
 
 #. TRANSLATORS: This is the label for a button
 #. that edits a profile's name
-#: cogs/profile_commands.py:536
+#: cogs/profile_commands.py:562
 msgid "Edit profile name"
 msgstr ""
 
 #. TRANSLATORS: This is the label for a button that submits
 #. a profile.
-#: cogs/profile_commands.py:569
+#: cogs/profile_commands.py:595
 msgid "Submit"
 msgstr ""
 
-#: cogs/profile_commands.py:588 cogs/profile_commands.py:594
+#: cogs/profile_commands.py:614 cogs/profile_commands.py:620
 msgid "What would you like to edit?"
 msgstr ""
 
-#: cogs/profile_commands.py:633 cogs/profile_verification.py:88
+#: cogs/profile_commands.py:659 cogs/profile_verification.py:88
 msgid "You have already submitted the maximum number of profiles for this template."
 msgstr ""
 
-#: cogs/profile_commands.py:639
+#: cogs/profile_commands.py:665
 #, python-brace-format
 msgid "{user} has already submitted the maximum number of profiles for this template."
 msgstr ""

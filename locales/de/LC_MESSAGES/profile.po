@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2022-12-19 21:59+0000\n"
-"PO-Revision-Date: 2022-12-19 22:01+0000\n"
+"POT-Creation-Date: 2022-12-20 17:10+0000\n"
+"PO-Revision-Date: 2022-12-20 17:11+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: de\n"
@@ -103,27 +103,40 @@ msgstr "Support"
 msgid "Source Code"
 msgstr "Quellcode"
 
-#: cogs/profile_commands.py:220
+#: cogs/message_utils.py:25
+#, python-brace-format
+msgid "Message requested by {user}."
+msgstr "Nachricht angefordert von {user}."
+
+#: cogs/message_utils.py:46
+msgid "You don't have permission to send messages in this channel."
+msgstr "Sie haben nicht die Erlaubnis, Nachrichten in diesem Kanal zu senden."
+
+#: cogs/profile_commands.py:37
+msgid "Make public"
+msgstr "Veröffentlichen"
+
+#: cogs/profile_commands.py:244
 #, python-brace-format
 msgid "You don't have any profiles for the template **{template}**."
 msgstr "Du hast keine Profile für die Vorlage **{template}**."
 
-#: cogs/profile_commands.py:223
+#: cogs/profile_commands.py:247
 #, python-brace-format
 msgid "**{user}** doesn't have any profiles for the template **{template}**."
 msgstr "**{user}** hat keine Profile für die Vorlage **{template}**."
 
-#: cogs/profile_commands.py:265
+#: cogs/profile_commands.py:290
 msgid "Please select a profile to view."
 msgstr "Bitte wähle ein Profil aus, um es anzusehen."
 
-#: cogs/profile_commands.py:342
+#: cogs/profile_commands.py:368
 #, python-brace-format
 msgid ""
 "You don't have a profile for the template **{template}** with that name."
 msgstr "Du hast kein Profil für die Vorlage **{template}** mit diesem Namen."
 
-#: cogs/profile_commands.py:362
+#: cogs/profile_commands.py:388
 #, python-brace-format
 msgid "Are you sure you want to delete the profile **{profile}**?"
 msgstr "Bist du sicher, dass du dein Profil **{profile}** löschen möchtest?"
@@ -132,22 +145,22 @@ msgstr "Bist du sicher, dass du dein Profil **{profile}** löschen möchtest?"
 #. that confirms a profile deletion
 #. TRANSLATORS: The confirm button for editing a profile
 #. TRANSLATORS: Text appearing on a button.
-#: cogs/profile_commands.py:370 cogs/profile_commands.py:512
+#: cogs/profile_commands.py:396 cogs/profile_commands.py:538
 #: cogs/template_commands.py:312 cogs/template_field_edit.py:442
 msgid "Yes"
 msgstr "Ja"
 
-#: cogs/profile_commands.py:421
+#: cogs/profile_commands.py:447
 #, python-brace-format
 msgid "The profile **{profile}** has been deleted."
 msgstr "Das Profil **{profile}** wurde gelöscht."
 
-#: cogs/profile_commands.py:486
+#: cogs/profile_commands.py:512
 #, python-brace-format
 msgid "You have no profiles for the template **{template}** with that name."
 msgstr "Du hast keine Profile für die Vorlage **{template}** mit diesem Namen."
 
-#: cogs/profile_commands.py:519
+#: cogs/profile_commands.py:545
 msgid ""
 "To edit this profile, it must be converted to a draft. This will unsubmit "
 "it, and it will need to be re-verified before others can see it again. Are "
@@ -159,28 +172,28 @@ msgstr ""
 
 #. TRANSLATORS: This is the label for a button
 #. that edits a profile's name
-#: cogs/profile_commands.py:536
+#: cogs/profile_commands.py:562
 msgid "Edit profile name"
 msgstr "Profilname bearbeiten"
 
 #. TRANSLATORS: This is the label for a button that submits
 #. a profile.
-#: cogs/profile_commands.py:569
+#: cogs/profile_commands.py:595
 msgid "Submit"
 msgstr "Senden"
 
-#: cogs/profile_commands.py:588 cogs/profile_commands.py:594
+#: cogs/profile_commands.py:614 cogs/profile_commands.py:620
 msgid "What would you like to edit?"
 msgstr "Was würdest du gerne bearbeiten?"
 
-#: cogs/profile_commands.py:633 cogs/profile_verification.py:88
+#: cogs/profile_commands.py:659 cogs/profile_verification.py:88
 msgid ""
 "You have already submitted the maximum number of profiles for this template."
 msgstr ""
 "Du hast bereits die maximale Anzahl von Profilen für diese Vorlage "
 "eingereicht."
 
-#: cogs/profile_commands.py:639
+#: cogs/profile_commands.py:665
 #, python-brace-format
 msgid ""
 "{user} has already submitted the maximum number of profiles for this "
@@ -480,7 +493,6 @@ msgid "You don't have a template with that name."
 msgstr "Du hast keine Vorlage mit diesem Namen."
 
 #: cogs/template_commands.py:696 cogs/template_commands.py:810
-#| msgid "The user that you want to edit a profile for."
 msgid "Please use the autocomplete to select a profile."
 msgstr ""
 "Bitte verwenden Sie die Autovervollständigung, um ein Profil auszuwählen."

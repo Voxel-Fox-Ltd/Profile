@@ -17,6 +17,30 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
 
     PROFILES_ARE_PRIVATE = True
 
+    @classmethod
+    @vbu.i18n("profile")
+    def get_make_public_button(
+            cls,
+            interaction: discord.Interaction) -> discord.ui.MessageComponents | discord.utils.MISSING:
+        """
+        Get a button that allows the user to make their profile public, or
+        return ``None`` if the user does not have ``send_message`` permissions.
+        """
+
+        if not cls.PROFILES_ARE_PRIVATE:
+            return discord.utils.MISSING
+        if not interaction.permissions.send_messages:
+            return discord.utils.MISSING
+        return discord.ui.MessageComponents(
+            discord.ui.ActionRow(
+                discord.ui.Button(
+                    label=_("Make public"),
+                    style=discord.ButtonStyle.green,
+                    custom_id="MESSAGE_EDIT RESEND -components -ephemeral",
+                ),
+            ),
+        )
+
     async def try_application_command(
             self,
             db: vbu.Database,
@@ -242,6 +266,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
                     ),
                 ],
                 ephemeral=self.PROFILES_ARE_PRIVATE,
+                components=self.get_make_public_button(interaction),
             )
 
         # If they have multiple, send a dropdown of their profile names
@@ -306,6 +331,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
                 ),
             ],
             ephemeral=self.PROFILES_ARE_PRIVATE,
+            components=self.get_make_public_button(interaction),
         )
 
     @vbu.i18n("profile")

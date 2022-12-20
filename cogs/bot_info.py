@@ -66,6 +66,16 @@ class BotInfo(vbu.Cog[vbu.Bot]):
             )
             .add_field(
                 # TRANSLATORS: Text appearing on a button in the info command.
+                _("Vote"),
+                "[Top.gg](https://top.gg/bot/598553427592871956/vote)",
+            )
+            .add_field(
+                # TRANSLATORS: Text appearing on a button in the info command.
+                _("Leave a review"),
+                "[Top.gg](https://top.gg/bot/598553427592871956#reviews)",
+            )
+            .add_field(
+                # TRANSLATORS: Text appearing on a button in the info command.
                 _("Source Code"),
                 "[GitHub](https://github.com/Voxel-Fox-Ltd/Profile)",
             )

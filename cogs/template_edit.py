@@ -1085,8 +1085,14 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
             template_id,
             application_command_id=application_command.id,
         )
+        slash_command_list = [
+            f"</{application_command.name} create:{application_command.id}>",
+            f"</{application_command.name} edit:{application_command.id}>",
+            f"</{application_command.name} get:{application_command.id}>",
+            f"</{application_command.name} delete:{application_command.id}>",
+        ]
         await interaction.followup.send(
-            _("Updated slash command."),
+            _("Updated slash command.") + "\n" + "\n".join(slash_command_list),
             ephemeral=True,
         )
 

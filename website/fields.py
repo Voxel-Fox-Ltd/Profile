@@ -112,7 +112,7 @@ async def update_template_field(request: Request):
         # Make sure the template exists
         field = None
         if data.get('field_id'):
-            field_rows = await db("""SELECT * FROM field WHERE field_id=$1""", data['field_id'])
+            field_rows = await db("""SELECT * FROM fields WHERE field_id=$1""", data['field_id'])
             if not field_rows:
                 return json_response({"error": "Field does not exist."}, status=400)
             field = localutils.Field(**field_rows[0])
@@ -144,7 +144,7 @@ async def update_template_field(request: Request):
             updated_rows = await db(
                 """INSERT INTO field (field_id, name, prompt, timeout, field_type, optional,
                 template_id, index) VALUES (GEN_RANDOM_UUID(), $1, $2, $3, $4, $5, $6,
-                COALESCE((SELECT MAX(index) FROM field WHERE template_id=$6) + 1, 0))
+                COALESCE((SELECT MAX(index) FROM fields WHERE template_id=$6) + 1, 0))
                 RETURNING *""",
                 data['name'], data['prompt'], data['timeout'],
                 data['type'], data['optional'], template.template_id,
@@ -228,7 +228,7 @@ async def update_template_field_delete(request: Request):
     async with request.app['database']() as db:
 
         # Make sure the template exists
-        field_rows = await db("""SELECT * FROM field WHERE field_id=$1""", field_id)
+        field_rows = await db("""SELECT * FROM fields WHERE field_id=$1""", field_id)
         if not field_rows:
             return json_response({"error": "Field does not exist."}, status=400)
         field = localutils.Field(**field_rows[0])

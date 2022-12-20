@@ -221,18 +221,19 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
             return True
         return interaction.permissions.manage_guild
 
-    @staticmethod
-    def check_template_name(name: str) -> bool:
+    def check_template_name(self, name: str) -> bool:
         """
         Returns whether or not a template's name is valid for use on Discord.
         """
 
         command_name_pattern = r"^[-_\p{L}\p{N}\p{sc=Deva}\p{sc=Thai}]{1,32}$"
+        current_commands = [i.name for i in self.bot.walk_commands()]
         return all((
             len(name) <= 30,
             " " not in name,
             "\n" not in name,
             re.match(command_name_pattern, name, re.UNICODE),
+            name not in current_commands,
         ))
 
     async def update_template(

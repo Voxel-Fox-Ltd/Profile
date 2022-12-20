@@ -22,7 +22,6 @@ if __debug__:
 class BotInfo(vbu.Cog[vbu.Bot]):
 
     @commands.command(
-        aliases=["information"],
         application_command_meta=commands.ApplicationCommandMeta(
             name_localizations={
                 i: _t(i, "information").casefold()
@@ -35,7 +34,7 @@ class BotInfo(vbu.Cog[vbu.Bot]):
         ),
     )
     @vbu.i18n("profile")
-    async def info(self, ctx: commands.SlashContext):
+    async def information(self, ctx: commands.SlashContext):
         """
         Get information and links for the bot.
         """

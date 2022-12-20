@@ -279,17 +279,10 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
 
         # Try and get the template object
         async with vbu.Database() as db:
-            try:
-                template_o = await utils.Template.fetch_template_by_id(
-                    db,
-                    name,
-                )
-            except:
-                template_o = await utils.Template.fetch_template_by_name(
-                    db,
-                    ctx.guild.id,
-                    name,
-                )
+            template_o = await utils.Template.fetch_template_by_id(
+                db,
+                name,
+            )
 
         # Tell them if the template doesn't exist
         if not template_o:
@@ -480,6 +473,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
 
         # Make sure they used the autocomplete to get the template
         if not utils.uuid.check(name):
+            self.logger.info(name)
             return await ctx.interaction.response.send_message(
                 _("Please use the autocomplete to select a template."),
                 ephemeral=True,
@@ -852,7 +846,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                 fetch_fields=False,
             )
         options = [
-            discord.ApplicationCommandOptionChoice(name=i.name)
+            discord.ApplicationCommandOptionChoice(name=i.name, value=i.id)
             for i in templates
         ]
         current_val = ""

@@ -1,5 +1,5 @@
 import uuid
-from typing import TYPE_CHECKING, Optional, Tuple, cast
+from typing import TYPE_CHECKING, Any, Optional, Tuple, cast
 
 import discord
 from discord.ext import vbu
@@ -21,7 +21,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
     @vbu.i18n("profile")
     def get_make_public_button(
             cls,
-            interaction: discord.Interaction) -> discord.ui.MessageComponents | discord.utils.MISSING:
+            interaction: discord.Interaction) -> discord.ui.MessageComponents | Any:
         """
         Get a button that allows the user to make their profile public, or
         return ``None`` if the user does not have ``send_message`` permissions.

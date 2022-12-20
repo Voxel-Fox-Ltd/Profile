@@ -30,15 +30,16 @@ class MessageUtils(vbu.Cog[utils.types.Bot]):
             "components": interaction.message.components,
             "ephemeral": True,
         }
+        send_kwargs = kwargs.copy()
         for key, value in kwargs.items():
             if not value:
-                del kwargs[key]
+                send_kwargs.pop(key, None)
 
         # See what we want to remove via the custom ID
         to_remove: list[str] = interaction.custom_id.split(" ")[2:]
         for key in to_remove:
             if key.startswith("-"):
-                del kwargs[key.lstrip("-")]
+                send_kwargs.pop(key.lstrip("-"), None)
 
         # See if the user has permission to send messages
         if not interaction.permissions.send_messages:
@@ -54,9 +55,9 @@ class MessageUtils(vbu.Cog[utils.types.Bot]):
         # we're missing permissions
         try:
             assert isinstance(interaction.channel, discord.abc.Messageable)
-            await interaction.channel.send(**kwargs)
+            await interaction.channel.send(**send_kwargs)
         except (discord.Forbidden, AssertionError):
-            await interaction.followup.send(**kwargs)
+            await interaction.followup.send(**send_kwargs)
 
 
 def setup(bot: utils.types.Bot):

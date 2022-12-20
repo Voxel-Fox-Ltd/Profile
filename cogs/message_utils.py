@@ -22,7 +22,7 @@ class MessageUtils(vbu.Cog[utils.types.Bot]):
         # Get the message items we want to resend
         kwargs = {
             "content": (
-                _("Message requested by {user}.").format(interaction.user.mention)
+                _("Message requested by {user}.").format(user=interaction.user.mention)
                 + "\n" + interaction.message.content
             ),
             "embeds": interaction.message.embeds,

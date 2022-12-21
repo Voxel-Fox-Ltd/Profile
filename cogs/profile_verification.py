@@ -27,6 +27,8 @@ class ProfileVerification(vbu.Cog[vbu.Bot]):
         if template.archive_is_forum:
             threads = await guild.active_threads()
             for thread in threads:
+                if thread.parent_id != archive_channel_id:
+                    continue
                 if thread.owner_id == member.id:
                     return thread
             return None

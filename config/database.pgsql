@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS templates(
     max_profile_count SMALLINT NOT NULL DEFAULT 5,
     deleted BOOLEAN NOT NULL DEFAULT FALSE,
     context_command_id BIGINT,
-    archive_is_forum NOT NULL DEFAULT FALSE,
+    archive_is_forum BOOLEAN NOT NULL DEFAULT FALSE,
     UNIQUE (guild_id, name)
 );
 

@@ -698,25 +698,34 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
         template_id = utils.uuid.decode(encoded_template_id)
 
         # Get the value that we want to set the archive channel to
-        new_archive_channel_id: str | None
+        new_archive_channel: discord.TextChannel | discord.ForumChannel | None
         if clear:
-            new_archive_channel_id = None
+            new_archive_channel = None
         else:
-            new_archive_channel_id = str(list(
+            new_archive_channel = list(
                 interaction
                 .resolved
                 .channels
-                .keys())[0])
+                .values())[0]  # pyright: ignore - type reassignment
         self.logger.info(
             "Setting archive channel for template %s to %s",
-            template_id, new_archive_channel_id,
+            template_id, new_archive_channel.id if new_archive_channel else None,
         )
 
         # Get and update the template
         await self.update_template(
             interaction,
             template_id,
-            archive_channel_id=new_archive_channel_id,
+            archive_channel_id=(
+                new_archive_channel.id
+                if new_archive_channel
+                else None
+            ),
+            archive_is_forum=(
+                new_archive_channel.type == discord.ChannelType.forum
+                if new_archive_channel
+                else False
+            ),
         )
 
     @vbu.Cog.listener("on_component_interaction")  # TEMPLATE_EDIT VERIFICATION [TID] [CV]

@@ -19,51 +19,6 @@ def _(a: str) -> str:
     return a
 
 
-# class TemplateNotFoundError(commands.BadArgument):
-#     """
-#     The template that the user has searched for isn't found.
-#     """
-
-#     def __init__(self, template_name: Optional[str] = None):
-#         if template_name:
-#             message = f"There's no template with the name `{template_name}` on this guild."
-#         else:
-#             message = "The given template could not be found."
-#         super().__init__(message)
-
-
-# class TemplateSendError(commands.BadArgument):
-#     """
-#     The bot failed to send the profile.
-#     """
-
-#     pass
-
-
-# class TemplateVerificationChannelError(TemplateSendError):
-#     """
-#     The bot failed to send a profile to the verification channel.
-#     """
-
-#     pass
-
-
-# class TemplateArchiveChannelError(TemplateSendError):
-#     """
-#     The bot failed to send a profile to the archive channel.
-#     """
-
-#     pass
-
-
-# class TemplateRoleAddError(TemplateSendError):
-#     """
-#     The bot failed to add a role to the user.
-#     """
-
-#     pass
-
-
 class Template(object):
     """
     A class for an abstract template object that's saved to guild.
@@ -137,6 +92,7 @@ class Template(object):
         "application_command_id",
         "context_command_id",
         "deleted",
+        "archive_is_forum",
     )
 
     def __init__(
@@ -151,7 +107,8 @@ class Template(object):
             archive_channel_id: Optional[str] = None,
             role_id: Optional[str] = None,
             max_profile_count: int = 5,
-            deleted: bool = False):
+            deleted: bool = False,
+            archive_is_forum: bool = False):
         self._id: Optional[uuid.UUID] = id
         self.name: str = name
         self.guild_id: int = guild_id
@@ -163,6 +120,7 @@ class Template(object):
         self.max_profile_count: int = max_profile_count
         self.context_command_id: Optional[int] = context_command_id
         self.deleted: bool = deleted
+        self.archive_is_forum: bool = archive_is_forum
 
         self.all_fields: Dict[str, Field] = dict()
 

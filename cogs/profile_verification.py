@@ -8,6 +8,36 @@ from cogs import utils
 
 class ProfileVerification(vbu.Cog[vbu.Bot]):
 
+    async def get_archive_channel(
+            self,
+            guild: discord.Guild,
+            member: discord.Member,
+            template: utils.Template) -> discord.abc.Messageable | None:
+        """
+        Get the archive channel from a template.
+        """
+
+        # Assert an archive channel existing
+        archive_channel_id: Optional[int]
+        archive_channel_id = template.get_archive_channel_id(member)
+        if archive_channel_id is None:
+            return None
+
+        # See if it's a forum
+        if template.archive_is_forum:
+            threads = await guild.active_threads()
+            for thread in threads:
+                if thread.owner_id == member.id:
+                    return thread
+            return None
+
+        # It's not
+        return discord.PartialMessageable(
+            state=self.bot._connection,
+            id=archive_channel_id,
+            type=discord.ChannelType.text,
+        )
+
     async def check_if_max_profiles_hit(
             self,
             db: vbu.Database,
@@ -74,10 +104,9 @@ class ProfileVerification(vbu.Cog[vbu.Bot]):
                 return
 
             # Make sure we have the right user
-            if user.id != profile.user_id:
-                assert isinstance(interaction.guild, discord.Guild)
-                assert profile.user_id
-                user = await interaction.guild.fetch_member(profile.user_id)
+            assert isinstance(interaction.guild, discord.Guild)
+            assert profile.user_id
+            user = await interaction.guild.fetch_member(profile.user_id)
 
             # See if they're able to submit any more profiles
             if await self.check_if_max_profiles_hit(
@@ -175,39 +204,53 @@ class ProfileVerification(vbu.Cog[vbu.Bot]):
 
         # Send to the verification channel
         elif archive_channel_id is not None:
-            channel = discord.PartialMessageable(
-                state=self.bot._connection,
-                id=archive_channel_id,
-                type=discord.ChannelType.text,
+            channel = await self.get_archive_channel(
+                interaction.guild,
+                user,
+                template,
             )
 
-            # Actually do the send
-            embed = profile.build_embed(
-                self.bot,
-                interaction,
-                user,
-            )
-            try:
-                sent_message = await channel.send(
-                    content=profile.id,
-                    embed=embed,
-                    allowed_mentions=discord.AllowedMentions.none(),
-                )
-            except discord.HTTPException:
+            # See if we got a channel
+            if channel is None:
                 return await interaction.edit_original_message(
                     content=_(
-                        "Failed to send the profile to the archive "
-                        "channel. Please let an admin know, and then try "
-                        "again later."
+                        "User doesn't have a verification thread. Their "
+                        "profile has still been approved, but no archive "
+                        "message has been sent."
                     ),
                     components=None,
                 )
 
-            # Tell them it's done
-            await interaction.edit_original_message(
-                content=_("This profile has been submitted to the archive."),
-                components=None,
-            )
+            # Actually do the send
+            else:
+                embed = profile.build_embed(
+                    self.bot,
+                    interaction,
+                    user,
+                )
+                try:
+                    sent_message = await channel.send(
+                        content=profile.id,
+                        embed=embed,
+                        allowed_mentions=discord.AllowedMentions.none(),
+                    )
+                except discord.HTTPException:
+                    return await interaction.edit_original_message(
+                        content=_(
+                            "Failed to send the profile to the archive "
+                            "channel. Please let an admin know, and then try "
+                            "again later."
+                        ),
+                        components=None,
+                    )
+
+                # Tell them it's done
+                await interaction.edit_original_message(
+                    content=_("This profile has been submitted to the archive."),
+                    components=None,
+                )
+
+            # We done
             verified = True
 
         # No archive or verification channel; just tell the user it's done :)
@@ -306,11 +349,12 @@ class ProfileVerification(vbu.Cog[vbu.Bot]):
         sent_message: Optional[discord.Message] = None
         archive_channel_id = template.get_archive_channel_id(user)
         if archive_channel_id is not None:
-            channel = discord.PartialMessageable(
-                state=self.bot._connection,
-                id=archive_channel_id,
-                type=discord.ChannelType.text,
+            channel = await self.get_archive_channel(
+                guild,
+                user,
+                template,
             )
+            assert channel is not None
 
             # Actually do the send
             embed = profile.build_embed(

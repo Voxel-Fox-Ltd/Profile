@@ -708,8 +708,10 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
                 .channels
                 .values())[0]  # pyright: ignore - type reassignment
         self.logger.info(
-            "Setting archive channel for template %s to %s",
-            template_id, new_archive_channel.id if new_archive_channel else None,
+            "Setting archive channel for template %s to %s (%s)",
+            template_id,
+            new_archive_channel.id if new_archive_channel else None,
+            new_archive_channel.type if new_archive_channel else None,
         )
 
         # Get and update the template

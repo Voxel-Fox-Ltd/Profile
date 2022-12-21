@@ -1,22 +1,24 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: \n"
+"Project-Id-Version: profile-discord\n"
 "POT-Creation-Date: 2022-12-20 17:10+0000\n"
-"PO-Revision-Date: 2022-12-20 17:11+0000\n"
+"PO-Revision-Date: 2022-12-21 20:08\n"
 "Last-Translator: \n"
-"Language-Team: \n"
-"Language: fr\n"
+"Language-Team: French\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 3.2.2\n"
 "X-Poedit-Basepath: ..\n"
-"X-Poedit-KeywordsList: _t(i)(\n"
+"X-Poedit-KeywordsList: _poeditor\n"
 "X-Poedit-SearchPath-0: .\n"
-"X-Poedit-SearchPathExcluded-0: cogs/_profile_commands.py\n"
-"X-Poedit-SearchPathExcluded-1: cogs/_profile_verification.py\n"
-"X-Poedit-SearchPathExcluded-2: cogs/_template_commands.py\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Crowdin-Project: profile-discord\n"
+"X-Crowdin-Project-ID: 556937\n"
+"X-Crowdin-Language: fr\n"
+"X-Crowdin-File: /master/locales/profile.pot\n"
+"X-Crowdin-File-ID: 65\n"
+"Language: fr_FR\n"
 
 #. TRANSLATORS: Command name.
 #: cogs/advanced_settings.py:18
@@ -49,20 +51,10 @@ msgid "Disable advanced mode for this guild."
 msgstr "Désactive le mode avancé pour cette guilde."
 
 #: cogs/advanced_settings.py:108
-msgid ""
-"Advanced settings have been enabled for your guild. This means that the "
-"character limits for field prompts have been disabled in modals, allowing "
-"you to input commands and use multi-fields in your templates.\n"
-"The character limits still apply, however, and any prompts that _aren't_ "
-"multi-field prompts or commands will be truncated without warning."
-msgstr ""
-"Les paramètres avancés ont été activés pour ta guilde. Cela signifie que les "
-"limites de caractères pour les invites de champ ont été désactivées dans les "
-"modales, ce qui te permet de saisir des commandes et d'utiliser des champs "
-"multiples dans tes modèles.\n"
-"Les limites de caractères s'appliquent toujours, cependant, et toutes les "
-"invites qui _ne sont pas des invites ou des commandes multi-champs seront "
-"tronquées sans avertissement."
+msgid "Advanced settings have been enabled for your guild. This means that the character limits for field prompts have been disabled in modals, allowing you to input commands and use multi-fields in your templates.\n"
+"The character limits still apply, however, and any prompts that _aren't_ multi-field prompts or commands will be truncated without warning."
+msgstr "Les paramètres avancés ont été activés pour ta guilde. Cela signifie que les limites de caractères pour les invites de champ ont été désactivées dans les modales, ce qui te permet de saisir des commandes et d'utiliser des champs multiples dans tes modèles.\n"
+"Les limites de caractères s'appliquent toujours, cependant, et toutes les invites qui _ne sont pas des invites ou des commandes multi-champs seront tronquées sans avertissement."
 
 #: cogs/advanced_settings.py:141
 msgid "Advanced settings have been disabled for your guild."
@@ -71,7 +63,7 @@ msgstr "Les paramètres avancés ont été désactivés pour ta guilde."
 #. TRANSLATORS: Command name.
 #: cogs/bot_info.py:17
 msgid "information"
-msgstr "information"
+msgstr ""
 
 #. TRANSLATORS: Command description.
 #: cogs/bot_info.py:19
@@ -96,7 +88,7 @@ msgstr "Faire un don"
 #. TRANSLATORS: Text appearing on a button in the info command.
 #: cogs/bot_info.py:64
 msgid "Support"
-msgstr "Support"
+msgstr ""
 
 #. TRANSLATORS: Text appearing on a button in the info command.
 #: cogs/bot_info.py:69
@@ -132,8 +124,7 @@ msgstr "Veuillez sélectionner un profil pour le visualiser."
 
 #: cogs/profile_commands.py:368
 #, python-brace-format
-msgid ""
-"You don't have a profile for the template **{template}** with that name."
+msgid "You don't have a profile for the template **{template}** with that name."
 msgstr "Tu n'as pas de profil pour le modèle **{template}** avec ce nom."
 
 #: cogs/profile_commands.py:388
@@ -161,14 +152,8 @@ msgid "You have no profiles for the template **{template}** with that name."
 msgstr "Tu n'as pas de profils pour le modèle **{template}** avec ce nom."
 
 #: cogs/profile_commands.py:545
-msgid ""
-"To edit this profile, it must be converted to a draft. This will unsubmit "
-"it, and it will need to be re-verified before others can see it again. Are "
-"you sure you want to continue?"
-msgstr ""
-"Pour modifier ce profil, il doit être converti en brouillon. Cela le "
-"désenvoutera et il devra être revérifié avant que les autres puissent le "
-"voir à nouveau. Tu es sûre de vouloir continuer ?"
+msgid "To edit this profile, it must be converted to a draft. This will unsubmit it, and it will need to be re-verified before others can see it again. Are you sure you want to continue?"
+msgstr "Pour modifier ce profil, il doit être converti en brouillon. Cela le désenvoutera et il devra être revérifié avant que les autres puissent le voir à nouveau. Tu es sûre de vouloir continuer ?"
 
 #. TRANSLATORS: This is the label for a button
 #. that edits a profile's name
@@ -187,15 +172,12 @@ msgid "What would you like to edit?"
 msgstr "Qu'aimerais-tu éditer ?"
 
 #: cogs/profile_commands.py:659 cogs/profile_verification.py:88
-msgid ""
-"You have already submitted the maximum number of profiles for this template."
+msgid "You have already submitted the maximum number of profiles for this template."
 msgstr "Tu as déjà soumis le nombre maximum de profils pour ce modèle."
 
 #: cogs/profile_commands.py:665
 #, python-brace-format
-msgid ""
-"{user} has already submitted the maximum number of profiles for this "
-"template."
+msgid "{user} has already submitted the maximum number of profiles for this template."
 msgstr "{user} a déjà soumis le nombre maximum de profils pour ce modèle."
 
 #: cogs/profile_edit.py:41
@@ -208,23 +190,15 @@ msgstr "Ce profil est déjà une ébauche."
 
 #: cogs/profile_edit.py:85
 msgid "Your profile has been converted to a draft. You can now edit it."
-msgstr ""
-"Ton profil a été converti en brouillon. Tu peux maintenant le modifier."
+msgstr "Ton profil a été converti en brouillon. Tu peux maintenant le modifier."
 
 #: cogs/profile_edit.py:126
-msgid ""
-"You can only edit draft profiles. Convert this profile to a draft to proceed."
-msgstr ""
-"Tu ne peux modifier que les projets de profils. Transforme ce profil en "
-"brouillon pour continuer."
+msgid "You can only edit draft profiles. Convert this profile to a draft to proceed."
+msgstr "Tu ne peux modifier que les projets de profils. Transforme ce profil en brouillon pour continuer."
 
 #: cogs/profile_edit.py:160
-msgid ""
-"This is not the most recent version of your profile. Please re-run the edit "
-"command to continue."
-msgstr ""
-"Ce n'est pas la version la plus récente de ton profil. Veuillez réexécuter "
-"la commande d'édition pour continuer."
+msgid "This is not the most recent version of your profile. Please re-run the edit command to continue."
+msgstr "Ce n'est pas la version la plus récente de ton profil. Veuillez réexécuter la commande d'édition pour continuer."
 
 #: cogs/profile_edit.py:236
 msgid "Set the name of your profile"
@@ -237,19 +211,15 @@ msgstr "J'ai rencontré une erreur."
 
 #: cogs/profile_edit.py:308
 msgid "The length of your input must be between 1 and 1000 characters."
-msgstr ""
-"La longueur de ta saisie doit être comprise entre 1 et 1000 caractères."
+msgstr "La longueur de ta saisie doit être comprise entre 1 et 1000 caractères."
 
 #: cogs/profile_edit.py:313
 msgid "You did not give a valid number."
 msgstr "Tu n'as pas donné un numéro valide."
 
 #: cogs/profile_edit.py:317
-msgid ""
-"The image URL you gave isn't valid. Please give a direct link to an image."
-msgstr ""
-"L'URL de l'image que tu as donnée n'est pas valide. S'il te plaît, donne un "
-"lien direct vers une image."
+msgid "The image URL you gave isn't valid. Please give a direct link to an image."
+msgstr "L'URL de l'image que tu as donnée n'est pas valide. S'il te plaît, donne un lien direct vers une image."
 
 #: cogs/profile_edit.py:414
 msgid "You already have a profile with that name."
@@ -260,12 +230,8 @@ msgid "This profile has already been submitted."
 msgstr "Ce profil a déjà été soumis."
 
 #: cogs/profile_verification.py:107
-msgid ""
-"This is not the most recent version of the profile. Please re-run the edit "
-"command to continue."
-msgstr ""
-"Il ne s'agit pas de la version la plus récente du profil. Veuillez "
-"réexécuter la commande d'édition pour continuer."
+msgid "This is not the most recent version of the profile. Please re-run the edit command to continue."
+msgstr "Il ne s'agit pas de la version la plus récente du profil. Veuillez réexécuter la commande d'édition pour continuer."
 
 #. TRANSLATORS: Label for a button to approve
 #. a profile
@@ -280,24 +246,16 @@ msgid "Deny"
 msgstr "Refuser"
 
 #: cogs/profile_verification.py:163
-msgid ""
-"Failed to send the profile to the verification channel. Please let an admin "
-"know, and then try again later."
-msgstr ""
-"Impossible d'envoyer le profil au canal de vérification. Veuillez le faire "
-"savoir à un administrateur et réessayer plus tard."
+msgid "Failed to send the profile to the verification channel. Please let an admin know, and then try again later."
+msgstr "Impossible d'envoyer le profil au canal de vérification. Veuillez le faire savoir à un administrateur et réessayer plus tard."
 
 #: cogs/profile_verification.py:172
 msgid "This profile has been submitted for verification."
 msgstr "Ton profil a été soumis pour vérification."
 
 #: cogs/profile_verification.py:199
-msgid ""
-"Failed to send the profile to the archive channel. Please let an admin know, "
-"and then try again later."
-msgstr ""
-"L'envoi de ton profil au canal des archives a échoué. Fais-le savoir à un "
-"administrateur, puis réessaie plus tard."
+msgid "Failed to send the profile to the archive channel. Please let an admin know, and then try again later."
+msgstr "L'envoi de ton profil au canal des archives a échoué. Fais-le savoir à un administrateur, puis réessaie plus tard."
 
 #: cogs/profile_verification.py:208
 msgid "This profile has been submitted to the archive."
@@ -308,12 +266,8 @@ msgid "This profile has been submitted."
 msgstr "Ton profil a été soumis."
 
 #: cogs/profile_verification.py:249
-msgid ""
-"I couldn't add the role to you for some reason. Please let an admin know, "
-"and they should be able to fix this."
-msgstr ""
-"Je n'ai pas pu t'ajouter le rôle pour une raison quelconque. Fais-le savoir "
-"à un administrateur et il devrait pouvoir résoudre ce problème."
+msgid "I couldn't add the role to you for some reason. Please let an admin know, and they should be able to fix this."
+msgstr "Je n'ai pas pu t'ajouter le rôle pour une raison quelconque. Fais-le savoir à un administrateur et il devrait pouvoir résoudre ce problème."
 
 #: cogs/profile_verification.py:330
 msgid "Failed to send the profile to the archive channel."
@@ -672,13 +626,8 @@ msgstr "La limite du modèle que tu as indiquée est trop grande."
 
 #: cogs/template_edit.py:1006
 #, python-brace-format
-msgid ""
-"The template limit you have given is too large. To get access to more "
-"templates, you can donate via the {donate_command_button} command."
-msgstr ""
-"La limite de modèles que tu as indiquée est trop importante. Pour avoir "
-"accès à plus de modèles, tu peux faire un don via la commande "
-"{donate_command_button}."
+msgid "The template limit you have given is too large. To get access to more templates, you can donate via the {donate_command_button} command."
+msgstr "La limite de modèles que tu as indiquée est trop importante. Pour avoir accès à plus de modèles, tu peux faire un don via la commande {donate_command_button}."
 
 #: cogs/template_edit.py:1088
 msgid "Updated slash command."
@@ -700,7 +649,7 @@ msgstr "Optionnel"
 #. attribute when clicked.
 #: cogs/template_field_edit.py:123
 msgid "Type"
-msgstr "Type"
+msgstr ""
 
 #. TRANSLATORS: Text appearing on a button to be pressed when
 #. the user wants to delete a field
@@ -728,12 +677,8 @@ msgstr "Tu as atteint le nombre maximum de champs autorisés pour ce modèle."
 
 #: cogs/template_field_edit.py:374
 #, python-brace-format
-msgid ""
-"To get access more fields, you can donate via the use the "
-"{donate_command_button} command."
-msgstr ""
-"Pour avoir accès à plus de champs, tu peux faire un don en utilisant la "
-"commande {donate_command_button}."
+msgid "To get access more fields, you can donate via the use the {donate_command_button} command."
+msgstr "Pour avoir accès à plus de champs, tu peux faire un don en utilisant la commande {donate_command_button}."
 
 #. TRANSLATORS: Text appearing on a button.
 #: cogs/template_field_edit.py:451
@@ -746,9 +691,7 @@ msgstr "Voulez-vous vraiment supprimer ce champ?"
 
 #: cogs/template_field_edit.py:487
 msgid "Only users with the **manage guild** permission can manage templates."
-msgstr ""
-"Seuls les utilisateurs ayant la permission **gérer la guilde** peuvent gérer "
-"les modèles."
+msgstr "Seuls les utilisateurs ayant la permission **gérer la guilde** peuvent gérer les modèles."
 
 #. TRANSLATORS: Max 45 characters; title of modal
 #: cogs/template_field_edit.py:556
@@ -777,11 +720,8 @@ msgid "Text"
 msgstr "Texte"
 
 #: cogs/template_field_edit.py:787
-msgid ""
-"This is used when you want users to input up to 1000 characters into a field"
-msgstr ""
-"Cette option est utilisée lorsque tu veux que les utilisateurs saisissent "
-"jusqu'à 1000 caractères dans un champ"
+msgid "This is used when you want users to input up to 1000 characters into a field"
+msgstr "Cette option est utilisée lorsque tu veux que les utilisateurs saisissent jusqu'à 1000 caractères dans un champ"
 
 #. TRANSLATORS: Text appearing in a select menu describing a
 #. field type
@@ -797,15 +737,11 @@ msgstr "Utilisé lorsque tu veux que les utilisateurs saisissent un nombre."
 #. field type
 #: cogs/template_field_edit.py:806
 msgid "Image"
-msgstr "Image"
+msgstr ""
 
 #: cogs/template_field_edit.py:809
-msgid ""
-"Used when you want users to input an image URL, which will appear on their "
-"profile."
-msgstr ""
-"Utilisé lorsque tu veux que les utilisateurs saisissent l'URL d'une image, "
-"qui apparaîtra sur leur profil."
+msgid "Used when you want users to input an image URL, which will appear on their profile."
+msgstr "Utilisé lorsque tu veux que les utilisateurs saisissent l'URL d'une image, qui apparaîtra sur leur profil."
 
 #: cogs/template_field_edit.py:827
 msgid "What do you want to set the field type to?"
@@ -813,7 +749,7 @@ msgstr "Sur quoi veux-tu régler le type de champ ?"
 
 #: cogs/utils/profiles/field.py:242
 msgid "Index"
-msgstr "Index"
+msgstr ""
 
 #: cogs/utils/profiles/field.py:267
 msgid "Field Type"
@@ -863,33 +799,3 @@ msgstr "Rôle donné : {0}"
 msgid "Discord User"
 msgstr "Utilisateur de Discord"
 
-#~ msgid "Your profile has been submitted."
-#~ msgstr "Ton profil a été soumis."
-
-#~ msgid "Decline"
-#~ msgstr "Refuser"
-
-#, python-brace-format
-#~ msgid "Failed to get template with ID `{template_id}`."
-#~ msgstr "Impossible de récupérer le modèle avec l'ID `{template_id}`."
-
-#~ msgid "No reason provided."
-#~ msgstr "Aucune raison n'a été fournie."
-
-#~ msgid "Would you like to give a denial reason?"
-#~ msgstr "Tu veux donner une raison de refus ?"
-
-#~ msgid "Denial Reason"
-#~ msgstr "Raison du refus"
-
-#~ msgid "Why are you denying this profile?"
-#~ msgstr "Pourquoi refuses-tu ce profil ?"
-
-#~ msgid "Failed to send profile archive message."
-#~ msgstr "Impossible d'envoyer le message d'archive de profil."
-
-#~ msgid "Failed to add role to user."
-#~ msgstr "Impossible d'ajouter un rôle à l'utilisateur."
-
-#~ msgid "Profile dealt with successfully."
-#~ msgstr "Profil traité avec succès."

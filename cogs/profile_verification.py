@@ -214,7 +214,7 @@ class ProfileVerification(vbu.Cog[vbu.Bot]):
             if channel is None:
                 await interaction.edit_original_message(
                     content=_(
-                        "You don't have a verification thread. Your "
+                        "You don't have an archive thread. Your "
                         "profile has still been approved, but no archive "
                         "message has been sent."
                     ),
@@ -358,10 +358,10 @@ class ProfileVerification(vbu.Cog[vbu.Bot]):
             if channel is None:
                 await interaction.followup.send(
                     content=_(
-                        "This user doesn't have a verification thread. Their "
+                        "{user} doesn't have an archive thread. Their "
                         "profile has still been approved, but no archive "
                         "message has been sent."
-                    ),
+                    ).format(user=f"<@{profile.user_id}>"),
                     ephemeral=True,
                 )
 

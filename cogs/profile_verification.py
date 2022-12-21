@@ -214,7 +214,7 @@ class ProfileVerification(vbu.Cog[vbu.Bot]):
             if channel is None:
                 await interaction.edit_original_message(
                     content=_(
-                        "You doesn't have a verification thread. Your "
+                        "You don't have a verification thread. Your "
                         "profile has still been approved, but no archive "
                         "message has been sent."
                     ),
@@ -353,28 +353,39 @@ class ProfileVerification(vbu.Cog[vbu.Bot]):
                 user,
                 template,
             )
-            assert channel is not None
 
-            # Actually do the send
-            embed = profile.build_embed(
-                self.bot,
-                interaction,
-                user,
-            )
-            try:
-                sent_message = await channel.send(
-                    content=f"<@{profile.user_id}>",
-                    embed=embed,
-                    # allowed_mentions=discord.AllowedMentions.none(),
-                )
-            except discord.HTTPException:
+            # Make sure they have a channel
+            if channel is None:
                 await interaction.followup.send(
-                    _(
-                        "Failed to send the profile to the archive "
-                        "channel."
+                    content=_(
+                        "This user doesn't have a verification thread. Their "
+                        "profile has still been approved, but no archive "
+                        "message has been sent."
                     ),
                     ephemeral=True,
                 )
+
+            # Actually do the send
+            else:
+                embed = profile.build_embed(
+                    self.bot,
+                    interaction,
+                    user,
+                )
+                try:
+                    sent_message = await channel.send(
+                        content=f"<@{profile.user_id}>",
+                        embed=embed,
+                        # allowed_mentions=discord.AllowedMentions.none(),
+                    )
+                except discord.HTTPException:
+                    await interaction.followup.send(
+                        _(
+                            "Failed to send the profile to the archive "
+                            "channel."
+                        ),
+                        ephemeral=True,
+                    )
 
         # Save the new data into the database
         async with vbu.Database() as db:

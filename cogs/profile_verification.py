@@ -230,9 +230,8 @@ class ProfileVerification(vbu.Cog[vbu.Bot]):
                 )
                 try:
                     sent_message = await channel.send(
-                        content=profile.id,
+                        content=f"<@{profile.user_id}>",
                         embed=embed,
-                        allowed_mentions=discord.AllowedMentions.none(),
                     )
                 except discord.HTTPException:
                     return await interaction.edit_original_message(

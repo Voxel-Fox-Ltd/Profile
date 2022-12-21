@@ -587,7 +587,8 @@ class Template(object):
                     role_id,
                     max_profile_count,
                     context_command_id,
-                    deleted
+                    deleted,
+                    archive_is_forum
                 )
             VALUES
                 (
@@ -601,7 +602,8 @@ class Template(object):
                     $8,
                     $9,
                     $10,
-                    $11
+                    $11,
+                    $12
                 )
             ON CONFLICT
                 (id)
@@ -616,7 +618,8 @@ class Template(object):
                 role_id = $8,
                 max_profile_count = $9,
                 context_command_id = $10,
-                deleted = $11
+                deleted = $11,
+                archive_is_forum = $12
             """,
             self.id,
             self.name,
@@ -629,6 +632,7 @@ class Template(object):
             self.max_profile_count,
             self.context_command_id,
             self.deleted,
+            self.archive_is_forum,
         )
         return self
 

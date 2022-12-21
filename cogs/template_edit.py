@@ -717,7 +717,7 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
             interaction,
             template_id,
             archive_channel_id=(
-                new_archive_channel.id
+                str(new_archive_channel.id)
                 if new_archive_channel
                 else None
             ),

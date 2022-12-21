@@ -369,7 +369,7 @@ class TemplateFieldEdit(vbu.Cog[vbu.Bot]):
                     "You are at the maximum amount of fields "
                     "allowed for this template."
                 )
-                mention = utils.mention_command(self.bot.get_command("info"))
+                mention = utils.mention_command(self.bot.get_command("information"))
                 upsell = _(
                     "To get access more fields, you can donate via the use the "
                     "{donate_command_button} command."

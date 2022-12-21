@@ -402,7 +402,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                         "allowed for this guild."
                     )
                 )
-                mention = utils.mention_command(self.bot.get_command("info"))
+                mention = utils.mention_command(self.bot.get_command("information"))
                 upsell = _(
                     (
                         "To get access more templates, you can donate via the "

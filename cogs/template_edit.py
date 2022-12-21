@@ -1001,7 +1001,7 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
                     _("The template limit you have given is too large."),
                     ephemeral=True,
                 )
-            mention = utils.mention_command(self.bot.get_command("info"))
+            mention = utils.mention_command(self.bot.get_command("information"))
             return await interaction.followup.send(
                 _(
                     "The template limit you have given is too large. "

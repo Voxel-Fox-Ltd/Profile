@@ -646,6 +646,9 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
                     channel_types=[
                         discord.ChannelType.news,
                         discord.ChannelType.text,
+                        discord.ChannelType.forum,
+                        discord.ChannelType.public_thread,
+                        discord.ChannelType.private_thread,
                     ],
                     min_values=0,
                     max_values=1,

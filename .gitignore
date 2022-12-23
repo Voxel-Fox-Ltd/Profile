@@ -1,4 +1,4 @@
-*.toml
+config/*.toml
 !*.example*
 _*
 !__*

@@ -357,7 +357,7 @@ class UserProfile(Generic[T]):
             # Set data
             if field.field_type == ImageField:
                 embed.set_image(url=field_value)
-            else:
+            elif field_value:
                 embed.add_field(
                     name=field.name,
                     value=field_value,

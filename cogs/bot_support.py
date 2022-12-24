@@ -109,6 +109,53 @@ class BotSupport(vbu.Cog):
             )
         await ctx.interaction.response.send_message(**kwargs)
 
+    @commands.group(
+        application_command_meta=commands.ApplicationCommandMeta(
+            guild_ids=[
+                vbu.Constants.SUPPORT_GUILD_ID,
+            ],
+            permissions=discord.Permissions(
+                manage_guild=True,
+            ),
+        ),
+    )
+    async def anytemplate(
+            self, ctx: vbu.SlashContext):
+        """
+        The bot support manage for other templates.
+        """
+
+        ...
+
+    @anytemplate.command(
+        name="edit",
+        application_command_meta=commands.ApplicationCommandMeta(
+            options=[
+                discord.ApplicationCommandOption(
+                    name="id",
+                    description="The ID of the template you want to edit.",
+                    type=discord.ApplicationCommandOptionType.string,
+                    required=True
+                )
+            ],
+            guild_ids=[
+                vbu.Constants.SUPPORT_GUILD_ID,
+            ],
+            permissions=discord.Permissions(
+                manage_guild=True,
+            ),
+        ),
+    )
+    async def anytemplate_edit(
+            self,
+            ctx: vbu.SlashContext,
+            id: str):
+        """
+        Edit any profile by its ID.
+        """
+
+        await self.bot.get_cog("TemplateCommands").template_edit(ctx, id)
+
 
 def setup(bot: vbu.Bot):
     x = BotSupport(bot)

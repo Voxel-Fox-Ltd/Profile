@@ -137,6 +137,12 @@ class Template(object):
         else:
             self._id = uuid.UUID(value)
 
+    @property
+    def display_name(self) -> Optional[str]:
+        if self.name is None:
+            return None
+        return self.name.split(" ")[-1]
+
     def get_verification_channel_id(
             self,
             member: discord.Member) -> Optional[int]:
@@ -648,7 +654,7 @@ class Template(object):
 
         # Create the initial embed
         fields = self.field_list
-        embed = vbu.Embed(use_random_colour=True, title=self.name)
+        embed = vbu.Embed(use_random_colour=True, title=self.display_name)
 
         # Work out what goes in the description
         description_lines = [

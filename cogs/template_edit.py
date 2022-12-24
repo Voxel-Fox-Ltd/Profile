@@ -267,6 +267,8 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
                 "The template was deleted while the "
                 "user was editing an attribute."
             )
+            if "name" in kwargs and template.deleted:
+                kwargs["name"] = f"{template.id} {kwargs['name']}"
             template = await template.update(db, **kwargs)
 
         # And send the new template to the user

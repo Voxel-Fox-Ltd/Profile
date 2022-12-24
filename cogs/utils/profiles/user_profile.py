@@ -138,6 +138,12 @@ class UserProfile(Generic[T]):
         else:
             self.template_id = uuid.UUID(value)
 
+    @property
+    def display_name(self) -> Optional[str]:
+        if self.name is None:
+            return None
+        return self.name.split(" ")[-1]
+
     @classmethod
     async def fetch_profile_by_id(
             cls,
@@ -307,7 +313,7 @@ class UserProfile(Generic[T]):
         embed = vbu.Embed(use_random_colour=True)
         if self.template is None:
             raise AttributeError("Missing template field for user profile")
-        embed.title = f"{self.template.name} | {self.name}"
+        embed.title = f"{self.template.display_name} | {self.display_name}"
         if self.template.colour:
             embed.colour = self.template.colour
 

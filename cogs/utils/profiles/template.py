@@ -642,7 +642,7 @@ class Template(object):
         )
         return self
 
-    @vbu.i18n(__name__, 2)
+    @vbu.i18n("profile", 2, use_guild=True)
     def build_embed(
             self,
             bot: vbu.Bot,

@@ -226,7 +226,7 @@ class Field:
             return cls(**data[0])
         return None
 
-    @vbu.i18n("profile", 2)
+    @vbu.i18n("profile", 2, use_guild=True)
     def build_embed(
             self,
             bot: vbu.Bot,

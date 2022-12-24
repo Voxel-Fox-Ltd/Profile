@@ -7,7 +7,7 @@ from cogs import utils
 class MessageUtils(vbu.Cog[utils.types.Bot]):
 
     @vbu.Cog.listener("on_component_interaction")
-    @vbu.i18n("profile")
+    @vbu.i18n("profile", use_guild=True)
     async def message_edit_component_listener(
             self,
             interaction: discord.ComponentInteraction):

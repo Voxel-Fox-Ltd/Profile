@@ -439,7 +439,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
             original_name = profile.name
             await profile.update(
                 db,
-                name=f"{uuid.uuid4()} {profile.name}",
+                name=f"{profile.id} {profile.name}",
                 deleted=True,
             )
 

@@ -293,7 +293,7 @@ class UserProfile(Generic[T]):
                 o.value is not None
         }
 
-    @vbu.i18n(__name__, 2)
+    @vbu.i18n(__name__, 2, use_guild=True)
     def build_embed(
             self,
             bot: vbu.Bot,

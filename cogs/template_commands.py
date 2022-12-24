@@ -168,6 +168,12 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         A list of all the templates created on your guild.
         """
 
+        # Make sure we're in a guild
+        if ctx.interaction.guild_id is None:
+            return await ctx.interaction.response.send_message(
+                _("This command can only be used in a guild."),
+            )
+
         # Set up a list of templates
         template_format_zero = _(
             "\u2022 **{template_name}** (0 profiles)",
@@ -251,6 +257,12 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         """
         Delete one of your templates.
         """
+
+        # Make sure we're in a guild
+        if ctx.interaction.guild_id is None:
+            return await ctx.interaction.response.send_message(
+                _("This command can only be used in a guild."),
+            )
 
         # This command will spawn the buttons that allow a moderator to delete
         # a template. This command does not directly delete the template.
@@ -367,6 +379,12 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         Create a new template for your guild.
         """
 
+        # Make sure we're in a guild
+        if ctx.interaction.guild_id is None:
+            return await ctx.interaction.response.send_message(
+                _("This command can only be used in a guild."),
+            )
+
         # Check that the name is valid
         cog: Optional[TemplateEdit]
         cog = self.bot.get_cog("TemplateEdit")  # type: ignore
@@ -481,6 +499,12 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         """
         Edit an already existing template.
         """
+
+        # Make sure we're in a guild
+        if ctx.interaction.guild_id is None:
+            return await ctx.interaction.response.send_message(
+                _("This command can only be used in a guild."),
+            )
 
         # Make sure they used the autocomplete to get the template
         if not utils.uuid.check(name):
@@ -606,6 +630,12 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         Create a profile for other users.
         """
 
+        # Make sure we're in a guild
+        if ctx.interaction.guild_id is None:
+            return await ctx.interaction.response.send_message(
+                _("This command can only be used in a guild."),
+            )
+
         # Make sure they used the autocomplete to get the template
         if not utils.uuid.check(template):
             return await ctx.interaction.response.send_message(
@@ -701,6 +731,12 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         """
         Delete a profile for other users.
         """
+
+        # Make sure we're in a guild
+        if ctx.interaction.guild_id is None:
+            return await ctx.interaction.response.send_message(
+                _("This command can only be used in a guild."),
+            )
 
         # Make sure they used the autocomplete to get the template
         if not utils.uuid.check(template):
@@ -815,6 +851,12 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
         """
         Create a profile for other users.
         """
+
+        # Make sure we're in a guild
+        if ctx.interaction.guild_id is None:
+            return await ctx.interaction.response.send_message(
+                _("This command can only be used in a guild."),
+            )
 
         # Make sure they used the autocomplete to get the template
         if not utils.uuid.check(template):

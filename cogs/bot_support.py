@@ -60,7 +60,11 @@ class BotSupport(vbu.Cog):
                 return await ctx.interaction.response.send_message(
                     "That profile doesn't exist.",
                 )
-            await profile.fetch_template(db)
+            template = await profile.fetch_template(db)
+            if template is None:
+                return await ctx.interaction.response.send_message(
+                    "That profile doesn't have a template.",
+                )
             await profile.fetch_filled_fields(db)
             profile = cast(utils.UserProfile[utils.Template], profile)
 

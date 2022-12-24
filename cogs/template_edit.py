@@ -262,6 +262,7 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
             template = await utils.Template.fetch_template_by_id(
                 db,
                 template_id,
+                allow_deleted=interaction.guild_id == vbu.Constants.SUPPORT_GUILD_ID
             )
             assert template, (
                 "The template was deleted while the "

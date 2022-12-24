@@ -133,6 +133,7 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
             template = await Template.fetch_template_by_id(db, profile.template_id)
             assert template, "Template does not exist."
             profile.template = template
+            profile = cast(utils.UserProfile[utils.Template], profile)
 
             # Get field
             field = profile.template.fields.get(field_id)
@@ -180,7 +181,7 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
             components=[
                 discord.ui.ActionRow(
                     discord.ui.InputText(
-                        label=p[:45],
+                        label=p[:45] or str(index),
                         value=v,
                         style=(
                             discord.TextStyle.long
@@ -191,7 +192,7 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
                         required=False,
                     ),
                 )
-                for p, v in zip(prompt_split, value_split)
+                for index, (p, v) in enumerate(zip(prompt_split, value_split))
             ],
         )
         await interaction.response.send_modal(modal)

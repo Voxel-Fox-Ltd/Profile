@@ -1,4 +1,4 @@
-from typing import cast
+from typing import Any, cast
 
 import discord
 from discord.ext import commands, vbu
@@ -60,7 +60,7 @@ class BotSupport(vbu.Cog):
                 return await ctx.interaction.response.send_message(
                     "That profile doesn't exist.",
                 )
-            template = await profile.fetch_template(db)
+            template = await profile.fetch_template(db, allow_deleted=True)
             if template is None:
                 return await ctx.interaction.response.send_message(
                     "That profile doesn't have a template.",
@@ -94,9 +94,19 @@ class BotSupport(vbu.Cog):
             ctx,
             member,
         )
-        await ctx.interaction.response.send_message(
-            embeds=[embed],
-        )
+        kwargs: dict[str, Any] = {
+            "content": f"Profile for {member} ({profile.user_id})\n\n",
+            "embeds": [embed],
+        }
+        if template.deleted:
+            kwargs["content"] += (
+                "**The template associated with this profile is deleted.**\n"
+            )
+        if profile.deleted:
+            kwargs["content"] += (
+                "**This profile is deleted.**\n"
+            )
+        await ctx.interaction.response.send_message(**kwargs)
 
 
 def setup(bot: vbu.Bot):

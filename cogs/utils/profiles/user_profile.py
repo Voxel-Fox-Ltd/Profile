@@ -205,7 +205,8 @@ class UserProfile(Generic[T]):
             self,
             db: vbu.Database,
             *,
-            fetch_fields: bool = True) -> Optional[Template]:
+            fetch_fields: bool = True,
+            allow_deleted: bool = False) -> Optional[Template]:
         """
         Fetch the template for this field and store it in .template.
         """
@@ -214,8 +215,9 @@ class UserProfile(Generic[T]):
             db,
             self.template_id,
             fetch_fields=fetch_fields,
+            allow_deleted=allow_deleted,
         )
-        self.template = template
+        self.template = template  # pyright: ignore
         return template
 
     async def fetch_message(

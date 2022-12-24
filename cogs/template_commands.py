@@ -297,6 +297,17 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                 ephemeral=True,
             )
 
+        # Make sure the template comes from this guild
+        if ctx.command and ctx.command.cog_name == "BotSupport":
+            pass
+        else:
+            assert ctx.interaction.guild
+            if ctx.interaction.guild.id != template_o.guild_id:
+                return await ctx.interaction.response.send_message(
+                    _("That template doesn't belong to this guild."),
+                    ephemeral=True,
+                )
+
         # Send them buttons asking if they want to delete
         components = discord.ui.MessageComponents(
             discord.ui.ActionRow(
@@ -490,6 +501,17 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
             if not template:
                 return await ctx.interaction.response.send_message(
                     _("You don't have a template with that name."),
+                    ephemeral=True,
+                )
+
+        # Make sure the template comes from this guild
+        if ctx.command and ctx.command.cog_name == "BotSupport":
+            pass
+        else:
+            assert ctx.interaction.guild
+            if ctx.interaction.guild.id != template.guild_id:
+                return await ctx.interaction.response.send_message(
+                    _("That template doesn't belong to this guild."),
                     ephemeral=True,
                 )
 

@@ -497,6 +497,10 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
             template = await utils.Template.fetch_template_by_id(
                 db,
                 name,
+                allow_deleted=(
+                    ctx.command is not None
+                    and ctx.command.cog_name == "BotSupport"
+                ),
             )
             if not template:
                 return await ctx.interaction.response.send_message(

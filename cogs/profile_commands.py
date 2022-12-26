@@ -155,7 +155,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
             )
 
         # Set up the options
-        interaction_options = interaction.options[0].options[0].options  # pyright: ignore
+        interaction_options = interaction.options[0].options  # pyright: ignore
         interaction_options = cast(
             list[discord.ApplicationCommandInteractionDataOption],
             interaction_options,
@@ -541,15 +541,20 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
 
         # See what profiles the user has for that template
         if not profile:
+
+            # Make sure they used the autocomplete to get the template
+            profile_name: str = interaction.options[0].options[0].value  # pyright: ignore
+            if not utils.uuid.check(profile_name):
+                return await interaction.response.send_message(
+                    _("Please use the autocomplete to select a profile."),
+                    ephemeral=True,
+                )
+
+            # Get the profile
             async with vbu.Database() as db:
                 profile = await utils.UserProfile.fetch_profile_by_id(
                     db,
-                    (
-                        interaction
-                        .options[0]  # pyright: ignore
-                        .options[0]
-                        .value
-                    ),  # pyright: ignore
+                    profile_name,
                 )
 
                 # Make sure they have something

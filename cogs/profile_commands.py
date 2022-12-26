@@ -154,23 +154,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
                 fetch_filled_fields=False,
             )
 
-        # Set up the options
-        interaction_options = interaction.options[0].options  # pyright: ignore
-        interaction_options = cast(
-            list[discord.ApplicationCommandInteractionDataOption],
-            interaction_options,
-        )
-
         # Get the current value
-        current_val = ""
-        try:
-            current_val = [
-                i.value
-                for i in interaction_options
-                if i.focused and i.value
-            ][0]
-        except IndexError:
-            pass
 
         # Get user profiles
         options = [
@@ -182,6 +166,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
         ]
 
         # Sort by name
+        current_val = interaction.options[0].options[0].value  # pyright: ignore
         options.sort(
             key=lambda c: (
                 SequenceMatcher(

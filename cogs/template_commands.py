@@ -916,11 +916,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
             discord.ApplicationCommandOptionChoice(name=i.name, value=i.id)
             for i in templates
         ]
-        current_val = ""
-        try:
-            current_val = [i.value for i in interaction.options][0]
-        except IndexError:
-            pass
+        current_val = interaction.options[0].options[0].value  # pyright: ignore
         options.sort(
             key=lambda c: (
                 SequenceMatcher(

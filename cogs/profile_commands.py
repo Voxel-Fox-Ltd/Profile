@@ -377,15 +377,16 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
 
         # See what profiles the user has for that template
         if not profile:
+            profile_name: str = interaction.options[0].options[0].value  # pyright: ignore
+            if not utils.uuid.check(profile_name):
+                return await interaction.response.send_message(
+                    _("Please use the autocomplete to select a profile."),
+                    ephemeral=True,
+                )
             async with vbu.Database() as db:
                 profile = await utils.UserProfile.fetch_profile_by_id(
                     db,
-                    (
-                        interaction
-                        .options[0]  # pyright: ignore
-                        .options[0]
-                        .value
-                    ),  # pyright: ignore
+                    profile_name,
                 )
 
         # Do some basic checks

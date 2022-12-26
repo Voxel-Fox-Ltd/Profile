@@ -226,34 +226,46 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
             f"/{template.name} {action} ({template.id}) "
             f"(G{interaction.guild_id}/U{interaction.user.id})"
         )
+        coro = None
         match action:
             case "get":
                 if interaction.resolved.members:
-                    return await self.profile_get(
+                    coro = self.profile_get(
                         interaction,
                         template,
                         list(interaction.resolved.members.values())[0],
                     )
                 else:
-                    return await self.profile_get(
+                    coro = self.profile_get(
                         interaction,
                         template,
                     )
             case "create":
-                return await self.profile_create(
+                coro = self.profile_create(
                     interaction,
                     template,
                 )
             case "delete":
-                return await self.profile_delete(
+                coro = self.profile_delete(
                     interaction,
                     template,
                 )
             case "edit":
-                return await self.profile_edit(
+                coro = self.profile_edit(
                     interaction,
                     template,
                 )
+
+        # Run that coro
+        if not coro:
+            return
+        asyncio.create_task(coro)
+        asyncio.create_task(
+            self.bot.log_command(
+                interaction,
+                command_name=f"profile {action}",
+            )
+        )
 
     @vbu.i18n("profile")
     async def profile_get(

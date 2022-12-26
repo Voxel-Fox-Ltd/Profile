@@ -1013,7 +1013,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
             ),
             reverse=True,
         )
-        await interaction.response.send_autocomplete(options)
+        await interaction.response.send_autocomplete(options[:25])
 
 
 def setup(bot: vbu.Bot):

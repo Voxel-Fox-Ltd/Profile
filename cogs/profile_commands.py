@@ -1,5 +1,6 @@
-import uuid
 from typing import TYPE_CHECKING, Any, Optional, Tuple, cast
+import asyncio
+from difflib import SequenceMatcher
 
 import discord
 from discord.ext import vbu
@@ -153,14 +154,47 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
                 fetch_filled_fields=False,
             )
 
-        # Return them some options
-        await interaction.response.send_autocomplete([
+        # Set up the options
+        interaction_options = interaction.options[0].options[0].options  # pyright: ignore
+        interaction_options = cast(
+            list[discord.ApplicationCommandInteractionDataOption],
+            interaction_options,
+        )
+
+        # Get the current value
+        current_val = ""
+        try:
+            current_val = [
+                i.value
+                for i in interaction_options
+                if i.focused
+            ][0]
+        except IndexError:
+            pass
+
+        # Get user profiles
+        options = [
             discord.ApplicationCommandOptionChoice(
                 name=str(profile.name),
                 value=profile.id,
             )
             for profile in profiles
-        ])
+        ]
+
+        # Sort by name
+        options.sort(
+            key=lambda c: (
+                SequenceMatcher(
+                    None,
+                    c.name.lower(),
+                    (current_val or "").lower(),
+                ).quick_ratio()
+            ),
+            reverse=True,
+        )
+
+        # Return them some options
+        await interaction.response.send_autocomplete(options[:25])
 
     @vbu.Cog.listener()
     async def on_slash_command(

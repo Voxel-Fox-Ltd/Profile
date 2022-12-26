@@ -999,7 +999,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
             current_val = [
                 i.value
                 for i in interaction_options
-                if i.focused
+                if i.focused and i.value
             ][0]
         except IndexError:
             pass

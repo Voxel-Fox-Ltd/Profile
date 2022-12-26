@@ -722,6 +722,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
             guild_only=True,
         ),
     )
+    @vbu.i18n("profile")
     async def template_manage_delete(
             self,
             ctx: GC[discord.CommandInteraction],
@@ -842,6 +843,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
             guild_only=True,
         ),
     )
+    @vbu.i18n("profile")
     async def template_manage_edit(
             self,
             ctx: GC[discord.CommandInteraction],

@@ -791,7 +791,7 @@ class TemplateFieldEdit(vbu.Cog[vbu.Bot]):
                 description=_(
                     "This is used when you want users to input up to 1000 "
                     "characters into a field"
-                ),
+                )[:100],
             ),
             discord.ui.SelectOption(
                 # TRANSLATORS: Text appearing in a select menu describing a
@@ -800,7 +800,7 @@ class TemplateFieldEdit(vbu.Cog[vbu.Bot]):
                 value="NUMBER",
                 description=_(
                     "Used when you want users to input a number."
-                ),
+                )[:100],
             ),
         ]
         if not has_image_field:
@@ -813,7 +813,7 @@ class TemplateFieldEdit(vbu.Cog[vbu.Bot]):
                     description=_(
                         "Used when you want users to input an image URL, "
                         "which will appear on their profile."
-                    ),
+                    )[:100],
                 )
             )
         components = discord.ui.MessageComponents(

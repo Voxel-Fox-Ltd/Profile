@@ -416,7 +416,10 @@ class ProfileVerification(vbu.Cog[vbu.Bot]):
             pass
 
         # Delete the original message
-        await interaction.delete_original_message()
+        try:
+            await interaction.delete_original_message()
+        except discord.HTTPException:
+            pass
 
         # Add the role to the user
         role_id_to_add = template.get_role_id(user)

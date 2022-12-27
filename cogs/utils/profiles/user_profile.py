@@ -367,7 +367,7 @@ class UserProfile(Generic[T]):
                 embed.set_image(url=field_value)
             elif field_value:
                 embed.add_field(
-                    name=field.name,
+                    name=field.name or field.id,
                     value=field_value,
                     inline=len(field_value) <= 100,
                 )

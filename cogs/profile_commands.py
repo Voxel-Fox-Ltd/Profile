@@ -619,7 +619,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
                 unfilled_field_count += 1
             buttons.append(
                 discord.ui.Button(
-                    label=field.name,
+                    label=field.name or field.id,
                     custom_id=f"PROFILE EDIT {short_profile_id} {short_field_id}",
                     style=button_style,
                     disabled=field.is_command,

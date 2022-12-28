@@ -4,6 +4,7 @@ from typing import Generic, TypeVar, Union, Optional, Dict, List
 from typing_extensions import Self
 import uuid
 import operator
+import re
 
 import discord
 from discord.ext import commands, vbu
@@ -363,8 +364,15 @@ class UserProfile(Generic[T]):
             field_value = field_value.strip()
 
             # Set data
-            if field.field_type == ImageField:
-                embed.set_image(url=field_value)
+            if field.field_type == ImageField and field_value:
+                if re.search("https?://(.+?)", field_value, re.IGNORECASE):
+                    embed.set_image(url=field_value)
+                else:
+                    embed.add_field(
+                        name=field.name or field.id,
+                        value=field_value,
+                        inline=False,
+                    )
             elif field_value:
                 embed.add_field(
                     name=field.name or field.id,

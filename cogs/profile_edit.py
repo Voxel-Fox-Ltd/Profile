@@ -176,7 +176,7 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
 
         # Ask the user to fill in the field
         modal = discord.ui.Modal(
-            title=field.name[:45],
+            title=field.name[:45] or field.id,
             custom_id=f"PROFILE SET {short_profile_id} {short_field_id}",
             components=[
                 discord.ui.ActionRow(

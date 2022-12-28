@@ -650,7 +650,7 @@ class TemplateFieldEdit(vbu.Cog[vbu.Bot]):
             assert field
 
             # See if the guild is set to advanced
-            advanced = utils.is_guild_advanced(db, interaction.guild_id)
+            advanced = await utils.is_guild_advanced(db, interaction.guild_id)
 
         # Build and send modal
         modal = discord.ui.Modal(

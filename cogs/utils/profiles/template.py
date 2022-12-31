@@ -245,7 +245,10 @@ class Template(object):
         (in order) for the template.
         """
 
-        return sorted(self.fields.values(), key=operator.attrgetter("index"))
+        return sorted(
+            self.fields.values(),
+            key=operator.attrgetter("index", "id"),
+        )
 
     async def fetch_profile_for_user(
             self,

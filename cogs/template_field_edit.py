@@ -82,6 +82,16 @@ class TemplateFieldEdit(vbu.Cog[vbu.Bot]):
             discord.ui.Button(
                 # TRANSLATORS: Text appearing on a button that edits the
                 # attribute when clicked.
+                label=_("Index"),
+                custom_id=(
+                    f"FIELD_EDIT INDEX {utils.uuid.encode(field.id)} "
+                    f"{field.index}"
+                ),
+                style=discord.ButtonStyle.secondary,
+            ),
+            discord.ui.Button(
+                # TRANSLATORS: Text appearing on a button that edits the
+                # attribute when clicked.
                 label=_("Name"),
                 custom_id=(
                     f"FIELD_EDIT NAME {utils.uuid.encode(field.id)} "
@@ -394,7 +404,7 @@ class TemplateFieldEdit(vbu.Cog[vbu.Bot]):
             id=None,
             name="",
             prompt="",
-            index=len(template.all_fields),
+            index=max(i.index for i in template.all_fields.values()) + 1,
             template_id=template_id,
         )
 
@@ -576,6 +586,91 @@ class TemplateFieldEdit(vbu.Cog[vbu.Bot]):
             ],
         )
         await interaction.response.send_modal(modal)
+
+    @vbu.Cog.listener("on_component_interaction")  # FIELD_EDIT INDEX [FID] [IDX]
+    @vbu.i18n("profile")
+    async def field_edit_index_component_listener(
+            self,
+            interaction: discord.ComponentInteraction):
+        """
+        Listens for edit field name button to be pressed.
+        Sends modal.
+        """
+
+        # Get current name and field ID
+        if not interaction.custom_id.startswith("FIELD_EDIT INDEX "):
+            return
+        encoded_field_id, current_index = interaction.custom_id.split(" ")[2:]
+        self.logger.info(
+            "Sending modal for field index change for field %s",
+            utils.uuid.decode(encoded_field_id),
+        )
+
+        # Build and send modal
+        modal = discord.ui.Modal(
+            # TRANSLATORS: Max 45 characters; title of modal
+            title=_("Set field index")[:45],
+            custom_id=f"FIELD_SET INDEX {encoded_field_id}",
+            components=[
+                discord.ui.ActionRow(
+                    discord.ui.InputText(
+                        # TRANSLATORS: Max 45 characters; label of text input
+                        label=_("What do you want to set the index to?")[:45],
+                        style=discord.TextStyle.short,
+                        custom_id=f"FIELD_DATA INDEX {encoded_field_id}",
+                        min_length=1,
+                        max_length=3,
+                        required=True,
+                        value=current_index,
+                    ),
+                ),
+            ],
+        )
+        await interaction.response.send_modal(modal)
+
+    @vbu.Cog.listener("on_modal_submit")  # FIELD_SET INDEX [FID]
+    @vbu.i18n("profile")
+    async def field_edit_index_modal_listener(
+            self,
+            interaction: discord.ModalInteraction):
+        """
+        Listens for edit field name modal to be submitted.
+        Sets field name.
+        """
+
+        # Get the ID of the field
+        if not interaction.custom_id.startswith("FIELD_SET INDEX"):
+            return
+        encoded_field_id = interaction.custom_id.split(" ")[2]
+        field_id = utils.uuid.decode(encoded_field_id)
+
+        # Get the new name from the components
+        new_field_index_str: str = (
+            interaction
+            .components[0]
+            .components[0]  # type: ignore - not an issue for modals
+            .value
+        )
+
+        # Check that the name is valid
+        if not new_field_index_str.isdigit():
+            return await interaction.response.send_message(
+                _("You did not give a valid number."),
+                allowed_mentions=discord.AllowedMentions.none(),
+                ephemeral=True,
+            )
+        self.logger.info(
+            "Setting index for field %s to %s",
+            field_id, new_field_index_str,
+        )
+
+        # Get and update the template
+        await interaction.response.defer_update()
+        await self.update_field(
+            interaction,
+            field_id,
+            index=int(new_field_index_str),
+        )
 
     @vbu.Cog.listener("on_modal_submit")  # FIELD_SET NAME [FID]
     @vbu.i18n("profile")

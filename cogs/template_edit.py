@@ -200,10 +200,12 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
             # Create command
             command = discord.ApplicationCommand(
                 name=(
-                    # TRANSLATORS: Name of a context menu command
+                    # TRANSLATORS: Name of a context menu command.
+                    # Max 32 characters (including template name); is
+                    # truncated.
                     _("Get {template_name} profiles for user.")
                     .format(template_name=name)
-                )[:36] or template.name,
+                )[:32] or template.name,
                 type=discord.ApplicationCommandType.user,
             )
             return command

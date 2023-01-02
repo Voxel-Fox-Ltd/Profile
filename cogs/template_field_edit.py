@@ -400,11 +400,16 @@ class TemplateFieldEdit(vbu.Cog[vbu.Bot]):
                 )
 
         # Get a new ID
+        new_index: int
+        try:
+            new_index = max(i.index for i in template.all_fields.values()) + 1
+        except ValueError:
+            new_index = 0
         field = utils.Field(
             id=None,
             name="",
             prompt="",
-            index=max(i.index for i in template.all_fields.values()) + 1,
+            index=new_index,
             template_id=template_id,
         )
 

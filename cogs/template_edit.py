@@ -189,7 +189,7 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
         return command
 
     @classmethod
-    @vbu.i18n("profile")
+    @vbu.i18n("profile", use_guild=True)
     def get_profile_context_command(
                 cls,
                 name: str) -> discord.ApplicationCommand:
@@ -203,7 +203,7 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
                     # TRANSLATORS: Name of a context menu command
                     _("Get {template_name} profiles for user.")
                     .format(template_name=name)
-                ),
+                )[:36],
                 type=discord.ApplicationCommandType.user,
             )
             return command

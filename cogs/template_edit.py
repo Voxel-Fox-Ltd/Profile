@@ -203,7 +203,7 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
                     # TRANSLATORS: Name of a context menu command
                     _("Get {template_name} profiles for user.")
                     .format(template_name=name)
-                )[:36],
+                )[:36] or template.name,
                 type=discord.ApplicationCommandType.user,
             )
             return command

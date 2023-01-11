@@ -564,7 +564,7 @@ class TemplateFieldEdit(vbu.Cog[vbu.Bot]):
         # Get current name and field ID
         if not interaction.custom_id.startswith("FIELD_EDIT NAME "):
             return
-        encoded_field_id, current_name = interaction.custom_id.split(" ")[2:]
+        encoded_field_id, current_name = interaction.custom_id.split(" ", 1)[2:]
         self.logger.info(
             "Sending modal for field name change for field %s",
             utils.uuid.decode(encoded_field_id),

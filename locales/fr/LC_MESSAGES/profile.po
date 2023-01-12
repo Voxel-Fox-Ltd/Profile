@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: profile-discord\n"
-"POT-Creation-Date: 2022-12-21 20:15+0000\n"
-"PO-Revision-Date: 2022-12-21 23:35\n"
+"POT-Creation-Date: 2023-01-12 22:18+0000\n"
+"PO-Revision-Date: 2023-01-12 22:28\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "MIME-Version: 1.0\n"
@@ -60,48 +60,64 @@ msgstr "Les paramètres avancés ont été activés pour ta guilde. Cela signifi
 msgid "Advanced settings have been disabled for your guild."
 msgstr "Les paramètres avancés ont été désactivés pour ta guilde."
 
+#: cogs/bot_info.py:14
+#, python-brace-format
+msgid "By donating to Profile, you're directly helping keep the bot alive and running, and contributing to making it better.\n\n"
+"Running a bot isn't free, so by helping out, Profile can get even better :)\n\n"
+"Of course, there are things you get in return for your contribution!\n\n"
+"\\N{BULLET} Increase your maximum number of templates to 15.\n"
+"\\N{BULLET} Have up to 20 fields in your templates.\n"
+"\\N{BULLET} Allow 30 profiles per template.\n"
+"\\N{BULLET} Direct access to the bot developers to pitch your ideas.\n\n"
+"You can [donate here](https://voxelfox.co.uk/portal/profile) if you're interested!\n\n"
+"Thanks!"
+msgstr "En faisant un don à Profile, tu aides directement à maintenir le bot en vie et à le faire fonctionner, et tu contribues à l'améliorer.\n\n"
+"Faire fonctionner un bot n'est pas gratuit, alors en aidant, Profile peut devenir encore meilleur :)\n\n"
+"Bien sûr, il y a des choses que tu reçois en échange de ta contribution !\n\n"
+"\\N{BULLET} Augmente ton nombre maximum de modèles à 15.\n"
+"\\N{BULLET} Tu peux avoir jusqu'à 20 champs dans tes modèles.\n"
+"\\N{BULLET} Autorise 30 profils par modèle.\n"
+"\\N{BULLET} Un accès direct aux développeurs du bot pour présenter tes idées.\n\n"
+"Tu peux [faire un don ici](https://voxelfox.co.uk/portal/profile) si tu es intéressé(e) !\n\n"
+"Merci !"
+
 #. TRANSLATORS: Command name.
-#: cogs/bot_info.py:17
+#: cogs/bot_info.py:32
 msgid "information"
 msgstr ""
 
 #. TRANSLATORS: Command description.
-#: cogs/bot_info.py:19
+#: cogs/bot_info.py:34
 msgid "Get information and links for the bot."
 msgstr "Obtiens des informations et des liens pour le bot."
 
 #. TRANSLATORS: Text appearing on a button in the info command.
-#: cogs/bot_info.py:47
+#: cogs/bot_info.py:62
 msgid "Creator"
 msgstr "Créateur"
 
 #. TRANSLATORS: Text appearing on a button in the info command.
-#: cogs/bot_info.py:52
+#: cogs/bot_info.py:67
 msgid "Website"
 msgstr "Site web"
 
 #. TRANSLATORS: Text appearing on a button in the info command.
-#: cogs/bot_info.py:58
-msgid "Donate"
-msgstr "Faire un don"
-
-#. TRANSLATORS: Text appearing on a button in the info command.
-#: cogs/bot_info.py:63
+#: cogs/bot_info.py:73
 msgid "Support"
 msgstr ""
 
 #. TRANSLATORS: Text appearing on a button in the info command.
-#: cogs/bot_info.py:68
+#: cogs/bot_info.py:78
 msgid "Vote"
 msgstr ""
 
 #. TRANSLATORS: Text appearing on a button in the info command.
-#: cogs/bot_info.py:73
+#: cogs/bot_info.py:83
 msgid "Leave a review"
 msgstr "Laisser un avis"
 
 #. TRANSLATORS: Text appearing on a button in the info command.
-#: cogs/bot_info.py:78
+#: cogs/bot_info.py:88
 msgid "Source Code"
 msgstr "Code source"
 
@@ -114,30 +130,35 @@ msgstr "Message demandé par {user}."
 msgid "You don't have permission to send messages in this channel."
 msgstr "Vous n'avez pas la permission d'envoyer des messages dans ce canal."
 
-#: cogs/profile_commands.py:37
+#: cogs/profile_commands.py:38
 msgid "Make public"
 msgstr "Rendre public"
 
-#: cogs/profile_commands.py:244
+#: cogs/profile_commands.py:275
 #, python-brace-format
 msgid "You don't have any profiles for the template **{template}**."
 msgstr "Tu n'as pas de profils pour le modèle **{template}**."
 
-#: cogs/profile_commands.py:247
+#: cogs/profile_commands.py:278
 #, python-brace-format
 msgid "**{user}** doesn't have any profiles for the template **{template}**."
 msgstr "**{user}** n'a pas de profils pour le modèle **{template}**."
 
-#: cogs/profile_commands.py:290
+#: cogs/profile_commands.py:321
 msgid "Please select a profile to view."
 msgstr "Veuillez sélectionner un profil pour le visualiser."
 
-#: cogs/profile_commands.py:368
+#: cogs/profile_commands.py:383 cogs/profile_commands.py:535
+#: cogs/template_commands.py:757 cogs/template_commands.py:878
+msgid "Please use the autocomplete to select a profile."
+msgstr "Veuillez utiliser l'autocomplétion pour sélectionner un profil."
+
+#: cogs/profile_commands.py:400
 #, python-brace-format
 msgid "You don't have a profile for the template **{template}** with that name."
 msgstr "Tu n'as pas de profil pour le modèle **{template}** avec ce nom."
 
-#: cogs/profile_commands.py:388
+#: cogs/profile_commands.py:420
 #, python-brace-format
 msgid "Are you sure you want to delete the profile **{profile}**?"
 msgstr "Êtes-vous sûr de vouloir supprimer le profil **{profile}** ?"
@@ -146,46 +167,46 @@ msgstr "Êtes-vous sûr de vouloir supprimer le profil **{profile}** ?"
 #. that confirms a profile deletion
 #. TRANSLATORS: The confirm button for editing a profile
 #. TRANSLATORS: Text appearing on a button.
-#: cogs/profile_commands.py:396 cogs/profile_commands.py:538
-#: cogs/template_commands.py:305 cogs/template_field_edit.py:442
+#: cogs/profile_commands.py:428 cogs/profile_commands.py:575
+#: cogs/template_commands.py:328 cogs/template_field_edit.py:467
 msgid "Yes"
 msgstr "Oui"
 
-#: cogs/profile_commands.py:447
+#: cogs/profile_commands.py:479
 #, python-brace-format
 msgid "The profile **{profile}** has been deleted."
 msgstr "Le profil **{profile}** a été supprimé."
 
-#: cogs/profile_commands.py:512
+#: cogs/profile_commands.py:549
 #, python-brace-format
 msgid "You have no profiles for the template **{template}** with that name."
 msgstr "Tu n'as pas de profils pour le modèle **{template}** avec ce nom."
 
-#: cogs/profile_commands.py:545
+#: cogs/profile_commands.py:582
 msgid "To edit this profile, it must be converted to a draft. This will unsubmit it, and it will need to be re-verified before others can see it again. Are you sure you want to continue?"
 msgstr "Pour modifier ce profil, il doit être converti en brouillon. Cela le désenvoutera et il devra être revérifié avant que les autres puissent le voir à nouveau. Tu es sûre de vouloir continuer ?"
 
 #. TRANSLATORS: This is the label for a button
 #. that edits a profile's name
-#: cogs/profile_commands.py:562
+#: cogs/profile_commands.py:599
 msgid "Edit profile name"
 msgstr "Modifier le nom du profil"
 
 #. TRANSLATORS: This is the label for a button that submits
 #. a profile.
-#: cogs/profile_commands.py:595
+#: cogs/profile_commands.py:632
 msgid "Submit"
 msgstr "Envoyer"
 
-#: cogs/profile_commands.py:614 cogs/profile_commands.py:620
+#: cogs/profile_commands.py:651 cogs/profile_commands.py:657
 msgid "What would you like to edit?"
 msgstr "Qu'aimerais-tu éditer ?"
 
-#: cogs/profile_commands.py:659 cogs/profile_verification.py:119
+#: cogs/profile_commands.py:696 cogs/profile_verification.py:119
 msgid "You have already submitted the maximum number of profiles for this template."
 msgstr "Tu as déjà soumis le nombre maximum de profils pour ce modèle."
 
-#: cogs/profile_commands.py:665
+#: cogs/profile_commands.py:702
 #, python-brace-format
 msgid "{user} has already submitted the maximum number of profiles for this template."
 msgstr "{user} a déjà soumis le nombre maximum de profils pour ce modèle."
@@ -206,32 +227,32 @@ msgstr "Ton profil a été converti en brouillon. Tu peux maintenant le modifier
 msgid "You can only edit draft profiles. Convert this profile to a draft to proceed."
 msgstr "Tu ne peux modifier que les projets de profils. Transforme ce profil en brouillon pour continuer."
 
-#: cogs/profile_edit.py:160
+#: cogs/profile_edit.py:161
 msgid "This is not the most recent version of your profile. Please re-run the edit command to continue."
 msgstr "Ce n'est pas la version la plus récente de ton profil. Veuillez réexécuter la commande d'édition pour continuer."
 
-#: cogs/profile_edit.py:236
+#: cogs/profile_edit.py:237
 msgid "Set the name of your profile"
 msgstr "Définissez le nom de votre profil"
 
 #. TRANSLATORS: Catch all error message that shouldn't be shown
-#: cogs/profile_edit.py:304
+#: cogs/profile_edit.py:305
 msgid "I encountered an error."
 msgstr "J'ai rencontré une erreur."
 
-#: cogs/profile_edit.py:308
+#: cogs/profile_edit.py:309
 msgid "The length of your input must be between 1 and 1000 characters."
 msgstr "La longueur de ta saisie doit être comprise entre 1 et 1000 caractères."
 
-#: cogs/profile_edit.py:313
+#: cogs/profile_edit.py:314 cogs/template_field_edit.py:668
 msgid "You did not give a valid number."
 msgstr "Tu n'as pas donné un numéro valide."
 
-#: cogs/profile_edit.py:317
+#: cogs/profile_edit.py:318
 msgid "The image URL you gave isn't valid. Please give a direct link to an image."
 msgstr "L'URL de l'image que tu as donnée n'est pas valide. S'il te plaît, donne un lien direct vers une image."
 
-#: cogs/profile_edit.py:414
+#: cogs/profile_edit.py:415
 msgid "You already have a profile with that name."
 msgstr "Tu as déjà un profil avec ce nom."
 
@@ -296,11 +317,11 @@ msgstr "Impossible d'envoyer le profil au canal d'archivage."
 msgid "Your profile has been approved and is now publicly available :)"
 msgstr "Ton profil a été approuvé et est maintenant accessible au public :)"
 
-#: cogs/profile_verification.py:432
+#: cogs/profile_verification.py:435
 msgid "I couldn't failed to add the role for this template to the user."
 msgstr "Je n'ai pas réussi à ajouter le rôle de ce modèle à l'utilisateur."
 
-#: cogs/profile_verification.py:503
+#: cogs/profile_verification.py:506
 msgid "Your profile has been denied."
 msgstr "Ton profil a été refusé."
 
@@ -421,47 +442,54 @@ msgstr "L'utilisateur pour lequel tu veux modifier un profil."
 msgid "The profile that you want to edit."
 msgstr "Le profil que tu veux modifier."
 
-#: cogs/template_commands.py:173
+#: cogs/template_commands.py:174 cogs/template_commands.py:264
+#: cogs/template_commands.py:385 cogs/template_commands.py:511
+#: cogs/template_commands.py:641 cogs/template_commands.py:744
+#: cogs/template_commands.py:865
+msgid "This command can only be used in a guild."
+msgstr "Cette commande ne peut être utilisée que dans une guilde."
+
+#: cogs/template_commands.py:179
 #, python-brace-format
 msgid "\\u2022 **{template_name}** (0 profiles)"
 msgstr "\\u2022 **{template_name}** (0 profils)"
 
-#: cogs/template_commands.py:176
+#: cogs/template_commands.py:182
 #, python-brace-format
 msgid "\\u2022 **{template_name}** ({profile_count} profile)"
 msgstr "\\u2022 **{template_name}** ({profile_count} profil)"
 
-#: cogs/template_commands.py:179
+#: cogs/template_commands.py:185
 #, python-brace-format
 msgid "\\u2022 **{template_name}** ({profile_count} profiles)"
 msgstr "\\u2022 **{template_name}** ({profile_count} profils)"
 
-#: cogs/template_commands.py:218
+#: cogs/template_commands.py:224
 msgid "There are no created templates for this guild."
 msgstr "Il n'y a pas de modèles créés pour cette guilde."
 
-#: cogs/template_commands.py:261 cogs/template_commands.py:478
-#: cogs/template_commands.py:586 cogs/template_commands.py:682
-#: cogs/template_commands.py:796
+#: cogs/template_commands.py:273 cogs/template_commands.py:518
+#: cogs/template_commands.py:647 cogs/template_commands.py:750
+#: cogs/template_commands.py:871
 msgid "Please use the autocomplete to select a template."
 msgstr "Utilise l'autocomplétion pour sélectionner un modèle."
 
-#: cogs/template_commands.py:366 cogs/template_edit.py:576
+#: cogs/template_commands.py:319 cogs/template_commands.py:547
+msgid "That template doesn't belong to this guild."
+msgstr "Ce modèle n'appartient pas à cette guilde."
+
+#: cogs/template_commands.py:395 cogs/template_edit.py:581
 #, python-brace-format
 msgid "The name **{template_name}** is not valid."
 msgstr "Le nom **{template_name}** n'est pas valide."
 
-#: cogs/template_commands.py:384
+#: cogs/template_commands.py:413
 msgid "That template name is already in use."
 msgstr "Ce nom de modèle est déjà utilisé."
 
-#: cogs/template_commands.py:492
+#: cogs/template_commands.py:536
 msgid "You don't have a template with that name."
 msgstr "Tu n'as pas de modèle avec ce nom."
-
-#: cogs/template_commands.py:689 cogs/template_commands.py:803
-msgid "Please use the autocomplete to select a profile."
-msgstr "Veuillez utiliser l'autocomplétion pour sélectionner un profil."
 
 #. TRANSLATORS: Command name.
 #: cogs/template_edit.py:23
@@ -503,318 +531,327 @@ msgstr "La personne dont vous voulez obtenir le profil."
 msgid "Edit one of your profiles."
 msgstr "Modifie l'un de tes profils."
 
-#. TRANSLATORS: Name of a context menu command
-#: cogs/template_edit.py:204
+#. TRANSLATORS: Name of a context menu command.
+#. Max 32 characters (including template name); is
+#. truncated.
+#: cogs/template_edit.py:206
 #, python-brace-format
 msgid "Get {template_name} profiles for user."
 msgstr "Obtenir {template_name} profils pour l'utilisateur."
 
 #. TRANSLATORS: Text appearing on a button that edits the
 #. attribute when clicked.
-#: cogs/template_edit.py:300 cogs/template_field_edit.py:84
+#: cogs/template_edit.py:305 cogs/template_field_edit.py:95
 #: cogs/utils/profiles/field.py:247
 msgid "Name"
 msgstr "Nom"
 
 #. TRANSLATORS: Text appearing on a button that edits the
 #. attribute when clicked.
-#: cogs/template_edit.py:309
+#: cogs/template_edit.py:314
 msgid "Archive channel"
 msgstr "Canal d'archives"
 
 #. TRANSLATORS: Text appearing on a button that edits the
 #. attribute when clicked.
-#: cogs/template_edit.py:317
+#: cogs/template_edit.py:322
 msgid "Verification channel"
 msgstr "Canal de vérification"
 
 #. TRANSLATORS: Text appearing on a button that edits the
 #. attribute when clicked.
-#: cogs/template_edit.py:325
+#: cogs/template_edit.py:330
 msgid "Given role"
 msgstr "Rôle donné"
 
 #. TRANSLATORS: Text appearing on a button that edits the
 #. attribute when clicked.
-#: cogs/template_edit.py:333
+#: cogs/template_edit.py:338
 msgid "Max profiles"
 msgstr "Profils max"
 
 #. TRANSLATORS: Text appearing on a button that lets users
 #. edit fields
-#: cogs/template_edit.py:343
+#: cogs/template_edit.py:348
 msgid "Fields"
 msgstr "Champs"
 
 #. TRANSLATORS: Text appearing on a button
-#: cogs/template_edit.py:351
+#: cogs/template_edit.py:356
 msgid "Update template command"
 msgstr "Commande de mise à jour du modèle"
 
 #. TRANSLATORS: Text appearing on a button
-#: cogs/template_edit.py:354
+#: cogs/template_edit.py:359
 msgid "Create template command"
 msgstr "Commande de création de modèle"
 
 #. TRANSLATORS: Text appearing on a button
-#: cogs/template_edit.py:369
+#: cogs/template_edit.py:374
 msgid "Remove context command"
 msgstr "Supprimer la commande de contexte"
 
 #. TRANSLATORS: Text appearing on a button
-#: cogs/template_edit.py:372
+#: cogs/template_edit.py:377
 msgid "Create context command"
 msgstr "Commande de création de contexte"
 
 #. TRANSLATORS: Text appearing on a button; non-action,
 #. just informative
-#: cogs/template_edit.py:386
+#: cogs/template_edit.py:391
 msgid "Template disabled"
 msgstr "Modèle désactivé"
 
 #. TRANSLATORS: Text appearing on a button
 #. TRANSLATORS: Text appearing on a button to be pressed when
 #. the user is done editing.
-#: cogs/template_edit.py:404 cogs/template_field_edit.py:133
-#: cogs/template_field_edit.py:231
+#: cogs/template_edit.py:409 cogs/template_field_edit.py:144
+#: cogs/template_field_edit.py:243
 msgid "Done"
 msgstr "Terminé"
 
-#: cogs/template_edit.py:413
+#: cogs/template_edit.py:418
 msgid "Select which part of the template you want to change."
 msgstr "Sélectionne la partie du modèle que tu veux modifier."
 
-#: cogs/template_edit.py:452
+#: cogs/template_edit.py:457
 msgid "Cancelled template deletion :)"
 msgstr "Suppression du modèle annulée :)"
 
-#: cogs/template_edit.py:467
+#: cogs/template_edit.py:472
 msgid "That template has already been deleted."
 msgstr "Ce modèle a déjà été supprimé."
 
-#: cogs/template_edit.py:482
+#: cogs/template_edit.py:487
 #, python-brace-format
 msgid "Deleted the template **{template_name}**."
 msgstr "A supprimé le modèle **{template_name}**."
 
 #. TRANSLATORS: Max 45 characters; title of modal
-#: cogs/template_edit.py:528 cogs/template_edit.py:947
+#: cogs/template_edit.py:533 cogs/template_edit.py:952
 msgid "Set template name"
 msgstr "Définir le nom du modèle"
 
 #. TRANSLATORS: Max 45 characters; label of text input
-#: cogs/template_edit.py:534 cogs/template_field_edit.py:562
+#: cogs/template_edit.py:539 cogs/template_field_edit.py:587
 msgid "What do you want to set the name to?"
 msgstr "À quoi veux-tu que le nom soit réglé ?"
 
-#: cogs/template_edit.py:599
+#: cogs/template_edit.py:604
 msgid "That template name is already in use. Please provide another one."
 msgstr "Ce nom de modèle est déjà utilisé. Veuillez en fournir un autre."
 
 #. TRANSLATORS: Text appearing on a button; clears selection
-#: cogs/template_edit.py:660 cogs/template_edit.py:768
-#: cogs/template_edit.py:861
+#: cogs/template_edit.py:665 cogs/template_edit.py:773
+#: cogs/template_edit.py:866
 msgid "Clear"
 msgstr "Effacer"
 
-#: cogs/template_edit.py:669
+#: cogs/template_edit.py:674
 msgid "What do you want to set the archive channel to?"
 msgstr "Sur quoi veux-tu régler le canal d'archives ?"
 
-#: cogs/template_edit.py:777
+#: cogs/template_edit.py:782
 msgid "What do you want to set the verification channel to?"
 msgstr "Sur quoi veux-tu régler le canal de vérification ?"
 
-#: cogs/template_edit.py:871
+#: cogs/template_edit.py:876
 msgid "What role do you want people to get profile verification?"
 msgstr "Quel rôle veux-tu que les gens obtiennent la vérification du profil ?"
 
 #. TRANSLATORS: Max 45 characters; label of text input
-#: cogs/template_edit.py:953
+#: cogs/template_edit.py:958
 msgid "How many profiles can users make?"
 msgstr "Combien de profils les utilisateurs peuvent-ils créer ?"
 
 #. TRANSLATORS: Error message when setting a max profile count
-#: cogs/template_edit.py:995
+#: cogs/template_edit.py:1000
 msgid "The template limit you have given is not a valid number."
 msgstr "La limite de modèle que tu as indiquée n'est pas un nombre valide."
 
-#: cogs/template_edit.py:1015
-msgid "The template limit you have given is too large."
-msgstr "La limite du modèle que tu as indiquée est trop grande."
+#: cogs/template_edit.py:1018
+msgid "The profile limit you have given is too large."
+msgstr "La limite de profil que tu as indiquée est trop grande."
 
-#: cogs/template_edit.py:1021
-#, python-brace-format
-msgid "The template limit you have given is too large. To get access to more templates, you can donate via the {donate_command_button} command."
-msgstr "La limite de modèles que tu as indiquée est trop importante. Pour avoir accès à plus de modèles, tu peux faire un don via la commande {donate_command_button}."
-
-#: cogs/template_edit.py:1109
+#: cogs/template_edit.py:1120
 msgid "Updated slash command."
 msgstr "Mise à jour de la commande slash."
 
 #. TRANSLATORS: Text appearing on a button that edits the
 #. attribute when clicked.
-#: cogs/template_field_edit.py:100 cogs/utils/profiles/field.py:252
+#: cogs/template_field_edit.py:85 cogs/utils/profiles/field.py:242
+msgid "Index"
+msgstr ""
+
+#. TRANSLATORS: Text appearing on a button that edits the
+#. attribute when clicked.
+#: cogs/template_field_edit.py:111 cogs/utils/profiles/field.py:252
 msgid "Prompt"
 msgstr "Rapide"
 
 #. TRANSLATORS: Text appearing on a button that edits the
 #. attribute when clicked.
-#: cogs/template_field_edit.py:115 cogs/utils/profiles/field.py:272
+#: cogs/template_field_edit.py:126 cogs/utils/profiles/field.py:272
 msgid "Optional"
 msgstr "Optionnel"
 
 #. TRANSLATORS: Text appearing on a button that edits the
 #. attribute when clicked.
-#: cogs/template_field_edit.py:123
+#: cogs/template_field_edit.py:134
 msgid "Type"
 msgstr ""
 
 #. TRANSLATORS: Text appearing on a button to be pressed when
 #. the user wants to delete a field
-#: cogs/template_field_edit.py:143
+#: cogs/template_field_edit.py:154
 msgid "Delete"
 msgstr "Supprimer"
 
-#: cogs/template_field_edit.py:160
+#: cogs/template_field_edit.py:171
 msgid "Select which part of the field you want to change."
 msgstr "Sélectionne la partie du champ que tu veux modifier."
 
 #. TRANSLATORS: Text appearing on a button. Creates a new
 #. field for a template when clicked.
-#: cogs/template_field_edit.py:225
+#: cogs/template_field_edit.py:237
 msgid "New"
 msgstr "Nouveau"
 
-#: cogs/template_field_edit.py:261
+#: cogs/template_field_edit.py:273
 msgid "Select which field you want to edit."
 msgstr "Sélectionne le champ que tu veux modifier."
 
-#: cogs/template_field_edit.py:369
+#: cogs/template_field_edit.py:383
 msgid "You are at the maximum amount of fields allowed for this template."
 msgstr "Tu as atteint le nombre maximum de champs autorisés pour ce modèle."
 
-#: cogs/template_field_edit.py:374
+#: cogs/template_field_edit.py:388
 #, python-brace-format
-msgid "To get access more fields, you can donate via the use the {donate_command_button} command."
-msgstr "Pour avoir accès à plus de champs, tu peux faire un don en utilisant la commande {donate_command_button}."
+msgid "To increase your limit from {low} to {high}, you can donate via the use the {donate_command_button} command."
+msgstr "Pour augmenter ta limite de {low} à {high}, tu peux faire un don en utilisant la commande {donate_command_button}."
 
 #. TRANSLATORS: Text appearing on a button.
-#: cogs/template_field_edit.py:451
+#: cogs/template_field_edit.py:476
 msgid "No"
 msgstr "Non"
 
-#: cogs/template_field_edit.py:461
+#: cogs/template_field_edit.py:486
 msgid "Are you sure you want to delete this field?"
 msgstr "Voulez-vous vraiment supprimer ce champ?"
 
-#: cogs/template_field_edit.py:487
+#: cogs/template_field_edit.py:512
 msgid "Only users with the **manage guild** permission can manage templates."
 msgstr "Seuls les utilisateurs ayant la permission **gérer la guilde** peuvent gérer les modèles."
 
 #. TRANSLATORS: Max 45 characters; title of modal
-#: cogs/template_field_edit.py:556
+#: cogs/template_field_edit.py:581
 msgid "Set field name"
 msgstr "Définir le nom du champ"
 
-#: cogs/template_field_edit.py:603
+#. TRANSLATORS: Max 45 characters; title of modal
+#: cogs/template_field_edit.py:622
+msgid "Set field index"
+msgstr "Définir l'index du champ"
+
+#. TRANSLATORS: Max 45 characters; label of text input
+#: cogs/template_field_edit.py:628
+msgid "What do you want to set the index to?"
+msgstr "Sur quoi veux-tu régler l'indice ?"
+
+#: cogs/template_field_edit.py:713
 #, python-brace-format
 msgid "The name **{field_name}** is not valid."
 msgstr "Le nom **{field_name}** n'est pas valide."
 
 #. TRANSLATORS: Max 45 characters; title of modal
-#: cogs/template_field_edit.py:653
+#: cogs/template_field_edit.py:763
 msgid "Set field prompt"
 msgstr "Définir l'invite du champ"
 
 #. TRANSLATORS: Max 45 characters; label of text input
-#: cogs/template_field_edit.py:659
+#: cogs/template_field_edit.py:769
 msgid "What do you want to set the prompt to?"
 msgstr "Sur quoi veux-tu régler l'invite ?"
 
 #. TRANSLATORS: Text appearing in a select menu describing a
 #. field type
-#: cogs/template_field_edit.py:784
+#: cogs/template_field_edit.py:894
 msgid "Text"
 msgstr "Texte"
 
-#: cogs/template_field_edit.py:787
+#: cogs/template_field_edit.py:897
 msgid "This is used when you want users to input up to 1000 characters into a field"
 msgstr "Cette option est utilisée lorsque tu veux que les utilisateurs saisissent jusqu'à 1000 caractères dans un champ"
 
 #. TRANSLATORS: Text appearing in a select menu describing a
 #. field type
-#: cogs/template_field_edit.py:794
+#: cogs/template_field_edit.py:904
 msgid "Number"
 msgstr "Nombre"
 
-#: cogs/template_field_edit.py:797
+#: cogs/template_field_edit.py:907
 msgid "Used when you want users to input a number."
 msgstr "Utilisé lorsque tu veux que les utilisateurs saisissent un nombre."
 
 #. TRANSLATORS: Text appearing in a select menu describing a
 #. field type
-#: cogs/template_field_edit.py:806
+#: cogs/template_field_edit.py:916
 msgid "Image"
 msgstr ""
 
-#: cogs/template_field_edit.py:809
+#: cogs/template_field_edit.py:919
 msgid "Used when you want users to input an image URL, which will appear on their profile."
 msgstr "Utilisé lorsque tu veux que les utilisateurs saisissent l'URL d'une image, qui apparaîtra sur leur profil."
 
-#: cogs/template_field_edit.py:827
+#: cogs/template_field_edit.py:937
 msgid "What do you want to set the field type to?"
 msgstr "Sur quoi veux-tu régler le type de champ ?"
-
-#: cogs/utils/profiles/field.py:242
-msgid "Index"
-msgstr ""
 
 #: cogs/utils/profiles/field.py:267
 msgid "Field Type"
 msgstr "Type de champ"
 
-#: cogs/utils/profiles/template.py:655
+#: cogs/utils/profiles/template.py:664
 #, python-brace-format
 msgid "Template ID: `{0}`"
 msgstr "ID du modèle : `{0}`"
 
-#: cogs/utils/profiles/template.py:656
+#: cogs/utils/profiles/template.py:665
 #, python-brace-format
 msgid "Guild ID: `{0}`"
 msgstr "ID de la guilde : `{0}``"
 
-#: cogs/utils/profiles/template.py:657
+#: cogs/utils/profiles/template.py:666
 #, python-brace-format
 msgid "Command ID: `{0}`"
 msgstr "ID de la commande : `{0}`"
 
-#: cogs/utils/profiles/template.py:658
+#: cogs/utils/profiles/template.py:667
 #, python-brace-format
 msgid "Context ID: `{0}`"
 msgstr "ID du contexte : `{0}`"
 
-#: cogs/utils/profiles/template.py:659
+#: cogs/utils/profiles/template.py:668
 #, python-brace-format
 msgid "Maximum allowed profiles: {0}"
 msgstr "Profils maximums autorisés : {0}"
 
-#: cogs/utils/profiles/template.py:663
+#: cogs/utils/profiles/template.py:672
 #, python-brace-format
 msgid "Archive channel: {0}"
 msgstr "Canal d'archives : {0}"
 
-#: cogs/utils/profiles/template.py:682
+#: cogs/utils/profiles/template.py:691
 #, python-brace-format
 msgid "Verification channel: {0}"
 msgstr "Canal de vérification : {0}"
 
-#: cogs/utils/profiles/template.py:701
+#: cogs/utils/profiles/template.py:710
 #, python-brace-format
 msgid "Given role: {0}"
 msgstr "Rôle donné : {0}"
 
-#: cogs/utils/profiles/user_profile.py:314
+#: cogs/utils/profiles/user_profile.py:323
 msgid "Discord User"
 msgstr "Utilisateur de Discord"
 

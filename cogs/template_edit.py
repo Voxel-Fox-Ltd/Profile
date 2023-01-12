@@ -308,14 +308,14 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
                     f"{template.name}"
                 ),
             ),
-                discord.ui.Button(
-                    # TRANSLATORS: Text appearing on a button that edits the
-                    # attribute when clicked.
-                    label=_("Archive channel"),
-                    custom_id=(
-                        f"TEMPLATE_EDIT ARCHIVE {utils.uuid.encode(template.id)}"
-                    ),
+            discord.ui.Button(
+                # TRANSLATORS: Text appearing on a button that edits the
+                # attribute when clicked.
+                label=_("Archive channel"),
+                custom_id=(
+                    f"TEMPLATE_EDIT ARCHIVE {utils.uuid.encode(template.id)}"
                 ),
+            ),
             discord.ui.Button(
                 # TRANSLATORS: Text appearing on a button that edits the
                 # attribute when clicked.
@@ -1015,21 +1015,27 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
         async with vbu.Database() as db:
             perks = await utils.GuildPerks.fetch(db, interaction.guild_id)
         if valid_new_template_limit > perks.max_template_count:
-            if perks.is_premium:
-                return await interaction.followup.send(
-                    _("The template limit you have given is too large."),
-                    ephemeral=True,
-                )
+            standard = _("The profile limit you have given is too large.")
             mention = utils.mention_command(self.bot.get_command("information"))
-            return await interaction.followup.send(
-                _(
-                    "The template limit you have given is too large. "
-                    "To get access to more templates, you can donate via the "
+            upsell = _(
+                (
+                    "To increase your limit from {low} to {high}, you can "
+                    "donate via the "
                     "{donate_command_button} command."
-                ).format(donate_command_button=mention),
+                )
+            ).format(
+                low=utils.NO_GUILD_PERKS.max_profile_count,
+                high=utils.SUBSCRIBED_GUILD_PERKS.max_profile_count,
+                donate_command_button=mention
+            )
+            if perks.is_premium:
+                message = standard
+            else:
+                message = f"{standard} {upsell}"
+            return await interaction.followup.send(
+                message,
                 ephemeral=True,
             )
-
 
         # Get and update the template
         await self.update_template(

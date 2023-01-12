@@ -11,7 +11,7 @@ from .profiles.template import Template
 from .profiles.user_profile import UserProfile
 from .profiles.filled_field import FilledField
 from .profiles.command_processor import CommandProcessor
-from .perks_handler import GuildPerks
+from .perks_handler import GuildPerks, NO_GUILD_PERKS, SUBSCRIBED_GUILD_PERKS
 from .utils import (
     mention_command,
     compare_embeds,
@@ -42,4 +42,6 @@ __all__ = (
     'get_animal_name',
     'is_guild_advanced',
     'pad_field_prompt_value',
+    'NO_GUILD_PERKS',
+    'SUBSCRIBED_GUILD_PERKS',
 )

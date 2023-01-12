@@ -385,13 +385,18 @@ class TemplateFieldEdit(vbu.Cog[vbu.Bot]):
                 )
                 mention = utils.mention_command(self.bot.get_command("information"))
                 upsell = _(
-                    "To get access more fields, you can donate via the use the "
+                    "To increase your limit from {low} to {high}, you can "
+                    "donate via the use the "
                     "{donate_command_button} command."
-                ).format(donate_command_button=mention)
+                ).format(
+                    low=utils.NO_GUILD_PERKS.max_field_count,
+                    high=utils.SUBSCRIBED_GUILD_PERKS.max_field_count,
+                    donate_command_button=mention,
+                )
                 if perks.is_premium:
                     message = error
                 else:
-                    message = error + upsell
+                    message = f"{error} {upsell}"
 
                 # Send new message so they can edit other attrs
                 return await interaction.followup.send(

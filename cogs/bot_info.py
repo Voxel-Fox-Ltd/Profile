@@ -10,6 +10,21 @@ def _t(b: str | discord.Locale, a: str) -> str:
     return vbu.translation(b, "profile").gettext(a)
 
 
+_poeditor = lambda x: x
+PROFILE_DONATE_UPSELL = _poeditor("""By donating to Profile, you're directly helping keep the bot alive and running, and contributing to making it better.
+
+Running a bot isn't free, so by helping out, Profile can get even better :)
+
+Of course, there are things you get in return for your contribution!
+
+\N{BULLET} Increase your maximum number of templates to 15.
+\N{BULLET} Have up to 20 fields in your templates.
+\N{BULLET} Allow 30 profiles per template.
+\N{BULLET} Direct access to the bot developers to pitch your ideas.
+
+You can [donate here](https://voxelfox.co.uk/portal/profile) if you're interested!
+
+Thanks!""")
 if __debug__:
     # For POEditor
     _poeditor = lambda x: x
@@ -55,11 +70,6 @@ class BotInfo(vbu.Cog[vbu.Bot]):
             )
             .add_field(
                 # TRANSLATORS: Text appearing on a button in the info command.
-                _("Donate"),
-                "[Patreon](https://patreon.com/voxelfox)",
-            )
-            .add_field(
-                # TRANSLATORS: Text appearing on a button in the info command.
                 _("Support"),
                 "[Discord](https://discord.gg/vfl)",
             )
@@ -77,6 +87,12 @@ class BotInfo(vbu.Cog[vbu.Bot]):
                 # TRANSLATORS: Text appearing on a button in the info command.
                 _("Source Code"),
                 "[GitHub](https://github.com/Voxel-Fox-Ltd/Profile)",
+            )
+        )
+        embeds.append(
+            vbu.Embed(
+                use_random_colour=True,
+                description=_(PROFILE_DONATE_UPSELL),
             )
         )
         return await ctx.interaction.response.send_message(embeds=embeds)

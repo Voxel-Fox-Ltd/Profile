@@ -434,10 +434,15 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
                 mention = utils.mention_command(self.bot.get_command("information"))
                 upsell = _(
                     (
-                        "To get access more templates, you can donate via the "
+                        "To increase your limit from {low} to {high}, you can "
+                        "donate via the "
                         "{donate_command_button} command."
                     )
-                ).format(donate_command_button=mention)
+                ).format(
+                    low=utils.NO_GUILD_PERKS.max_template_count,
+                    high=utils.SUBSCRIBED_GUILD_PERKS.max_template_count,
+                    donate_command_button=mention
+                )
                 if perks.is_premium:
                     message = error
                 else:

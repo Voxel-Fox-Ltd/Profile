@@ -4,13 +4,14 @@ from typing import TYPE_CHECKING
 from dataclasses import dataclass
 
 from typing_extensions import Self
+import aiohttp
 
 if TYPE_CHECKING:
     from discord.ext import vbu
 
 
 @dataclass
-class GuildPerks(object):
+class GuildPerks:
     """
     A class for the perks of a given guild.
     """
@@ -46,17 +47,21 @@ class GuildPerks(object):
         )
 
         # Contains premium subscriptions
-        guild_subscription = await db.call(
-            """
-            SELECT
-                *
-            FROM
-                guild_subscriptions
-            WHERE
-                guild_id = $1
-            """,
-            guild_id,
-        )
+        async with aiohttp.ClientSession() as session:
+            try:
+                resp = await session.get(
+                    "https://voxelfox.co.uk/api/portal/check",
+                    params={
+                        "guild_id": guild_id,
+                        "product_id": "ff547b6b-731c-4c5d-aff9-672ee628936c",
+                    },
+                    timeout=1.5,
+                )
+                data = await resp.json()
+            except Exception:
+                guild_subscription = False
+            else:
+                guild_subscription = data['result']
         perks = (
             SUBSCRIBED_GUILD_PERKS
             if guild_subscription
@@ -87,7 +92,7 @@ NO_GUILD_PERKS = GuildPerks(
     guild_id=0,
     max_template_count=3,
     max_field_count=10,
-    max_profile_count=5,
+    max_profile_count=3,
     is_premium=False,
 )
 SUBSCRIBED_GUILD_PERKS = GuildPerks(

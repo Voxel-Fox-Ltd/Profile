@@ -475,6 +475,10 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
                 deleted=True,
             )
 
+        # Delete the archived message
+        if profile.posted_message_id:
+            await profile.delete_message(self.bot)
+
         # Send a confirmation message
         message = _("The profile **{profile}** has been deleted.")
         message = message.format(profile=original_name)

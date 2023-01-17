@@ -396,6 +396,7 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
                 .components[0]  # pyright: ignore
                 .components[0]
                 .value
+                .strip()  # pyright: ignore
             )  # pyright: ignore
 
             # Make sure they don't have a profile existing with that
@@ -403,11 +404,12 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
             profiles_with_name = [
                 i
                 for i in all_profiles
-                if i.name.strip()
+                if i.name
+                and i.name.strip()
                 and i.name.strip().casefold() == given_value.casefold()
                 and i.id != profile.id
             ]
-            if profiles_with_name:
+            if profiles_with_name or not given_value.strip():
                 return await interaction.response.send_message(
                     _("You already have a profile with that name."),
                     ephemeral=True,

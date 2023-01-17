@@ -141,9 +141,25 @@ class UserProfile(Generic[T]):
 
     @property
     def display_name(self) -> Optional[str]:
+        """
+        Return the name of the profile with the (possible) UUID attached to
+        the front (as is the case with deleted profiles).
+        """
+
         if self.name is None:
             return None
-        return self.name.split(" ")[-1]
+        if " " not in self.name:
+            return self.name
+        rest_of_name = self.name
+        while True:
+            try:
+                possible_id, rest_of_name = rest_of_name.split(" ", 1)
+            except ValueError:
+                return rest_of_name
+            try:
+                uuid.UUID(possible_id)
+            except ValueError:
+                return f"{possible_id} {rest_of_name}"
 
     @classmethod
     async def fetch_profile_by_id(

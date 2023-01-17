@@ -9,7 +9,7 @@ import discord
 from discord.ext import vbu
 
 from cogs.utils.profiles.field import Field
-from cogs.utils.profiles.command_processor import CommandProcessor, InvalidCommandText
+from cogs.utils.profiles.command_processor import CommandProcessor
 
 if TYPE_CHECKING:
     from .user_profile import UserProfile
@@ -19,7 +19,7 @@ def _(a: str) -> str:
     return a
 
 
-class Template(object):
+class Template:
     """
     A class for an abstract template object that's saved to guild.
     This contains no user data, but rather the metadata for the template itself.
@@ -253,7 +253,7 @@ class Template(object):
     async def fetch_profile_for_user(
             self,
             db: vbu.Database,
-            user_id:int,
+            user_id: int,
             profile_name: Optional[str] = None,
             *,
             fetch_filled_fields: bool = True,
@@ -347,7 +347,7 @@ class Template(object):
             user_id: int,
             *,
             fetch_filled_fields: bool = True,
-            allow_deleted: bool = False) -> List[UserProfile]:
+            allow_deleted: bool = False) -> List[UserProfile[Template]]:
         """
         Gets the filled profile for a given user.
 

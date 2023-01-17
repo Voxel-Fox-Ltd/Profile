@@ -403,12 +403,9 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
             profiles_with_name = [
                 i
                 for i in all_profiles
-                if
-                    i.name
-                and
-                    i.name.casefold() == given_value.casefold()
-                and
-                    i.id != profile.id
+                if i.name.strip()
+                and i.name.strip().casefold() == given_value.casefold()
+                and i.id != profile.id
             ]
             if profiles_with_name:
                 return await interaction.response.send_message(

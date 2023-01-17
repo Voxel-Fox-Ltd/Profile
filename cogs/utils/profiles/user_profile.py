@@ -257,11 +257,10 @@ class UserProfile(Generic[T]):
             )
         except discord.HTTPException:
             return None
-        assert isinstance(channel, discord.abc.MessageableChannel)
 
         # Get message
         try:
-            return await channel.fetch_message(self.posted_message_id)
+            return await channel.fetch_message(self.posted_message_id)  # pyright: ignore
         except discord.HTTPException:
             pass
 

@@ -1004,17 +1004,17 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
 
         # Check that the limit is valid
         await interaction.response.defer_update()
-        valid_new_template_limit = int(new_template_limit)
+        valid_new_profile_limit = int(new_template_limit)
         self.logger.info(
             "Trying to set max profiles for template %s to %s",
-            template_id, valid_new_template_limit,
+            template_id, valid_new_profile_limit,
         )
 
         # Check that the limit is within range
         assert interaction.guild_id
         async with vbu.Database() as db:
             perks = await utils.GuildPerks.fetch(db, interaction.guild_id)
-        if valid_new_template_limit > perks.max_template_count:
+        if valid_new_profile_limit > perks.max_profile_count:
             standard = _("The profile limit you have given is too large.")
             mention = utils.mention_command(self.bot.get_command("information"))
             upsell = _(
@@ -1041,7 +1041,7 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
         await self.update_template(
             interaction,
             template_id,
-            max_profile_count=valid_new_template_limit,
+            max_profile_count=valid_new_profile_limit,
         )
 
     @vbu.Cog.listener("on_component_interaction")  # TEMPLATE_EDIT SLASH [TID]

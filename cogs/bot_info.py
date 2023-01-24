@@ -62,12 +62,12 @@ class BotInfo(vbu.Cog[vbu.Bot]):
                 _("Creator"),
                 "[Kae Bartlett](https://uwu.social/@kae)\n[Voxel Fox](https://voxelfox.co.uk)",
             )
-            .add_field(
-                # TRANSLATORS: Text appearing on a button in the info command.
-                _("Website"),
-                # TRANSLATORS: Text for a hyperlink.
-                f"[{_('Click here')}](https://profile.voxelfox.co.uk)",
-            )
+            # .add_field(
+            #     # TRANSLATORS: Text appearing on a button in the info command.
+            #     _("Website"),
+            #     # TRANSLATORS: Text for a hyperlink.
+            #     f"[{_('Click here')}](https://profile.voxelfox.co.uk)",
+            # )
             .add_field(
                 # TRANSLATORS: Text appearing on a button in the info command.
                 _("Support"),

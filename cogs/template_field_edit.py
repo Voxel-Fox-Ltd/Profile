@@ -209,6 +209,7 @@ class TemplateFieldEdit(vbu.Cog[vbu.Bot]):
                 "The template was deleted while the "
                 "user was editing an attribute."
             )
+            guild_perks = await utils.GuildPerks.fetch(db, interaction.guild_id)
 
         # Get fields
         fields = template.field_list
@@ -237,7 +238,7 @@ class TemplateFieldEdit(vbu.Cog[vbu.Bot]):
                     label=_("New"),
                     custom_id=f"FIELD_EDIT NEW {encoded_template_id}",
                     style=discord.ButtonStyle.primary,
-                    disabled=len(fields) >= 10,
+                    disabled=len(fields) >= guild_perks.max_field_count,
                 ),
                 discord.ui.Button(
                     label=_("Done"),
@@ -255,14 +256,10 @@ class TemplateFieldEdit(vbu.Cog[vbu.Bot]):
                     use_random_colour=True,
                     description="\n".join([
                         f"{f.index}. **{f.name}**"
-                        if
-                            f.name and f.prompt
-                        else
-                            f"{f.index}. ~~**{f.name}**~~"
-                        if
-                            f.name
-                        else
-                            f"{f.index}. ~~**{f.id}**~~"
+                        if f.name and f.prompt
+                        else f"{f.index}. ~~**{f.name}**~~"
+                        if f.name
+                        else f"{f.index}. ~~**{f.id}**~~"
                         for f in fields
                     ])
                 )

@@ -773,7 +773,14 @@ class TemplateFieldEdit(vbu.Cog[vbu.Bot]):
                         min_length=1,
                         max_length=None if advanced else 45,
                         required=True,
-                        value=field.prompt or None,
+                        value=(
+                            (
+                                (field.prompt or "")
+                                if advanced
+                                else (field.prompt or "")[:45]
+                            )
+                            or None
+                        ),
                     ),
                 ),
             ],

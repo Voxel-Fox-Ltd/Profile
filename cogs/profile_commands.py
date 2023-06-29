@@ -529,6 +529,13 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
         Run when someone tries to edit a profile for a given user.
         """
 
+        # Check that the template is user editable
+        if not template.user_manageable:
+            return await interaction.response.send_message(
+                _("Profiles made with this template are only editable by moderators."),
+                ephemeral=True,
+            )
+
         # See what profiles the user has for that template
         if not profile:
 

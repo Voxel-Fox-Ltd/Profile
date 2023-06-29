@@ -50,10 +50,21 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
     @staticmethod
     def get_profile_application_command(
             name: str,
-            description: str | None = None) -> discord.ApplicationCommand:
+            description: str | None = None,
+            include_edit: bool = True) -> discord.ApplicationCommand:
         """
         Create an application command with the given name, and subcommands
         for create, edit, and delete.
+
+        Parameters
+        ----------
+        name : str
+            The name of the command.
+        description : str | None
+            The description of the command.
+        include_edit : bool
+            Whether or not the create/edit/delete commands will be included, or
+            if it'll just be a get.
         """
 
         # Set description
@@ -79,114 +90,116 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
             },
         )
 
+        # Get subcommand
+        get_subcommand = discord.ApplicationCommandOption(
+            name="get",
+            description="Display a created profile.",
+            type=discord.ApplicationCommandOptionType.subcommand,
+            name_localizations={
+                # TRANSLATORS: subcommand name, eg "profile get"
+                i: _t(i, "get").casefold()
+                for i in discord.Locale
+            },
+            description_localizations={
+                # TRANSLATORS: description of a command
+                i: _t(i, "Display a created profile")
+                for i in discord.Locale
+            },
+            options=[
+                discord.ApplicationCommandOption(
+                    name="user",
+                    description=(
+                        "The person whose profile you want to get."
+                    ),
+                    type=discord.ApplicationCommandOptionType.user,
+                    required=False,
+                    name_localizations={
+                        # TRANSLATORS: parameter name in "profile get
+                        # [user]"
+                        i: _t(i, "user").casefold()
+                        for i in discord.Locale
+                    },
+                    description_localizations={
+                        # TRANSLATORS: parameter name descrtiption for
+                        # user in "profile get [user]"
+                        i: _t(
+                            i,
+                            "The person whose profile you want to get.",
+                        )
+                        for i in discord.Locale
+                    },
+                ),
+            ],
+        )
+        edit_subcommands = [
+            # Create
+            discord.ApplicationCommandOption(
+                name="create",
+                description="Create a new profile.",
+                type=discord.ApplicationCommandOptionType.subcommand,
+                name_localizations={
+                    # TRANSLATORS: subcommand name, eg "profile create"
+                    i: _t(i, "create").casefold()
+                    for i in discord.Locale
+                },
+                description_localizations={
+                    # TRANSLATORS: description of a command
+                    i: _t(i, "Create a new profile.")
+                    for i in discord.Locale
+                },
+            ),
+
+            # Delete
+            discord.ApplicationCommandOption(
+                name="delete",
+                description="Delete one of your profiles.",
+                type=discord.ApplicationCommandOptionType.subcommand,
+                name_localizations={
+                    # TRANSLATORS: subcommand name, eg "profile delete"
+                    i: _t(i, "delete").casefold()
+                    for i in discord.Locale
+                },
+                description_localizations={
+                    # TRANSLATORS: description of a command
+                    i: _t(i, "Delete one of your profiles.")
+                    for i in discord.Locale
+                },
+                options=[
+                    NAME_OPTION,
+                ],
+            ),
+
+            # Edit
+            discord.ApplicationCommandOption(
+                name="edit",
+                description="Edit one of your profiles.",
+                type=discord.ApplicationCommandOptionType.subcommand,
+                name_localizations={
+                    # TRANSLATORS: subcommand name, eg "profile edit"
+                    i: _t(i, "edit").casefold()
+                    for i in discord.Locale
+                },
+                description_localizations={
+                    # TRANSLATORS: description of a command
+                    i: _t(i, "Edit one of your profiles.")
+                    for i in discord.Locale
+                },
+                options=[
+                    NAME_OPTION,
+                ],
+            ),
+        ]
+
         # Create command
-        command = discord.ApplicationCommand(
+        return discord.ApplicationCommand(
             name=name.lower(),
             description=description,
             type=discord.ApplicationCommandType.chat_input,
             options=[
-
-                # Create
-                discord.ApplicationCommandOption(
-                    name="create",
-                    description="Create a new profile.",
-                    type=discord.ApplicationCommandOptionType.subcommand,
-                    name_localizations={
-                        # TRANSLATORS: subcommand name, eg "profile create"
-                        i: _t(i, "create").casefold()
-                        for i in discord.Locale
-                    },
-                    description_localizations={
-                        # TRANSLATORS: description of a command
-                        i: _t(i, "Create a new profile.")
-                        for i in discord.Locale
-                    },
-                ),
-
-                # Delete
-                discord.ApplicationCommandOption(
-                    name="delete",
-                    description="Delete one of your profiles.",
-                    type=discord.ApplicationCommandOptionType.subcommand,
-                    name_localizations={
-                        # TRANSLATORS: subcommand name, eg "profile delete"
-                        i: _t(i, "delete").casefold()
-                        for i in discord.Locale
-                    },
-                    description_localizations={
-                        # TRANSLATORS: description of a command
-                        i: _t(i, "Delete one of your profiles.")
-                        for i in discord.Locale
-                    },
-                    options=[
-                        NAME_OPTION,
-                    ],
-                ),
-
-                # Get
-                discord.ApplicationCommandOption(
-                    name="get",
-                    description="Display a created profile.",
-                    type=discord.ApplicationCommandOptionType.subcommand,
-                    name_localizations={
-                        # TRANSLATORS: subcommand name, eg "profile get"
-                        i: _t(i, "get").casefold()
-                        for i in discord.Locale
-                    },
-                    description_localizations={
-                        # TRANSLATORS: description of a command
-                        i: _t(i, "Display a created profile")
-                        for i in discord.Locale
-                    },
-                    options=[
-                        discord.ApplicationCommandOption(
-                            name="user",
-                            description=(
-                                "The person whose profile you want to get."
-                            ),
-                            type=discord.ApplicationCommandOptionType.user,
-                            required=False,
-                            name_localizations={
-                                # TRANSLATORS: parameter name in "profile get
-                                # [user]"
-                                i: _t(i, "user").casefold()
-                                for i in discord.Locale
-                            },
-                            description_localizations={
-                                # TRANSLATORS: parameter name descrtiption for
-                                # user in "profile get [user]"
-                                i: _t(
-                                    i,
-                                    "The person whose profile you want to get.",
-                                )
-                                for i in discord.Locale
-                            },
-                        ),
-                    ],
-                ),
-
-                # Edit
-                discord.ApplicationCommandOption(
-                    name="edit",
-                    description="Edit one of your profiles.",
-                    type=discord.ApplicationCommandOptionType.subcommand,
-                    name_localizations={
-                        # TRANSLATORS: subcommand name, eg "profile edit"
-                        i: _t(i, "edit").casefold()
-                        for i in discord.Locale
-                    },
-                    description_localizations={
-                        # TRANSLATORS: description of a command
-                        i: _t(i, "Edit one of your profiles.")
-                        for i in discord.Locale
-                    },
-                    options=[
-                        NAME_OPTION,
-                    ],
-                ),
-            ]
+                get_subcommand,
+                *(edit_subcommands if include_edit else []),
+            ],
         )
-        return command
 
     @classmethod
     @vbu.i18n("profile", use_guild=True)
@@ -205,7 +218,7 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
                     # truncated.
                     _("Get {template_name} profiles for user.")
                     .format(template_name=name)
-                )[:32] or template.name,
+                )[:32],  # or template.name,
                 type=discord.ApplicationCommandType.user,
             )
             return command
@@ -343,6 +356,16 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
                 ),
             ),
             discord.ui.Button(
+                # TRANSLATORS: Text appearing on a button that edits the
+                # attribute when clicked.
+                label=_("User manageable"),
+                custom_id=(
+                    f"TEMPLATE_SET USER_MANAGEABLE "
+                    f"{utils.uuid.encode(template.id)} "
+                    f"{int(not template.user_manageable)}"
+                ),
+            ),
+            discord.ui.Button(
                 # TRANSLATORS: Text appearing on a button that lets users
                 # edit fields
                 label=_("Fields"),
@@ -353,7 +376,7 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
             discord.ui.Button(
                 label=(
                     # TRANSLATORS: Text appearing on a button
-                    _("Update template command")
+                    _("Update profile commands")
                     if template.application_command_id
                     # TRANSLATORS: Text appearing on a button
                     else _("Create template command")
@@ -1044,6 +1067,57 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
             max_profile_count=valid_new_profile_limit,
         )
 
+    @vbu.Cog.listener("on_component_interaction")  # TEMPLATE_SET USER_MANAGEABLE [TID] [NV]
+    @vbu.i18n("profile")
+    async def template_edit_max_profiles_modal_listener(
+            self,
+            interaction: discord.ModalInteraction):
+        """
+        Listens for edit template max profiles modal to be submitted.
+        Sets template max profiles.
+        """
+
+        # Get the ID of the template
+        if not interaction.custom_id.startswith("TEMPLATE_SET USER_MANAGEABLE"):
+            return
+        encoded_template_id = interaction.custom_id.split(" ")[2]
+        template_id = utils.uuid.decode(encoded_template_id)
+
+        # Get the new name from the components
+        new_value = bool(int(interaction.custom_id.split(" ")[3]))
+
+        # Check that the limit is valid
+        await interaction.response.defer_update()
+        self.logger.info(
+            "Trying to set user manageable for template %s to %s",
+            template_id, new_value,
+        )
+
+        # Get and update the template
+        await self.update_template(
+            interaction,
+            template_id,
+            user_manageable=new_value,
+        )
+        if new_value:
+            await interaction.followup.send(
+                _(
+                    "Users will now be able to edit their own profiles. "
+                    "Remember to update the slash command to add the `edit`, "
+                    "`create`, and `delete` commands."
+                ),
+                ephemeral=True,
+            )
+        else:
+            await interaction.followup.send(
+                _(
+                    "Users will **no longer** be able to edit their own profiles. "
+                    "Remember to update the slash command to remove the `edit`, "
+                    "`create`, and `delete` commands."
+                ),
+                ephemeral=True,
+            )
+
     @vbu.Cog.listener("on_component_interaction")  # TEMPLATE_EDIT SLASH [TID]
     @vbu.i18n("profile")
     async def template_slash_component_listener(
@@ -1086,6 +1160,7 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
                 application_command = await guild.create_application_command(
                     self.get_profile_application_command(
                         template.name,
+                        include_edit=template.user_manageable,
                     )
                 )
             except Exception as e:
@@ -1096,6 +1171,7 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
         else:
             new_application_command = self.get_profile_application_command(
                 template.name,
+                include_edit=template.user_manageable,
             )
             await guild.edit_application_command(
                 application_command,
@@ -1110,12 +1186,17 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
             template_id,
             application_command_id=application_command.id,
         )
-        slash_command_list = [
-            f"</{application_command.name} create:{application_command.id}>",
-            f"</{application_command.name} edit:{application_command.id}>",
-            f"</{application_command.name} get:{application_command.id}>",
-            f"</{application_command.name} delete:{application_command.id}>",
-        ]
+        if template.user_manageable:
+            slash_command_list = [
+                f"</{application_command.name} create:{application_command.id}>",
+                f"</{application_command.name} edit:{application_command.id}>",
+                f"</{application_command.name} get:{application_command.id}>",
+                f"</{application_command.name} delete:{application_command.id}>",
+            ]
+        else:
+            slash_command_list = [
+                f"</{application_command.name} get:{application_command.id}>",
+            ]
         await interaction.followup.send(
             _("Updated slash command.") + "\n" + "\n".join(slash_command_list),
             ephemeral=True,

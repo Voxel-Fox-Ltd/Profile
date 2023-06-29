@@ -49,6 +49,8 @@ class Template:
         create for this template.
     application_command_id: :class:`int`
         The ID of the application command associated with this template.
+    user_manageable: :class:`bool`
+        Whether or not this profile is user manageable.
 
     Attributes
     -----------
@@ -77,6 +79,8 @@ class Template:
         All of the fields for the template.
     application_command_id: Optional[:class:`int`]
         The ID of the application command associated with this template.
+    user_manageable: :class:`bool`
+        Whether or not this profile is user manageable.
     """
 
     __slots__ = (
@@ -93,6 +97,7 @@ class Template:
         "context_command_id",
         "deleted",
         "archive_is_forum",
+        "user_manageable",
     )
 
     def __init__(
@@ -108,7 +113,8 @@ class Template:
             role_id: Optional[str] = None,
             max_profile_count: int = 5,
             deleted: bool = False,
-            archive_is_forum: bool = False):
+            archive_is_forum: bool = False,
+            user_manageable: bool = True):
         self._id: Optional[uuid.UUID] = id
         self.name: str = name
         self.guild_id: int = guild_id
@@ -121,6 +127,7 @@ class Template:
         self.context_command_id: Optional[int] = context_command_id
         self.deleted: bool = deleted
         self.archive_is_forum: bool = archive_is_forum
+        self.user_manageable: bool = user_manageable
 
         self.all_fields: Dict[str, Field] = dict()
 
@@ -597,7 +604,8 @@ class Template:
                     max_profile_count,
                     context_command_id,
                     deleted,
-                    archive_is_forum
+                    archive_is_forum,
+                    user_manageable
                 )
             VALUES
                 (
@@ -612,7 +620,8 @@ class Template:
                     $9,
                     $10,
                     $11,
-                    $12
+                    $12,
+                    $13
                 )
             ON CONFLICT
                 (id)
@@ -628,7 +637,8 @@ class Template:
                 max_profile_count = $9,
                 context_command_id = $10,
                 deleted = $11,
-                archive_is_forum = $12
+                archive_is_forum = $12,
+                user_manageable = $13
             """,
             self.id,
             self.name,
@@ -642,6 +652,7 @@ class Template:
             self.context_command_id,
             self.deleted,
             self.archive_is_forum,
+            self.user_manageable,
         )
         return self
 
@@ -666,6 +677,7 @@ class Template:
             _("Command ID: `{0}`").format(self.application_command_id),
             _("Context ID: `{0}`").format(self.context_command_id),
             _("Maximum allowed profiles: {0}").format(self.max_profile_count),
+            _("User manageable: {0}").format(self.user_manageable),
         ]
 
         # Add archive channel ID

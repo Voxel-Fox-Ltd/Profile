@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS templates(
     deleted BOOLEAN NOT NULL DEFAULT FALSE,
     context_command_id BIGINT,
     archive_is_forum BOOLEAN NOT NULL DEFAULT FALSE,
+    user_manageable BOOLEAN NOT NULL DEFAULT TRUE,
     UNIQUE (guild_id, name)
 );
 

@@ -157,6 +157,7 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
                     interaction,
                     template,
                     profile,
+                    edit_original=True,
                 ))
                 return
 

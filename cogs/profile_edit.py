@@ -89,7 +89,7 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
                 discord.ui.ActionRow(
                     discord.ui.Button(
                         label=_("Edit"),
-                        custom_id=f"PROFILE EDIT {profile.id}",
+                        custom_id=f"PROFILE EDIT {utils.uuid.encode(profile.id)}",
                         style=discord.ButtonStyle.primary,
                     ),
                 ),

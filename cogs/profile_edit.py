@@ -86,11 +86,13 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
                 "You can now edit it."
             ),
             components=discord.ui.MessageComponents(
-                discord.ui.Button(
-                    label=_("Edit"),
-                    custom_id=f"PROFILE EDIT {profile.id}",
-                    style=discord.ButtonStyle.primary,
-                )
+                discord.ui.ActionRow(
+                    discord.ui.Button(
+                        label=_("Edit"),
+                        custom_id=f"PROFILE EDIT {profile.id}",
+                        style=discord.ButtonStyle.primary,
+                    ),
+                ),
             ),
             embeds=[],
         )

@@ -85,7 +85,13 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
                 "Your profile has been converted to a draft. "
                 "You can now edit it."
             ),
-            components=None,
+            components=discord.ui.MessageComponents(
+                discord.ui.Button(
+                    label=_("Edit"),
+                    custom_id=f"PROFILE EDIT {profile.id}",
+                    style=discord.ButtonStyle.primary,
+                )
+            ),
             embeds=[],
         )
 
@@ -105,8 +111,11 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
         # Get the profile they're trying to edit
         short_profile_id = interaction.custom_id.split(" ")[2]
         profile_id = utils.uuid.decode(short_profile_id)
-        short_field_id = interaction.custom_id.split(" ")[3]
-        field_id = utils.uuid.decode(short_field_id)
+        try:
+            short_field_id = interaction.custom_id.split(" ")[3]
+            field_id = utils.uuid.decode(short_field_id)
+        except IndexError:
+            field_id = None
         self.logger.info(
             "Sending modal for profile %s, field %s",
             profile_id, field_id,
@@ -134,6 +143,19 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
             assert template, "Template does not exist."
             profile.template = template
             profile = cast(utils.UserProfile[utils.Template], profile)
+
+            # If we're not editing a field, we're done
+            if field_id is None:
+                cog: Optional[ProfileCommands]
+                cog = self.bot.get_cog("ProfileCommands")  # pyright: ignore
+                assert cog, "Cog not loaded."
+                await cog.profile_edit(
+                    interaction,
+                    template,
+                    profile,
+                    edit_original=True,
+                )
+                return
 
             # Get field
             field = profile.template.fields.get(field_id)

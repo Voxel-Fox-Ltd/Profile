@@ -1,4 +1,6 @@
 from typing import TYPE_CHECKING, Optional, cast
+import asyncio
+
 import discord
 from discord.ext import vbu
 
@@ -151,12 +153,11 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
                 cog: Optional[ProfileCommands]
                 cog = self.bot.get_cog("ProfileCommands")  # pyright: ignore
                 assert cog, "Cog not loaded."
-                await cog.profile_edit(
+                asyncio.create_task(cog.profile_edit(
                     interaction,
                     template,
                     profile,
-                    edit_original=True,
-                )
+                ))
                 return
 
             # Get field

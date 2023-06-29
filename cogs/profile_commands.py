@@ -524,7 +524,8 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
             interaction: discord.CommandInteraction | discord.ModalInteraction,
             template: utils.Template,
             profile: Optional[utils.UserProfile] = None,
-            edit_original: bool = False):
+            edit_original: bool = False,
+            original_response: bool = False):
         """
         Run when someone tries to edit a profile for a given user.
         """
@@ -657,8 +658,14 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
             assert isinstance(interaction.guild, discord.Guild)
             user = await interaction.guild.fetch_member(profile.user_id)
         embed = profile.build_embed(self.bot, interaction, user)
-        if edit_original:
+        if edit_original and interaction.response._responded:
             await interaction.edit_original_message(
+                content=_("What would you like to edit?"),
+                embeds=[embed],
+                components=components,
+            )
+        elif edit_original:
+            await interaction.response.edit_message(
                 content=_("What would you like to edit?"),
                 embeds=[embed],
                 components=components,

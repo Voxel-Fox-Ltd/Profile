@@ -255,11 +255,11 @@ class TemplateFieldEdit(vbu.Cog[vbu.Bot]):
                 vbu.Embed(
                     use_random_colour=True,
                     description="\n".join([
-                        f"{f.index}. **{f.name}**"
+                        f"{f.index}\\. **{f.name}**"
                         if f.name and f.prompt
-                        else f"{f.index}. ~~**{f.name}**~~"
+                        else f"{f.index}\\. ~~**{f.name}**~~"
                         if f.name
-                        else f"{f.index}. ~~**{f.id}**~~"
+                        else f"{f.index}\\. ~~**{f.id}**~~"
                         for f in fields
                     ])
                 )

@@ -972,7 +972,7 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
         # Build and send modal
         modal = discord.ui.Modal(
             # TRANSLATORS: Max 45 characters; title of modal
-            title=_("Set template name")[:45],
+            title=_("Set max profiles")[:45],
             custom_id=f"TEMPLATE_SET MAX_PROFILES {encoded_template_id}",
             components=[
                 discord.ui.ActionRow(
@@ -1069,7 +1069,7 @@ class TemplateEdit(vbu.Cog[vbu.Bot]):
 
     @vbu.Cog.listener("on_component_interaction")  # TEMPLATE_SET USER_MANAGEABLE [TID] [NV]
     @vbu.i18n("profile")
-    async def template_edit_max_profiles_modal_listener(
+    async def template_edit_user_manageable_component_listener(
             self,
             interaction: discord.ModalInteraction):
         """

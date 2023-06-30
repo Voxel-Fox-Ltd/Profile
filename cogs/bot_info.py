@@ -71,7 +71,7 @@ class BotInfo(vbu.Cog[vbu.Bot]):
             .add_field(
                 # TRANSLATORS: Text appearing on a button in the info command.
                 _("Support"),
-                "[Discord](https://discord.gg/vfl)",
+                "[Discord](https://discord.gg/voxelfox)",
             )
             .add_field(
                 # TRANSLATORS: Text appearing on a button in the info command.

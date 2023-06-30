@@ -66,7 +66,7 @@ bot_support_role_id = 0  # The ID used to determine whether or not the user is p
     [bot_info.links.Website]
         url = "https://profile.voxelfox.co.uk"
     [bot_info.links."Support Server"]  # You CAN have multiple words in a label
-        url = "https://discord.gg/vfl"
+        url = "https://discord.gg/voxelfox"
     [bot_info.links.Git]
         url = "https://github.com/Voxel-Fox-Ltd/Profile"
     [bot_info.links.Donate]

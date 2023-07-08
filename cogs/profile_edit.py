@@ -149,6 +149,7 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
             profile = cast(utils.UserProfile[utils.Template], profile)
 
             # If we're not editing a field, we're done
+            filled_fields = await profile.fetch_filled_fields(db)
             if field_id is None:
                 cog: Optional[ProfileCommands]
                 cog = self.bot.get_cog("ProfileCommands")  # pyright: ignore
@@ -164,7 +165,6 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
             # Get field
             field = profile.template.fields.get(field_id)
             assert field, "Field does not exist."
-            filled_fields = await profile.fetch_filled_fields(db)
 
             # Only allow editing if a newly generated embed is the same as the
             # one attached to the message they clicked on

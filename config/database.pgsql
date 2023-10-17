@@ -100,3 +100,16 @@ CREATE TABLE IF NOT EXISTS guild_subscriptions(
     PRIMARY KEY (guild_id)
 );
 -- A table for the users who are subcribing to the premium features
+
+
+CREATE OR REPLACE VIEW templates_with_count AS
+SELECT
+    templates.*,
+    COUNT(created.id) AS profile_count
+FROM
+    created_profiles created
+    LEFT JOIN templates
+        ON created.template_id = templates.id
+GROUP BY
+    templates.name,
+    templates.id;

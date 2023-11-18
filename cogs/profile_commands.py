@@ -503,10 +503,19 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
         member = await guild.fetch_member(profile.user_id)
         role_id = template.get_role_id(member)
         if role_id in member.role_ids and not all_profiles:
-            await member.remove_roles(
-                discord.Object(role_id),
-                reason="No remaining valid profiles.",
-            )
+            try:
+                await member.remove_roles(
+                    discord.Object(role_id),
+                    reason="No remaining valid profiles.",
+                )
+            except discord.HTTPException:
+                self.logger.info(
+                    (
+                        "Could not remove role %s from member %s/%s for no "
+                        "remaining valid profiles."
+                    ),
+                    role_id, member.guild.id, member.id,
+                )
 
     @vbu.Cog.listener("on_component_interaction")
     async def profile_delete_dropdown_listener(

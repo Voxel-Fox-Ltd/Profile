@@ -392,7 +392,6 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
         # Do some basic checks
         assert profile, "Profile does not exist."
         assert not profile.deleted
-        # assert profile.user_id == interaction.user.id
 
         # Make sure they have something
         if not profile:
@@ -475,6 +474,13 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
                 deleted=True,
             )
 
+            # Get all remaining profiles for the user
+            template = await utils.Template.fetch_template_by_id(db, profile.template_id)
+            assert template
+            profile.template = template  # pyright: ignore
+            profile = cast(utils.UserProfile[utils.Template], profile)
+            all_profiles = await template.fetch_all_profiles_for_user(db, profile.user_id)
+
         # Delete the archived message
         if profile.posted_message_id:
             await profile.delete_message(self.bot)
@@ -486,6 +492,21 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
             content=message,
             components=None,
         )
+
+        # Remove role if necessary
+        # We are doing this after the message send so we don't get timed out
+        # by Discord in the interaction
+        member: discord.Member
+        guild: discord.Guild | None = interaction.guild  # pyright: ignore
+        if guild is None:
+            guild = await self.bot.fetch_guild(interaction.guild_id)  # pyright: ignore
+        member = await guild.fetch_member(profile.user_id)
+        role_id = template.get_role_id(member)
+        if role_id in member.role_ids and not all_profiles:
+            await member.remove_roles(
+                discord.Object(role_id),
+                reason="No remaining valid profiles.",
+            )
 
     @vbu.Cog.listener("on_component_interaction")
     async def profile_delete_dropdown_listener(

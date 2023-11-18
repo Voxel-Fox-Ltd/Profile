@@ -102,7 +102,7 @@ class UserProfile(Generic[T]):
             deleted: bool = False,
             draft: bool = True):
         self._id = id
-        self.user_id: Optional[int] = user_id
+        self.user_id: int = user_id  # pyright: ignore
         self.name: Optional[str] = name
         self._template_id = template_id
         self.verified: bool = verified
@@ -165,7 +165,7 @@ class UserProfile(Generic[T]):
     async def fetch_profile_by_id(
             cls,
             db: vbu.Database,
-            profile_id: str) -> Optional[Self]:
+            profile_id: str) -> Optional[UserProfile[None]]:
         """
         Fetch the fields for this profile and store them in .all_filled_fields.
         """

@@ -401,7 +401,7 @@ class Template:
                 await i.fetch_filled_fields(db)
                 for i in profiles
             ]
-        return profiles
+        return profiles  # pyright: ignore  # Weird return types with generic and self
 
     async def fetch_all_profiles(
             self,

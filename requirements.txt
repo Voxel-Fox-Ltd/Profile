@@ -1,4 +1,4 @@
-novus[vbu,speed]>=0.2.1
+novus[vbu,speed]>=0.2.4
 humanize
 regex  # support for property flags
 asyncpg

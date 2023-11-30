@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: profile-discord\n"
 "POT-Creation-Date: 2023-01-12 22:18+0000\n"
-"PO-Revision-Date: 2023-11-30 21:04\n"
+"PO-Revision-Date: 2023-11-30 22:22\n"
 "Last-Translator: \n"
 "Language-Team: Turkish\n"
 "MIME-Version: 1.0\n"
@@ -33,7 +33,7 @@ msgstr ""
 #. TRANSLATORS: Command name.
 #: cogs/advanced_settings.py:23
 msgid "enable"
-msgstr ""
+msgstr "etkin"
 
 #. TRANSLATORS: Command description.
 #: cogs/advanced_settings.py:25
@@ -43,7 +43,7 @@ msgstr ""
 #. TRANSLATORS: Command name.
 #: cogs/advanced_settings.py:28
 msgid "disable"
-msgstr ""
+msgstr "devredışı"
 
 #. TRANSLATORS: Command description.
 #: cogs/advanced_settings.py:30
@@ -75,7 +75,7 @@ msgstr ""
 #. TRANSLATORS: Command name.
 #: cogs/bot_info.py:32
 msgid "information"
-msgstr ""
+msgstr "bilgi"
 
 #. TRANSLATORS: Command description.
 #: cogs/bot_info.py:34

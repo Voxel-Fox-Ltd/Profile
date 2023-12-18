@@ -1,5 +1,8 @@
+import json
+import logging
 from typing import Any, Tuple
 import random
+from urllib.parse import urlparse, parse_qs
 
 import discord
 from discord.ext import commands, vbu
@@ -59,7 +62,37 @@ def compare_embeds(
     if (
             embed1_dict.get("image", {}).get("url", "").strip()
             != embed2_dict.get("image", {}).get("url", "").strip()):
-        return False
+
+        # We are also going to do a lil comparison for Discord's new GET params
+        embed1_image_url = embed1_dict["image"]["url"]  # pyright: ignore
+        e1_image = urlparse(embed1_image_url)
+        embed2_image_url = embed2_dict["image"]["url"]  # pyright: ignore
+        e2_image = urlparse(embed2_image_url)
+
+        # See if something else is wrong
+        if not all([
+                e1_image.scheme == e2_image.scheme,
+                e1_image.netloc == e2_image.netloc,
+                e1_image.path == e2_image.path,
+                e1_image.params == e2_image.params,
+                e1_image.fragment == e2_image.fragment]):
+            return False
+
+        # Only continue for Discord images
+        if e1_image.netloc.casefold() not in ["media.discordapp.net", "media.discordapp.com", "discordapp.com", "discordapp.net", "discord.com"]:
+            return False
+
+        # See if they are the same _other than_ the ex, is, and hm params
+        e1_params: dict[str, list[str]] = parse_qs(e1_image.query)
+        e1_params.pop("ex", None)
+        e1_params.pop("is", None)
+        e1_params.pop("hm", None)
+        e2_params: dict[str, list[str]] = parse_qs(e2_image.query)
+        e2_params.pop("ex", None)
+        e2_params.pop("is", None)
+        e2_params.pop("hm", None)
+        if e1_params != e2_params:
+            return False
 
     # Iterate through the fields and make sure each of the value,
     # inline, and name are the same

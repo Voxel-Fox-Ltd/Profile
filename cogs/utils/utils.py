@@ -1,8 +1,6 @@
-import json
-import logging
 from typing import Any, Tuple
 import random
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import urlparse, parse_qs, urlencode
 
 import discord
 from discord.ext import commands, vbu
@@ -26,6 +24,33 @@ def mention_command(command: commands.Command) -> str:
     if (command_id := getattr(command, "id", None)) is None:
         return f"/{command.qualified_name}"
     return f"</{command.qualified_name}:{command_id}>"
+
+
+def normalize_discord_cdn_url(url: str) -> str:
+    """
+    Remove Discord's dumb new em ex ih query params from a url.
+    """
+
+    parsed = urlparse(url)
+    DISCORD_URLS = [
+        "media.discordapp.net",
+        "media.discordapp.com",
+        "media.discord.com",
+        "cdn.discordapp.net",
+        "cdn.discordapp.com",
+        "cdn.discord.com",
+        "discordapp.net",
+        "discordapp.com",
+        "discord.com",
+    ]
+    if parsed.netloc.casefold() not in DISCORD_URLS:
+        return url  # unchanged
+    params: dict[str, list[str]] = parse_qs(parsed.query)
+    params.pop("ex", None)
+    params.pop("is", None)
+    params.pop("hm", None)
+    new_parsed = parsed._replace(query=urlencode(params))
+    return new_parsed.geturl()
 
 
 def compare_embeds(
@@ -60,39 +85,9 @@ def compare_embeds(
     # Compare the image URL - we're not gonna compare the image
     # size etc becuase Novus doesn't set it but the API does
     if (
-            embed1_dict.get("image", {}).get("url", "").strip()
-            != embed2_dict.get("image", {}).get("url", "").strip()):
-
-        # We are also going to do a lil comparison for Discord's new GET params
-        embed1_image_url = embed1_dict["image"]["url"]  # pyright: ignore
-        e1_image = urlparse(embed1_image_url)
-        embed2_image_url = embed2_dict["image"]["url"]  # pyright: ignore
-        e2_image = urlparse(embed2_image_url)
-
-        # See if something else is wrong
-        if not all([
-                e1_image.scheme == e2_image.scheme,
-                e1_image.netloc == e2_image.netloc,
-                e1_image.path == e2_image.path,
-                e1_image.params == e2_image.params,
-                e1_image.fragment == e2_image.fragment]):
-            return False
-
-        # Only continue for Discord images
-        if e1_image.netloc.casefold() not in ["media.discordapp.net", "media.discordapp.com", "discordapp.com", "discordapp.net", "discord.com"]:
-            return False
-
-        # See if they are the same _other than_ the ex, is, and hm params
-        e1_params: dict[str, list[str]] = parse_qs(e1_image.query)
-        e1_params.pop("ex", None)
-        e1_params.pop("is", None)
-        e1_params.pop("hm", None)
-        e2_params: dict[str, list[str]] = parse_qs(e2_image.query)
-        e2_params.pop("ex", None)
-        e2_params.pop("is", None)
-        e2_params.pop("hm", None)
-        if e1_params != e2_params:
-            return False
+            normalize_discord_cdn_url(embed1_dict.get("image", {}).get("url", "")).strip()
+            != normalize_discord_cdn_url(embed2_dict.get("image", {}).get("url", "")).strip()):
+        return False
 
     # Iterate through the fields and make sure each of the value,
     # inline, and name are the same

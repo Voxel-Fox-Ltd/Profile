@@ -1,6 +1,7 @@
 from typing import Any, Tuple
 import random
 from urllib.parse import urlparse, parse_qs, urlencode
+import logging
 
 import discord
 from discord.ext import commands, vbu
@@ -13,6 +14,9 @@ __all__ = (
     'is_guild_advanced',
     'pad_field_prompt_value',
 )
+
+
+log = logging.getLogger("embed_utils")
 
 
 def mention_command(command: commands.Command) -> str:
@@ -85,8 +89,9 @@ def compare_embeds(
     # Compare the image URL - we're not gonna compare the image
     # size etc becuase Novus doesn't set it but the API does
     if (
-            normalize_discord_cdn_url(embed1_dict.get("image", {}).get("url", "")).strip()
-            != normalize_discord_cdn_url(embed2_dict.get("image", {}).get("url", "")).strip()):
+            (a := normalize_discord_cdn_url(embed1_dict.get("image", {}).get("url", "")).strip())
+            != (b := normalize_discord_cdn_url(embed2_dict.get("image", {}).get("url", "")).strip())):
+        log.info(f"{a} {b}")
         return False
 
     # Iterate through the fields and make sure each of the value,

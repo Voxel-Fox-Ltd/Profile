@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: profile-discord\n"
 "POT-Creation-Date: 2023-01-12 22:18+0000\n"
-"PO-Revision-Date: 2023-11-30 22:22\n"
+"PO-Revision-Date: 2024-08-19 23:31\n"
 "Last-Translator: \n"
 "Language-Team: Turkish\n"
 "MIME-Version: 1.0\n"
@@ -123,7 +123,7 @@ msgstr ""
 
 #: cogs/profile_commands.py:38
 msgid "Make public"
-msgstr ""
+msgstr "Herkese açık yap"
 
 #: cogs/profile_commands.py:275
 #, python-brace-format
@@ -224,7 +224,7 @@ msgstr ""
 
 #: cogs/profile_edit.py:237
 msgid "Set the name of your profile"
-msgstr ""
+msgstr "Profilinizin adını ayarlayın"
 
 #. TRANSLATORS: Catch all error message that shouldn't be shown
 #: cogs/profile_edit.py:305

@@ -32,7 +32,7 @@ if __debug__:
     # _poeditor("Disable advanced mode for this guild.")
 
 
-class AdvancedSettings(vbu.Cog[vbu.Bot]):
+class Export(vbu.Cog[vbu.Bot]):
 
     @commands.command(
         application_command_meta=commands.ApplicationCommandMeta(
@@ -118,5 +118,5 @@ class AdvancedSettings(vbu.Cog[vbu.Bot]):
 
 def setup(bot: vbu.Bot):
     bot.remove_command("export")
-    x = AdvancedSettings(bot)
+    x = Export(bot)
     bot.add_cog(x)

@@ -901,6 +901,7 @@ class TemplateCommands(vbu.Cog[vbu.Bot]):
             ctx.interaction,
             template_object,
             profile_object,
+            ignore_user_managable=True,
         )
 
     @template_edit.autocomplete  # pyright: ignore

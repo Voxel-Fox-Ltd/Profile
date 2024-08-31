@@ -555,13 +555,14 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
             template: utils.Template,
             profile: Optional[utils.UserProfile] = None,
             edit_original: bool = False,
-            original_response: bool = False):
+            original_response: bool = False,
+            ignore_user_managable: bool = False):
         """
         Run when someone tries to edit a profile for a given user.
         """
 
         # Check that the template is user editable
-        if not template.user_manageable:
+        if not ignore_user_managable and not template.user_manageable:
             return await interaction.response.send_message(
                 _("Profiles made with this template are only editable by moderators."),
                 ephemeral=True,

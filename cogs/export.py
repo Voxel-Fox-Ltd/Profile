@@ -117,5 +117,6 @@ class AdvancedSettings(vbu.Cog[vbu.Bot]):
 
 
 def setup(bot: vbu.Bot):
+    bot.remove_command("export")
     x = AdvancedSettings(bot)
     bot.add_cog(x)

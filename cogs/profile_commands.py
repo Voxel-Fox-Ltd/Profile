@@ -616,7 +616,7 @@ class ProfileCommands(vbu.Cog[vbu.Bot]):
                 discord.ui.Button(
                     # TRANSLATORS: The confirm button for editing a profile
                     label=_("Yes"),
-                    custom_id=f"PROFILE CONFIRM_EDIT {short_profile_id}",
+                    custom_id=f"PROFILE CONFIRM_EDIT {short_profile_id} {int(ignore_user_managable)}",
                     style=discord.ButtonStyle.success,
                 ),
             ]

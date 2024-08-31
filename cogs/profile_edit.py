@@ -27,7 +27,7 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
             return
 
         # Get the profile ID
-        short_profile_id = interaction.custom_id.split(" ")[2]
+        short_profile_id, ignore_user_managable = interaction.custom_id.split(" ")[2:]
         profile_id = utils.uuid.decode(short_profile_id)
         self.logger.info("Setting profile %s to a draft", profile_id)
 
@@ -82,12 +82,10 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
                 pass
 
         # Tell them it's done
-        await interaction.response.edit_message(
-            content=_(
-                "Your profile has been converted to a draft. "
-                "You can now edit it."
-            ),
-            components=discord.ui.MessageComponents(
+        if ignore_user_managable:
+            components = []
+        else:
+            components = discord.ui.MessageComponents(
                 discord.ui.ActionRow(
                     discord.ui.Button(
                         label=_("Edit"),
@@ -95,7 +93,13 @@ class ProfileEdit(vbu.Cog[vbu.Bot]):
                         style=discord.ButtonStyle.primary,
                     ),
                 ),
+            )
+        await interaction.response.edit_message(
+            content=_(
+                "Your profile has been converted to a draft. "
+                "You can now edit it."
             ),
+            components=components,
             embeds=[],
         )
 
